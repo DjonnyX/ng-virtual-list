@@ -1,63 +1,40 @@
 # NgVirtualList
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.0.
+Angular version 19.X.X.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Example
+![VirtualList-GoogleChrome2025-06-1321-18-21-ezgif com-crop](https://github.com/user-attachments/assets/7a364774-77d1-4ee6-8db0-4338a02d2357)
 
 ```bash
-ng generate --help
+npm i ng-virtual-list
 ```
 
-## Building
+```html
+<ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer"></ng-virtual-list>
 
-To build the library, run:
-
-```bash
-ng build ng-virtual-list
+<ng-template #itemRenderer let-data="data">
+  <div class="list__container">
+    <p>{{data?.name}}</p>
+  </div>
+</ng-template>
 ```
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+```ts
+const ITEMS: IVirtualListCollection = [];
 
-### Publishing the Library
+for (let i = 0, l = 1000; i < l; i++) {
+  ITEMS.push({ id: i, name: `Item: ${i}` });
+}
 
-Once the project is built, you can publish your library by following these steps:
-
-1. Navigate to the `dist` directory:
-   ```bash
-   cd dist/ng-virtual-list
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+@Component({
+  selector: 'app-root',
+  imports: [NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  items = signal(ITEMS);
+}
 ```
 
-## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
