@@ -1,14 +1,40 @@
 <div class="vl-section">
-  <h1>v.0.0.3</h1>
+  <h1>v.0.0.5</h1>
 </div>
 
 <div class="vl-section">
   <h2>Simple virtual list</h2>
-  <ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer" [itemHeight]="42"></ng-virtual-list>
+  <ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer"
+    [itemHeight]="40"></ng-virtual-list>
 </div>
 
 <ng-template #itemRenderer let-data="data">
+  @if (data) {
   <div class="list__container">
-    <p>{{data?.name}}</p>
+    <p>{{data.name}}</p>
   </div>
+  }
+</ng-template>
+
+<div class="vl-section">
+  <h2>Virtual group list</h2>
+  <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+    [stickyMap]="groupItemsStickyMap" [itemHeight]="40"></ng-virtual-list>
+</div>
+
+<ng-template #groupItemRenderer let-data="data">
+  @if (data) {
+    @switch (data.type) {
+      @case ("group-header") {
+      <div class="list__group-container">
+        <p>{{data.name}}</p>
+      </div>
+      }
+      @default {
+      <div class="list__container">
+        <p>{{data.name}}</p>
+      </div>
+      }
+    }
+  }
 </ng-template>

@@ -1,10 +1,23 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
-import { IVirtualListCollection } from '../../projects/ng-virtual-list/src/lib/models';
+import { IVirtualListCollection, IVirtualListStickyMap } from '../../projects/ng-virtual-list/src/lib/models';
 
 const ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = 10000000; i < l; i++) {
   ITEMS.push({ id: i, name: `Item: ${i}` });
+}
+
+const GROUP_ITEMS: IVirtualListCollection = [],
+  GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+
+let groupIndex = 0;
+for (let i = 0, l = 10000000; i < l; i++) {
+  const id = i, type = Math.random() > .895 ? 'group-header' : 'item';
+  if (type === 'group-header') {
+    groupIndex++;
+  }
+  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${i}` });
+  GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -14,5 +27,8 @@ for (let i = 0, l = 10000000; i < l; i++) {
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  items = signal(ITEMS);
+  items = ITEMS;
+
+  groupItems = GROUP_ITEMS;
+  groupItemsStickyMap = GROUP_ITEMS_STICKY_MAP;
 }

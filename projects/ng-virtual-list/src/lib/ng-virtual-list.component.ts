@@ -7,8 +7,9 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
-import { IRenderVirtualListCollection, IVirtualListCollection } from './models';
+import { IVirtualListCollection, IVirtualListStickyMap } from './models';
 import { Id, IRect } from './types';
+import { IRenderVirtualListCollection } from './models/render-collection.model';
 
 @Component({
   selector: 'ng-virtual-list',
@@ -29,6 +30,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   items = input.required<IVirtualListCollection>();
 
   itemRenderer = input.required<TemplateRef<any>>();
+
+  stickyMap = input<IVirtualListStickyMap>({});
 
   itemHeight = input(DEFAULT_ITEM_HEIGHT);
 
@@ -62,11 +65,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
       $itemHeight = toObservable(this.itemHeight),
-      $itemsOffset = toObservable(this.itemsOffset);
+      $itemsOffset = toObservable(this.itemsOffset),
+      $stickyMap = toObservable(this.stickyMap);
 
-    combineLatest([$bounds, $items, $scrollSize, $itemHeight, $itemsOffset]).pipe(
+    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemHeight, $itemsOffset]).pipe(
       takeUntilDestroyed(),
-      switchMap(([bounds, items, scrollSize, itemHeight, itemsOffset]) => {
+      switchMap(([bounds, items, stickyMap, scrollSize, itemHeight, itemsOffset]) => {
         const { width, height } = bounds;
         const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemHeight),
           itemsFromStartToDisplayEnd = Math.ceil((scrollSize + height) / itemHeight),
@@ -76,11 +80,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           totalSize = totalItems * itemHeight,
           itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
         return of({
-          items, itemsOffset, width, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+          items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
           itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize
         });
       }),
-      tap(({ items, itemsOffset, width, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+      tap(({ items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
         itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize }) => {
         const displayItems: IRenderVirtualListCollection = [], totalItems = items.length,
           leftItemLength = itemsFromStartToScrollEnd > 0 ? Math.min(itemsFromStartToScrollEnd, itemsOffset) : 0,
@@ -89,6 +93,27 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight;
         let i = itemsFromStartToScrollEnd - leftItemLength, y = leftHiddenItemsWeight - leftItemLength * itemHeight,
           renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight;
+
+        for (let i = itemsFromStartToScrollEnd; i >= 0; i--) {
+          const id = items[i].id, sticky = stickyMap[id];
+          if (sticky > 0) {
+            const measures = {
+              x: 0,
+              y: scrollSize,
+              width,
+              height: itemHeight,
+            }, config = {
+              sticky,
+            };
+
+            const itemData: any = { ...items[i] };
+            delete itemData.id;
+
+            displayItems.push({ id, measures, data: itemData, config });
+            break;
+          }
+        }
+
         while (renderWeight > 0) {
           if (i >= totalItems) {
             break;
@@ -99,12 +124,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             y,
             width,
             height: itemHeight,
+          }, config = {
+            sticky: y <= scrollSize ? stickyMap[id] ?? 0 : 0,
           };
 
           const itemData: any = { ...items[i] };
           delete itemData.id;
 
-          displayItems.push({ id, measures, data: itemData });
+          displayItems.push({ id, measures, data: itemData, config });
 
           this._sizeCacheMap.set(id, measures);
 

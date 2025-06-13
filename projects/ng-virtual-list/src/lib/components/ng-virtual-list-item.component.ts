@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, signal, TemplateRef } from '@angular/core';
-import { IRenderVirtualListItem } from '../models';
+import { IRenderVirtualListItem } from '../models/render-item.model';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, tap } from 'rxjs';
 
@@ -28,7 +28,15 @@ export class NgVirtualListItemComponent {
       takeUntilDestroyed(),
       filter(data => !!data),
       tap(data => {
+        if (data.config.sticky > 0) {
+          this._elementRef.nativeElement.style.position = 'sticky';
+          this._elementRef.nativeElement.style.zIndex = String(data.config.sticky);
+        } else {
+          this._elementRef.nativeElement.style.position = 'absolute';
+          this._elementRef.nativeElement.style.zIndex = '0';
+        }
         this._elementRef.nativeElement.style.transform = `translate3d(0, ${data.measures.y}px , 0)`;
+        this._elementRef.nativeElement.style.height = `${data.measures.height}px`;
       })
     ).subscribe();
   }
