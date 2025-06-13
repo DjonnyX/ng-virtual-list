@@ -27,6 +27,8 @@ npm i ng-virtual-list
 ```
 
 ```ts
+import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
+
 const ITEMS: IVirtualListCollection = [];
 
 for (let i = 0, l = 100000; i < l; i++) {
@@ -71,6 +73,8 @@ export class AppComponent {
 ```
 
 ```ts
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
+
 const GROUP_ITEMS: IVirtualListCollection = [],
   GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
