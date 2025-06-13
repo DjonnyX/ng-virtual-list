@@ -1,10 +1,11 @@
 {
   "name": "virtual-list",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
   },
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
