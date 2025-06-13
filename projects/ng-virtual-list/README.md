@@ -1,16 +1,18 @@
 # NgVirtualList
+Fast, optimized rendering of extremely large numbers of list items
 
 Angular version 19.X.X.
 
 ## Example
-![VirtualList-GoogleChrome2025-06-1321-18-21-ezgif com-crop](https://github.com/user-attachments/assets/7a364774-77d1-4ee6-8db0-4338a02d2357)
+![VirtualList-GoogleChrome2025-06-1323-32-48-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/225fabf8-46da-43ec-bef1-41bb295af5d8)
+
 
 ```bash
 npm i ng-virtual-list
 ```
 
 ```html
-<ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer"></ng-virtual-list>
+<ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer" [itemHeight]="42"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
   <div class="list__container">
