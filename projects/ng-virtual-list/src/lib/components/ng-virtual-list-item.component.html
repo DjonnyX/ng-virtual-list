@@ -1,0 +1,11 @@
+@let item = data();
+@let renderer = itemRenderer();
+
+@if (item) {
+@let translate3d = "translate3d(0, " + item.measures.y + "px , 0)";
+<li #listItem class="ngvl-item__container" [style]="{'transform': translate3d}">
+    @if (renderer) {
+    <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="{data: item.data || {}}" />
+    }
+</li>
+}

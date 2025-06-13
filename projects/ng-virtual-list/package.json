@@ -1,0 +1,16 @@
+{
+  "name": "ng-virtual-list",
+  "version": "0.0.1",
+  "author": {
+    "name": "Evgenii Grebennikov",
+    "email": "djonnyx@gmail.com"
+  },
+  "peerDependencies": {
+    "@angular/common": "^19.2.0",
+    "@angular/core": "^19.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
