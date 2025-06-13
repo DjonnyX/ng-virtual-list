@@ -31,11 +31,12 @@ export class NgVirtualListItemComponent {
         if (data.config.sticky > 0) {
           this._elementRef.nativeElement.style.position = 'sticky';
           this._elementRef.nativeElement.style.zIndex = String(data.config.sticky);
+          this._elementRef.nativeElement.style.transform = 'unset';
         } else {
           this._elementRef.nativeElement.style.position = 'absolute';
           this._elementRef.nativeElement.style.zIndex = '0';
+          this._elementRef.nativeElement.style.transform = `translate3d(0, ${data.measures.y}px , 0)`;
         }
-        this._elementRef.nativeElement.style.transform = `translate3d(0, ${data.measures.y}px , 0)`;
         this._elementRef.nativeElement.style.height = `${data.measures.height}px`;
       })
     ).subscribe();
