@@ -26,6 +26,42 @@ npm i ng-virtual-list
 </ng-template>
 ```
 
+```css
+.vl-section {
+    padding: 20px;
+    margin-bottom: 8px;
+
+    &>h1 {
+        margin-bottom: 0;
+    }
+}
+
+.list {
+    border-radius: 3px;
+    box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+
+    &__container {
+        width: 100%;
+        padding: 0 12px;
+    }
+
+    &__group-container {
+        width: 100%;
+        padding: 0 12px;
+        background-color: rgb(230, 234, 238);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        display: flex;
+    }
+
+    &.simple {
+        height: 500px;
+    }
+}
+```
+
 ```ts
 import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
 
@@ -70,6 +106,42 @@ export class AppComponent {
     }
   }
 </ng-template>
+```
+
+```css
+.vl-section {
+    padding: 20px;
+    margin-bottom: 8px;
+
+    &>h1 {
+        margin-bottom: 0;
+    }
+}
+
+.list {
+    border-radius: 3px;
+    box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+
+    &__container {
+        width: 100%;
+        padding: 0 12px;
+    }
+
+    &__group-container {
+        width: 100%;
+        padding: 0 12px;
+        background-color: rgb(230, 234, 238);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        display: flex;
+    }
+
+    &.simple {
+        height: 500px;
+    }
+}
 ```
 
 ```ts
