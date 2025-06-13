@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_ITEM_HEIGHT } from './const';
+import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
 import { IRenderVirtualListCollection, IVirtualListCollection } from './models';
 import { Id, IRect } from './types';
 
@@ -31,6 +31,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   itemRenderer = input.required<TemplateRef<any>>();
 
   itemHeight = input(DEFAULT_ITEM_HEIGHT);
+
+  itemsOffset = input(DEFAULT_ITEMS_OFFSET);
 
   protected _displayItems = signal<IRenderVirtualListCollection | null>(null);
 
@@ -59,11 +61,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ), $items = toObservable(this.items).pipe(
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
-      $itemHeight = toObservable(this.itemHeight);
+      $itemHeight = toObservable(this.itemHeight),
+      $itemsOffset = toObservable(this.itemsOffset);
 
-    combineLatest([$bounds, $items, $scrollSize, $itemHeight]).pipe(
+    combineLatest([$bounds, $items, $scrollSize, $itemHeight, $itemsOffset]).pipe(
       takeUntilDestroyed(),
-      switchMap(([bounds, items, scrollSize, itemHeight]) => {
+      switchMap(([bounds, items, scrollSize, itemHeight, itemsOffset]) => {
         const { width, height } = bounds;
         const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemHeight),
           itemsFromStartToDisplayEnd = Math.ceil((scrollSize + height) / itemHeight),
@@ -72,20 +75,24 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           totalItems = items.length,
           totalSize = totalItems * itemHeight,
           itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
-        return of({ items, width, itemsFromStartToScrollEnd, itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize });
+        return of({
+          items, itemsOffset, width, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+          itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize
+        });
       }),
-      tap(({ items, width, itemsFromStartToScrollEnd, itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize }) => {
-        const displayItems: IRenderVirtualListCollection = [], totalItems = items.length;
-        let i = itemsFromStartToScrollEnd, y = leftHiddenItemsWeight, renderWeight = itemsOnDisplay;
-
-
+      tap(({ items, itemsOffset, width, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+        itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize }) => {
+        const displayItems: IRenderVirtualListCollection = [], totalItems = items.length,
+          leftItemLength = itemsFromStartToScrollEnd > 0 ? Math.min(itemsFromStartToScrollEnd, itemsOffset) : 0,
+          rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
+            ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
+          leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight;
+        let i = itemsFromStartToScrollEnd - leftItemLength, y = leftHiddenItemsWeight - leftItemLength * itemHeight,
+          renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight;
         while (renderWeight > 0) {
           if (i >= totalItems) {
             break;
           }
-
-          renderWeight -= itemHeight;
-          y += itemHeight;
 
           const id = items[i].id, measures = {
             x: 0,
@@ -101,6 +108,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
           this._sizeCacheMap.set(id, measures);
 
+          renderWeight -= itemHeight;
+          y += itemHeight;
           i++;
         }
 

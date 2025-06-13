@@ -3,7 +3,7 @@ import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/publi
 import { IVirtualListCollection } from '../../projects/ng-virtual-list/src/lib/models';
 
 const ITEMS: IVirtualListCollection = [];
-for (let i = 0, l = 1000; i < l; i++) {
+for (let i = 0, l = 10000000; i < l; i++) {
   ITEMS.push({ id: i, name: `Item: ${i}` });
 }
 

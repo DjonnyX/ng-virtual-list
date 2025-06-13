@@ -1,10 +1,10 @@
 <div class="vl-section">
-  <h1>v.0.0.1</h1>
+  <h1>v.0.0.2</h1>
 </div>
 
 <div class="vl-section">
   <h2>Simple virtual list</h2>
-  <ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer"></ng-virtual-list>
+  <ng-virtual-list class="list simple" [items]="items()" [itemRenderer]="itemRenderer" [itemHeight]="42"></ng-virtual-list>
 </div>
 
 <ng-template #itemRenderer let-data="data">

@@ -22,7 +22,7 @@ npm i ng-virtual-list
 ```ts
 const ITEMS: IVirtualListCollection = [];
 
-for (let i = 0, l = 1000; i < l; i++) {
+for (let i = 0, l = 100000; i < l; i++) {
   ITEMS.push({ id: i, name: `Item: ${i}` });
 }
 
