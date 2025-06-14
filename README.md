@@ -191,6 +191,30 @@ export class AppComponent {
 
 ```
 
+## API
+
+[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
+
+Inputs
+
+| Property | type | Description |
+|---|---|---|
+| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
+| itemHeight | number | Height of a typical list item |
+| itemRenderer | TemplateRef | Rendering element template |
+| stickyMap | [IVirtualListStickyMap](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
+
+<br/>
+
+Outputs
+
+| event | type | Description |
+|---|---|---|
+| onScroll | (e: Event) => void | Fires when the list has been scrolled |
+| onScrollEnd | (e: Event) => void | Fires when the list has completed scrolling. |
+
+
+
 
 
 ## Development server
