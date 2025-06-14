@@ -12,7 +12,103 @@ npm i ng-virtual-list
 
 ## Examples
 
-### Simple virtual list
+### Horizontal virtual list
+
+![VirtualList-GoogleChrome2025-06-1500-39-14-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/4d078812-7bd5-4f9b-94c7-dd9e8f29af45)
+
+Template:
+```html
+  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems"
+    [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
+
+<ng-template #hotizontalItemRenderer let-data="data">
+  @if (data) {
+  <div class="list__h-container" (click)="onItemClick(data)">
+    <span>{{data.name}}</span>
+  </div>
+  }
+</ng-template>
+```
+
+Component:
+```ts
+import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
+
+const HORIZONTAL_ITEMS: IVirtualListCollection = [];
+for (let i = 0, l = 1000000; i < l; i++) {
+  HORIZONTAL_ITEMS.push({ id: i + 1, name: `${i}` });
+}
+
+@Component({
+  selector: 'app-root',
+  imports: [NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  horizontalItems = HORIZONTAL_ITEMS;
+}
+```
+
+### Horizontal grouped virtual list
+
+![VirtualList-GoogleChrome2025-06-1500-39-14-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/bdd0cb5d-be92-41b3-a049-bd9d8a616692)
+
+Template:
+```html
+  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
+    [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
+
+<ng-template #horizontalGroupItemRenderer let-data="data">
+  @if (data) {
+    @switch (data.type) {
+      @case ("group-header") {
+      <div class="list__h-group-container">
+        <span>{{data.name}}</span>
+      </div>
+      }
+      @default {
+      <div class="list__h-container" (click)="onItemClick(data)">
+        <span>{{data.name}}</span>
+      </div>
+      }
+    }
+  }
+</ng-template>
+```
+
+Component:
+```ts
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
+
+const GROUP_NAMES = ['A', 'B', 'C', 'D', 'E'];
+
+const getGroupName = () => {
+  return GROUP_NAMES[Math.floor(Math.random() * GROUP_NAMES.length)];
+};
+
+const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
+  HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+
+for (let i = 0, l = 1000000; i < l; i++) {
+  const id = i + 1, type = Math.random() > .895 ? 'group-header' : 'item';
+  HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${i}` });
+  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+}
+
+@Component({
+  selector: 'app-root',
+  imports: [NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
+  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
+}
+```
+
+### Vertical virtual list
 
 ![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/2d120a77-7715-4d6a-ba8d-bb5030d48947)
 
@@ -50,7 +146,7 @@ export class AppComponent {
 }
 ```
 
-### Grouped virtual list
+### Vertical grouped virtual list
 
 #### Without snapping
 ![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
@@ -146,8 +242,9 @@ Inputs
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
 | itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element |
 | itemRenderer | TemplateRef | Rendering element template |
-| stickyMap | [IVirtualListStickyMap](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
+| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
 | snap | boolean? | Determines whether elements will snap. Default value is "true" |
+| direction | [Directions](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical" |
 
 <br/>
 
