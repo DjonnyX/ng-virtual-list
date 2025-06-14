@@ -1,16 +1,18 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, input,
+  AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, inject, input,
   OnDestroy, output, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
-import { IVirtualListCollection, IVirtualListStickyMap } from './models';
-import { Id, IRect } from './types';
+import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE } from './const';
+import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+// import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { IRenderVirtualListItem } from './models/render-item.model';
+import { Direction, Directions } from './enums';
+import { isDirection, toggleClassName } from './utils';
 
 @Component({
   selector: 'ng-virtual-list',
@@ -42,6 +44,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   itemSize = input(DEFAULT_ITEM_HEIGHT);
 
+  direction = input<Direction>(Directions.VERTICAL);
+
+  private _isVertical = this.getIsVertical();
+
   protected _itemsOffset = signal<number>(DEFAULT_ITEMS_OFFSET);
 
   protected _displayItems = signal<IRenderVirtualListCollection | null>(null);
@@ -60,7 +66,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   private _onScrollHandler = (e: Event) => {
     const target = e.target as HTMLDivElement;
-    this._scrollSize.set(target.scrollTop);
+    this._scrollSize.set(this._isVertical ? target.scrollTop : target.scrollLeft);
 
     this.onScroll.emit(e);
   }
@@ -69,7 +75,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     this.onScrollEnd.emit(e);
   }
 
-  private _sizeCacheMap = new Map<Id, IRect>();
+  private _elementRef = inject(ElementRef<HTMLDivElement>);
+
+  // for dynamic item size
+  // private _sizeCacheMap = new Map<Id, IRect>();
 
   constructor() {
     const $bounds = toObservable(this._bounds).pipe(
@@ -80,98 +89,112 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       $itemSize = toObservable(this.itemSize),
       $itemsOffset = toObservable(this._itemsOffset),
       $stickyMap = toObservable(this.stickyMap),
-      $snap = toObservable(this.snap);
+      $snap = toObservable(this.snap),
+      $isVertical = toObservable(this.direction).pipe(
+        map(v => this.getIsVertical()),
+        tap(v => {
+          this._isVertical = v;
+          const el: HTMLElement = this._elementRef.nativeElement;
+          toggleClassName(el, v ? 'vertical' : 'horizontal');
+        }),
+      );
 
-    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap]).pipe(
+    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
       takeUntilDestroyed(),
-      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap]) => {
-        const { width, height } = bounds;
+      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
+        const { width, height } = bounds, size = isVertical ? height : width;
         const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemSize),
-          itemsFromStartToDisplayEnd = Math.ceil((scrollSize + height) / itemSize),
+          itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / itemSize),
           leftHiddenItemsWeight = itemsFromStartToScrollEnd * itemSize,
           totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * itemSize,
           totalItems = items.length,
           totalSize = totalItems * itemSize,
           itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
         return of({
-          items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+          items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
           itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap
         });
       }),
-      tap(({ items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+      tap(({ items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
         itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap }) => {
-        const displayItems: IRenderVirtualListCollection = [], totalItems = items.length,
-          leftItemLength = itemsFromStartToScrollEnd - itemsOffset < Math.min(itemsFromStartToScrollEnd, itemsOffset) ? 0 : itemsOffset,
-          rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
-            ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
-          leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
-          startIndex = itemsFromStartToScrollEnd - leftItemLength;
-        let y = leftHiddenItemsWeight - leftItemsWeight,
-          renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
+        const displayItems: IRenderVirtualListCollection = [];
+        if (items.length) {
+          const w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,
+            leftItemLength = itemsFromStartToScrollEnd - itemsOffset < Math.min(itemsFromStartToScrollEnd, itemsOffset) ? 0 : itemsOffset,
+            rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
+              ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
+            leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
+            startIndex = itemsFromStartToScrollEnd - leftItemLength;
+          let pos = leftHiddenItemsWeight - leftItemsWeight,
+            renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
 
-        if (snap) {
-          for (let i = startIndex; i >= 0; i--) {
-            const id = items[i].id, sticky = stickyMap[id];
-            if (sticky > 0) {
-              const measures = {
-                x: 0,
-                y: scrollSize,
-                width,
-                height: itemSize,
-              }, config = {
-                sticky,
-                snap,
-              };
+          if (snap) {
+            for (let i = startIndex; i >= 0; i--) {
+              const id = items[i].id, sticky = stickyMap[id];
+              if (sticky > 0) {
+                const measures = {
+                  x: isVertical ? 0 : scrollSize,
+                  y: isVertical ? scrollSize : 0,
+                  width: w,
+                  height: h,
+                }, config = {
+                  isVertical,
+                  sticky,
+                  snap,
+                };
 
-              const itemData: any = { ...items[i] };
-              delete itemData.id;
+                const itemData: IVirtualListItem = items[i]; // { ...items[i] };
 
-              stickyItem = { id, measures, data: itemData, config };
+                stickyItem = { id, measures, data: itemData, config };
 
-              displayItems.push(stickyItem);
-              break;
+                displayItems.push(stickyItem);
+                break;
+              }
             }
           }
-        }
 
-        let i = startIndex, nextSticky: IRenderVirtualListItem | undefined;
+          let i = startIndex, nextSticky: IRenderVirtualListItem | undefined;
 
-        while (renderWeight > 0) {
-          if (i >= totalItems) {
-            break;
+          while (renderWeight > 0) {
+            if (i >= totalItems) {
+              break;
+            }
+
+            const id = items[i].id, snaped = snap && stickyMap[id] > 0 && pos <= scrollSize, measures = {
+              x: isVertical ? 0 : snaped ? scrollSize : pos,
+              y: isVertical ? snaped ? scrollSize : pos : 0,
+              width: w,
+              height: h,
+            }, config = {
+              isVertical,
+              sticky: snaped ? stickyMap[id] : 0,
+              snap,
+            };
+
+            const itemData: IVirtualListItem = items[i]; // { ...items[i] };
+
+            const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
+            if (!nextSticky && stickyMap[id] > 0) {
+              nextSticky = item;
+            }
+
+            displayItems.push(item);
+
+            // for dynamic item size
+            // this._sizeCacheMap.set(id, measures);
+
+            renderWeight -= itemSize;
+            pos += itemSize;
+            i++;
           }
 
-          const id = items[i].id, snaped = snap && stickyMap[id] > 0 && y <= scrollSize, measures = {
-            x: 0,
-            y: snaped ? scrollSize : y,
-            width,
-            height: itemSize,
-          }, config = {
-            sticky: snaped ? stickyMap[id] : 0,
-            snap,
-          };
+          const axis = isVertical ? 'y' : 'x';
 
-          const itemData: any = { ...items[i] };
-          delete itemData.id;
-
-          const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-          if (!nextSticky && stickyMap[id] > 0) {
-            nextSticky = item;
-          }
-
-          displayItems.push(item);
-
-          this._sizeCacheMap.set(id, measures);
-
-          renderWeight -= itemSize;
-          y += itemSize;
-          i++;
-        }
-
-        if (i < totalItems) {
-          if (nextSticky && stickyItem && nextSticky.measures.y <= leftHiddenItemsWeight + itemSize) {
-            stickyItem.measures.y = nextSticky.measures.y - itemSize;
-            stickyItem.config.sticky = 1;
+          if (i < totalItems) {
+            if (nextSticky && stickyItem && nextSticky.measures[axis] <= leftHiddenItemsWeight + itemSize) {
+              stickyItem.measures[axis] = nextSticky.measures[axis] - itemSize;
+              stickyItem.config.sticky = 1;
+            }
           }
         }
 
@@ -179,7 +202,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         const l = this._list();
         if (l) {
-          l.nativeElement.style.height = `${totalSize}px`;
+          l.nativeElement.style[isVertical ? 'height' : 'width'] = `${totalSize}px`;
         }
 
       })
@@ -192,6 +215,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         this.refresh(displayItems);
       }),
     ).subscribe();
+  }
+
+  private getIsVertical() {
+    const dir = this.direction();
+    return isDirection(dir, Directions.VERTICAL);
   }
 
   private createdisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {

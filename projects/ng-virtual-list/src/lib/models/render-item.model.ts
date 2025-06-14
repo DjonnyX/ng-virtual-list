@@ -6,6 +6,6 @@ import { IRenderVirtualListItemConfig } from "./render-item-config.model";
 export interface IRenderVirtualListItem {
     id: Id;
     measures: IRect;
-    data: Omit<IVirtualListItem, 'id'>;
+    data: IVirtualListItem;
     config: IRenderVirtualListItemConfig;
 };

@@ -35,8 +35,9 @@ export class NgVirtualListItemComponent {
         } else {
           styles.position = data.config.sticky > 1 ? 'sticky' : 'absolute';
         }
-        styles.transform = `translate3d(0, ${data.measures.y}px , 0)`;
-        styles.height = `${data.measures.height}px`;
+        styles.transform = `translate3d(${data.config.isVertical ? 0 : data.measures.x}px, ${data.config.isVertical ? data.measures.y : 0}px , 0)`;
+        styles.height = data.config.isVertical ? `${data.measures.height}px` : '100%';
+        styles.width = data.config.isVertical ? '100%' : `${data.measures.width}px`;
       })
     ).subscribe();
   }

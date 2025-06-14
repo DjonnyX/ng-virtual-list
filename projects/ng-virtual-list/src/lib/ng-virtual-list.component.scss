@@ -1,9 +1,15 @@
 :host {
     display: block;
-    height: 400px;
-    width: 100%;
-    max-height: 100%;
+    width: 400px; // default
     overflow: hidden;
+}
+
+:host(.horizontal) {
+    height: 48px; // default
+}
+
+:host(.vertical) {
+    height: 320px; // default
 }
 
 .ngvl__container {
@@ -17,4 +23,6 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
+    height: 100%;
 }

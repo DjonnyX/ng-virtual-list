@@ -33,8 +33,44 @@
         display: flex;
     }
 
-    &.simple {
+    &__h-container {
+        cursor: pointer;
+        height: 100%;
+        padding: 0 8px;
+        background-color: rgb(255, 255, 255);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: rgb(241, 241, 241);
+        }
+    }
+
+    &__h-group-container {
+        height: 100%;
+        padding: 0 8px;
+        background-color: rgb(230, 234, 238);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &.vertical {
+        max-height: unset;
         height: 240px;
-        max-width: 640px;
+        width: 640px;
+    }
+
+    &.horizontal {
+        max-width: unset;
+        height: 80px;
+        width: 640px;
     }
 }

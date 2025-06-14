@@ -1,4 +1,5 @@
 export interface IRenderVirtualListItemConfig {
     sticky: number;
-    snap?: boolean;
+    snap: boolean;
+    isVertical: boolean;
 }
