@@ -125,13 +125,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             break;
           }
 
-          const id = items[i].id, measures = {
+          const id = items[i].id, snapen = stickyMap[id] > 0 && y <= scrollSize, measures = {
             x: 0,
-            y: y <= scrollSize ? scrollSize : y,
+            y: snapen ? scrollSize : y,
             width,
             height: itemHeight,
           }, config = {
-            sticky: stickyMap[id] > 0 && y <= scrollSize ? stickyMap[id] : 0,
+            sticky: snapen ? stickyMap[id] : 0,
           };
 
           const itemData: any = { ...items[i] };
