@@ -4,6 +4,8 @@ Fast, optimized rendering of extremely large numbers of list items
 
 Angular version 19.X.X.
 
+[Demo](https://ng-virtual-list.eugene-grebennikov.pro/)
+
 ## Installation
 
 ```bash
@@ -18,7 +20,7 @@ npm i ng-virtual-list
 
 Template:
 ```html
-  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems"
+<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems"
     [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #hotizontalItemRenderer let-data="data">
@@ -56,7 +58,7 @@ export class AppComponent {
 
 Template:
 ```html
-  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
+<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
     [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">

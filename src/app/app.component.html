@@ -1,5 +1,5 @@
-<div class="vl-section">
-  <h1>v 0.3.2</h1>
+<div class="vl-section block">
+  <h1>v 0.3.3</h1>
 </div>
 
 <div class="vl-section">
@@ -48,7 +48,7 @@
 <ng-template #itemRenderer let-data="data">
   @if (data) {
   <div class="list__container">
-    <p>{{data.name}}</p>
+    <span>{{data.name}}</span>
   </div>
   }
 </ng-template>
@@ -70,12 +70,12 @@
     @switch (data.type) {
       @case ("group-header") {
       <div class="list__group-container">
-        <p>{{data.name}}</p>
+        <span>{{data.name}}</span>
       </div>
       }
       @default {
       <div class="list__container">
-        <p>{{data.name}}</p>
+        <span>{{data.name}}</span>
       </div>
       }
     }

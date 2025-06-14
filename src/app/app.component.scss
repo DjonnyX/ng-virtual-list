@@ -4,11 +4,32 @@
 }
 
 .vl-section {
-    padding: 20px;
+    padding: 0 20px 20px;
     margin-bottom: 8px;
 
     &>h1 {
-        margin-bottom: 0;
+        background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+
+    &>h2 {
+        background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 14px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    &.block {
+        padding: 20px 20px 4px;
     }
 }
 
@@ -18,19 +39,32 @@
     border: 1px solid rgba(0, 0, 0, 0.1);
 
     &__container {
+        height: 100%;
         width: 100%;
         padding: 0 12px;
         background-color: rgb(255, 255, 255);
+        display: flex;
+        align-items: center;
+
+        &>* {
+            height: auto;
+        }
     }
 
     &__group-container {
+        height: 100%;
         width: 100%;
         padding: 0 12px;
         background-color: rgb(230, 234, 238);
         font-weight: 600;
-        font-size: 14px;
+        font-size: 12px;
         text-transform: uppercase;
         display: flex;
+        align-items: center;
+
+        &>* {
+            height: auto;
+        }
     }
 
     &__h-container {
@@ -39,7 +73,7 @@
         padding: 0 8px;
         background-color: rgb(255, 255, 255);
         font-weight: 600;
-        font-size: 14px;
+        font-size: 12px;
         text-transform: uppercase;
         display: flex;
         align-items: center;
@@ -48,6 +82,10 @@
         &:hover {
             background-color: rgb(241, 241, 241);
         }
+
+        &>* {
+            height: auto;
+        }
     }
 
     &__h-group-container {
@@ -55,11 +93,15 @@
         padding: 0 8px;
         background-color: rgb(230, 234, 238);
         font-weight: 600;
-        font-size: 14px;
+        font-size: 12px;
         text-transform: uppercase;
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &>* {
+            height: auto;
+        }
     }
 
     &.vertical {
