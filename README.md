@@ -83,7 +83,7 @@ export class AppComponent {
 ```
 
 ### Grouped virtual list
-![VirtualList-GoogleChrome2025-06-1404-48-44-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/1e6ba549-69c1-4683-92da-232502e22412)
+![VirtualList-GoogleChrome2025-06-1416-32-30-ezgif com-crop](https://github.com/user-attachments/assets/72014e35-4e31-4531-8a45-831534301afb)
 
 
 ```html
@@ -172,6 +172,7 @@ export class AppComponent {
 }
 
 ```
+
 
 
 ## Development server
