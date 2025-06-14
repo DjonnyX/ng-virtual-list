@@ -30,11 +30,6 @@ export class NgVirtualListItemComponent {
       tap(data => {
         const styles = this._elementRef.nativeElement.style;
         styles.zIndex = data.config.sticky > 1 ? String(data.config.sticky) : String(data.config.sticky ?? 1);
-        if (!data.config.snap) {
-          styles.position = 'absolute';
-        } else {
-          styles.position = data.config.sticky > 1 ? 'sticky' : 'absolute';
-        }
         styles.transform = `translate3d(${data.config.isVertical ? 0 : data.measures.x}px, ${data.config.isVertical ? data.measures.y : 0}px , 0)`;
         styles.height = data.config.isVertical ? `${data.measures.height}px` : '100%';
         styles.width = data.config.isVertical ? '100%' : `${data.measures.width}px`;

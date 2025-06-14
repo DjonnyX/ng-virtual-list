@@ -124,7 +124,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
               ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
             leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
-            startIndex = itemsFromStartToScrollEnd - leftItemLength;
+            startIndex = itemsFromStartToScrollEnd - leftItemLength, snippedPos = Math.floor(scrollSize);
           let pos = leftHiddenItemsWeight - leftItemsWeight,
             renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
 
@@ -133,8 +133,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               const id = items[i].id, sticky = stickyMap[id];
               if (sticky > 0) {
                 const measures = {
-                  x: isVertical ? 0 : scrollSize,
-                  y: isVertical ? scrollSize : 0,
+                  x: isVertical ? 0 : snippedPos,
+                  y: isVertical ? snippedPos : 0,
                   width: w,
                   height: h,
                 }, config = {
@@ -143,7 +143,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   snap,
                 };
 
-                const itemData: IVirtualListItem = items[i]; // { ...items[i] };
+                const itemData: IVirtualListItem = items[i];
 
                 stickyItem = { id, measures, data: itemData, config };
 
@@ -161,8 +161,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             }
 
             const id = items[i].id, snaped = snap && stickyMap[id] > 0 && pos <= scrollSize, measures = {
-              x: isVertical ? 0 : snaped ? scrollSize : pos,
-              y: isVertical ? snaped ? scrollSize : pos : 0,
+              x: isVertical ? 0 : snaped ? snippedPos : pos,
+              y: isVertical ? snaped ? snippedPos : pos : 0,
               width: w,
               height: h,
             }, config = {
@@ -171,7 +171,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               snap,
             };
 
-            const itemData: IVirtualListItem = items[i]; // { ...items[i] };
+            const itemData: IVirtualListItem = items[i];
 
             const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
             if (!nextSticky && stickyMap[id] > 0) {
