@@ -83,7 +83,7 @@ export class AppComponent {
 ```
 
 ### Grouped virtual list
-![VirtualList-GoogleChrome2025-06-1402-40-48-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/11831f93-91db-45e0-811e-63148e706a1a)
+![VirtualList-GoogleChrome2025-06-1404-48-44-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/1e6ba549-69c1-4683-92da-232502e22412)
 
 
 ```html
