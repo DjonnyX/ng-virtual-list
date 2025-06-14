@@ -5,7 +5,7 @@
 <div class="vl-section">
   <h2>Simple virtual list</h2>
   <ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer"
-    [itemHeight]="40"></ng-virtual-list>
+    [itemSize]="40"></ng-virtual-list>
 </div>
 
 <ng-template #itemRenderer let-data="data">
@@ -19,13 +19,19 @@
 <div class="vl-section">
   <h2>Virtual group list</h2>
   <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="false"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 </div>
 
 <div class="vl-section">
   <h2>Virtual group list (with snapping)</h2>
   <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="true"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
+</div>
+
+<div class="vl-section">
+  <h2>Horizontal list</h2>
+  <ng-virtual-list class="list simple" direction="hotizontal" [items]="items" [itemRenderer]="hotizontalItemRenderer"
+    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 </div>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -42,5 +48,13 @@
       </div>
       }
     }
+  }
+</ng-template>
+
+<ng-template #hotizontalItemRenderer let-data="data">
+  @if (data) {
+  <div class="hlist__container">
+    <span>{{data.name}}</span>
+  </div>
   }
 </ng-template>

@@ -40,7 +40,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   stickyMap = input<IVirtualListStickyMap>({});
 
-  itemHeight = input(DEFAULT_ITEM_HEIGHT);
+  itemSize = input(DEFAULT_ITEM_HEIGHT);
 
   protected _itemsOffset = signal<number>(DEFAULT_ITEMS_OFFSET);
 
@@ -77,34 +77,34 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ), $items = toObservable(this.items).pipe(
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
-      $itemHeight = toObservable(this.itemHeight),
+      $itemSize = toObservable(this.itemSize),
       $itemsOffset = toObservable(this._itemsOffset),
       $stickyMap = toObservable(this.stickyMap),
       $snap = toObservable(this.snap);
 
-    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemHeight, $itemsOffset, $snap]).pipe(
+    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap]).pipe(
       takeUntilDestroyed(),
-      switchMap(([bounds, items, stickyMap, scrollSize, itemHeight, itemsOffset, snap]) => {
+      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap]) => {
         const { width, height } = bounds;
-        const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemHeight),
-          itemsFromStartToDisplayEnd = Math.ceil((scrollSize + height) / itemHeight),
-          leftHiddenItemsWeight = itemsFromStartToScrollEnd * itemHeight,
-          totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * itemHeight,
+        const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemSize),
+          itemsFromStartToDisplayEnd = Math.ceil((scrollSize + height) / itemSize),
+          leftHiddenItemsWeight = itemsFromStartToScrollEnd * itemSize,
+          totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * itemSize,
           totalItems = items.length,
-          totalSize = totalItems * itemHeight,
+          totalSize = totalItems * itemSize,
           itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
         return of({
           items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
-          itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize, snap
+          itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap
         });
       }),
       tap(({ items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
-        itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize, snap }) => {
+        itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap }) => {
         const displayItems: IRenderVirtualListCollection = [], totalItems = items.length,
           leftItemLength = itemsFromStartToScrollEnd - itemsOffset < Math.min(itemsFromStartToScrollEnd, itemsOffset) ? 0 : itemsOffset,
           rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
             ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
-          leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight,
+          leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
           startIndex = itemsFromStartToScrollEnd - leftItemLength;
         let y = leftHiddenItemsWeight - leftItemsWeight,
           renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
@@ -117,7 +117,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                 x: 0,
                 y: scrollSize,
                 width,
-                height: itemHeight,
+                height: itemSize,
               }, config = {
                 sticky,
                 snap,
@@ -145,7 +145,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             x: 0,
             y: snaped ? scrollSize : y,
             width,
-            height: itemHeight,
+            height: itemSize,
           }, config = {
             sticky: snaped ? stickyMap[id] : 0,
             snap,
@@ -163,14 +163,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
           this._sizeCacheMap.set(id, measures);
 
-          renderWeight -= itemHeight;
-          y += itemHeight;
+          renderWeight -= itemSize;
+          y += itemSize;
           i++;
         }
 
         if (i < totalItems) {
-          if (nextSticky && stickyItem && nextSticky.measures.y <= leftHiddenItemsWeight + itemHeight) {
-            stickyItem.measures.y = nextSticky.measures.y - itemHeight;
+          if (nextSticky && stickyItem && nextSticky.measures.y <= leftHiddenItemsWeight + itemSize) {
+            stickyItem.measures.y = nextSticky.measures.y - itemSize;
             stickyItem.config.sticky = 1;
           }
         }

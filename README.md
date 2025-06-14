@@ -18,7 +18,7 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer" [itemHeight]="40"></ng-virtual-list>
+<ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer" [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
@@ -58,7 +58,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="false"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -85,7 +85,7 @@ Template:
 Template (with snapping):
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="true"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -144,7 +144,7 @@ Inputs
 | Property | Type | Description |
 |---|---|---|
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
-| itemHeight | number | Height of a typical list item |
+| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element |
 | itemRenderer | TemplateRef | Rendering element template |
 | stickyMap | [IVirtualListStickyMap](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
 | snap | boolean? | Determines whether elements will snap. Default value is "true" |
