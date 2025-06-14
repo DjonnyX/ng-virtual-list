@@ -22,11 +22,11 @@ import { IRenderVirtualListItem } from './models/render-item.model';
 })
 export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   @ViewChild('renderersContainer', { read: ViewContainerRef })
-  protected listContainerRef: ViewContainerRef | undefined;
+  protected _listContainerRef: ViewContainerRef | undefined;
 
-  protected container = viewChild<ElementRef<HTMLDivElement>>('container');
+  protected _container = viewChild<ElementRef<HTMLDivElement>>('container');
 
-  protected list = viewChild<ElementRef<HTMLUListElement>>('list');
+  protected _list = viewChild<ElementRef<HTMLUListElement>>('list');
 
   items = input.required<IVirtualListCollection>();
 
@@ -49,7 +49,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _resizeObserver: ResizeObserver | null = null;
 
   private _onResizeHandler = () => {
-    this._bounds.set(this.container()?.nativeElement?.getBoundingClientRect() ?? null);
+    this._bounds.set(this._container()?.nativeElement?.getBoundingClientRect() ?? null);
   }
 
   private _onScrollHandler = (e: Event) => {
@@ -152,7 +152,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         this._displayItems.set(displayItems);
 
-        const l = this.list();
+        const l = this._list();
         if (l) {
           l.nativeElement.style.height = `${totalSize}px`;
         }
@@ -170,14 +170,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private createdisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
-    if (!displayItems || !this.listContainerRef) {
+    if (!displayItems || !this._listContainerRef) {
       return;
     }
-    const listContainerRef = this.listContainerRef;
+    const _listContainerRef = this._listContainerRef;
 
     while (this._displayComponents.length < displayItems.length) {
-      if (listContainerRef) {
-        const comp = listContainerRef.createComponent(NgVirtualListItemComponent);
+      if (_listContainerRef) {
+        const comp = _listContainerRef.createComponent(NgVirtualListItemComponent);
         this._displayComponents.push(comp);
       }
     }
@@ -203,7 +203,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    const containerEl = this.container();
+    const containerEl = this._container();
     if (containerEl) {
       containerEl.nativeElement.addEventListener('scroll', this._onScrollHandler);
 
@@ -215,7 +215,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    const containerEl = this.container();
+    const containerEl = this._container();
     if (containerEl) {
       containerEl.nativeElement.removeEventListener('scroll', this._onScrollHandler);
 
