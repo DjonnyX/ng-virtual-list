@@ -36,7 +36,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   itemHeight = input(DEFAULT_ITEM_HEIGHT);
 
-  itemsOffset = input(DEFAULT_ITEMS_OFFSET);
+  protected _itemsOffset = signal<number>(DEFAULT_ITEMS_OFFSET);
 
   protected _displayItems = signal<IRenderVirtualListCollection | null>(null);
 
@@ -66,7 +66,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
       $itemHeight = toObservable(this.itemHeight),
-      $itemsOffset = toObservable(this.itemsOffset),
+      $itemsOffset = toObservable(this._itemsOffset),
       $stickyMap = toObservable(this.stickyMap);
 
     combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemHeight, $itemsOffset]).pipe(
@@ -88,14 +88,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       tap(({ items, stickyMap, itemsOffset, width, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
         itemsOnDisplay, leftHiddenItemsWeight, itemHeight, totalSize }) => {
         const displayItems: IRenderVirtualListCollection = [], totalItems = items.length,
-          leftItemLength = itemsFromStartToScrollEnd > 0 ? Math.min(itemsFromStartToScrollEnd, itemsOffset) : 0,
+          leftItemLength = itemsFromStartToScrollEnd - itemsOffset < Math.min(itemsFromStartToScrollEnd, itemsOffset) ? 0 : itemsOffset,
           rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
             ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
-          leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight;
-        let i = itemsFromStartToScrollEnd - leftItemLength, y = leftHiddenItemsWeight - leftItemLength * itemHeight,
+          leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight,
+          startIndex = itemsFromStartToScrollEnd - leftItemLength;
+        let y = leftHiddenItemsWeight - leftItemsWeight,
           renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
 
-        for (let i = itemsFromStartToScrollEnd - itemsOffset; i >= 0; i--) {
+        for (let i = startIndex; i >= 0; i--) {
           const id = items[i].id, sticky = stickyMap[id];
           if (sticky > 0) {
             const measures = {
@@ -117,12 +118,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           }
         }
 
-        const nextItem = items[i + 1], nextId = nextItem?.id;
-
-        if (nextId !== undefined && stickyItem && stickyMap[nextId] > 0) {
-          stickyItem.measures.y = y;
-          stickyItem.config.sticky = 1;
-        }
+        let i = startIndex, nextSticky: IRenderVirtualListItem | undefined;
 
         while (renderWeight > 0) {
           if (i >= totalItems) {
@@ -131,23 +127,35 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
           const id = items[i].id, measures = {
             x: 0,
-            y,
+            y: y <= scrollSize ? scrollSize : y,
             width,
             height: itemHeight,
           }, config = {
-            sticky: y <= scrollSize ? stickyMap[id] > 0 ? !!stickyItem ? 0 : stickyMap[id] : 0 : 0,
+            sticky: stickyMap[id] > 0 && y <= scrollSize ? stickyMap[id] : 0,
           };
 
           const itemData: any = { ...items[i] };
           delete itemData.id;
 
-          displayItems.push({ id, measures, data: itemData, config });
+          const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
+          if (!nextSticky && stickyMap[id] > 0) {
+            nextSticky = item;
+          }
+
+          displayItems.push(item);
 
           this._sizeCacheMap.set(id, measures);
 
           renderWeight -= itemHeight;
           y += itemHeight;
           i++;
+        }
+
+        if (i < totalItems) {
+          if (nextSticky && stickyItem && nextSticky.measures.y <= leftHiddenItemsWeight + itemHeight) {
+            stickyItem.measures.y = nextSticky.measures.y - itemHeight;
+            stickyItem.config.sticky = 1;
+          }
         }
 
         this._displayItems.set(displayItems);
