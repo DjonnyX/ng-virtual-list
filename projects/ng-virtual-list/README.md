@@ -65,7 +65,8 @@ Styles:
     }
 
     &.simple {
-        height: 500px;
+        height: 240px;
+        max-width: 640px;
     }
 }
 ```
@@ -98,7 +99,32 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="false"></ng-virtual-list>
+
+<ng-template #groupItemRenderer let-data="data">
+  @if (data) {
+    @switch (data.type) {
+      @case ("group-header") {
+      <div class="list__group-container">
+        <p>{{data.name}}</p>
+      </div>
+      }
+      @default {
+      <div class="list__container">
+        <p>{{data.name}}</p>
+      </div>
+      }
+    }
+  }
+</ng-template>
+```
+
+![VirtualList-GoogleChrome2025-06-1416-32-30-ezgif com-crop](https://github.com/user-attachments/assets/72014e35-4e31-4531-8a45-831534301afb)
+
+Template (with snapping):
+```html
+<ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -156,7 +182,8 @@ Styles:
     }
 
     &.simple {
-        height: 500px;
+        height: 240px;
+        max-width: 640px;
     }
 }
 ```
@@ -203,6 +230,7 @@ Inputs
 | itemHeight | number | Height of a typical list item |
 | itemRenderer | TemplateRef | Rendering element template |
 | stickyMap | [IVirtualListStickyMap](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
+| snap | boolean? | Determines whether elements will snap |
 
 <br/>
 

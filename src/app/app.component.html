@@ -19,7 +19,13 @@
 <div class="vl-section">
   <h2>Virtual group list</h2>
   <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemHeight]="40"></ng-virtual-list>
+    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="false"></ng-virtual-list>
+</div>
+
+<div class="vl-section">
+  <h2>Virtual group list (with snapping)</h2>
+  <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+    [stickyMap]="groupItemsStickyMap" [itemHeight]="40" [snap]="true"></ng-virtual-list>
 </div>
 
 <ng-template #groupItemRenderer let-data="data">
