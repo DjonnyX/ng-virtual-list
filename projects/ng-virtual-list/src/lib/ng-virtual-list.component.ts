@@ -10,6 +10,7 @@ import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
 import { IVirtualListCollection, IVirtualListStickyMap } from './models';
 import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
+import { IRenderVirtualListItem } from './models/render-item.model';
 
 @Component({
   selector: 'ng-virtual-list',
@@ -92,9 +93,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
           leftItemsWeight = leftItemLength * itemHeight, rightItemsWeight = rightItemLength * itemHeight;
         let i = itemsFromStartToScrollEnd - leftItemLength, y = leftHiddenItemsWeight - leftItemLength * itemHeight,
-          renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight;
+          renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight, stickyItem: IRenderVirtualListItem | undefined;
 
-        for (let i = itemsFromStartToScrollEnd; i >= 0; i--) {
+        for (let i = itemsFromStartToScrollEnd - itemsOffset; i >= 0; i--) {
           const id = items[i].id, sticky = stickyMap[id];
           if (sticky > 0) {
             const measures = {
@@ -109,9 +110,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             const itemData: any = { ...items[i] };
             delete itemData.id;
 
-            displayItems.push({ id, measures, data: itemData, config });
+            stickyItem = { id, measures, data: itemData, config };
+
+            displayItems.push(stickyItem);
             break;
           }
+        }
+
+        const nextItem = items[i + 1], nextId = nextItem?.id;
+
+        if (nextId !== undefined && stickyItem && stickyMap[nextId] > 0) {
+          stickyItem.measures.y = y;
+          stickyItem.config.sticky = 1;
         }
 
         while (renderWeight > 0) {
@@ -125,7 +135,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             width,
             height: itemHeight,
           }, config = {
-            sticky: y <= scrollSize ? stickyMap[id] ?? 0 : 0,
+            sticky: y <= scrollSize ? stickyMap[id] > 0 ? !!stickyItem ? 0 : stickyMap[id] : 0 : 0,
           };
 
           const itemData: any = { ...items[i] };
