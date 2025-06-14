@@ -14,6 +14,7 @@ Angular version 19.X.X.
 npm i ng-virtual-list
 ```
 
+Template:
 ```html
 <ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer" [itemHeight]="40"></ng-virtual-list>
 
@@ -26,7 +27,13 @@ npm i ng-virtual-list
 </ng-template>
 ```
 
+Styles:
 ```css
+// reset ng-virtual-list-item styles
+.ngvl-item__container {
+    background-color: unset;
+}
+
 .vl-section {
     padding: 20px;
     margin-bottom: 8px;
@@ -44,6 +51,7 @@ npm i ng-virtual-list
     &__container {
         width: 100%;
         padding: 0 12px;
+        background-color: rgb(255, 255, 255);
     }
 
     &__group-container {
@@ -62,6 +70,7 @@ npm i ng-virtual-list
 }
 ```
 
+Component:
 ```ts
 import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
 
@@ -86,6 +95,7 @@ export class AppComponent {
 ![VirtualList-GoogleChrome2025-06-1416-32-30-ezgif com-crop](https://github.com/user-attachments/assets/72014e35-4e31-4531-8a45-831534301afb)
 
 
+Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemHeight]="40"></ng-virtual-list>
@@ -108,7 +118,13 @@ export class AppComponent {
 </ng-template>
 ```
 
+Styles:
 ```css
+// reset ng-virtual-list-item styles
+.ngvl-item__container {
+    background-color: unset;
+}
+
 .vl-section {
     padding: 20px;
     margin-bottom: 8px;
@@ -126,6 +142,7 @@ export class AppComponent {
     &__container {
         width: 100%;
         padding: 0 12px;
+        background-color: rgb(255, 255, 255);
     }
 
     &__group-container {
@@ -144,6 +161,7 @@ export class AppComponent {
 }
 ```
 
+Component:
 ```ts
 import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
 
