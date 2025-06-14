@@ -28,15 +28,16 @@ export class NgVirtualListItemComponent {
       takeUntilDestroyed(),
       filter(data => !!data),
       tap(data => {
+        const styles = this._elementRef.nativeElement.style;
         if (data.config.sticky > 1) {
-          this._elementRef.nativeElement.style.position = 'sticky';
-          this._elementRef.nativeElement.style.zIndex = String(data.config.sticky);
+          styles.position = 'sticky';
+          styles.zIndex = String(data.config.sticky);
         } else {
-          this._elementRef.nativeElement.style.position = 'absolute';
-          this._elementRef.nativeElement.style.zIndex = String(data.config.sticky ?? 1);
+          styles.position = 'absolute';
+          styles.zIndex = String(data.config.sticky ?? 1);
         }
-        this._elementRef.nativeElement.style.transform = `translate3d(0, ${data.measures.y}px , 0)`;
-        this._elementRef.nativeElement.style.height = `${data.measures.height}px`;
+        styles.transform = `translate3d(0, ${data.measures.y}px , 0)`;
+        styles.height = `${data.measures.height}px`;
       })
     ).subscribe();
   }
