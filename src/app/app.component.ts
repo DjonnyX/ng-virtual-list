@@ -4,7 +4,7 @@ import { IVirtualListCollection, IVirtualListStickyMap } from '../../projects/ng
 
 const ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = 10000000; i < l; i++) {
-  ITEMS.push({ id: i, name: `Item: ${i}` });
+  ITEMS.push({ id: i + 1, name: `Item: ${i}` });
 }
 
 const GROUP_ITEMS: IVirtualListCollection = [],
@@ -12,7 +12,7 @@ const GROUP_ITEMS: IVirtualListCollection = [],
 
 let groupIndex = 0;
 for (let i = 0, l = 10000000; i < l; i++) {
-  const id = i, type = Math.random() > .895 ? 'group-header' : 'item';
+  const id = i + 1, type = Math.random() > .895 ? 'group-header' : 'item';
   if (type === 'group-header') {
     groupIndex++;
   }
