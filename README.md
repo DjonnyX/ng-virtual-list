@@ -29,50 +29,6 @@ Template:
 </ng-template>
 ```
 
-Styles:
-```css
-// reset ng-virtual-list-item styles
-.ngvl-item__container {
-    background-color: unset;
-}
-
-.vl-section {
-    padding: 20px;
-    margin-bottom: 8px;
-
-    &>h1 {
-        margin-bottom: 0;
-    }
-}
-
-.list {
-    border-radius: 3px;
-    box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-
-    &__container {
-        width: 100%;
-        padding: 0 12px;
-        background-color: rgb(255, 255, 255);
-    }
-
-    &__group-container {
-        width: 100%;
-        padding: 0 12px;
-        background-color: rgb(230, 234, 238);
-        font-weight: 600;
-        font-size: 14px;
-        text-transform: uppercase;
-        display: flex;
-    }
-
-    &.simple {
-        height: 240px;
-        max-width: 640px;
-    }
-}
-```
-
 Component:
 ```ts
 import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
@@ -96,6 +52,7 @@ export class AppComponent {
 
 ### Grouped virtual list
 
+#### Without snapping
 ![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
 
 Template:
@@ -121,6 +78,8 @@ Template:
 </ng-template>
 ```
 
+#### With snapping
+
 ![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (2)](https://github.com/user-attachments/assets/a92e63aa-971d-42ff-a3f8-8811e1731f72)
 
 Template (with snapping):
@@ -144,50 +103,6 @@ Template (with snapping):
     }
   }
 </ng-template>
-```
-
-Styles:
-```css
-// reset ng-virtual-list-item styles
-.ngvl-item__container {
-    background-color: unset;
-}
-
-.vl-section {
-    padding: 20px;
-    margin-bottom: 8px;
-
-    &>h1 {
-        margin-bottom: 0;
-    }
-}
-
-.list {
-    border-radius: 3px;
-    box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-
-    &__container {
-        width: 100%;
-        padding: 0 12px;
-        background-color: rgb(255, 255, 255);
-    }
-
-    &__group-container {
-        width: 100%;
-        padding: 0 12px;
-        background-color: rgb(230, 234, 238);
-        font-weight: 600;
-        font-size: 14px;
-        text-transform: uppercase;
-        display: flex;
-    }
-
-    &.simple {
-        height: 240px;
-        max-width: 640px;
-    }
-}
 ```
 
 Component:
@@ -232,7 +147,7 @@ Inputs
 | itemHeight | number | Height of a typical list item |
 | itemRenderer | TemplateRef | Rendering element template |
 | stickyMap | [IVirtualListStickyMap](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
-| snap | boolean? | Determines whether elements will snap |
+| snap | boolean? | Determines whether elements will snap. Default value is "true" |
 
 <br/>
 
