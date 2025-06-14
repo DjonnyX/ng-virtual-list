@@ -4,15 +4,17 @@ Fast, optimized rendering of extremely large numbers of list items
 
 Angular version 19.X.X.
 
-## Examples
-
-### Simple virtual list
-![VirtualList-GoogleChrome2025-06-1323-32-48-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/225fabf8-46da-43ec-bef1-41bb295af5d8)
-
+## Installation
 
 ```bash
 npm i ng-virtual-list
 ```
+
+## Examples
+
+### Simple virtual list
+
+![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/2d120a77-7715-4d6a-ba8d-bb5030d48947)
 
 Template:
 ```html
@@ -93,8 +95,8 @@ export class AppComponent {
 ```
 
 ### Grouped virtual list
-![VirtualList-GoogleChrome2025-06-1416-32-30-ezgif com-crop](https://github.com/user-attachments/assets/72014e35-4e31-4531-8a45-831534301afb)
 
+![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
 
 Template:
 ```html
@@ -119,7 +121,7 @@ Template:
 </ng-template>
 ```
 
-![VirtualList-GoogleChrome2025-06-1416-32-30-ezgif com-crop](https://github.com/user-attachments/assets/72014e35-4e31-4531-8a45-831534301afb)
+![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (2)](https://github.com/user-attachments/assets/a92e63aa-971d-42ff-a3f8-8811e1731f72)
 
 Template (with snapping):
 ```html
@@ -224,7 +226,7 @@ export class AppComponent {
 
 Inputs
 
-| Property | type | Description |
+| Property | Type | Description |
 |---|---|---|
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
 | itemHeight | number | Height of a typical list item |
@@ -236,7 +238,7 @@ Inputs
 
 Outputs
 
-| event | type | Description |
+| Event | Type | Description |
 |---|---|---|
 | onScroll | (e: Event) => void | Fires when the list has been scrolled |
 | onScrollEnd | (e: Event) => void | Fires when the list has completed scrolling. |
