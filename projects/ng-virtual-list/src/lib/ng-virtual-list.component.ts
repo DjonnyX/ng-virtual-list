@@ -1,6 +1,6 @@
 import {
   AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, input,
-  OnDestroy, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
+  OnDestroy, output, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -27,6 +27,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   protected _container = viewChild<ElementRef<HTMLDivElement>>('container');
 
   protected _list = viewChild<ElementRef<HTMLUListElement>>('list');
+
+  onScroll = output<Event>();
+
+  onScrollEnd = output<Event>();
 
   items = input.required<IVirtualListCollection>();
 
@@ -55,6 +59,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _onScrollHandler = (e: Event) => {
     const target = e.target as HTMLDivElement;
     this._scrollSize.set(target.scrollTop);
+
+    this.onScroll.emit(e);
+  }
+
+  private _onScrollEndHandler = (e: Event) => {
+    this.onScrollEnd.emit(e);
   }
 
   private _sizeCacheMap = new Map<Id, IRect>();
@@ -214,6 +224,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     const containerEl = this._container();
     if (containerEl) {
       containerEl.nativeElement.addEventListener('scroll', this._onScrollHandler);
+      containerEl.nativeElement.addEventListener('scrollend', this._onScrollEndHandler);
 
       this._resizeObserver = new ResizeObserver(this._onResizeHandler);
       this._resizeObserver.observe(containerEl.nativeElement);
@@ -226,6 +237,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     const containerEl = this._container();
     if (containerEl) {
       containerEl.nativeElement.removeEventListener('scroll', this._onScrollHandler);
+      containerEl.nativeElement.removeEventListener('scrollend', this._onScrollEndHandler);
 
       if (this._resizeObserver) {
         this._resizeObserver.unobserve(containerEl.nativeElement);
