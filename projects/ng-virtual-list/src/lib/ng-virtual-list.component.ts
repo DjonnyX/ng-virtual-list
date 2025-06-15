@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_DIRECTION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
+import { DEFAULT_DIRECTION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, /*IRect*/ } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -62,7 +62,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   /**
    * Determines whether elements will snap. Default value is "true".
    */
-  snap = input<boolean>(true);
+  snap = input<boolean>(DEFAULT_SNAP);
+
+  /**
+   * Determines whether scroll positions will be snapped to the element. Default value is "false".
+   */
+  snapToItem = input<boolean>(DEFAULT_SNAP_TO_ITEM);
 
   /**
    * Rendering element template.
@@ -107,13 +112,25 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onScrollHandler = (e: Event) => {
-    const target = e.target as HTMLDivElement;
-    this._scrollSize.set(this._isVertical ? target.scrollTop : target.scrollLeft);
+    const target = e.target as HTMLDivElement,
+      scrollSize = this._isVertical ? target.scrollTop : target.scrollLeft;
+
+    this._scrollSize.set(scrollSize);
 
     this.onScroll.emit(e);
   }
 
   private _onScrollEndHandler = (e: Event) => {
+    const target = e.target as HTMLDivElement, s = this.itemSize(), itemSize = s < 0 ? DEFAULT_ITEM_SIZE : s,
+      snapToItem = this.snapToItem(), scrollSize = this._isVertical ? target.scrollTop : target.scrollLeft,
+      scrollItems = Math.round(scrollSize / itemSize), actualScrollSize = snapToItem ? scrollItems * itemSize : scrollSize;
+
+    if (target.scrollTop !== actualScrollSize) {
+      const container = target, params: ScrollToOptions = { [this._isVertical ? 'top' : 'left']: actualScrollSize, behavior: 'smooth' };
+
+      container.scroll(params);
+    }
+
     this.onScrollEnd.emit(e);
   }
 
@@ -142,6 +159,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         map(v => !v ? {} : v),
       ),
       $snap = toObservable(this.snap),
+      $snapToItem = toObservable(this.snapToItem),
       $isVertical = toObservable(this.direction).pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
         tap(v => {
@@ -151,10 +169,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         }),
       );
 
-    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
+    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $snapToItem, $isVertical]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
+      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, snapToItem, isVertical]) => {
         const { width, height } = bounds, size = isVertical ? height : width;
         const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemSize),
           itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / itemSize),
@@ -164,12 +182,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           totalSize = totalItems * itemSize,
           itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
         return of({
-          items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
-          itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap
+          items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
+          itemsFromStartToDisplayEnd, itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap,
         });
       }),
-      tap(({ items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
-        itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap }) => {
+      tap(({
+        items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
+        itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap,
+      }) => {
         const displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
           const w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,

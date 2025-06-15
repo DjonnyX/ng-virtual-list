@@ -59,7 +59,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
+    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true" [snapToItem]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {
@@ -367,7 +367,8 @@ Inputs
 | itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
-| snap | boolean? | Determines whether elements will snap. Default value is "true". |
+| snap | boolean? | Determines whether elements will snap. Default value is "false". |
+| snapToItem | boolean? | Determines whether scroll positions will be snapped to the element. Default value is "false". |
 | direction | [Direction](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 
 <br/>

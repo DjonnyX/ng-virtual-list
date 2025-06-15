@@ -6,6 +6,10 @@ export const DEFAULT_ITEMS_OFFSET = 2;
 
 export const DEFAULT_LIST_SIZE = 400;
 
+export const DEFAULT_SNAP = false;
+
+export const DEFAULT_SNAP_TO_ITEM = false;
+
 export const DEFAULT_DIRECTION = Directions.VERTICAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
