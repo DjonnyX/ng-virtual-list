@@ -46,9 +46,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   direction = input<Direction>(Directions.VERTICAL);
 
-  private _isVertical = this.getIsVertical();
+  itemsOffset = input<number>(DEFAULT_ITEMS_OFFSET);
 
-  protected _itemsOffset = signal<number>(DEFAULT_ITEMS_OFFSET);
+  private _isVertical = this.getIsVertical();
 
   protected _displayItems = signal<IRenderVirtualListCollection | null>(null);
 
@@ -87,11 +87,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
       $itemSize = toObservable(this.itemSize),
-      $itemsOffset = toObservable(this._itemsOffset),
+      $itemsOffset = toObservable(this.itemsOffset),
       $stickyMap = toObservable(this.stickyMap),
       $snap = toObservable(this.snap),
       $isVertical = toObservable(this.direction).pipe(
-        map(v => this.getIsVertical()),
+        map(v => this.getIsVertical(v)),
         tap(v => {
           this._isVertical = v;
           const el: HTMLElement = this._elementRef.nativeElement;
@@ -217,8 +217,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ).subscribe();
   }
 
-  private getIsVertical() {
-    const dir = this.direction();
+  private getIsVertical(d?: Direction) {
+    const dir = d || this.direction();
     return isDirection(dir, Directions.VERTICAL);
   }
 

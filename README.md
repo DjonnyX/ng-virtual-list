@@ -20,7 +20,7 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems"
+<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="10"
     [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #hotizontalItemRenderer let-data="data">
@@ -59,7 +59,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
+    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {
@@ -116,7 +116,8 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [itemRenderer]="itemRenderer" [itemSize]="40"></ng-virtual-list>
+<ng-virtual-list class="list simple" [items]="items" [itemsOffset]="10" [itemRenderer]="itemRenderer"
+  [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
@@ -155,7 +156,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="10" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -182,7 +183,7 @@ Template:
 
 Template (with snapping):
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="10" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -243,10 +244,11 @@ Inputs
 |---|---|---|
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
 | itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element |
+| itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2 |
 | itemRenderer | TemplateRef | Rendering element template |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
 | snap | boolean? | Determines whether elements will snap. Default value is "true" |
-| direction | [Directions](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical" |
+| direction | [Direction](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical" |
 
 <br/>
 

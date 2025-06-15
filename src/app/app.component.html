@@ -1,10 +1,10 @@
 <div class="vl-section block">
-  <h1>v 0.3.3</h1>
+  <h1>v 0.3.4</h1>
 </div>
 
 <div class="vl-section">
   <h2>Horizontal list</h2>
-  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems"
+  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="10"
     [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 </div>
 
@@ -18,8 +18,9 @@
 
 <div class="vl-section">
   <h2>Horizontal group list (with snapping)</h2>
-  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true"></ng-virtual-list>
+  <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="10"
+    [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80"
+    [snap]="true"></ng-virtual-list>
 </div>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
@@ -41,7 +42,7 @@
 
 <div class="vl-section">
   <h2>Vertical virtual list</h2>
-  <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer"
+  <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10"
     [itemSize]="40"></ng-virtual-list>
 </div>
 
@@ -55,13 +56,13 @@
 
 <div class="vl-section">
   <h2>Virtual group list</h2>
-  <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+  <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 </div>
 
 <div class="vl-section">
   <h2>Virtual group list (with snapping)</h2>
-  <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer"
+  <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 </div>
 
