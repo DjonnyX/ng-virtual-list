@@ -16,7 +16,7 @@ npm i ng-virtual-list
 
 ### Horizontal virtual list
 
-![preview](https://github.com/user-attachments/assets/4d078812-7bd5-4f9b-94c7-dd9e8f29af45)
+![preview](https://github.com/user-attachments/assets/5a16d4b3-5e66-4d53-ae90-d0eab0b246a1)
 
 Template:
 ```html
@@ -54,7 +54,7 @@ export class AppComponent {
 
 ### Horizontal grouped virtual list
 
-![preview](https://github.com/user-attachments/assets/bdd0cb5d-be92-41b3-a049-bd9d8a616692)
+![preview](https://github.com/user-attachments/assets/99584660-dc0b-4cd0-9439-9b051163c077)
 
 Template:
 ```html
@@ -112,7 +112,7 @@ export class AppComponent {
 
 ### Vertical virtual list
 
-![preview](https://github.com/user-attachments/assets/2d120a77-7715-4d6a-ba8d-bb5030d48947)
+![preview](https://github.com/user-attachments/assets/ca00eec9-fa9e-4e8d-8899-23343e4bd8a5)
 
 Template:
 ```html
@@ -152,7 +152,8 @@ export class AppComponent {
 ### Vertical grouped virtual list
 
 #### Without snapping
-![preview](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
+
+![preview](https://github.com/user-attachments/assets/bd4817d8-92f2-4703-aed1-ab7ca18a751e)
 
 Template:
 ```html
@@ -179,7 +180,7 @@ Template:
 
 #### With snapping
 
-![preview](https://github.com/user-attachments/assets/a92e63aa-971d-42ff-a3f8-8811e1731f72)
+![preview](https://github.com/user-attachments/assets/d2101d78-73c8-4f2e-900a-1b55bc554f13)
 
 Template (with snapping):
 ```html
