@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
+import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 // import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -210,6 +210,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
     toObservable(this._displayItems).pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       tap(displayItems => {
         this.createDisplayComponentsIfNeed(displayItems);
         this.refresh(displayItems);
@@ -235,10 +236,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       }
     }
 
-    if (this._displayComponents.length > displayItems.length) {
-      while (this._displayComponents.length > displayItems.length) {
+    const maxLength = displayItems.length + DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR + this.itemsOffset();
+    if (this._displayComponents.length > maxLength) {
+      while (this._displayComponents.length > maxLength) {
         const comp = this._displayComponents.pop();
         comp?.destroy();
+      }
+      for (let i = displayItems.length, l = this._displayComponents.length; i < l; i++) {
+        const comp = this._displayComponents[i];
+        comp.instance.hide();
       }
     }
   }
@@ -252,6 +258,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       const el = this._displayComponents[i];
       el.instance.item = displayItems[i];
       el.instance.renderer = this.itemRenderer();
+      el.instance.showIfNeed();
     }
   }
 

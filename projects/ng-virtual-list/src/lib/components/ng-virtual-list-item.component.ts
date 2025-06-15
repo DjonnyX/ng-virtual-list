@@ -42,4 +42,22 @@ export class NgVirtualListItemComponent {
       })
     ).subscribe();
   }
+
+  showIfNeed() {
+    const styles = this._elementRef.nativeElement.style;
+    if (styles.visibility === 'visible') {
+      return;
+    }
+
+    styles.visibility = 'visible';
+  }
+
+  hide() {
+    const styles = this._elementRef.nativeElement.style;
+    if (styles.visibility === 'hidden') {
+      return;
+    }
+
+    styles.visibility = 'hidden';
+  }
 }
