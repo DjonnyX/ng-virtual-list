@@ -234,6 +234,60 @@ export class AppComponent {
 
 ```
 
+## Stylization
+
+List items are encapsulated in shadowDOM, so to override default styles you need to use ::part access
+
+- Customize a scroll area of list
+```css
+.list::part(scroller) {
+    scroll-behavior: auto;
+
+    /* custom scrollbar */
+    &::-webkit-scrollbar {
+        width: 16px;
+        height: 16px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: #ffffff;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #d6dee1;
+        border-radius: 20px;
+        border: 6px solid transparent;
+        background-clip: content-box;
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: #a8bbbf;
+    }
+}
+
+.list {
+    border-radius: 3px;
+    box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+```
+
+- Set up the list item canvas
+```css
+.list::part(list) {
+    background-color: #ffffff;
+}
+```
+
+- Set up the list item
+```css
+.list::part(item) {
+    background-color: unset; // override default styles
+}
+```
+
 ## API
 
 [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
@@ -242,13 +296,13 @@ Inputs
 
 | Property | Type | Description |
 |---|---|---|
-| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items |
-| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element |
-| itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2 |
-| itemRenderer | TemplateRef | Rendering element template |
-| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element |
-| snap | boolean? | Determines whether elements will snap. Default value is "true" |
-| direction | [Direction](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical" |
+| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
+| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. |
+| itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2. |
+| itemRenderer | TemplateRef | Rendering element template. |
+| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
+| snap | boolean? | Determines whether elements will snap. Default value is "true". |
+| direction | [Direction](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 
 <br/>
 
@@ -256,8 +310,17 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onScroll | (e: Event) => void | Fires when the list has been scrolled |
+| onScroll | (e: Event) => void | Fires when the list has been scrolled. |
 | onScrollEnd | (e: Event) => void | Fires when the list has completed scrolling. |
+
+<br/>
+
+Methods
+
+| Method | Type | Description |
+|--|--|--|
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/types/id.ts) => number) | The method scrolls the list to the element with the given id and returns the value of the scrolled area. |
+
 
 
 ## Development server
