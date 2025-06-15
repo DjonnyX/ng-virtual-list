@@ -8,12 +8,14 @@ const MAX_ITEMS = 1000000;
 
 const ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
-  ITEMS.push({ id: i + 1, name: `Item: ${i}` });
+  const id = i + 1;
+  ITEMS.push({ id, name: `Item: ${id}` });
 }
 
 const HORIZONTAL_ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
-  HORIZONTAL_ITEMS.push({ id: i + 1, name: `${i}` });
+  const id = i + 1;
+  HORIZONTAL_ITEMS.push({ id, name: `${id}` });
 }
 
 const GROUP_NAMES = ['A', 'B', 'C', 'D', 'E'];
@@ -27,7 +29,7 @@ const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
 
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
-  HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${i}` });
+  HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${id}` });
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
@@ -40,7 +42,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   if (type === 'group-header') {
     groupIndex++;
   }
-  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${i}` });
+  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${id}` });
   GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
