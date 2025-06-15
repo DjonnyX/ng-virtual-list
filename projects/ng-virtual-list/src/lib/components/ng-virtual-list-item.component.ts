@@ -8,7 +8,10 @@ import { filter, tap } from 'rxjs';
   selector: 'ng-virtual-list-item',
   imports: [CommonModule],
   templateUrl: './ng-virtual-list-item.component.html',
-  styleUrl: './ng-virtual-list-item.component.scss'
+  styleUrl: './ng-virtual-list-item.component.scss',
+  host: {
+    'class': 'ngvl__item',
+  }
 })
 export class NgVirtualListItemComponent {
   data = signal<IRenderVirtualListItem | undefined>(undefined);

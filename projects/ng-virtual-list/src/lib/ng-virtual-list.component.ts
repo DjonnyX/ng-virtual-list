@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
@@ -95,12 +95,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         tap(v => {
           this._isVertical = v;
           const el: HTMLElement = this._elementRef.nativeElement;
-          toggleClassName(el, v ? 'vertical' : 'horizontal');
+          toggleClassName(el, v ? 'vertical' : 'horizontal', true);
         }),
       );
 
     combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
         const { width, height } = bounds, size = isVertical ? height : width;
         const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemSize),
@@ -211,7 +212,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     toObservable(this._displayItems).pipe(
       takeUntilDestroyed(),
       tap(displayItems => {
-        this.createdisplayComponentsIfNeed(displayItems);
+        this.createDisplayComponentsIfNeed(displayItems);
         this.refresh(displayItems);
       }),
     ).subscribe();
@@ -222,7 +223,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     return isDirection(dir, Directions.VERTICAL);
   }
 
-  private createdisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
+  private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems || !this._listContainerRef) {
       return;
     }
