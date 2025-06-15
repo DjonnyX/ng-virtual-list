@@ -4,6 +4,12 @@ import { IRenderVirtualListItem } from '../models/render-item.model';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, tap } from 'rxjs';
 
+/**
+ * Virtual list item component
+ * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @author Evgenii Grebennikov
+ * @email djonnyx@gmail.com
+ */
 @Component({
   selector: 'ng-virtual-list-item',
   imports: [CommonModule],
