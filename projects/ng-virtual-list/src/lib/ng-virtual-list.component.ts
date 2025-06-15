@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE } from './const';
+import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 // import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -205,7 +205,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (l) {
           l.nativeElement.style[isVertical ? 'height' : 'width'] = `${totalSize}px`;
         }
-
       })
     ).subscribe();
 
@@ -277,6 +276,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
       if (this._resizeObserver) {
         this._resizeObserver.unobserve(containerEl.nativeElement);
+      }
+    }
+
+    if (this._displayComponents) {
+      while (this._displayComponents.length > 0) {
+        const comp = this._displayComponents.pop();
+        comp?.destroy();
       }
     }
   }

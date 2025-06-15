@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, tap } from 'rxjs';
@@ -11,7 +11,8 @@ import { filter, tap } from 'rxjs';
   styleUrl: './ng-virtual-list-item.component.scss',
   host: {
     'class': 'ngvl__item',
-  }
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent {
   data = signal<IRenderVirtualListItem | undefined>(undefined);
@@ -26,7 +27,9 @@ export class NgVirtualListItemComponent {
     this.itemRenderer.set(v);
   }
 
-  constructor(private _elementRef: ElementRef<HTMLElement>) {
+  private _elementRef = inject(ElementRef<HTMLElement>);
+
+  constructor() {
     toObservable(this.data).pipe(
       takeUntilDestroyed(),
       filter(data => !!data),

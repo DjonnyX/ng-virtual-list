@@ -2,13 +2,15 @@ import { Component } from '@angular/core';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
 
+const MAX_ITEMS = 1000000;
+
 const ITEMS: IVirtualListCollection = [];
-for (let i = 0, l = 1000000; i < l; i++) {
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   ITEMS.push({ id: i + 1, name: `Item: ${i}` });
 }
 
 const HORIZONTAL_ITEMS: IVirtualListCollection = [];
-for (let i = 0, l = 1000000; i < l; i++) {
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   HORIZONTAL_ITEMS.push({ id: i + 1, name: `${i}` });
 }
 
@@ -21,8 +23,8 @@ const getGroupName = () => {
 const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
-for (let i = 0, l = 1000000; i < l; i++) {
-  const id = i + 1, type = Math.random() > .895 ? 'group-header' : 'item';
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
+  const id = i + 1, type = i === 0 ||  Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${i}` });
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
@@ -31,8 +33,8 @@ const GROUP_ITEMS: IVirtualListCollection = [],
   GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 let groupIndex = 0;
-for (let i = 0, l = 1000000; i < l; i++) {
-  const id = i + 1, type = Math.random() > .895 ? 'group-header' : 'item';
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
+  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   if (type === 'group-header') {
     groupIndex++;
   }
