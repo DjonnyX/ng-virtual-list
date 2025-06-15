@@ -1,12 +1,12 @@
 <div class="vl-section block">
   <h1>NgVirtualList</h1>
-  <p>v 0.4.8</p>
+  <p>v 0.4.9</p>
 </div>
 
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Horizontal list</h2>
-    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="10"
+    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
       [itemRenderer]="hotizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
   </div>
 </div>
@@ -22,7 +22,7 @@
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Horizontal group list (with snapping)</h2>
-    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="10"
+    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
       [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54"
       [snap]="true" [snapToItem]="true"></ng-virtual-list>
   </div>
@@ -48,7 +48,7 @@
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Vertical virtual list</h2>
-    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10"
+    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
       [itemSize]="40"></ng-virtual-list>
   </div>
 </div>
@@ -64,7 +64,7 @@
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Snap to Item</h2>
-    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10" [itemSize]="40"
+    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50" [itemSize]="40"
       [snapToItem]="true"></ng-virtual-list>
   </div>
 </div>
@@ -77,7 +77,7 @@
         [max]="items[items.length - 1].id">
       <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
     </div>
-    <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10"
+    <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
       [itemSize]="40"></ng-virtual-list>
   </div>
 </div>
@@ -85,7 +85,7 @@
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Virtual group list</h2>
-    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
+    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
       [stickyMap]="groupItemsStickyMap" [itemSize]="40"></ng-virtual-list>
   </div>
 </div>
@@ -93,7 +93,7 @@
 <div class="vl-section">
   <div class="vl-section__container">
     <h2>Virtual group list (with snapping)</h2>
-    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
+    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
       [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
   </div>
 </div>

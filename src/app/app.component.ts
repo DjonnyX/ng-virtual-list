@@ -42,7 +42,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   if (type === 'group-header') {
     groupIndex++;
   }
-  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${id}` });
+  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `Item: ${id}` });
   GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
