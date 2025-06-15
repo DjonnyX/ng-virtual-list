@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
-import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
+import { DEFAULT_DIRECTION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, /*IRect*/ } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -78,12 +78,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   /**
    * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
    */
-  itemSize = input(DEFAULT_ITEM_HEIGHT);
+  itemSize = input(DEFAULT_ITEM_SIZE);
 
   /**
    * Determines the direction in which elements are placed. Default value is "vertical".
    */
-  direction = input<Direction>(Directions.VERTICAL);
+  direction = input<Direction>(DEFAULT_DIRECTION);
 
   /**
    * Number of elements outside the scope of visibility. Default value is 2.
@@ -132,12 +132,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ), $items = toObservable(this.items).pipe(
       map(i => !i ? [] : i),
     ), $scrollSize = toObservable(this._scrollSize),
-      $itemSize = toObservable(this.itemSize),
-      $itemsOffset = toObservable(this.itemsOffset),
-      $stickyMap = toObservable(this.stickyMap),
+      $itemSize = toObservable(this.itemSize).pipe(
+        map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
+      ),
+      $itemsOffset = toObservable(this.itemsOffset).pipe(
+        map(v => v < 0 ? DEFAULT_ITEMS_OFFSET : v),
+      ),
+      $stickyMap = toObservable(this.stickyMap).pipe(
+        map(v => !v ? {} : v),
+      ),
       $snap = toObservable(this.snap),
       $isVertical = toObservable(this.direction).pipe(
-        map(v => this.getIsVertical(v)),
+        map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
         tap(v => {
           this._isVertical = v;
           const el: HTMLElement = this._elementRef.nativeElement;
