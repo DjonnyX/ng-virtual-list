@@ -2,7 +2,7 @@
 @let renderer = itemRenderer();
 
 @if (item) {
-<li #listItem class="ngvl-item__container">
+<li #listItem part="item" class="ngvl-item__container">
     @if (renderer) {
     <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="{data: item.data || {}}" />
     }
