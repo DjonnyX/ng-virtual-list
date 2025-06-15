@@ -16,7 +16,7 @@ npm i ng-virtual-list
 
 ### Horizontal virtual list
 
-![VirtualList-GoogleChrome2025-06-1500-39-14-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/4d078812-7bd5-4f9b-94c7-dd9e8f29af45)
+![preview](https://github.com/user-attachments/assets/4d078812-7bd5-4f9b-94c7-dd9e8f29af45)
 
 Template:
 ```html
@@ -54,7 +54,7 @@ export class AppComponent {
 
 ### Horizontal grouped virtual list
 
-![VirtualList-GoogleChrome2025-06-1500-39-14-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/bdd0cb5d-be92-41b3-a049-bd9d8a616692)
+![preview](https://github.com/user-attachments/assets/bdd0cb5d-be92-41b3-a049-bd9d8a616692)
 
 Template:
 ```html
@@ -112,7 +112,7 @@ export class AppComponent {
 
 ### Vertical virtual list
 
-![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/2d120a77-7715-4d6a-ba8d-bb5030d48947)
+![preview](https://github.com/user-attachments/assets/2d120a77-7715-4d6a-ba8d-bb5030d48947)
 
 Template:
 ```html
@@ -152,7 +152,7 @@ export class AppComponent {
 ### Vertical grouped virtual list
 
 #### Without snapping
-![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
+![preview](https://github.com/user-attachments/assets/eb1e1709-4feb-489a-82fd-7fc0ff1211cb)
 
 Template:
 ```html
@@ -179,7 +179,7 @@ Template:
 
 #### With snapping
 
-![VirtualList-GoogleChrome2025-06-1420-49-35-ezgif com-video-to-gif-converter (2)](https://github.com/user-attachments/assets/a92e63aa-971d-42ff-a3f8-8811e1731f72)
+![preview](https://github.com/user-attachments/assets/a92e63aa-971d-42ff-a3f8-8811e1731f72)
 
 Template (with snapping):
 ```html
@@ -238,7 +238,7 @@ export class AppComponent {
 
 The example demonstrates the scrollTo method by passing it the element id. It is important not to confuse the ordinal index and the element id. In this example, id = index + 1
 
-![NgVirtualList-GoogleChrome2025-06-1512-18-07-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/7c860da9-6600-46d2-8aa6-67ee70160fa5)
+![preview](https://github.com/user-attachments/assets/18aa0fd5-8953-4736-9725-b3a4c8b5b4b4)
 
 Template
 ```html
