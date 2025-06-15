@@ -8,7 +8,7 @@ import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } 
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import { DEFAULT_ITEM_HEIGHT, DEFAULT_ITEMS_OFFSET, DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
-// import { Id, IRect } from './types';
+import { Id, /*IRect*/ } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { IRenderVirtualListItem } from './models/render-item.model';
 import { Direction, Directions } from './enums';
@@ -23,6 +23,14 @@ import { isDirection, toggleClassName } from './utils';
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
+  private static __nextId: number = 0;
+
+  private _id: number = NgVirtualListComponent.__nextId;
+  /**
+   * Readonly. Returns the unique identifier of the component.
+   */
+  get id() { return this._id; }
+
   @ViewChild('renderersContainer', { read: ViewContainerRef })
   protected _listContainerRef: ViewContainerRef | undefined;
 
@@ -30,22 +38,50 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   protected _list = viewChild<ElementRef<HTMLUListElement>>('list');
 
-  onScroll = output<Event>();
+  /**
+   * Fires when the list has been scrolled.
+   */
+  onScroll = output<Event | undefined>();
 
-  onScrollEnd = output<Event>();
+  /**
+   * Fires when the list has completed scrolling.
+   */
+  onScrollEnd = output<Event | undefined>();
 
+  /**
+   * Collection of list items.
+   */
   items = input.required<IVirtualListCollection>();
 
+  /**
+   * Determines whether elements will snap. Default value is "true".
+   */
   snap = input<boolean>(true);
 
+  /**
+   * Rendering element template.
+   */
   itemRenderer = input.required<TemplateRef<any>>();
 
+  /**
+   * Dictionary zIndex by id of the list element. If the value is not set or equal to 0,
+   * then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element.
+   */
   stickyMap = input<IVirtualListStickyMap>({});
 
+  /**
+   * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
+   */
   itemSize = input(DEFAULT_ITEM_HEIGHT);
 
+  /**
+   * Determines the direction in which elements are placed. Default value is "vertical".
+   */
   direction = input<Direction>(Directions.VERTICAL);
 
+  /**
+   * Number of elements outside the scope of visibility. Default value is 2.
+   */
   itemsOffset = input<number>(DEFAULT_ITEMS_OFFSET);
 
   private _isVertical = this.getIsVertical();
@@ -81,6 +117,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   // private _sizeCacheMap = new Map<Id, IRect>();
 
   constructor() {
+    NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
+      ? 0 : NgVirtualListComponent.__nextId + 1;
+    this._id = NgVirtualListComponent.__nextId;
+
     const $bounds = toObservable(this._bounds).pipe(
       filter(b => !!b),
     ), $items = toObservable(this.items).pipe(
@@ -259,6 +299,23 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       el.instance.item = displayItems[i];
       el.instance.renderer = this.itemRenderer();
       el.instance.showIfNeed();
+    }
+  }
+
+  /**
+   * The method scrolls the list to the element with the given id and returns the value of the scrolled area.
+   * Behavior accepts the values ​​"auto", "instant" and "smooth".
+   */
+  scrollTo(id: Id, behavior: ScrollBehavior = 'auto') {
+    const items = this.items();
+    if (!items || !items.length) {
+      return;
+    }
+
+    const index = items.findIndex(item => item.id === id), scrollSize = index * this.itemSize(), container = this._container();
+    if (container) {
+      const params: ScrollToOptions = { [this._isVertical ? 'top' : 'left']: scrollSize, behavior };
+      container.nativeElement.scroll(params);
     }
   }
 

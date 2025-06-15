@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
+import { FormsModule } from '@angular/forms';
+import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 
 const MAX_ITEMS = 1000000;
 
@@ -24,7 +26,7 @@ const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
-  const id = i + 1, type = i === 0 ||  Math.random() > .895 ? 'group-header' : 'item';
+  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${i}` });
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
@@ -44,11 +46,13 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
 
 @Component({
   selector: 'app-root',
-  imports: [NgVirtualListComponent],
+  imports: [FormsModule, NgVirtualListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
+
   items = ITEMS;
 
   horizontalItems = HORIZONTAL_ITEMS;
@@ -58,6 +62,15 @@ export class AppComponent {
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
   horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
+
+  itemId: Id = this.items[0].id;
+
+  onButtonScrollToIdClickHandler = (e: Event) => {
+    const list = this._listContainerRef();
+    if (list) {
+      list.scrollTo(this.itemId, 'smooth');
+    }
+  }
 
   onItemClick(data: IVirtualListItem) {
     console.info(`Click: Item ${data['name']} (ID: ${data.id})`);

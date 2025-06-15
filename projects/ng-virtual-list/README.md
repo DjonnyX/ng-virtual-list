@@ -234,6 +234,70 @@ export class AppComponent {
 
 ```
 
+### ScrollTo
+
+The example demonstrates the scrollTo method by passing it the element id. It is important not to confuse the ordinal index and the element id. In this example, id = index + 1
+
+![NgVirtualList-GoogleChrome2025-06-1512-18-07-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/7c860da9-6600-46d2-8aa6-67ee70160fa5)
+
+Template
+```html
+<div class="scroll-to__controls">
+  <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="items[0].id"
+    [max]="items[items.length - 1].id">
+  <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
+</div>
+
+<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10"
+  [itemSize]="40"></ng-virtual-list>
+
+<ng-template #itemRenderer let-data="data">
+@if (data) {
+  <div class="list__container">
+    <span>{{data.name}}</span>
+  </div>
+}
+</ng-template>
+```
+
+Component
+```ts
+import { Component, viewChild } from '@angular/core';
+import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
+import { IVirtualListCollection } from '../../projects/ng-virtual-list/src/lib/models';
+import { FormsModule } from '@angular/forms';
+import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+
+const MAX_ITEMS = 1000000;
+
+const ITEMS: IVirtualListCollection = [];
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
+  ITEMS.push({ id: i + 1, name: `Item: ${i}` });
+}
+
+@Component({
+  selector: 'app-root',
+  imports: [FormsModule, NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
+
+  items = ITEMS;
+
+  itemId: Id = this.items[0].id;
+
+  onButtonScrollToIdClickHandler = (e: Event) => {
+    const list = this._listContainerRef();
+    if (list) {
+      list.scrollTo(this.itemId, 'smooth');
+    }
+  }
+}
+
+```
+
 ## Stylization
 
 List items are encapsulated in shadowDOM, so to override default styles you need to use ::part access
@@ -296,6 +360,7 @@ Inputs
 
 | Property | Type | Description |
 |---|---|---|
+| id | number | Readonly. Returns the unique identifier of the component. | 
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
 | itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. |
 | itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2. |
@@ -319,4 +384,4 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/types/id.ts) => number) | The method scrolls the list to the element with the given id and returns the value of the scrolled area. |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
