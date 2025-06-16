@@ -21,9 +21,21 @@ import { filter, tap } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent {
-  data = signal<IRenderVirtualListItem | undefined>(undefined);
+  private static __nextId: number = 0;
 
+  private _id!: number;
+  get id() {
+    return this._id;
+  }
+
+  data = signal<IRenderVirtualListItem | undefined>(undefined);
+  private _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
+    if (this._data === v) {
+      return;
+    }
+
+    this._data = v;
     this.data.set(v);
   }
 
@@ -36,6 +48,9 @@ export class NgVirtualListItemComponent {
   private _elementRef = inject(ElementRef<HTMLElement>);
 
   constructor() {
+    this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
+      ? 0 : NgVirtualListItemComponent.__nextId + 1;
+
     toObservable(this.data).pipe(
       takeUntilDestroyed(),
       filter(data => !!data),

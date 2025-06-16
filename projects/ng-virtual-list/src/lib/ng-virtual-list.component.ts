@@ -237,31 +237,33 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               break;
             }
 
-            const id = items[i].id,
-              snaped = snap && stickyMap[id] > 0 && pos <= scrollSize,
-              measures = {
-                x: isVertical ? 0 : snaped ? snippedPos : pos,
-                y: isVertical ? snaped ? snippedPos : pos : 0,
-                width: w,
-                height: h,
-              }, config = {
-                isVertical,
-                sticky: stickyMap[id],
-                snap,
-              };
+            const id = items[i].id;
 
-            const itemData: IVirtualListItem = items[i];
+            if (id !== stickyItem?.id) {
+              const snaped = snap && stickyMap[id] > 0 && pos <= scrollSize,
+                measures = {
+                  x: isVertical ? 0 : snaped ? snippedPos : pos,
+                  y: isVertical ? snaped ? snippedPos : pos : 0,
+                  width: w,
+                  height: h,
+                }, config = {
+                  isVertical,
+                  sticky: stickyMap[id],
+                  snap,
+                };
 
-            const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-            if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0) {
-              nextSticky = item;
+              const itemData: IVirtualListItem = items[i];
+
+              const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
+              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0) {
+                nextSticky = item;
+              }
+
+              displayItems.push(item);
+
+              // for dynamic item size
+              // this._sizeCacheMap.set(id, measures);
             }
-
-            displayItems.push(item);
-
-            // for dynamic item size
-            // this._sizeCacheMap.set(id, measures);
-
             renderWeight -= itemSize;
             pos += itemSize;
             i++;
@@ -284,12 +286,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       })
     ).subscribe();
 
+    toObservable(this.itemRenderer).pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(itemRenderer => {
+        this.resetRenderers(itemRenderer);
+      })
+    )
+
     toObservable(this._displayItems).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(displayItems => {
         this.createDisplayComponentsIfNeed(displayItems);
-        this.refresh(displayItems);
+        this.tracking(displayItems);
       }),
     ).subscribe();
   }
@@ -301,6 +311,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems || !this._listContainerRef) {
+      this._doMap = {};
       return;
     }
     const _listContainerRef = this._listContainerRef;
@@ -312,29 +323,77 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       }
     }
 
-    const maxLength = displayItems.length + DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR + this.itemsOffset();
-    if (this._displayComponents.length > maxLength) {
-      while (this._displayComponents.length > maxLength) {
-        const comp = this._displayComponents.pop();
-        comp?.destroy();
-      }
-      for (let i = displayItems.length, l = this._displayComponents.length; i < l; i++) {
-        const comp = this._displayComponents[i];
-        comp.instance.hide();
+    const maxLength = displayItems.length;
+    while (this._displayComponents.length > maxLength) {
+      const comp = this._displayComponents.pop();
+      comp?.destroy();
+      const id = comp?.instance.item?.id;
+      if (id !== undefined) {
+        delete this._trackMap[id];
       }
     }
+
+    this.resetRenderers();
   }
 
-  protected refresh(displayItems: IRenderVirtualListCollection | null) {
+  private resetRenderers(itemRenderer?: TemplateRef<any>) {
+    const doMap: { [x: number]: number } = {};
+    for (let i = 0, l = this._displayComponents.length; i < l; i++) {
+      const item = this._displayComponents[i];
+      item.instance.renderer = itemRenderer || this.itemRenderer();
+      doMap[item.instance.id] = i;
+    }
+
+    this._doMap = doMap;
+  }
+
+  /**
+   * Dictionary displayItems id by IRenderVirtualListItem.id
+   */
+  private _trackMap: { [x: Id]: number } = {};
+
+  /**
+   * displayItems dictionary of indexes by id
+   */
+  private _doMap: { [x: number]: number } = {};
+
+  /**
+   * tracking by id
+   */
+  protected tracking(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems) {
       return;
     }
 
+    const untrackedItems = [...this._displayComponents];
+
     for (let i = 0, l = displayItems.length; i < l; i++) {
-      const el = this._displayComponents[i];
-      el.instance.item = displayItems[i];
-      el.instance.renderer = this.itemRenderer();
-      el.instance.showIfNeed();
+      const item = displayItems[i], doId = this._trackMap[item.id];
+      if (this._trackMap.hasOwnProperty(item.id)) {
+        const lastIndex = this._doMap[doId], el = this._displayComponents[lastIndex],
+          elId = el?.instance.id;
+        if (el && elId === doId) {
+          const indexByUntrackedItems = untrackedItems.findIndex(v => v.instance.id === elId);
+          if (indexByUntrackedItems > -1) {
+            el.instance.item = item;
+            untrackedItems.splice(indexByUntrackedItems, 1);
+            continue;
+          }
+        }
+        delete this._trackMap[item.id];
+      }
+
+      if (untrackedItems.length > 0) {
+        const el = untrackedItems.shift(), item = displayItems[i];
+        if (el) {
+          el.instance.item = item;
+          this._trackMap[item.id] = el.instance.id;
+        }
+      }
+    }
+
+    if (untrackedItems.length) {
+      throw Error('tracking by id caused an error')
     }
   }
 
