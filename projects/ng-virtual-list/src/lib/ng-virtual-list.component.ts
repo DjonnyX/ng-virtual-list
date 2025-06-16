@@ -8,7 +8,6 @@ import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } 
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   DEFAULT_DIRECTION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM,
-  DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR,
 } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, /*IRect*/ } from './types';
