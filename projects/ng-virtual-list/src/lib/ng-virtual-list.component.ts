@@ -242,8 +242,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             if (id !== stickyItem?.id) {
               const snaped = snap && stickyMap[id] > 0 && pos <= scrollSize,
                 measures = {
-                  x: isVertical ? 0 : snaped ? snippedPos : pos,
-                  y: isVertical ? snaped ? snippedPos : pos : 0,
+                  x: isVertical ? 0 : pos,
+                  y: isVertical ? pos : 0,
                   width: w,
                   height: h,
                 }, config = {
@@ -256,6 +256,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
               const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
               if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0) {
+                item.measures.x = isVertical ? 0 : snaped ? snippedPos : pos;
+                item.measures.y = isVertical ? snaped ? snippedPos : pos : 0;
                 nextSticky = item;
               }
 
