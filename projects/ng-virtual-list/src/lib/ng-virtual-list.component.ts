@@ -129,7 +129,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       scrollItems = Math.round(scrollSize / itemSize), actualScrollSize = snapToItem ? scrollItems * itemSize : scrollSize;
 
     if (target.scrollTop !== actualScrollSize) {
-      const container = target, params: ScrollToOptions = { [this._isVertical ? 'top' : 'left']: actualScrollSize, behavior: 'smooth' };
+      const container = target, params: ScrollToOptions = { [this._isVertical ? 'top' : 'left']: actualScrollSize, behavior: 'instant' };
 
       container.scroll(params);
     }
