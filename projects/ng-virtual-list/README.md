@@ -59,7 +59,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80" [snap]="true" [snapToItem]="true"></ng-virtual-list>
+    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {

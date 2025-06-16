@@ -195,8 +195,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         const displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
           const w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,
-            leftItemLength = (itemsFromStartToScrollEnd - itemsOffset) < Math.min(itemsFromStartToScrollEnd, itemsOffset) ? 0 : itemsOffset,
-            rightItemLength = (itemsFromStartToDisplayEnd + itemsOffset) > totalItems
+            leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset),
+            rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
               ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
             leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
             startIndex = itemsFromStartToScrollEnd - leftItemLength, snippedPos = Math.floor(scrollSize);
