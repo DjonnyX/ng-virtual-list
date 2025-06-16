@@ -138,6 +138,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   private _elementRef = inject(ElementRef<HTMLDivElement>);
 
+  private _initialized = signal<boolean>(false);
+
+  /**
+   * Dictionary displayItems id by IRenderVirtualListItem.id
+   */
+  private _trackMap: { [id: Id]: number } = {};
+
+  /**
+   * displayItems dictionary of indexes by id
+   */
+  private _disMap: { [id: number]: number } = {};
+
   // for dynamic item size
   // private _sizeCacheMap = new Map<Id, IRect>();
 
@@ -168,12 +180,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           const el: HTMLElement = this._elementRef.nativeElement;
           toggleClassName(el, v ? 'vertical' : 'horizontal', true);
         }),
-      );
+      ),
+      $initialized = toObservable(this._initialized);
 
-    combineLatest([$bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
+    combineLatest([$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
+      filter(([initialized]) => !!initialized),
+      switchMap(([, bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
         const { width, height } = bounds, size = isVertical ? height : width;
         const itemsFromStartToScrollEnd = Math.ceil(scrollSize / itemSize),
           itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / itemSize),
@@ -294,22 +308,28 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       })
     ).subscribe();
 
-    toObservable(this.itemRenderer).pipe(
+    combineLatest([$initialized, toObservable(this.itemRenderer)]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      tap(itemRenderer => {
+      filter(([initialized]) => !!initialized),
+      tap(([, itemRenderer]) => {
         this.resetRenderers(itemRenderer);
       })
     )
 
-    toObservable(this._displayItems).pipe(
+    combineLatest([$initialized, toObservable(this._displayItems)]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      tap(displayItems => {
+      filter(([initialized]) => !!initialized),
+      tap(([, displayItems]) => {
         this.createDisplayComponentsIfNeed(displayItems);
         this.tracking(displayItems);
       }),
     ).subscribe();
+  }
+
+  ngOnInit() {
+    this._initialized.set(true);
   }
 
   private getIsVertical(d?: Direction) {
@@ -319,7 +339,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems || !this._listContainerRef) {
-      this._doMap = {};
+      this._disMap = {};
       return;
     }
     const _listContainerRef = this._listContainerRef;
@@ -352,18 +372,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       doMap[item.instance.id] = i;
     }
 
-    this._doMap = doMap;
+    this._disMap = doMap;
   }
-
-  /**
-   * Dictionary displayItems id by IRenderVirtualListItem.id
-   */
-  private _trackMap: { [id: Id]: number } = {};
-
-  /**
-   * displayItems dictionary of indexes by id
-   */
-  private _doMap: { [id: number]: number } = {};
 
   /**
    * tracking by id
@@ -376,11 +386,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     const untrackedItems = [...this._displayComponents];
 
     for (let i = 0, l = displayItems.length; i < l; i++) {
-      const item = displayItems[i], doId = this._trackMap[item.id];
+      const item = displayItems[i], diId = this._trackMap[item.id];
       if (this._trackMap.hasOwnProperty(item.id)) {
-        const lastIndex = this._doMap[doId], el = this._displayComponents[lastIndex],
+        const lastIndex = this._disMap[diId], el = this._displayComponents[lastIndex],
           elId = el?.instance.id;
-        if (el && elId === doId) {
+        if (el && elId === diId) {
           const indexByUntrackedItems = untrackedItems.findIndex(v => v.instance.id === elId);
           if (indexByUntrackedItems > -1) {
             el.instance.item = item;
