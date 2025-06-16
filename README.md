@@ -1,4 +1,3 @@
-
 # NgVirtualList
 Fast, optimized rendering of extremely large numbers of list items
 
@@ -20,7 +19,7 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="10"
+<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
     [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #hotizontalItemRenderer let-data="data">
@@ -59,7 +58,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [itemsOffset]="10" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="80"></ng-virtual-list>
+    [itemsOffset]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {
@@ -116,7 +115,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [itemsOffset]="10" [itemRenderer]="itemRenderer"
+<ng-virtual-list class="list simple" [items]="items" [itemsOffset]="50" [itemRenderer]="itemRenderer"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -157,7 +156,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="10" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="50" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -184,7 +183,7 @@ Template:
 
 Template (with snapping):
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="10" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="50" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -249,7 +248,7 @@ Template
   <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
 </div>
 
-<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="10"
+<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">

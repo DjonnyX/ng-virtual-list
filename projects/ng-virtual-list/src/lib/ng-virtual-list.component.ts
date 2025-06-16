@@ -176,7 +176,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       distinctUntilChanged(),
       switchMap(([bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
         const { width, height } = bounds, size = isVertical ? height : width;
-        const itemsFromStartToScrollEnd = Math.floor(scrollSize / itemSize),
+        const itemsFromStartToScrollEnd = Math.ceil(scrollSize / itemSize),
           itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / itemSize),
           leftHiddenItemsWeight = itemsFromStartToScrollEnd * itemSize,
           totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * itemSize,
@@ -217,6 +217,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   isVertical,
                   sticky,
                   snap,
+                  snapped: true,
                 };
 
                 const itemData: IVirtualListItem = items[i];
@@ -250,12 +251,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   isVertical,
                   sticky: stickyMap[id],
                   snap,
+                  snapped: false,
                 };
 
               const itemData: IVirtualListItem = items[i];
 
               const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0) {
+              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + itemSize) {
                 item.measures.x = isVertical ? 0 : snaped ? snippedPos : pos;
                 item.measures.y = isVertical ? snaped ? snippedPos : pos : 0;
                 nextSticky = item;
@@ -274,8 +276,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           const axis = isVertical ? 'y' : 'x';
 
           if (nextSticky && stickyItem && nextSticky.measures[axis] <= scrollSize + itemSize) {
-            stickyItem.measures[axis] = nextSticky.measures[axis] - itemSize;
-            stickyItem.config.sticky = 1;
+            if (nextSticky.measures[axis] > scrollSize) {
+              stickyItem.measures[axis] = nextSticky.measures[axis] - itemSize;
+              stickyItem.config.snapped = nextSticky.config.snapped = false;
+              stickyItem.config.sticky = 1;
+            } else {
+              nextSticky.config.snapped = true;
+            }
           }
         }
 
@@ -339,7 +346,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private resetRenderers(itemRenderer?: TemplateRef<any>) {
-    const doMap: { [x: number]: number } = {};
+    const doMap: { [id: number]: number } = {};
     for (let i = 0, l = this._displayComponents.length; i < l; i++) {
       const item = this._displayComponents[i];
       item.instance.renderer = itemRenderer || this.itemRenderer();
@@ -352,12 +359,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   /**
    * Dictionary displayItems id by IRenderVirtualListItem.id
    */
-  private _trackMap: { [x: Id]: number } = {};
+  private _trackMap: { [id: Id]: number } = {};
 
   /**
    * displayItems dictionary of indexes by id
    */
-  private _doMap: { [x: number]: number } = {};
+  private _doMap: { [id: number]: number } = {};
 
   /**
    * tracking by id
