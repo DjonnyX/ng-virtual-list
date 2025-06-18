@@ -26,8 +26,13 @@ input {
     width: calc(100% - 40px);
     max-width: 640px;
 
+    &.cap {
+        margin-bottom: 24px;
+    }
+
     &__container {
         width: 100%;
+
         &>h2 {
             background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
             -webkit-background-clip: text;
@@ -35,7 +40,9 @@ input {
             font-size: 12px;
             text-transform: uppercase;
             margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
+
         margin-bottom: 18px;
     }
 
@@ -44,22 +51,31 @@ input {
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-size: 16px;
-        font-weight: bold;
+        font-weight: 800;
+        text-transform: uppercase;
         margin: 0;
         padding: 0;
-        margin-bottom: 10px;
+        margin-bottom: -2px;
+        letter-spacing: 0.5px;
     }
 
     &>p {
         background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 12px;
-        font-weight: bold;
-        text-transform: lowercase;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin: 0;
         padding: 0;
-        margin-bottom: 10px;
+
+        &.l {
+            letter-spacing: 0.5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin: 0;
+        }
     }
 
     &.block {
@@ -157,7 +173,6 @@ input {
         width: 100%;
         padding: 0 12px;
         background-color: rgb(230, 234, 238);
-        border-bottom: 1px solid rgb(245, 245, 245);
         border-bottom: 1px solid rgb(245, 245, 245);
         box-sizing: border-box;
         font-weight: 600;

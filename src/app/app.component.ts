@@ -42,8 +42,44 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   if (type === 'group-header') {
     groupIndex++;
   }
-  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `Item: ${id}` });
+  GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${id}` });
   GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+}
+
+const CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
+const generateLetter = () => {
+  return CHARS[Math.round(Math.random() * CHARS.length)];
+}
+
+const generateWord = () => {
+  const length = 5 + Math.floor(Math.random() * 50), result = [];
+  while (result.length < length) {
+    result.push(generateLetter());
+  }
+  return `${result.join('')}`;
+};
+
+const generateText = () => {
+  const length = 2 + Math.floor(Math.random() * 10), result = [];
+  while (result.length < length) {
+    result.push(generateWord());
+  }
+  result[0] = result[0].toUpperCase();
+  return `${result.join(' ')}.`;
+};
+
+const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+
+let groupDynamicIndex = 0;
+for (let i = 0, l = 100; i < l; i++) {
+  const id = i + 1, type = false/*i === 0 || Math.random() > .895*/ ? 'group-header' : 'item';
+  if (type === 'group-header') {
+    groupDynamicIndex++;
+  }
+  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -61,6 +97,9 @@ export class AppComponent {
 
   groupItems = GROUP_ITEMS;
   groupItemsStickyMap = GROUP_ITEMS_STICKY_MAP;
+
+  groupDynamicItems = GROUP_DYNAMIC_ITEMS;
+  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
   horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;

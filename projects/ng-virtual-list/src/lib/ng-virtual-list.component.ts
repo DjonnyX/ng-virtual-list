@@ -4,20 +4,23 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
-  DEFAULT_DIRECTION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM,
+  DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM,
+  TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
-import { Id, /*IRect*/ } from './types';
+import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { IRenderVirtualListItem } from './models/render-item.model';
 import { Direction, Directions } from './enums';
-import { isDirection, toggleClassName } from './utils';
+import { TrackBox, isDirection, toggleClassName, Tracker } from './utils';
 
 /**
- * Virtual list component
+ * Virtual list component.
+ * Maximum performance for extremely large lists.
+ * It is based on algorithms for virtualization of screen objects.
  * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
@@ -84,8 +87,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   /**
    * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
+   * Ignored if the dynamicSize property is true.
    */
   itemSize = input(DEFAULT_ITEM_SIZE);
+
+  /**
+   * If true then the items in the list can have different sizes and the itemSize property is ignored.
+   * If false then the items in the list have a fixed size specified by the itemSize property. The default value is false.
+   */
+  dynamicSize = input(DEFAULT_DYNAMIC_SIZE);
 
   /**
    * Determines the direction in which elements are placed. Default value is "vertical".
@@ -141,22 +151,23 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _initialized = signal<boolean>(false);
 
   /**
-   * Dictionary displayItems id by IRenderVirtualListItem.id
+   * Dictionary of element sizes by their id
    */
-  private _trackMap: { [id: Id]: number } = {};
+  private _trackBox = new TrackBox(TRACK_BY_PROPERTY_NAME);
 
-  /**
-   * displayItems dictionary of indexes by id
-   */
-  private _disMap: { [id: number]: number } = {};
+  private _onTrackBoxChangeHandler = (v: number) => {
+    this._$cacheVersion.next(v);
+  }
 
-  // for dynamic item size
-  // private _sizeCacheMap = new Map<Id, IRect>();
+  private _$cacheVersion = new BehaviorSubject<number>(-1);
+  get $cacheVersion() { return this._$cacheVersion.asObservable(); }
 
   constructor() {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
+
+    this._trackBox.displayComponents = this._displayComponents;
 
     const $bounds = toObservable(this._bounds).pipe(
       filter(b => !!b),
@@ -175,51 +186,99 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       $snap = toObservable(this.snap),
       $isVertical = toObservable(this.direction).pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
-        tap(v => {
-          this._isVertical = v;
-          const el: HTMLElement = this._elementRef.nativeElement;
-          toggleClassName(el, v ? 'vertical' : 'horizontal', true);
-        }),
       ),
+      $dynamicSize = toObservable(this.dynamicSize),
+      $cacheVersion = this.$cacheVersion,
+      $displayItems = toObservable(this._displayItems),
       $initialized = toObservable(this._initialized);
 
-    combineLatest([$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize, $itemsOffset, $snap, $isVertical]).pipe(
+    $isVertical.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._isVertical = v;
+        const el: HTMLElement = this._elementRef.nativeElement;
+        toggleClassName(el, v ? 'vertical' : 'horizontal', true);
+      }),
+    ).subscribe();
+
+    $dynamicSize.pipe(
+      takeUntilDestroyed(),
+      tap(dynamicSize => {
+        if (dynamicSize) {
+          if (!this._trackBox.hasEventListener('change', this._onTrackBoxChangeHandler)) {
+            this._trackBox.addEventListener('change', this._onTrackBoxChangeHandler);
+          }
+        } else {
+          if (this._trackBox.hasEventListener('change', this._onTrackBoxChangeHandler)) {
+            this._trackBox.removeEventListener('change', this._onTrackBoxChangeHandler);
+          }
+        }
+      })
+    ).subscribe();
+
+    $displayItems.pipe(
+      takeUntilDestroyed(),
+      tap((displayItems) => {
+        this._trackBox.items = displayItems;
+      })
+    ).subscribe();
+
+    combineLatest([$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize,
+      $itemsOffset, $snap, $isVertical, $dynamicSize, $cacheVersion,
+    ]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
-      switchMap(([, bounds, items, stickyMap, scrollSize, itemSize, itemsOffset, snap, isVertical]) => {
-        const { width, height } = bounds, size = isVertical ? height : width;
-        const itemsFromStartToScrollEnd = Math.ceil(scrollSize / itemSize),
-          itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / itemSize),
-          leftHiddenItemsWeight = itemsFromStartToScrollEnd * itemSize,
-          totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * itemSize,
-          totalItems = items.length,
-          totalSize = totalItems * itemSize,
-          itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight;
+      switchMap(([,
+        bounds, items, stickyMap, scrollSize, itemSize,
+        itemsOffset, snap, isVertical, dynamicSize, cacheVersion,
+      ]) => {
+        const { width, height } = bounds,
+          {
+            itemsFromStartToScrollEnd,
+            itemsOnDisplay,
+            leftHiddenItemsWeight,
+            leftItemLength,
+            leftItemsWeight,
+            rightItemsWeight,
+            snippedPos,
+            totalSize,
+            typicalItemSize,
+          } = this._trackBox.recalculateMetrics({
+            bounds: { width, height }, collection: items,
+            dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap,
+          });
+
+        // Нужно сперва сделать корректные расчеты для dynamicSize. Сейчас количества элементов в облостях высчитывается не корректно!
+        // Необходима кореляция startDisplayObjectY с помощью дельты от высоты предыдущей и текущей размеченной области по версии кэша.
+        // TrackBox может расчитать дельту!
+
         return of({
-          items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
-          itemsFromStartToDisplayEnd, itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap,
+          items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
+          itemsOnDisplay, leftHiddenItemsWeight, itemSize: typicalItemSize, totalSize, snap,
+          leftItemLength, leftItemsWeight, rightItemsWeight, snippedPos, dynamicSize,
         });
       }),
       tap(({
-        items, stickyMap, itemsOffset, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd, itemsFromStartToDisplayEnd,
-        itemsOnDisplay, leftHiddenItemsWeight, itemSize, totalSize, snap,
+        items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
+        itemsOnDisplay, leftHiddenItemsWeight, leftItemLength, leftItemsWeight, rightItemsWeight,
+        snippedPos, itemSize, totalSize, snap, dynamicSize: dynamic,
       }) => {
         const displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
-          const w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,
-            leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset),
-            rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalItems
-              ? totalItems - itemsFromStartToDisplayEnd : itemsOffset,
-            leftItemsWeight = leftItemLength * itemSize, rightItemsWeight = rightItemLength * itemSize,
-            startIndex = itemsFromStartToScrollEnd - leftItemLength, snippedPos = Math.floor(scrollSize);
+          const sizeProperty = isVertical ? 'height' : 'width',
+            w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,
+            startIndex = itemsFromStartToScrollEnd - leftItemLength;
+
           let pos = leftHiddenItemsWeight - leftItemsWeight,
             renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight,
-            stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1;
+            stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
+            stickyItemSize = 0;
 
           if (snap) {
             for (let i = itemsFromStartToScrollEnd - 1; i >= 0; i--) {
               const id = items[i].id, sticky = stickyMap[id];
+              stickyItemSize = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
               if (sticky > 0) {
                 const measures = {
                   x: isVertical ? 0 : snippedPos,
@@ -231,6 +290,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   sticky,
                   snap,
                   snapped: true,
+                  dynamic,
                 };
 
                 const itemData: IVirtualListItem = items[i];
@@ -251,7 +311,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               break;
             }
 
-            const id = items[i].id;
+            const id = items[i].id, size = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
 
             if (id !== stickyItem?.id) {
               const snaped = snap && stickyMap[id] > 0 && pos <= scrollSize,
@@ -265,32 +325,31 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   sticky: stickyMap[id],
                   snap,
                   snapped: false,
+                  dynamic,
                 };
 
               const itemData: IVirtualListItem = items[i];
 
               const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + itemSize) {
+              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + size) {
                 item.measures.x = isVertical ? 0 : snaped ? snippedPos : pos;
                 item.measures.y = isVertical ? snaped ? snippedPos : pos : 0;
                 nextSticky = item;
               }
 
               displayItems.push(item);
-
-              // for dynamic item size
-              // this._sizeCacheMap.set(id, measures);
             }
-            renderWeight -= itemSize;
-            pos += itemSize;
+
+            renderWeight -= size;
+            pos += size;
             i++;
           }
 
           const axis = isVertical ? 'y' : 'x';
 
-          if (nextSticky && stickyItem && nextSticky.measures[axis] <= scrollSize + itemSize) {
+          if (nextSticky && stickyItem && nextSticky.measures[axis] <= scrollSize + stickyItemSize) {
             if (nextSticky.measures[axis] > scrollSize) {
-              stickyItem.measures[axis] = nextSticky.measures[axis] - itemSize;
+              stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
               stickyItem.config.snapped = nextSticky.config.snapped = false;
               stickyItem.config.sticky = 1;
             } else {
@@ -301,10 +360,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         this._displayItems.set(displayItems);
 
-        const l = this._list();
-        if (l) {
-          l.nativeElement.style[isVertical ? 'height' : 'width'] = `${totalSize}px`;
-        }
+        this.resetBoundsSize(isVertical, totalSize);
       })
     ).subscribe();
 
@@ -317,13 +373,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       })
     )
 
-    combineLatest([$initialized, toObservable(this._displayItems)]).pipe(
+    combineLatest([$initialized, $displayItems]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
       tap(([, displayItems]) => {
         this.createDisplayComponentsIfNeed(displayItems);
-        this.tracking(displayItems);
+        this.tracking();
       }),
     ).subscribe();
   }
@@ -339,7 +395,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
   private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems || !this._listContainerRef) {
-      this._disMap = {};
+      this._trackBox.setDisplayObjectIndexMapById({});
       return;
     }
     const _listContainerRef = this._listContainerRef;
@@ -357,7 +413,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       comp?.destroy();
       const id = comp?.instance.item?.id;
       if (id !== undefined) {
-        delete this._trackMap[id];
+        this._trackBox.untrackComponentByIdProperty(comp?.instance);
       }
     }
 
@@ -372,46 +428,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       doMap[item.instance.id] = i;
     }
 
-    this._disMap = doMap;
+    this._trackBox.setDisplayObjectIndexMapById(doMap);
   }
 
   /**
    * tracking by id
    */
-  protected tracking(displayItems: IRenderVirtualListCollection | null) {
-    if (!displayItems) {
-      return;
-    }
+  protected tracking() {
+    this._trackBox.track(this.dynamicSize());
+  }
 
-    const untrackedItems = [...this._displayComponents];
-
-    for (let i = 0, l = displayItems.length; i < l; i++) {
-      const item = displayItems[i], diId = this._trackMap[item.id];
-      if (this._trackMap.hasOwnProperty(item.id)) {
-        const lastIndex = this._disMap[diId], el = this._displayComponents[lastIndex],
-          elId = el?.instance.id;
-        if (el && elId === diId) {
-          const indexByUntrackedItems = untrackedItems.findIndex(v => v.instance.id === elId);
-          if (indexByUntrackedItems > -1) {
-            el.instance.item = item;
-            untrackedItems.splice(indexByUntrackedItems, 1);
-            continue;
-          }
-        }
-        delete this._trackMap[item.id];
-      }
-
-      if (untrackedItems.length > 0) {
-        const el = untrackedItems.shift(), item = displayItems[i];
-        if (el) {
-          el.instance.item = item;
-          this._trackMap[item.id] = el.instance.id;
-        }
-      }
-    }
-
-    if (untrackedItems.length) {
-      throw Error('tracking by id caused an error')
+  private resetBoundsSize(isVertical: boolean, totalSize: number) {
+    const l = this._list();
+    if (l) {
+      l.nativeElement.style[isVertical ? 'height' : 'width'] = `${totalSize}px`;
     }
   }
 
@@ -446,6 +476,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this._trackBox) {
+      this._trackBox.dispose();
+    }
+
     const containerEl = this._container();
     if (containerEl) {
       containerEl.nativeElement.removeEventListener('scroll', this._onScrollHandler);

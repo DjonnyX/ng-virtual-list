@@ -1,5 +1,6 @@
 # NgVirtualList
-Fast, optimized rendering of extremely large numbers of list items
+Maximum performance for extremely large lists.
+It is based on algorithms for virtualization of screen objects.
 
 Angular version 19.X.X.
 
@@ -362,7 +363,7 @@ Inputs
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
-| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. |
+| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
 | itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |

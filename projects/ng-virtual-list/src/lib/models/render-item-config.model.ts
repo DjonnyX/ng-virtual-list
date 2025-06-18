@@ -3,4 +3,5 @@ export interface IRenderVirtualListItemConfig {
     snap: boolean;
     snapped: boolean;
     isVertical: boolean;
+    dynamic: boolean;
 }
