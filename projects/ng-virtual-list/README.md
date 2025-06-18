@@ -299,6 +299,8 @@ export class AppComponent {
 
 Experimental functionality
 
+![preview](https://github.com/user-attachments/assets/7f2bd405-033e-457d-a713-368f066ee4a2)
+
 Template
 ```html
 <ng-virtual-list class="list" [items]="dynamicItems" [itemRenderer]="itemRenderer" [itemsOffset]="0"
