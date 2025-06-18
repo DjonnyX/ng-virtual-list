@@ -73,8 +73,9 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 let groupDynamicIndex = 0;
+const t = generateText();
 for (let i = 0, l = 100; i < l; i++) {
-  const id = i + 1, type = false/*i === 0 || Math.random() > .895*/ ? 'group-header' : 'item';
+  const id = i + 1, type = false ? 'group-header' : 'item';
   if (type === 'group-header') {
     groupDynamicIndex++;
   }

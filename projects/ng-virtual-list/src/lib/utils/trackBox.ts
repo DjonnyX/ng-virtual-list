@@ -13,6 +13,7 @@ export interface IMetrics {
     itemsFromStartToScrollEnd: number;
     itemsFromStartToDisplayEnd: number;
     itemsOnDisplay: number;
+    itemsOnDisplayLength: number;
     leftHiddenItemsWeight: number;
     leftItemLength: number;
     leftItemsWeight: number;
@@ -95,7 +96,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     protected override fireChange() {
         this.clearchangesTimeouts();
 
-        this._fireChangeTimeouts.push(setTimeout(() => { this.dispatchAsync('change', this._version) }));
+        this._fireChangeTimeouts.push(setTimeout(() => { this.dispatch('change', this._version) }));
     }
 
     private clearchangesTimeouts() {
@@ -112,43 +113,57 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             weightToDisplayEnd = scrollSize + height,
             totalLength = collection.length, typicalItemSize = dynamicSize ? this.getTypicalItemSize(isVertical, itemSize) || itemSize : itemSize,
             totalSize = dynamicSize ? this.getBoundsFromCache(collection, typicalItemSize, isVertical) : totalLength * typicalItemSize,
-            snippedPos = Math.floor(scrollSize);
+            snippedPos = Math.floor(scrollSize),
+            leftItemsWeights: Array<number> = [];
 
         let itemsFromStartToScrollEnd: number = -1, itemsFromDisplayEndToOffsetEnd = 0, itemsFromStartToDisplayEnd = -1,
             leftItemLength = 0, rightItemLength = 0,
-            leftItemsWeight = 0, rightItemsWeight = 0, startIndex;
+            leftItemsWeight = 0, rightItemsWeight = 0,
+            leftHiddenItemsWeight = 0,
+            totalItemsToDisplayEndWeight = 0,
+            startIndex;
 
         if (dynamicSize) {
             let y = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
-                const collectionItem = collection[i], map = this._map;
+                const ii = i + 1, collectionItem = collection[i], map = this._map;
 
-                let itemSize = 0;
+                let componentSize = 0;
                 if (map.has(collectionItem.id)) {
                     const bounds = map.get(collectionItem.id);
-                    itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
+                    componentSize = bounds ? bounds[sizeProperty] : typicalItemSize;
                 } else {
-                    itemSize = typicalItemSize;
+                    componentSize = typicalItemSize;
                 }
 
-                if (itemsFromStartToScrollEnd === -1 && y >= scrollSize && y <= scrollSize + itemSize) {
-                    leftItemsWeight += itemSize;
-                    itemsFromStartToScrollEnd = i;
+                if (y < scrollSize - componentSize) {
+                    leftItemsWeights.push(componentSize);
+                    leftHiddenItemsWeight += componentSize;
+                    itemsFromStartToScrollEnd = ii;
                 }
 
-                if (itemsFromStartToDisplayEnd === -1) {
-                    if (y >= weightToDisplayEnd && y <= weightToDisplayEnd + itemSize) {
-                        itemsFromStartToDisplayEnd = i;
-                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
-                    }
-                } else {
-                    if (i <= itemsFromDisplayEndToOffsetEnd) {
-                        rightItemsWeight += itemSize;
-                    }
+                if (y < scrollSize + size + componentSize) {
+                    itemsFromStartToDisplayEnd = ii;
+                    totalItemsToDisplayEndWeight += componentSize;
+                    itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
+                } else if (i < itemsFromDisplayEndToOffsetEnd) {
+                    rightItemsWeight += componentSize;
                 }
 
-                y += itemSize;
+                y += componentSize;
             }
+
+            if (itemsFromStartToScrollEnd === -1) {
+                itemsFromStartToScrollEnd = 0;
+            }
+            if (itemsFromStartToDisplayEnd === -1) {
+                itemsFromStartToDisplayEnd = 0;
+            }
+
+            leftItemsWeights.splice(0, leftItemsWeights.length - itemsOffset);
+            leftItemsWeights.forEach(v => {
+                leftItemsWeight += v;
+            });
 
             leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset);
             rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalLength
@@ -162,17 +177,19 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                 ? totalLength - itemsFromStartToDisplayEnd : itemsOffset;
             startIndex = itemsFromStartToScrollEnd - leftItemLength;
             leftItemsWeight = leftItemLength * typicalItemSize;
-            rightItemsWeight = rightItemLength * typicalItemSize;
+            rightItemsWeight = rightItemLength * typicalItemSize,
+                leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize,
+                totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize;
         }
 
-        const leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize,
-            totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize,
-            itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight
+        const itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight,
+            itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd;
 
         const metrics = {
             itemsFromStartToScrollEnd,
             itemsFromStartToDisplayEnd,
             itemsOnDisplay,
+            itemsOnDisplayLength,
             leftHiddenItemsWeight,
             leftItemLength,
             leftItemsWeight,

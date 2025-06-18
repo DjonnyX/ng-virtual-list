@@ -237,9 +237,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           {
             itemsFromStartToScrollEnd,
             itemsOnDisplay,
+            itemsOnDisplayLength,
             leftHiddenItemsWeight,
             leftItemLength,
             leftItemsWeight,
+            rightItemLength,
             rightItemsWeight,
             snippedPos,
             totalSize,
@@ -255,14 +257,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         return of({
           items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
-          itemsOnDisplay, leftHiddenItemsWeight, itemSize: typicalItemSize, totalSize, snap,
-          leftItemLength, leftItemsWeight, rightItemsWeight, snippedPos, dynamicSize,
+          itemsOnDisplay, itemsOnDisplayLength, leftHiddenItemsWeight, itemSize: typicalItemSize,
+          totalSize, snap, leftItemLength, leftItemsWeight, rightItemLength, rightItemsWeight, snippedPos,
+          dynamicSize,
         });
       }),
       tap(({
         items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
-        itemsOnDisplay, leftHiddenItemsWeight, leftItemLength, leftItemsWeight, rightItemsWeight,
-        snippedPos, itemSize, totalSize, snap, dynamicSize: dynamic,
+        itemsOnDisplay, itemsOnDisplayLength, leftHiddenItemsWeight, leftItemLength, leftItemsWeight,
+        rightItemLength, rightItemsWeight, snippedPos, itemSize, totalSize, snap, dynamicSize: dynamic,
       }) => {
         const displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
@@ -271,14 +274,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             startIndex = itemsFromStartToScrollEnd - leftItemLength;
 
           let pos = leftHiddenItemsWeight - leftItemsWeight,
-            renderWeight = itemsOnDisplay + leftItemsWeight + rightItemsWeight,
+            renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
             stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
             stickyItemSize = 0;
 
           if (snap) {
             for (let i = itemsFromStartToScrollEnd - 1; i >= 0; i--) {
-              const id = items[i].id, sticky = stickyMap[id];
-              stickyItemSize = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
+              const id = items[i].id, sticky = stickyMap[id], size = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
+              stickyItemSize = size;
               if (sticky > 0) {
                 const measures = {
                   x: isVertical ? 0 : snippedPos,
@@ -306,7 +309,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
           let i = startIndex;
 
-          while (renderWeight > 0) {
+          while (renderItems > 0) {
             if (i >= totalItems) {
               break;
             }
@@ -336,11 +339,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                 item.measures.y = isVertical ? snaped ? snippedPos : pos : 0;
                 nextSticky = item;
               }
-
               displayItems.push(item);
             }
 
-            renderWeight -= size;
+            renderItems -= 1;
             pos += size;
             i++;
           }
