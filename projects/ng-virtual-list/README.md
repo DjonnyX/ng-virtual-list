@@ -1,5 +1,6 @@
 # NgVirtualList
-Fast, optimized rendering of extremely large numbers of list items
+Maximum performance for extremely large lists.
+It is based on algorithms for virtualization of screen objects.
 
 Angular version 19.X.X.
 
@@ -262,11 +263,7 @@ Template
 
 Component
 ```ts
-import { Component, viewChild } from '@angular/core';
-import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
-import { IVirtualListCollection } from '../../projects/ng-virtual-list/src/lib/models';
-import { FormsModule } from '@angular/forms';
-import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+import { NgVirtualListComponent, IVirtualListCollection, Id } from 'ng-virtual-list';
 
 const MAX_ITEMS = 1000000;
 
@@ -296,6 +293,70 @@ export class AppComponent {
   }
 }
 
+```
+
+### Virtual list (with dynamic item size)
+
+Experimental functionality
+
+Template
+```html
+<ng-virtual-list class="list" [items]="dynamicItems" [itemRenderer]="itemRenderer" [itemsOffset]="0"
+      [dynamicSize]="true" [snap]="false"></ng-virtual-list>
+
+<ng-template #itemRenderer let-data="data">
+  @if (data) {
+    <div class="list__container">
+      <span>{{data.name}}</span>
+    </div>
+  }
+</ng-template>
+```
+
+Component
+```ts
+import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
+
+const CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+
+const generateLetter = () => {
+  return CHARS[Math.round(Math.random() * CHARS.length)];
+}
+
+const generateWord = () => {
+  const length = 5 + Math.floor(Math.random() * 50), result = [];
+  while (result.length < length) {
+    result.push(generateLetter());
+  }
+  return `${result.join('')}`;
+};
+
+const generateText = () => {
+  const length = 2 + Math.floor(Math.random() * 10), result = [];
+  while (result.length < length) {
+    result.push(generateWord());
+  }
+  result[0] = result[0].toUpperCase();
+  return `${result.join(' ')}.`;
+};
+
+const DYNAMIC_ITEMS: IVirtualListCollection = [];
+
+const t = generateText();
+for (let i = 0, l = 100; i < l; i++) {
+  const id = i + 1;
+  DYNAMIC_ITEMS.push({ id, type, name: `${id}. ${generateText()}` });
+}
+
+@Component({
+  selector: 'app-root',
+  imports: [FormsModule, NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  dynamicItems = DYNAMIC_ITEMS;
+}
 ```
 
 ## Stylization
@@ -362,13 +423,14 @@ Inputs
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
-| itemSize | number | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. |
-| itemsOffset | number? | Number of elements outside the scope of visibility. Default value is 2. |
+| itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
+| itemsOffset | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
-| snap | boolean? | Determines whether elements will snap. Default value is "false". |
-| snapToItem | boolean? | Determines whether scroll positions will be snapped to the element. Default value is "false". |
-| direction | [Direction](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
+| snapToItem | boolean? = false | Determines whether scroll positions will be snapped to the element. Default value is "false". |
+| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| dynamicSize | boolean? = false | ${\color{red}EXPERIMENTAL!}$ If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 
 <br/>
 

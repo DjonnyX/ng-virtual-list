@@ -1,6 +1,7 @@
-<div class="vl-section block">
-  <h1>NgVirtualList</h1>
-  <p><span>ng-virtual-list&#64;0.5.2</span></p>
+<div class="vl-section block cap">
+  <h1>ng-virtual-list</h1>
+  <p class="l">Maximum performance for extremely large lists</p>
+  <p><span>v 0.6.1</span></p>
 </div>
 
 <div class="vl-section">
@@ -94,6 +95,14 @@
     <h2>Virtual group list (with snapping)</h2>
     <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
       [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
+  </div>
+</div>
+
+<div class="vl-section">
+  <div class="vl-section__container">
+    <h2>Virtual list (with dynamic item size)</h2>
+    <ng-virtual-list class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="0"
+      [dynamicSize]="true" [snap]="false"></ng-virtual-list>
   </div>
 </div>
 

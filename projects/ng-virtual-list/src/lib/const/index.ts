@@ -10,6 +10,10 @@ export const DEFAULT_SNAP = false;
 
 export const DEFAULT_SNAP_TO_ITEM = false;
 
+export const DEFAULT_DYNAMIC_SIZE = false;
+
+export const TRACK_BY_PROPERTY_NAME = 'id';
+
 export const DEFAULT_DIRECTION = Directions.VERTICAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
