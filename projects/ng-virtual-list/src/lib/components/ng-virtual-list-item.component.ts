@@ -31,10 +31,6 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
-  get config() {
-    return { ...this._data?.config || {} };
-  }
-
   data = signal<IRenderVirtualListItem | undefined>(undefined);
   private _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
