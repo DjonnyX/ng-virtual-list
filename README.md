@@ -299,7 +299,7 @@ export class AppComponent {
 
 Virtual list with height-adjustable elements.
 
-![preview](https://github.com/user-attachments/assets/7f2bd405-033e-457d-a713-368f066ee4a2)
+![preview](https://github.com/user-attachments/assets/3c7e8779-c15d-4eb5-a1c5-d774f614fbaf)
 
 Template
 ```html
