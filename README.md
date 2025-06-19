@@ -4,7 +4,11 @@ It is based on algorithms for virtualization of screen objects.
 
 Angular version 19.X.X.
 
-[Demo](https://ng-virtual-list.eugene-grebennikov.pro/)
+![intro](https://github.com/user-attachments/assets/80fbed6c-9f77-48c3-a7a6-2cedf32aebc2)
+
+[Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
+
+[Live Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
 
 ## Installation
 

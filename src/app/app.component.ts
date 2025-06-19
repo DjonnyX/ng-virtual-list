@@ -65,7 +65,12 @@ const generateText = () => {
   while (result.length < length) {
     result.push(generateWord());
   }
-  result[0] = result[0].toUpperCase();
+  let firstWord = '';
+  for (let i = 0, l = result[0].length; i < l; i++) {
+    const letter = result[0].charAt(i);
+    firstWord += i === 0 ? letter.toUpperCase() : letter;
+  }
+  result[0] = firstWord;
   return `${result.join(' ')}.`;
 };
 
