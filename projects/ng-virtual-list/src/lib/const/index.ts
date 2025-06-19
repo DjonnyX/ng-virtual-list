@@ -17,3 +17,47 @@ export const TRACK_BY_PROPERTY_NAME = 'id';
 export const DEFAULT_DIRECTION = Directions.VERTICAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
+
+// presets
+
+export const BEHAVIOR_INSTANT = 'instant';
+
+export const BEHAVIOR_AUTO = 'auto';
+
+export const VISIBILITY_VISIBLE = 'visible';
+
+export const VISIBILITY_HIDDEN = 'hidden';
+
+export const SIZE_100_PERSENT = '100%';
+
+export const SIZE_AUTO = 'auto';
+
+export const POSITION_ABSOLUTE = 'absolute';
+
+export const POSITION_STICKY = 'sticky';
+
+export const TRANSLATE_3D = 'translate3d';
+
+export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
+
+export const TOP_PROP_NAME = 'top';
+
+export const LEFT_PROP_NAME = 'left';
+
+export const X_PROP_NAME = 'x';
+
+export const Y_PROP_NAME = 'y';
+
+export const WIDTH_PROP_NAME = 'width';
+
+export const HEIGHT_PROP_NAME = 'height';
+
+export const PX = 'px';
+
+export const SCROLL = 'scroll';
+
+export const SCROLL_END = 'scrollend';
+
+export const CLASS_LIST_VERTICAL = 'vertical';
+
+export const CLASS_LIST_HORIZONTAL = 'horizontal';

@@ -2,6 +2,10 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRect } from '../types';
+import {
+  POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
+  VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+} from '../const';
 
 /**
  * Virtual list item component
@@ -40,17 +44,21 @@ export class NgVirtualListItemComponent {
       const styles = this._elementRef.nativeElement.style;
       styles.zIndex = data.config.sticky;
       if (data.config.snapped) {
-        styles.transform = 'translate3d(0,0,0)';
-        styles.position = 'sticky';
+        styles.transform = ZEROS_TRANSLATE_3D;
+        styles.position = POSITION_STICKY;
       } else {
-        styles.position = 'absolute';
-        styles.transform = `translate3d(${data.config.isVertical ? 0 : data.measures.x}px, ${data.config.isVertical ? data.measures.y : 0}px , 0)`;
+        styles.position = POSITION_ABSOLUTE;
+        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;
       }
-      styles.height = data.config.isVertical ? data.config.dynamic ? 'auto' : `${data.measures.height}px` : '100%';
-      styles.width = data.config.isVertical ? '100%' : data.config.dynamic ? 'auto' : `${data.measures.width}px`;
+      styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : SIZE_100_PERSENT;
+      styles.width = data.config.isVertical ? SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     }
 
     this.data.set(v);
+  }
+
+  get itemId() {
+    return this._data?.id;
   }
 
   itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
@@ -74,19 +82,19 @@ export class NgVirtualListItemComponent {
 
   showIfNeed() {
     const styles = this._elementRef.nativeElement.style;
-    if (styles.visibility === 'visible') {
+    if (styles.visibility === VISIBILITY_VISIBLE) {
       return;
     }
 
-    styles.visibility = 'visible';
+    styles.visibility = VISIBILITY_VISIBLE;
   }
 
   hide() {
     const styles = this._elementRef.nativeElement.style;
-    if (styles.visibility === 'hidden') {
+    if (styles.visibility === VISIBILITY_HIDDEN) {
       return;
     }
 
-    styles.visibility = 'hidden';
+    styles.visibility = VISIBILITY_HIDDEN;
   }
 }

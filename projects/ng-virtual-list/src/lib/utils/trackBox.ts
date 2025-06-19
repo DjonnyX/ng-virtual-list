@@ -8,6 +8,10 @@ import { IRect } from "../types/rect";
 import { CacheMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
+import { debounce } from "./debounce";
+import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME } from "../const";
+
+export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
 export interface IMetrics {
     itemsFromStartToScrollEnd: number;
@@ -36,7 +40,7 @@ interface IRecalculateMetricsOptions {
     snap: boolean;
 }
 
-type CacheMapEvents = 'change';
+type CacheMapEvents = typeof TRACK_BOX_CHANGE_EVENT_NAME;
 
 type OnChangeEventListener = (version: number) => void;
 
@@ -91,27 +95,22 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         return v;
     }
 
-    private _fireChangeTimeouts: Array<any> = [];
+    private _fireChanges = (version: number) => {
+        this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, version);
+    };
+
+    private _debounceChanges = debounce(this._fireChanges, 0);
 
     protected override fireChange() {
-        this.clearchangesTimeouts();
-
-        this._fireChangeTimeouts.push(setTimeout(() => { this.dispatch('change', this._version) }));
-    }
-
-    private clearchangesTimeouts() {
-        while (this._fireChangeTimeouts.length > 0) {
-            const timeout = this._fireChangeTimeouts.pop();
-            clearTimeout(timeout);
-        }
+        this._debounceChanges.execute(this._version);
     }
 
     recalculateMetrics(options: IRecalculateMetricsOptions): IMetrics {
         const { bounds, collection, dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap, } = options;
 
-        const { width, height } = bounds, sizeProperty = isVertical ? 'height' : 'width', size = isVertical ? height : width,
+        const { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME, size = isVertical ? height : width,
             weightToDisplayEnd = scrollSize + height,
-            totalLength = collection.length, typicalItemSize = dynamicSize ? this.getTypicalItemSize(isVertical, itemSize) || itemSize : itemSize,
+            totalLength = collection.length, typicalItemSize = itemSize,
             totalSize = dynamicSize ? this.getBoundsFromCache(collection, typicalItemSize, isVertical) : totalLength * typicalItemSize,
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [];
@@ -205,40 +204,14 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     }
 
     /**
-     * Calculates and returns the maximum size of a repeating item
-     */
-    getTypicalItemSize(isVertical: boolean, defaultItemSize: number, fromIndex: number = 0, to: number = -1) {
-        const sizeProperty = isVertical ? 'height' : 'width',
-            sizes: { [size: number]: number } = {};
-
-        let maxRepeatingSize = defaultItemSize, count = 0;
-
-        this._map.forEach(bound => {
-            const size = bound[sizeProperty];
-            if (sizes.hasOwnProperty(size)) {
-                sizes[size] += 1;
-            } else {
-                sizes[size] = 1;
-            }
-            if (sizes[size] > count) {
-                count = sizes[size];
-                maxRepeatingSize = size;
-            }
-        });
-        return maxRepeatingSize;
-    }
-
-    /**
      * tracking by propName
      */
-    track(dynamicSize: boolean = false): void {
+    track(): void {
         if (!this._items || !this._displayComponents) {
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, dynamicSize ? (component, item) => {
-            this.cacheElementBounds(component, item);
-        } : undefined);
+        this._tracker.track(this._items, this._displayComponents);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {
@@ -249,20 +222,26 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this._tracker.untrackComponentByIdProperty(component);
     }
 
-    /**
-     * Stores the element bounds in _sizeCacheMap
-     */
-    private cacheElementBounds(component: NgVirtualListItemComponent, item: IRenderVirtualListItem) {
-        component.item = item;
-        const bounds = component.getBounds();
-        this.set(item.id, bounds);
+    cacheElements(): void {
+        if (!this._displayComponents) {
+            return;
+        }
+
+        for (let i = 0, l = this._displayComponents.length; i < l; i++) {
+            const component = this._displayComponents[i], itemId = component.instance.itemId;
+            if (itemId === undefined) {
+                continue;
+            }
+            const bounds = component.instance.getBounds();
+            this.set(itemId, bounds);
+        }
     }
 
     /**
      * Returns calculated bounds from cache
      */
     private getBoundsFromCache(items: IVirtualListCollection, typicalItemSize: number, isVertical: boolean) {
-        const sizeProperty = isVertical ? 'height' : 'width', map = this._map;
+        const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME, map = this._map;
         let size: number = 0;
         for (let i = 0, l = items.length; i < l; i++) {
             const item = items[i];
@@ -279,7 +258,9 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     override dispose() {
         super.dispose();
 
-        this.clearchangesTimeouts();
+        if (this._debounceChanges) {
+            this._debounceChanges.dispose();
+        }
 
         if (this._tracker) {
             this._tracker.dispose();
