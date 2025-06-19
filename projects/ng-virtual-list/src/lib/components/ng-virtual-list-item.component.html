@@ -4,7 +4,7 @@
 @if (item) {
 <li #listItem part="item" class="ngvl-item__container" [ngClass]="{snipped: item.config.snapped}">
     @if (renderer) {
-    <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="{data: item.data || {}}" />
+    <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="{data: item.data || {}, config: config}" />
     }
 </li>
 }
