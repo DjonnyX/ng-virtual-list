@@ -297,20 +297,29 @@ export class AppComponent {
 
 ### Virtual list (with dynamic item size)
 
-Experimental functionality
+Virtual list with height-adjustable elements.
 
 ![preview](https://github.com/user-attachments/assets/7f2bd405-033e-457d-a713-368f066ee4a2)
 
 Template
 ```html
-<ng-virtual-list class="list" [items]="dynamicItems" [itemRenderer]="itemRenderer" [itemsOffset]="0"
-      [dynamicSize]="true" [snap]="false"></ng-virtual-list>
+<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
+      [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
-<ng-template #itemRenderer let-data="data">
+<ng-template #groupItemRenderer let-data="data">
   @if (data) {
-    <div class="list__container">
-      <span>{{data.name}}</span>
-    </div>
+    @switch (data.type) {
+      @case ("group-header") {
+        <div class="list__group-container">
+          <span>{{data.name}}</span>
+        </div>
+      }
+      @default {
+        <div class="list__container">
+          <span>{{data.name}}</span>
+        </div>
+      }
+    }
   }
 </ng-template>
 ```
@@ -342,12 +351,17 @@ const generateText = () => {
   return `${result.join(' ')}.`;
 };
 
-const DYNAMIC_ITEMS: IVirtualListCollection = [];
+const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
-const t = generateText();
-for (let i = 0, l = 100; i < l; i++) {
-  const id = i + 1;
-  DYNAMIC_ITEMS.push({ id, type, name: `${id}. ${generateText()}` });
+let groupDynamicIndex = 0;
+for (let i = 0, l = 100000; i < l; i++) {
+  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
+  if (type === 'group-header') {
+    groupDynamicIndex++;
+  }
+  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -357,7 +371,8 @@ for (let i = 0, l = 100; i < l; i++) {
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  dynamicItems = DYNAMIC_ITEMS;
+  groupDynamicItems = GROUP_DYNAMIC_ITEMS;
+  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
 }
 ```
 
@@ -432,7 +447,7 @@ Inputs
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snapToItem | boolean? = false | Determines whether scroll positions will be snapped to the element. Default value is "false". |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
-| dynamicSize | boolean? = false | ${\color{red}EXPERIMENTAL!}$ If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
+| dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 
 <br/>
 
