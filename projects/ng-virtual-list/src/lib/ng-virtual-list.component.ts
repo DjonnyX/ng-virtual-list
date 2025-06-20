@@ -334,7 +334,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   isVertical,
                   sticky: stickyMap[id],
                   snap,
-                  snapped,
+                  snapped: false,
                   snappedOut: false,
                   dynamic,
                 };
@@ -346,6 +346,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                 item.measures.x = isVertical ? 0 : snapped ? snippedPos : pos;
                 item.measures.y = isVertical ? snapped ? snippedPos : pos : 0;
                 nextSticky = item;
+                nextSticky.config.snapped = snapped;
               }
               displayItems.push(item);
             }
