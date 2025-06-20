@@ -2,7 +2,7 @@ export type TEventHandler = (...args: Array<any>) => void;
 
 /**
  * Simple event emitter
- * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/eventEmitter.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -108,6 +108,9 @@ export class EventEmitter<E = string, H = TEventHandler> {
         }
     }
 
+    /**
+     * Method of destroying handlers
+     */
     dispose() {
         this._disposed = true;
 

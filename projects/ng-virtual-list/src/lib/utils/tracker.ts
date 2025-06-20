@@ -4,7 +4,7 @@ type TrackingPropertyId = string | number;
 
 /**
  * Tracks display items by property
- * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/tracker.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
