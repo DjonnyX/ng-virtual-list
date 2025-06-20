@@ -9,12 +9,11 @@ import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.co
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
   DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, HEIGHT_PROP_NAME, LEFT_PROP_NAME, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
-  TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+  TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
-import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IVirtualListCollection, IVirtualListStickyMap } from './models';
 import { Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { IRenderVirtualListItem } from './models/render-item.model';
 import { Direction, Directions } from './enums';
 import { TrackBox, isDirection, toggleClassName } from './utils';
 import { TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
@@ -238,142 +237,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         bounds, items, stickyMap, scrollSize, itemSize,
         itemsOffset, snap, isVertical, dynamicSize, cacheVersion,
       ]) => {
-        this._trackBox.cacheElements();
+        const { width, height } = bounds;
 
-        const { width, height } = bounds,
-          {
-            itemsFromStartToScrollEnd,
-            itemsOnDisplay,
-            itemsOnDisplayLength,
-            leftHiddenItemsWeight,
-            leftItemLength,
-            leftItemsWeight,
-            rightItemLength,
-            rightItemsWeight,
-            snippedPos,
-            totalSize,
-            typicalItemSize,
-          } = this._trackBox.recalculateMetrics({
-            bounds: { width, height }, collection: items,
-            dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap,
-          });
-
-        // Необходима кореляция startDisplayObjectY с помощью дельты от высоты предыдущей и текущей размеченной области по версии кэша.
-        // TrackBox может расчитать дельту!
-
-        return of({
-          items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
-          itemsOnDisplay, itemsOnDisplayLength, leftHiddenItemsWeight, itemSize: typicalItemSize,
-          totalSize, snap, leftItemLength, leftItemsWeight, rightItemLength, rightItemsWeight, snippedPos,
-          dynamicSize,
+        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
+          bounds: { width, height }, dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap,
         });
-      }),
-      tap(({
-        items, stickyMap, width, height, isVertical, scrollSize, itemsFromStartToScrollEnd,
-        itemsOnDisplay, itemsOnDisplayLength, leftHiddenItemsWeight, leftItemLength, leftItemsWeight,
-        rightItemLength, rightItemsWeight, snippedPos, itemSize, totalSize, snap, dynamicSize: dynamic,
-      }) => {
-        const displayItems: IRenderVirtualListCollection = [];
-        if (items.length) {
-          const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
-            w = isVertical ? width : itemSize, h = isVertical ? itemSize : height, totalItems = items.length,
-            startIndex = itemsFromStartToScrollEnd - leftItemLength;
-
-          let pos = leftHiddenItemsWeight - leftItemsWeight,
-            renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
-            stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
-            stickyItemSize = 0;
-
-          if (snap) {
-            for (let i = itemsFromStartToScrollEnd - 1; i >= 0; i--) {
-              const id = items[i].id, sticky = stickyMap[id], size = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
-              stickyItemSize = size;
-              if (sticky > 0) {
-                const measures = {
-                  x: isVertical ? 0 : snippedPos,
-                  y: isVertical ? snippedPos : 0,
-                  width: w,
-                  height: h,
-                }, config = {
-                  isVertical,
-                  sticky,
-                  snap,
-                  snapped: true,
-                  snappedOut: false,
-                  dynamic,
-                };
-
-                const itemData: IVirtualListItem = items[i];
-
-                stickyItem = { id, measures, data: itemData, config };
-                stickyItemIndex = i;
-
-                displayItems.push(stickyItem);
-                break;
-              }
-            }
-          }
-
-          let i = startIndex;
-
-          while (renderItems > 0) {
-            if (i >= totalItems) {
-              break;
-            }
-
-            const id = items[i].id, size = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
-
-            if (id !== stickyItem?.id) {
-              const snapped = snap && stickyMap[id] > 0 && pos <= scrollSize,
-                measures = {
-                  x: isVertical ? 0 : pos,
-                  y: isVertical ? pos : 0,
-                  width: w,
-                  height: h,
-                }, config = {
-                  isVertical,
-                  sticky: stickyMap[id],
-                  snap,
-                  snapped: false,
-                  snappedOut: false,
-                  dynamic,
-                };
-
-              const itemData: IVirtualListItem = items[i];
-
-              const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-              if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + size) {
-                item.measures.x = isVertical ? 0 : snapped ? snippedPos : pos;
-                item.measures.y = isVertical ? snapped ? snippedPos : pos : 0;
-                nextSticky = item;
-                nextSticky.config.snapped = snapped;
-              }
-              displayItems.push(item);
-            }
-
-            renderItems -= 1;
-            pos += size;
-            i++;
-          }
-
-          const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME;
-
-          if (nextSticky && stickyItem && nextSticky.measures[axis] <= scrollSize + stickyItemSize) {
-            if (nextSticky.measures[axis] > scrollSize) {
-              stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
-              stickyItem.config.snapped = nextSticky.config.snapped = false;
-              stickyItem.config.snappedOut = true;
-              stickyItem.config.sticky = 1;
-            } else {
-              nextSticky.config.snapped = true;
-            }
-          }
-        }
 
         this._displayItems.set(displayItems);
 
         this.resetBoundsSize(isVertical, totalSize);
-      })
+
+        return of(displayItems);
+      }),
     ).subscribe();
 
     combineLatest([$initialized, toObservable(this.itemRenderer)]).pipe(
