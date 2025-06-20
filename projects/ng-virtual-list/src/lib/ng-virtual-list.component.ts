@@ -299,6 +299,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   sticky,
                   snap,
                   snapped: true,
+                  snappedOut: false,
                   dynamic,
                 };
 
@@ -323,7 +324,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             const id = items[i].id, size = dynamic ? this._trackBox.get(id)?.[sizeProperty] || itemSize : itemSize;
 
             if (id !== stickyItem?.id) {
-              const snaped = snap && stickyMap[id] > 0 && pos <= scrollSize,
+              const snapped = snap && stickyMap[id] > 0 && pos <= scrollSize,
                 measures = {
                   x: isVertical ? 0 : pos,
                   y: isVertical ? pos : 0,
@@ -333,7 +334,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   isVertical,
                   sticky: stickyMap[id],
                   snap,
-                  snapped: false,
+                  snapped,
+                  snappedOut: false,
                   dynamic,
                 };
 
@@ -341,8 +343,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
               const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
               if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + size) {
-                item.measures.x = isVertical ? 0 : snaped ? snippedPos : pos;
-                item.measures.y = isVertical ? snaped ? snippedPos : pos : 0;
+                item.measures.x = isVertical ? 0 : snapped ? snippedPos : pos;
+                item.measures.y = isVertical ? snapped ? snippedPos : pos : 0;
                 nextSticky = item;
               }
               displayItems.push(item);
@@ -359,6 +361,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             if (nextSticky.measures[axis] > scrollSize) {
               stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
               stickyItem.config.snapped = nextSticky.config.snapped = false;
+              stickyItem.config.snappedOut = true;
               stickyItem.config.sticky = 1;
             } else {
               nextSticky.config.snapped = true;
