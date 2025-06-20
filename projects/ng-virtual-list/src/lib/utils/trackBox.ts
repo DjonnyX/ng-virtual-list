@@ -15,6 +15,8 @@ import { IVirtualListStickyMap } from "../models";
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
 export interface IMetrics {
+    normalizedItemWidth: number;
+    normalizedItemHeight: number;
     width: number;
     height: number;
     dynamicSize: boolean;
@@ -27,12 +29,17 @@ export interface IMetrics {
     leftHiddenItemsWeight: number;
     leftItemLength: number;
     leftItemsWeight: number;
+    renderItems: number;
     rightItemLength: number;
     rightItemsWeight: number;
     scrollSize: number;
+    sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
     snap: boolean;
     snippedPos: number;
+    startIndex: number;
+    startPosition: number;
     totalItemsToDisplayEndWeight: number;
+    totalLength: number;
     totalSize: number;
     typicalItemSize: number;
 }
@@ -133,8 +140,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         const { bounds, collection, dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap, } = options;
 
         const { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME, size = isVertical ? height : width,
-            weightToDisplayEnd = scrollSize + height,
             totalLength = collection.length, typicalItemSize = itemSize,
+            w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
             totalSize = dynamicSize ? this.getBoundsFromCache(collection, typicalItemSize, isVertical) : totalLength * typicalItemSize,
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [];
@@ -191,24 +198,27 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset);
             rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : itemsOffset;
-            startIndex = itemsFromStartToScrollEnd - leftItemLength;
         } else {
-            itemsFromStartToScrollEnd = Math.ceil(scrollSize / typicalItemSize);
+            itemsFromStartToScrollEnd = Math.floor(scrollSize / typicalItemSize);
             itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / typicalItemSize);
             leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset);
             rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : itemsOffset;
-            startIndex = itemsFromStartToScrollEnd - leftItemLength;
             leftItemsWeight = leftItemLength * typicalItemSize;
             rightItemsWeight = rightItemLength * typicalItemSize,
                 leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize,
                 totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize;
         }
+        startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
 
         const itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight,
-            itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd;
+            itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
+            startPosition = leftHiddenItemsWeight - leftItemsWeight,
+            renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength;
 
         const metrics: IMetrics = {
+            normalizedItemWidth: w,
+            normalizedItemHeight: h,
             width,
             height,
             dynamicSize,
@@ -221,12 +231,17 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             leftHiddenItemsWeight,
             leftItemLength,
             leftItemsWeight,
+            renderItems,
             rightItemLength,
             rightItemsWeight,
             scrollSize,
+            sizeProperty,
             snap,
             snippedPos,
+            startIndex,
+            startPosition,
             totalItemsToDisplayEndWeight,
+            totalLength,
             totalSize,
             typicalItemSize,
         };
@@ -237,48 +252,51 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
         metrics: IMetrics): IRenderVirtualListCollection {
         const {
-            width,
-            height,
+            normalizedItemWidth,
+            normalizedItemHeight,
+            // width,
+            // height,
             dynamicSize,
-            itemSize,
+            // itemSize,
             itemsFromStartToScrollEnd,
-            itemsFromStartToDisplayEnd,
-            itemsOnDisplay,
-            itemsOnDisplayLength,
+            // itemsFromStartToDisplayEnd,
+            // itemsOnDisplay,
+            // itemsOnDisplayLength,
             isVertical,
-            leftHiddenItemsWeight,
-            leftItemLength,
-            leftItemsWeight,
-            rightItemLength,
-            rightItemsWeight,
+            // leftHiddenItemsWeight,
+            // leftItemLength,
+            // leftItemsWeight,
+            renderItems: renderItemsLength,
+            // rightItemLength,
+            // rightItemsWeight,
             scrollSize,
+            sizeProperty,
             snap,
             snippedPos,
-            totalItemsToDisplayEndWeight,
-            totalSize,
+            startPosition,
+            // totalItemsToDisplayEndWeight,
+            totalLength,
+            // totalSize,
+            startIndex,
             typicalItemSize,
         } = metrics;
         const displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
-            const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
-                w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height, totalItems = items.length,
-                startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalItems > 0 ? totalItems - 1 : 0);
-
-            let pos = leftHiddenItemsWeight - leftItemsWeight,
-                renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
+            let pos = startPosition,
+                renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
                 stickyItemSize = 0;
 
             if (snap) {
-                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd - 1 : 0, totalItems - 1); i >= 0; i--) {
+                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     stickyItemSize = size;
                     if (sticky > 0) {
                         const measures = {
                             x: isVertical ? 0 : snippedPos,
                             y: isVertical ? snippedPos : 0,
-                            width: w,
-                            height: h,
+                            width: normalizedItemWidth,
+                            height: normalizedItemHeight,
                         }, config = {
                             isVertical,
                             sticky,
@@ -302,7 +320,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             let i = startIndex;
 
             while (renderItems > 0) {
-                if (i > totalItems) {
+                if (i >= totalLength) {
                     break;
                 }
 
@@ -313,8 +331,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                         measures = {
                             x: isVertical ? 0 : pos,
                             y: isVertical ? pos : 0,
-                            width: w,
-                            height: h,
+                            width: normalizedItemWidth,
+                            height: normalizedItemHeight,
                         }, config = {
                             isVertical,
                             sticky: stickyMap[id],
