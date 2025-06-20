@@ -262,7 +262,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         if (items.length) {
             const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
                 w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height, totalItems = items.length,
-                startIndex = itemsFromStartToScrollEnd - leftItemLength;
+                startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalItems > 0 ? totalItems - 1 : 0);
 
             let pos = leftHiddenItemsWeight - leftItemsWeight,
                 renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
@@ -270,7 +270,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                 stickyItemSize = 0;
 
             if (snap) {
-                for (let i = itemsFromStartToScrollEnd - 1; i >= 0; i--) {
+                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd - 1 : 0, totalItems - 1); i >= 0; i--) {
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     stickyItemSize = size;
                     if (sticky > 0) {
@@ -302,7 +302,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             let i = startIndex;
 
             while (renderItems > 0) {
-                if (i >= totalItems) {
+                if (i > totalItems) {
                     break;
                 }
 

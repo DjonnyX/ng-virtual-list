@@ -109,11 +109,17 @@ export class AppComponent {
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
   horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
 
-  itemId: Id = this.items[0].id;
+  private _minId: Id = this.items.length > 0 ? this.items[0].id : 0;
+  get minId() { return this._minId; };
+
+  private _maxId: Id = this.items.length > 0 ? this.items[this.items.length - 1].id : 0;
+  get maxId() { return this._maxId; };
+
+  itemId: Id = this._minId;
 
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef();
-    if (list) {
+    if (list && this.itemId !== undefined) {
       list.scrollTo(this.itemId, 'smooth');
     }
   }
