@@ -9,20 +9,28 @@ import { CacheMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
 import { debounce } from "./debounce";
-import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME } from "../const";
+import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
+import { IVirtualListStickyMap } from "../models";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
 export interface IMetrics {
+    width: number;
+    height: number;
+    dynamicSize: boolean;
+    itemSize: number;
     itemsFromStartToScrollEnd: number;
     itemsFromStartToDisplayEnd: number;
     itemsOnDisplay: number;
     itemsOnDisplayLength: number;
+    isVertical: boolean;
     leftHiddenItemsWeight: number;
     leftItemLength: number;
     leftItemsWeight: number;
     rightItemLength: number;
     rightItemsWeight: number;
+    scrollSize: number;
+    snap: boolean;
     snippedPos: number;
     totalItemsToDisplayEndWeight: number;
     totalSize: number;
@@ -105,7 +113,23 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this._debounceChanges.execute(this._version);
     }
 
-    recalculateMetrics(options: IRecalculateMetricsOptions): IMetrics {
+    updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
+        options: Omit<IRecalculateMetricsOptions, 'collection'>): { displayItems: IRenderVirtualListCollection; totalSize: number; } {
+        this.cacheElements();
+
+        const metrics = this.recalculateMetrics({
+            ...options,
+            collection: items,
+        });
+
+        const displayItems = this.generateDisplayCollection(items, stickyMap, metrics);
+        return { displayItems, totalSize: metrics.totalSize };
+    }
+
+    protected recalculateMetrics(options: IRecalculateMetricsOptions): IMetrics {
+        // Необходима кореляция startDisplayObjectY с помощью дельты от высоты предыдущей и текущей размеченной области по версии кэша.
+        // TrackBox может расчитать дельту!
+
         const { bounds, collection, dynamicSize, isVertical, itemSize, itemsOffset, scrollSize, snap, } = options;
 
         const { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME, size = isVertical ? height : width,
@@ -184,16 +208,23 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         const itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd;
 
-        const metrics = {
+        const metrics: IMetrics = {
+            width,
+            height,
+            dynamicSize,
+            itemSize,
             itemsFromStartToScrollEnd,
             itemsFromStartToDisplayEnd,
             itemsOnDisplay,
             itemsOnDisplayLength,
+            isVertical,
             leftHiddenItemsWeight,
             leftItemLength,
             leftItemsWeight,
             rightItemLength,
             rightItemsWeight,
+            scrollSize,
+            snap,
             snippedPos,
             totalItemsToDisplayEndWeight,
             totalSize,
@@ -201,6 +232,129 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         };
 
         return metrics;
+    }
+
+    protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
+        metrics: IMetrics): IRenderVirtualListCollection {
+        const {
+            width,
+            height,
+            dynamicSize,
+            itemSize,
+            itemsFromStartToScrollEnd,
+            itemsFromStartToDisplayEnd,
+            itemsOnDisplay,
+            itemsOnDisplayLength,
+            isVertical,
+            leftHiddenItemsWeight,
+            leftItemLength,
+            leftItemsWeight,
+            rightItemLength,
+            rightItemsWeight,
+            scrollSize,
+            snap,
+            snippedPos,
+            totalItemsToDisplayEndWeight,
+            totalSize,
+            typicalItemSize,
+        } = metrics;
+        const displayItems: IRenderVirtualListCollection = [];
+        if (items.length) {
+            const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
+                w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height, totalItems = items.length,
+                startIndex = itemsFromStartToScrollEnd - leftItemLength;
+
+            let pos = leftHiddenItemsWeight - leftItemsWeight,
+                renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
+                stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
+                stickyItemSize = 0;
+
+            if (snap) {
+                for (let i = itemsFromStartToScrollEnd - 1; i >= 0; i--) {
+                    const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
+                    stickyItemSize = size;
+                    if (sticky > 0) {
+                        const measures = {
+                            x: isVertical ? 0 : snippedPos,
+                            y: isVertical ? snippedPos : 0,
+                            width: w,
+                            height: h,
+                        }, config = {
+                            isVertical,
+                            sticky,
+                            snap,
+                            snapped: true,
+                            snappedOut: false,
+                            dynamic: dynamicSize,
+                        };
+
+                        const itemData: I = items[i];
+
+                        stickyItem = { id, measures, data: itemData, config };
+                        stickyItemIndex = i;
+
+                        displayItems.push(stickyItem);
+                        break;
+                    }
+                }
+            }
+
+            let i = startIndex;
+
+            while (renderItems > 0) {
+                if (i >= totalItems) {
+                    break;
+                }
+
+                const id = items[i].id, size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
+
+                if (id !== stickyItem?.id) {
+                    const snapped = snap && stickyMap[id] > 0 && pos <= scrollSize,
+                        measures = {
+                            x: isVertical ? 0 : pos,
+                            y: isVertical ? pos : 0,
+                            width: w,
+                            height: h,
+                        }, config = {
+                            isVertical,
+                            sticky: stickyMap[id],
+                            snap,
+                            snapped: false,
+                            snappedOut: false,
+                            dynamic: dynamicSize,
+                        };
+
+                    const itemData: I = items[i];
+
+                    const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
+                    if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + size) {
+                        item.measures.x = isVertical ? 0 : snapped ? snippedPos : pos;
+                        item.measures.y = isVertical ? snapped ? snippedPos : pos : 0;
+                        nextSticky = item;
+                        nextSticky.config.snapped = snapped;
+                    }
+                    displayItems.push(item);
+                }
+
+                renderItems -= 1;
+                pos += size;
+                i++;
+            }
+
+            const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME;
+
+            if (nextSticky && stickyItem && nextSticky.measures[axis] <= scrollSize + stickyItemSize) {
+                if (nextSticky.measures[axis] > scrollSize) {
+                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
+                    stickyItem.config.snapped = nextSticky.config.snapped = false;
+                    stickyItem.config.snappedOut = true;
+                    stickyItem.config.sticky = 1;
+                } else {
+                    nextSticky.config.snapped = true;
+                }
+            }
+        }
+        return displayItems;
     }
 
     /**
@@ -222,7 +376,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this._tracker.untrackComponentByIdProperty(component);
     }
 
-    cacheElements(): void {
+    protected cacheElements(): void {
         if (!this._displayComponents) {
             return;
         }
