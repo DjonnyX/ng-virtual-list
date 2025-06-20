@@ -1,3 +1,10 @@
+/**
+ * Object with configuration parameters for IRenderVirtualListItem
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/render-item-config.model.ts
+ * @author Evgenii Grebennikov
+ * @email djonnyx@gmail.com
+ * 
+ */
 export interface IRenderVirtualListItemConfig {
     /**
      * If greater than 0, the element will have a sticky position with the given zIndex.

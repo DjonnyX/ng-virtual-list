@@ -9,7 +9,7 @@ import {
 
 /**
  * Virtual list item component
- * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */

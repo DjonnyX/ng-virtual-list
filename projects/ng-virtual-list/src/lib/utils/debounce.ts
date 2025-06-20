@@ -1,6 +1,6 @@
 /**
  * Simple debounce function.
- * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/debounce.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -19,7 +19,13 @@ export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number
         }, debounceTime);
     };
     return {
+        /**
+         *  Call handling method
+         */
         execute,
+        /**
+         * Method of destroying handlers
+         */
         dispose,
     };
 };

@@ -23,7 +23,7 @@ import { TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @homepage https://github.com/DjonnyX/ng-virtual-list/tree/main/projects/ng-virtual-list
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -334,7 +334,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                   isVertical,
                   sticky: stickyMap[id],
                   snap,
-                  snapped,
+                  snapped: false,
                   snappedOut: false,
                   dynamic,
                 };
@@ -346,6 +346,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
                 item.measures.x = isVertical ? 0 : snapped ? snippedPos : pos;
                 item.measures.y = isVertical ? snapped ? snippedPos : pos : 0;
                 nextSticky = item;
+                nextSticky.config.snapped = snapped;
               }
               displayItems.push(item);
             }
