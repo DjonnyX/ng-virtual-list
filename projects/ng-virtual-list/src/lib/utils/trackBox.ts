@@ -235,9 +235,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             if (itemsFromStartToDisplayEnd === -1) {
                 itemsFromStartToDisplayEnd = 0;
             }
-            if (isFromId) {
-                actualScrollSize = itemByIdPos;
-            }
+            actualScrollSize = isFromId ? itemByIdPos : scrollSize;
 
             leftItemsWeights.splice(0, leftItemsWeights.length - itemsOffset);
             leftItemsWeights.forEach(v => {
