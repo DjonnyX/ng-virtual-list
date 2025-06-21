@@ -1,7 +1,7 @@
 import { Component, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
-import { FormsModule } from '@angular/forms';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 
 const MAX_ITEMS = 1000000;
@@ -83,7 +83,7 @@ for (let i = 0, l = 100000; i < l; i++) {
   if (type === 'group-header') {
     groupDynamicIndex++;
   }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
@@ -95,6 +95,8 @@ for (let i = 0, l = 100000; i < l; i++) {
 })
 export class AppComponent {
   protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
+
+  protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
 
   items = ITEMS;
 
@@ -117,10 +119,25 @@ export class AppComponent {
 
   itemId: Id = this._minId;
 
+  private _minDlId: Id = this.groupDynamicItems.length > 0 ? this.groupDynamicItems[0].id : 0;
+  get minDlId() { return this._minDlId; };
+
+  private _maxDlId: Id = this.groupDynamicItems.length > 0 ? this.groupDynamicItems[this.groupDynamicItems.length - 1].id : 0;
+  get maxDlId() { return this._maxDlId; };
+
+  dlItemId: Id = this._minDlId;
+
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef();
     if (list && this.itemId !== undefined) {
       list.scrollTo(this.itemId, 'smooth');
+    }
+  }
+
+  onButtonScrollDLToIdClickHandler = (e: Event) => {
+    const list = this._dynamicListContainerRef();
+    if (list && this.dlItemId !== undefined) {
+      list.scrollTo(this.dlItemId, 'smooth');
     }
   }
 
