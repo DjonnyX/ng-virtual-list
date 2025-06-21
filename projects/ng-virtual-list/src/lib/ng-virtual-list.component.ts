@@ -268,6 +268,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (scrolledItemId !== undefined) {
           const scrollSize = this._trackBox.getItemPosition(scrolledItemId, stickyMap, { ...opts, scrollSize: actualScrollSize });
           actualScrollSize = scrollSize;
+          this._scrollSize.set(actualScrollSize);
         }
 
         const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, { ...opts, scrollSize: actualScrollSize });
@@ -275,8 +276,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         this._displayItems.set(displayItems);
 
         this.resetBoundsSize(isVertical, totalSize);
-
-        this._scrollSize.set(actualScrollSize);
 
         if (scrolledItemId !== undefined) {
           const container = this._container();
