@@ -438,6 +438,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         this._scrolledItemId.set(id);
 
+        this._scrollSize.set(scrollSize);
+
         if (container) {
           const handler = () => {
             if (container) {
