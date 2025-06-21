@@ -25,6 +25,14 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected _version: number = 0;
 
+    protected _previouseFullHeigh: number = 0;
+
+    protected _delta: number = 0;
+
+    get delta() {
+        return this._delta;
+    }
+
     get version() {
         return this._version;
     }
