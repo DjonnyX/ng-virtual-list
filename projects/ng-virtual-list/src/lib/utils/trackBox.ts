@@ -158,7 +158,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             totalSize = dynamicSize ? this.getBoundsFromCache(collection, typicalItemSize, isVertical) : totalLength * typicalItemSize,
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [],
-            isFromId = (typeof fromItemId === 'number' && fromItemId > -1) || (typeof fromItemId === 'string' && fromItemId > '-1');
+            isFromId = fromItemId === undefined && (typeof fromItemId === 'number' && fromItemId > -1)
+                || (typeof fromItemId === 'string' && fromItemId > '-1');
 
         let itemsFromStartToScrollEnd: number = -1, itemsFromDisplayEndToOffsetEnd = 0, itemsFromStartToDisplayEnd = -1,
             leftItemLength = 0, rightItemLength = 0,
@@ -234,9 +235,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             if (itemsFromStartToDisplayEnd === -1) {
                 itemsFromStartToDisplayEnd = 0;
             }
-            if (isFromId) {
-                actualScrollSize = itemByIdPos;
-            }
+            actualScrollSize = isFromId ? itemByIdPos : scrollSize;
 
             leftItemsWeights.splice(0, leftItemsWeights.length - itemsOffset);
             leftItemsWeights.forEach(v => {

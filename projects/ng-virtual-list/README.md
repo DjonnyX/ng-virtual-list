@@ -1,6 +1,5 @@
 # NgVirtualList
 Maximum performance for extremely large lists.
-It is based on algorithms for virtualization of screen objects.
 
 Angular version 19.X.X.
 
