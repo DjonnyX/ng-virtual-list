@@ -20,9 +20,11 @@ export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
 // presets
 
+export const BEHAVIOR_AUTO = 'auto';
+
 export const BEHAVIOR_INSTANT = 'instant';
 
-export const BEHAVIOR_AUTO = 'auto';
+export const BEHAVIOR_SMOOTH = 'smooth';
 
 export const VISIBILITY_VISIBLE = 'visible';
 
