@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRect } from '../types';
 import {
@@ -41,7 +41,7 @@ export class NgVirtualListItemComponent {
 
     if (data) {
       const styles = this._elementRef.nativeElement.style;
-      styles.zIndex = data.config.sticky;
+      styles.zIndex = String(data.config.sticky);
       if (data.config.snapped) {
         styles.transform = ZEROS_TRANSLATE_3D;
         styles.position = POSITION_STICKY;
@@ -72,9 +72,7 @@ export class NgVirtualListItemComponent {
     this._cdr.markForCheck();
   }
 
-  private _elementRef = inject(ElementRef<HTMLElement>);
-
-  constructor(private _cdr: ChangeDetectorRef) {
+  constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>) {
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }
