@@ -1,4 +1,4 @@
-![logo](https://github.com/user-attachments/assets/fcbe3d12-53e1-4666-bb55-0453023f9573)
+![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
 # NgVirtualList
 Maximum performance for extremely large lists.
