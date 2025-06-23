@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+import { LOGO } from './const';
 
 const MAX_ITEMS = 1000000;
 
@@ -94,6 +95,8 @@ for (let i = 0, l = 100000; i < l; i++) {
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  readonly logo = LOGO;
+
   protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
 
   protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
