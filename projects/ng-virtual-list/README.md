@@ -1,4 +1,4 @@
-<p align="center" width="100%"><img width="25%" src="https://github.com/user-attachments/assets/fcbe3d12-53e1-4666-bb55-0453023f9573" /></p>
+![logo](https://github.com/user-attachments/assets/fcbe3d12-53e1-4666-bb55-0453023f9573)
 
 # NgVirtualList
 Maximum performance for extremely large lists.

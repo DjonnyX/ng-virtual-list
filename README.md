@@ -1,4 +1,4 @@
-<p align="center" width="100%"><img width="25%" src="https://github.com/user-attachments/assets/fcbe3d12-53e1-4666-bb55-0453023f9573" /></p>
+![logo](https://github.com/user-attachments/assets/fcbe3d12-53e1-4666-bb55-0453023f9573)
 
 # NgVirtualList
 Maximum performance for extremely large lists.
@@ -470,6 +470,20 @@ Methods
 | Method | Type | Description |
 |--|--|--|
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+
+<br/>
+
+
+## Previous versions
+
+| Angular version | ng-virtual-list version | git | npm |
+|--|--|--|--|
+| 19.x | 19.1.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.11](https://www.npmjs.com/package/ng-virtual-list/v/19.1.11) |
+| 18.x | 18.0.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.3](https://www.npmjs.com/package/ng-virtual-list/v/18.0.3) |
+| 17.x | 17.0.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.0](https://www.npmjs.com/package/ng-virtual-list/v/17.0.0) |
+| 16.x | 16.0.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.1](https://www.npmjs.com/package/ng-virtual-list/v/16.0.1) |
+| 15.x | 15.0.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.0](https://www.npmjs.com/package/ng-virtual-list/v/15.0.0) |
+| 14.x | 14.0.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.0](https://www.npmjs.com/package/ng-virtual-list/v/14.0.0) |
 
 <br/>
 
