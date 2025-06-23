@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRect } from '../types';
 import {
@@ -30,8 +30,10 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
+  private _cdr = inject(ChangeDetectorRef);
+
   data = signal<IRenderVirtualListItem | undefined>(undefined);
-  private _data: IRenderVirtualListItem | undefined = undefined;
+  _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
     if (this._data === v) {
       return;
@@ -54,6 +56,8 @@ export class NgVirtualListItemComponent {
     }
 
     this.data.set(v);
+
+    this._cdr.markForCheck();
   }
 
   get itemId() {
@@ -63,7 +67,13 @@ export class NgVirtualListItemComponent {
   itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
   set renderer(v: TemplateRef<any> | undefined) {
+    if (this.itemRenderer() === v) {
+      return;
+    }
+
     this.itemRenderer.set(v);
+
+    this._cdr.markForCheck();
   }
 
   private _elementRef = inject(ElementRef<HTMLElement>);
