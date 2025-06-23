@@ -1,6 +1,6 @@
 {
   "name": "ng-virtual-list",
-  "version": "20.0.0",
+  "version": "20.0.1",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
@@ -16,7 +16,8 @@
     "group",
     "grouped",
     "scroll",
-    "scrolling"
+    "scrolling",
+    "scroller"
   ],
   "peerDependencies": {
     "@angular/common": "^20.0.4",
