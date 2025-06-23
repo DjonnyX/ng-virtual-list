@@ -20,47 +20,96 @@ input {
     background-color: unset;
 }
 
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .vl-section {
     padding: 0 20px;
-    margin-bottom: 8px;
+    margin-bottom: 24px;
     width: calc(100% - 40px);
     max-width: 640px;
 
     &.cap {
         margin-bottom: 24px;
+
+        .logo {
+            width: 100%;
+        }
+
+        .version {
+            color: #3b3b3b;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+            width: 100%;
+
+            &>span {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        }
     }
 
     &__container {
         width: 100%;
 
         &>h2 {
-            background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #5a3e85;
             font-size: 12px;
             text-transform: uppercase;
             margin-bottom: 10px;
             letter-spacing: 0.5px;
+            font-weight: 800;
         }
 
         margin-bottom: 18px;
     }
 
     &>h1 {
-        background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
+        background: -webkit-linear-gradient(0deg, #6f00e2 0%0%, #6f00e2 30%, #f90058 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 16px;
+        font-size: 19px;
         font-weight: 800;
         text-transform: uppercase;
         margin: 0;
         padding: 0;
-        margin-bottom: -2px;
         letter-spacing: 0.5px;
+        margin-bottom: 9px;
+
+        &.center {
+            width: 100%;
+            text-align: center;
+        }
     }
 
     &>p {
-        background: -webkit-linear-gradient(180deg, #2c9ab3, #25113b);
+        &.l {
+            color: #505050;
+            background: unset;
+            width: 100%;
+            letter-spacing: 2px;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin: 0;
+            text-align: center;
+            margin-bottom: 0px;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: initial;
+
+            &.m {
+                color: #3b3b3b;
+                margin-bottom: 20px;
+            }
+        }
+
+        background: -webkit-linear-gradient(0deg, #6f00e2 0%0%, #6f00e2 30%, #f90058 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-size: 10px;
@@ -69,13 +118,6 @@ input {
         letter-spacing: 0.5px;
         margin: 0;
         padding: 0;
-
-        &.l {
-            letter-spacing: 0.5px;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin: 0;
-        }
     }
 
     &.block {
@@ -90,32 +132,34 @@ input {
         margin-bottom: 8px;
 
         .scroll-to__input {
-            background-color: #ffffff;
+            background-color: #1a1a1e;
+            color: #9191c6;
             border-radius: 3px;
             box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
-            border: 2px solid rgb(79 147 229);
+            border: 2px solid #37265f;
             min-height: 24px;
             padding: 0 6px;
 
             &:focus,
             &:active {
-                border: 2px solid rgb(229, 169, 79);
+                border: 2px solid rgb(114, 87, 46);
             }
         }
 
         .scroll-to__button {
-            background-color: #629bcf;
+            background-color: #37265f;
             padding: 0 8px;
             border-radius: 3px;
             box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
-            color: #ffffff;
+            color: #000000;
             text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.25);
             text-transform: uppercase;
             letter-spacing: 1px;
             font-size: 11px;
+            font-weight: 800;
 
             &:hover {
-                background-color: #447aac;
+                background-color: #264c6e;
             }
         }
     }
@@ -124,10 +168,12 @@ input {
 .list {
     border-radius: 3px;
     box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid #383844;
+    background-color: #0f0f11;
 
     &::part(scroller) {
         scroll-behavior: auto;
+        color: #71718c;
 
         /* custom scrollbar */
         &::-webkit-scrollbar {
@@ -136,11 +182,11 @@ input {
         }
 
         &::-webkit-scrollbar-track {
-            background-color: #ffffff;
+            background-color: #1a1a1e;
         }
 
         &::-webkit-scrollbar-thumb {
-            background-color: #d6dee1;
+            background-color: #383844;
             border-radius: 20px;
             border: 6px solid transparent;
             background-clip: content-box;
@@ -149,7 +195,7 @@ input {
         }
 
         &::-webkit-scrollbar-thumb:hover {
-            background-color: #a8bbbf;
+            background-color: #3d3d4d;
         }
     }
 
@@ -157,8 +203,8 @@ input {
         height: 100%;
         width: 100%;
         padding: 6px 12px;
-        background-color: rgb(255, 255, 255);
-        border-bottom: 1px solid rgb(245, 245, 245);
+        background-color: #1a1a1e;
+        border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         display: flex;
         align-items: center;
@@ -172,8 +218,8 @@ input {
         height: 100%;
         width: 100%;
         padding: 6px 12px;
-        background-color: rgb(230, 234, 238);
-        border-bottom: 1px solid rgb(245, 245, 245);
+        background-color: #25252b;
+        border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
@@ -190,9 +236,9 @@ input {
         cursor: pointer;
         height: 100%;
         padding: 0 8px;
-        background-color: rgb(255, 255, 255);
-        border-right: 1px solid rgb(245, 245, 245);
-        border-bottom: 1px solid rgb(245, 245, 245);
+        background-color: #1a1a1e;
+        border-right: 1px solid #27272e;
+        border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
@@ -202,7 +248,7 @@ input {
         justify-content: center;
 
         &:hover {
-            background-color: rgb(241, 241, 241);
+            background-color: #24242b;
         }
 
         &>* {
@@ -213,8 +259,8 @@ input {
     &__h-group-container {
         height: 100%;
         padding: 0 8px;
-        background-color: rgb(230, 234, 238);
-        border-right: 1px solid rgb(245, 245, 245);
+        background-color: #25252b;
+        border-right: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
