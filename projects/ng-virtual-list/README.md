@@ -458,8 +458,8 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onScroll | (e: Event) => void | Fires when the list has been scrolled. |
-| onScrollEnd | (e: Event) => void | Fires when the list has completed scrolling. |
+| onScroll | (scrollSize: number) => void | Fires when the list has been scrolled. |
+| onScrollEnd | (scrollSize: number) => void | Fires when the list has completed scrolling. |
 
 <br/>
 
