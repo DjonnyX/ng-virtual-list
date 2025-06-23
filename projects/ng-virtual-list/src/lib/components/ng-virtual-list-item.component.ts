@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRect } from '../types';
@@ -15,9 +14,9 @@ import {
  */
 @Component({
   selector: 'ng-virtual-list-item',
-  imports: [CommonModule],
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrl: './ng-virtual-list-item.component.scss',
+  standalone: false,
   host: {
     'class': 'ngvl__item',
   },

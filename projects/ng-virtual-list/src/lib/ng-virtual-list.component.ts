@@ -29,7 +29,7 @@ import { IRecalculateMetricsOptions, ScrollDirection, TRACK_BOX_CHANGE_EVENT_NAM
  */
 @Component({
   selector: 'ng-virtual-list',
-  imports: [CommonModule],
+  standalone: false,
   templateUrl: './ng-virtual-list.component.html',
   styleUrl: './ng-virtual-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,5 +1,4 @@
 import { Component, viewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
@@ -89,7 +88,7 @@ for (let i = 0, l = 100000; i < l; i++) {
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, NgVirtualListComponent],
+  standalone: false,
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
