@@ -27,11 +27,9 @@ Template:
     [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #hotizontalItemRenderer let-data="data">
-  @if (data) {
-  <div class="list__h-container" (click)="onItemClick(data)">
+  <div *ngIf="data" class="list__h-container" (click)="onItemClick(data)">
     <span>{{data.name}}</span>
   </div>
-  }
 </ng-template>
 ```
 
@@ -65,20 +63,14 @@ Template:
     [itemsOffset]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-      <div class="list__h-group-container">
-        <span>{{data.name}}</span>
-      </div>
-      }
-      @default {
-      <div class="list__h-container" (click)="onItemClick(data)">
-        <span>{{data.name}}</span>
-      </div>
-      }
-    }
-  }
+  <ng-container *ngIf="data" [ngSwitch]="data.type">
+    <div *ngSwitchCase="'group-header'" class="list__h-group-container">
+      <span>{{data.name}}</span>
+    </div>
+    <div *ngSwitchCase="'item'" class="list__h-container" (click)="onItemClick(data)">
+      <span>{{data.name}}</span>
+    </div>
+  </ng-container>
 </ng-template>
 ```
 
@@ -123,11 +115,9 @@ Template:
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
-  @if (data) {
-  <div class="list__container">
-    <p>{{data.name}}</p>
+  <div *ngIf="data" class="list__container">
+    <span>{{data.name}}</span>
   </div>
-  }
 </ng-template>
 ```
 
@@ -164,20 +154,14 @@ Template:
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
-      }
-      @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
-      }
-    }
-  }
+  <ng-container *ngIf="data" [ngSwitch]="data.type">
+    <div *ngSwitchCase="'group-header'" class="list__group-container">
+      <span>{{data.name}}</span>
+    </div>
+    <div *ngSwitchCase="'item'" class="list__container">
+      <span>{{data.name}}</span>
+    </div>
+  </ng-container>
 </ng-template>
 ```
 
@@ -191,20 +175,14 @@ Template (with snapping):
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
-      }
-      @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
-      }
-    }
-  }
+  <ng-container *ngIf="data" [ngSwitch]="data.type">
+    <div *ngSwitchCase="'group-header'" class="list__group-container">
+      <span>{{data.name}}</span>
+    </div>
+    <div *ngSwitchCase="'item'" class="list__container">
+      <span>{{data.name}}</span>
+    </div>
+  </ng-container>
 </ng-template>
 ```
 
@@ -256,11 +234,9 @@ Template
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
-@if (data) {
-  <div class="list__container">
+  <div *ngIf="data" class="list__container">
     <span>{{data.name}}</span>
   </div>
-}
 </ng-template>
 ```
 
@@ -310,20 +286,14 @@ Template
       [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-        <div class="list__group-container">
-          <span>{{data.name}}</span>
-        </div>
-      }
-      @default {
-        <div class="list__container">
-          <span>{{data.name}}</span>
-        </div>
-      }
-    }
-  }
+  <ng-container *ngIf="data" [ngSwitch]="data.type">
+    <div *ngSwitchCase="'group-header'" class="list__group-container">
+      <span>{{data.name}}</span>
+    </div>
+    <div *ngSwitchCase="'item'" class="list__container">
+      <span>{{data.name}}</span>
+    </div>
+  </ng-container>
 </ng-template>
 ```
 
