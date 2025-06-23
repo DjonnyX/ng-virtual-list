@@ -1,6 +1,7 @@
+# NgVirtualList
+
 ![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
-# NgVirtualList
 Maximum performance for extremely large lists.
 
 Angular version 20.X.X.
