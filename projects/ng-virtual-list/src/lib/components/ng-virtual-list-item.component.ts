@@ -16,7 +16,6 @@ import {
   selector: 'ng-virtual-list-item',
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrls: ['./ng-virtual-list-item.component.scss'],
-  standalone: false,
   host: {
     'class': 'ngvl__item',
   },

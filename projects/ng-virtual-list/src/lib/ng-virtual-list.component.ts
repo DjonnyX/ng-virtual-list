@@ -2,8 +2,7 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter,
   Input, OnDestroy, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
@@ -14,7 +13,7 @@ import { IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from 
 import { Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions } from './enums';
-import { TrackBox, isDirection, toggleClassName } from './utils';
+import { DisposableComponent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IRecalculateMetricsOptions, ScrollDirection, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
 
 /**
@@ -27,13 +26,12 @@ import { IRecalculateMetricsOptions, ScrollDirection, TRACK_BOX_CHANGE_EVENT_NAM
  */
 @Component({
   selector: 'ng-virtual-list',
-  standalone: false,
   templateUrl: './ng-virtual-list.component.html',
   styleUrls: ['./ng-virtual-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
+export class NgVirtualListComponent extends DisposableComponent implements AfterViewInit, OnDestroy {
   private static __nextId: number = 0;
 
   private _id: number = NgVirtualListComponent.__nextId;
@@ -271,7 +269,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         actualScrollSize = scrollSize + delta;
         const params: ScrollToOptions = {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-          behavior: BEHAVIOR_INSTANT
+          behavior: BEHAVIOR_INSTANT as ScrollBehavior
         };
 
         const container = this._container;
@@ -332,7 +330,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (scrollSize !== actualScrollSize) {
           const params: ScrollToOptions = {
             [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-            behavior: BEHAVIOR_INSTANT
+            behavior: BEHAVIOR_INSTANT as ScrollBehavior
           };
 
           this._trackBox.clearDelta();
@@ -349,7 +347,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (scrollSize !== actualScrollSize) {
           const params: ScrollToOptions = {
             [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-            behavior: BEHAVIOR_INSTANT
+            behavior: BEHAVIOR_INSTANT as ScrollBehavior
           };
 
           container.nativeElement.scroll(params);
@@ -384,6 +382,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     private _cdr: ChangeDetectorRef,
     private _elementRef: ElementRef<HTMLDivElement>
   ) {
+    super();
+
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
@@ -416,7 +416,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       $scrolledItemId = this._$scrolledItemId.asObservable();
 
     $isVertical.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._isVertical = v;
         const el: HTMLElement = this._elementRef.nativeElement;
@@ -425,7 +425,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ).subscribe();
 
     $dynamicSize.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(dynamicSize => {
         this.listenCacheChangesIfNeed(dynamicSize);
       })
@@ -434,7 +434,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     combineLatest([this.$initialized, $scrolledItemId, $bounds, $items, $stickyMap, $scrollSize, $itemSize,
       $itemsOffset, $snap, $isVertical, $dynamicSize, $cacheVersion,
     ]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       debounceTime(0),
       filter(([initialized]) => !!initialized),
@@ -480,7 +480,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     ).subscribe();
 
     combineLatest([this.$initialized, this.$itemRenderer]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
       tap(([, itemRenderer]) => {
@@ -624,7 +624,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT) {
+  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior) {
     const items = this.items, latItem = items[items.length > 0 ? items.length - 1 : 0];
     this.scrollTo(latItem.id, behavior);
   }
@@ -642,7 +642,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+
     if (this._scrollToTimeout) {
       clearTimeout(this._scrollToTimeout);
     }

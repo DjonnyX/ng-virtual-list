@@ -3,10 +3,12 @@ import { debounce } from "./debounce";
 import { toggleClassName } from './toggleClassName';
 import { Tracker } from "./tracker";
 import { TrackBox } from "./trackBox";
+import { DisposableComponent } from './disposableComponent';
 
 export {
-    isDirection,
+    DisposableComponent,
     debounce,
+    isDirection,
     toggleClassName,
     TrackBox,
     Tracker,

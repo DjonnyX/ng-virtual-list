@@ -1,7 +1,7 @@
 # NgVirtualList
 Maximum performance for extremely large lists.
 
-Angular version 16.X.X.
+Angular version 15.X.X.
 
 ![intro](https://github.com/user-attachments/assets/80fbed6c-9f77-48c3-a7a6-2cedf32aebc2)
 
