@@ -6,7 +6,7 @@ export type TEventHandler = (...args: Array<any>) => void;
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class EventEmitter<E = string, H = TEventHandler> {
+export class EventEmitter<E extends string = any, H extends TEventHandler = any> {
     private _listeners: {
         [eventName: string]: Array<TEventHandler>,
     } = {};

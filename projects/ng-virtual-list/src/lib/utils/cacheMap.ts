@@ -1,4 +1,4 @@
-import { EventEmitter } from "./eventEmitter";
+import { EventEmitter, TEventHandler } from "./eventEmitter";
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => Map<I, B>;
@@ -20,7 +20,8 @@ type CacheMapListeners = OnChangeEventListener;
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = CacheMapListeners> extends EventEmitter<E, L> implements ICacheMap {
+export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L extends TEventHandler = CacheMapListeners>
+    extends EventEmitter<E, L> implements ICacheMap {
     protected _map = new Map<I, B>();
 
     protected _version: number = 0;

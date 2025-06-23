@@ -3,7 +3,7 @@
         'snapped-out': data.config.snappedOut}">
         <ng-container *ngIf="itemRenderer">
             <ng-container [ngTemplateOutlet]="itemRenderer"
-                [ngTemplateOutletContext]="{data: data.data || {}, config: data.config}" />
+                [ngTemplateOutletContext]="{data: data.data || {}, config: data.config}"></ng-container>
         </ng-container>
     </li>
 </ng-container>
