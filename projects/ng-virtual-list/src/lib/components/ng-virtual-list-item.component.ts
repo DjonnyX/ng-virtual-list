@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRect } from '../types';
 import {
@@ -15,7 +15,7 @@ import {
 @Component({
   selector: 'ng-virtual-list-item',
   templateUrl: './ng-virtual-list-item.component.html',
-  styleUrl: './ng-virtual-list-item.component.scss',
+  styleUrls: ['./ng-virtual-list-item.component.scss'],
   standalone: false,
   host: {
     'class': 'ngvl__item',
@@ -30,16 +30,14 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
-  private _cdr = inject(ChangeDetectorRef);
+  data: IRenderVirtualListItem | undefined;
 
-  data = signal<IRenderVirtualListItem | undefined>(undefined);
-  _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
-    if (this._data === v) {
+    if (this.data === v) {
       return;
     }
 
-    const data = this._data = v;
+    const data = this.data = v;
 
     if (data) {
       const styles = this._elementRef.nativeElement.style;
@@ -55,30 +53,28 @@ export class NgVirtualListItemComponent {
       styles.width = data.config.isVertical ? SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     }
 
-    this.data.set(v);
-
-    this._cdr.markForCheck();
+    this._cdr.detectChanges();
   }
 
   get itemId() {
-    return this._data?.id;
+    return this.data?.id;
   }
 
-  itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
+  itemRenderer: TemplateRef<any> | undefined;
 
   set renderer(v: TemplateRef<any> | undefined) {
-    if (this.itemRenderer() === v) {
+    if (this.itemRenderer === v) {
       return;
     }
 
-    this.itemRenderer.set(v);
+    this.itemRenderer = v;
 
     this._cdr.markForCheck();
   }
 
   private _elementRef = inject(ElementRef<HTMLElement>);
 
-  constructor() {
+  constructor(private _cdr: ChangeDetectorRef) {
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }

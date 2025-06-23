@@ -1,6 +1,6 @@
 {
   "name": "ng-virtual-list",
-  "version": "17.0.0",
+  "version": "16.0.0",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
@@ -20,8 +20,8 @@
     "scroller"
   ],
   "peerDependencies": {
-    "@angular/common": "^17.3.0",
-    "@angular/core": "^17.3.0"
+    "@angular/common": "^16.2.0",
+    "@angular/core": "^16.2.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

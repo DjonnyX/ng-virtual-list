@@ -1,9 +1,9 @@
-@if (data(); as item) {
-    <li #listItem part="item" class="ngvl-item__container" [ngClass]="{'snapped': item.config.snapped,
-        'snapped-out': item.config.snappedOut}">
-        @if (itemRenderer(); as renderer) {
-            <ng-container [ngTemplateOutlet]="renderer"
-                [ngTemplateOutletContext]="{data: item.data || {}, config: item.config}" />
-        }
+<ng-container *ngIf="data">
+    <li #listItem part="item" class="ngvl-item__container" [ngClass]="{'snapped': data.config.snapped,
+        'snapped-out': data.config.snappedOut}">
+        <ng-container *ngIf="itemRenderer">
+            <ng-container [ngTemplateOutlet]="itemRenderer"
+                [ngTemplateOutletContext]="{data: data.data || {}, config: data.config}" />
+        </ng-container>
     </li>
-}
+</ng-container>
