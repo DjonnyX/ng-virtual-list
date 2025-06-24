@@ -5,7 +5,7 @@ const HORIZONTAL_ALIASES = [Directions.HORIZONTAL, 'horizontal'],
 
 /**
  * Determines the axis membership of a virtual list
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/isDirection.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/utils/isDirection.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
