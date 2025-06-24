@@ -436,21 +436,21 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 
 ## API
 
-[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
+[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
 
 Inputs
 
 | Property | Type | Description |
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
-| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
+| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. |
 | itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
 | itemsOffset | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | itemRenderer | TemplateRef | Rendering element template. |
-| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
+| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snapToItem | boolean? = false | Determines whether scroll positions will be snapped to the element. Default value is "false". |
-| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 
 <br/>
@@ -468,7 +468,7 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
 
 <br/>
 
@@ -477,11 +477,11 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.11](https://www.npmjs.com/package/ng-virtual-list/v/19.1.11) |
-| 18.x | 18.0.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.3](https://www.npmjs.com/package/ng-virtual-list/v/18.0.3) |
-| 17.x | 17.0.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.0](https://www.npmjs.com/package/ng-virtual-list/v/17.0.0) |
-| 16.x | 16.0.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.1](https://www.npmjs.com/package/ng-virtual-list/v/16.0.1) |
-| 15.x | 15.0.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.0](https://www.npmjs.com/package/ng-virtual-list/v/15.0.0) |
-| 14.x | 14.0.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.0](https://www.npmjs.com/package/ng-virtual-list/v/14.0.0) |
+| 19.x | 19.1.12 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.12](https://www.npmjs.com/package/ng-virtual-list/v/19.1.12) |
+| 18.x | 18.0.4 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.4](https://www.npmjs.com/package/ng-virtual-list/v/18.0.4) |
+| 17.x | 17.0.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.1](https://www.npmjs.com/package/ng-virtual-list/v/17.0.1) |
+| 16.x | 16.0.2 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.2](https://www.npmjs.com/package/ng-virtual-list/v/16.0.2) |
+| 15.x | 15.0.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.1](https://www.npmjs.com/package/ng-virtual-list/v/15.0.1) |
+| 14.x | 14.0.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.1](https://www.npmjs.com/package/ng-virtual-list/v/14.0.1) |
 
 <br/>
