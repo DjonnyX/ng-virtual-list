@@ -1,6 +1,6 @@
 /**
  * Simple debounce function.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/debounce.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
