@@ -190,10 +190,6 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
 
                 if (isFromId) {
                     if (itemById === undefined) {
-                        leftItemsWeights.push(componentSize);
-                        leftHiddenItemsWeight += componentSize;
-                        itemsFromStartToScrollEnd = ii;
-
                         if (stickyMap && stickyMap[collectionItem.id] > 0) {
                             stickyComponentSize = componentSize;
                             stickyCollectionItem = collectionItem;
@@ -203,8 +199,14 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                             itemById = collectionItem;
                             itemByIdPos = y;
                             if (stickyCollectionItem && stickyMap && stickyMap[stickyCollectionItem.id] > 0) {
-                                itemByIdPos = itemByIdPos - stickyComponentSize;
+                                if (!stickyMap[fromItemId]) {
+                                    leftHiddenItemsWeight += stickyComponentSize;
+                                }
                             }
+                        } else {
+                            leftItemsWeights.push(componentSize);
+                            leftHiddenItemsWeight += componentSize;
+                            itemsFromStartToScrollEnd = ii;
                         }
                     }
                 } else if (y < scrollSize - componentSize) {
