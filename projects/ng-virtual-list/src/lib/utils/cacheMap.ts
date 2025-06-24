@@ -16,7 +16,7 @@ type CacheMapListeners = OnChangeEventListener;
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
