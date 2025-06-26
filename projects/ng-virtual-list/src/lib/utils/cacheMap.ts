@@ -1,3 +1,5 @@
+import { ScrollDirection } from "../models";
+import { debounce } from "./debounce";
 import { EventEmitter, TEventHandler } from "./eventEmitter";
 
 export interface ICacheMap<I = any, B = any> {
@@ -12,6 +14,8 @@ type CacheMapEvents = 'change';
 type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
+
+const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 0;
 
 /**
  * Cache map.
@@ -34,12 +38,58 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._delta;
     }
 
+    protected _deltaDirection: ScrollDirection = 1;
+    set deltaDirection(v: ScrollDirection) {
+        this._deltaDirection = v;
+
+        this._scrollDirection = this.calcScrollDirection(v);
+    }
+    get deltaDirection() {
+        return this._deltaDirection;
+    }
+
+    private _scrollDirectionCache: Array<ScrollDirection> = [];
+    private _scrollDirection: ScrollDirection = 1;
+    get scrollDirection() {
+        return this._scrollDirection;
+    }
+
     get version() {
         return this._version;
     }
 
+    private _clearScrollDirectionDebounce = debounce(() => {
+        while (this._scrollDirectionCache.length > CLEAR_SCROLL_DIRECTION_TO) {
+            this._scrollDirectionCache.shift();
+        }
+    }, 10);
+
     constructor() {
         super();
+    }
+
+    clearScrollDirectionCache() {
+        this._clearScrollDirectionDebounce.execute();
+    }
+
+    private calcScrollDirection(v: ScrollDirection): ScrollDirection {
+        while (this._scrollDirectionCache.length >= MAX_SCROLL_DIRECTION_POOL) {
+            this._scrollDirectionCache.shift();
+        }
+        this._scrollDirectionCache.push(v);
+        const dict = { [-1]: 0, [0]: 0, [1]: 0 };
+        for (let i = 0, l = this._scrollDirectionCache.length; i < l; i++) {
+            const dir = this._scrollDirectionCache[i];
+            dict[dir] += 1;
+        }
+
+        if (dict[-1] > dict[1]) {
+            return -1;
+        } else if (dict[1] > dict[-1]) {
+            return 1;
+        }
+
+        return -1;
     }
 
     protected bumpVersion() {

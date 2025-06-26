@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+import { LOGO } from './const';
 
 const MAX_ITEMS = 1000000;
 
@@ -97,6 +98,8 @@ export class AppComponent {
 
   @ViewChild('dynamicList', { read: NgVirtualListComponent })
   protected _dynamicListContainerRef!: NgVirtualListComponent;
+
+  readonly logo = LOGO;
 
   items = ITEMS;
 
