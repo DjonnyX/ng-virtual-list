@@ -1,8 +1,8 @@
 # NgVirtualList
 
-![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
-
 Maximum performance for extremely large lists.
+
+![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
 Angular version 20.X.X.
 
@@ -459,8 +459,8 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onScroll | (scrollSize: number) => void | Fires when the list has been scrolled. |
-| onScrollEnd | (scrollSize: number) => void | Fires when the list has completed scrolling. |
+| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
+| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
 
 <br/>
 
@@ -472,16 +472,39 @@ Methods
 
 <br/>
 
-
 ## Previous versions
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.12 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.12](https://www.npmjs.com/package/ng-virtual-list/v/19.1.12) |
-| 18.x | 18.0.4 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.4](https://www.npmjs.com/package/ng-virtual-list/v/18.0.4) |
-| 17.x | 17.0.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.1](https://www.npmjs.com/package/ng-virtual-list/v/17.0.1) |
-| 16.x | 16.0.2 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.2](https://www.npmjs.com/package/ng-virtual-list/v/16.0.2) |
-| 15.x | 15.0.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.1](https://www.npmjs.com/package/ng-virtual-list/v/15.0.1) |
-| 14.x | 14.0.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.1](https://www.npmjs.com/package/ng-virtual-list/v/14.0.1) |
+| 19.x | 19.1.14 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.14](https://www.npmjs.com/package/ng-virtual-list/v/19.1.14) |
+| 18.x | 18.0.5 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.5](https://www.npmjs.com/package/ng-virtual-list/v/18.0.5) |
+| 17.x | 17.0.2 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.2](https://www.npmjs.com/package/ng-virtual-list/v/17.0.2) |
+| 16.x | 16.0.5 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.5](https://www.npmjs.com/package/ng-virtual-list/v/16.0.5) |
+| 15.x | 15.0.3 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.3](https://www.npmjs.com/package/ng-virtual-list/v/15.0.3) |
+| 14.x | 14.0.3 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.3](https://www.npmjs.com/package/ng-virtual-list/v/14.0.3) |
 
 <br/>
+
+## License
+
+MIT License
+
+Copyright (c) 2025 Evgenii Grebennikov
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
