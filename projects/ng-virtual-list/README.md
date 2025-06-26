@@ -428,8 +428,8 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onScroll | (scrollSize: number) => void | Fires when the list has been scrolled. |
-| onScrollEnd | (scrollSize: number) => void | Fires when the list has completed scrolling. |
+| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
+| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
 
 <br/>
 
