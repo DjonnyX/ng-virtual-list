@@ -159,7 +159,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
       this._scrollSize.set(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      this.onScroll.emit({
+        scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection,
+        isEnd: this._container()?.nativeElement.scrollHeight === actualScrollSize
+      });
     }
   }
 
@@ -234,7 +237,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
       this._scrollSize.set(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      this.onScrollEnd.emit({
+        scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection,
+        isEnd: this._container()?.nativeElement.scrollHeight === actualScrollSize
+      });
     }
   }
 
@@ -485,7 +491,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               } else {
                 this._scrollSize.set(scrollSize);
 
-                this.onScroll.emit({ scrollSize, direction: this._trackBox.scrollDirection });
+                this.onScroll.emit({
+                  scrollSize, direction: this._trackBox.scrollDirection,
+                  isEnd: this._container()?.nativeElement.scrollHeight === scrollSize
+                });
 
                 container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
                 container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
