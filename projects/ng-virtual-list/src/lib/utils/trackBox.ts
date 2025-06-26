@@ -143,10 +143,10 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     }
 
     private getElementNumToEnd<I extends { id: Id }, C extends Array<I>>(i: number, collection: C, map: Map<Id, IRect>, typicalItemSize: number,
-        size: number, isVertical: boolean): { num: number, offset: number } {
+        size: number, isVertical: boolean, indexOffset: number = 0): { num: number, offset: number } {
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0, num = 0;
-        for (let j = collection.length - 1; j >= i; j--) {
+        for (let j = collection.length - indexOffset - 1; j >= i; j--) {
             const item = collection[j];
             let itemSize = 0;
             if (map.has(item.id)) {
@@ -176,6 +176,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         const { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME, size = isVertical ? height : width,
             totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
+            map = this._map,
+            checkOverscrollItemsLimit = Math.ceil(size / typicalItemSize),
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
@@ -188,7 +190,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             totalItemsToDisplayEndWeight = 0,
             itemById: I | undefined = undefined,
             itemByIdPos: number = 0,
-            lastDisplayItemId: Id | undefined = undefined,
+            targetDisplayItemIndex: number = -1,
+            isTargetInOverscroll: boolean = false,
             actualScrollSize = itemByIdPos,
             totalSize = 0,
             startIndex;
@@ -196,7 +199,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         if (dynamicSize) {
             let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
-                const ii = i + 1, collectionItem = collection[i], map = this._map;
+                const ii = i + 1, collectionItem = collection[i];
 
                 let componentSize = 0;
                 if (map.has(collectionItem.id)) {
@@ -216,9 +219,11 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                         }
 
                         if (collectionItem.id === fromItemId) {
+                            targetDisplayItemIndex = i;
                             if (stickyCollectionItem && stickyMap && stickyMap[stickyCollectionItem.id] > 0) {
                                 const { num } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical);
                                 if (num > 0) {
+                                    isTargetInOverscroll = true;
                                     y -= size - componentSize;
                                 } else {
                                     y -= stickyComponentSize;
@@ -240,12 +245,10 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                 }
 
                 if (isFromId) {
-                    if (!lastDisplayItemId) {
-                        if (itemById === undefined || y < itemByIdPos + size + componentSize) {
-                            itemsFromStartToDisplayEnd = ii;
-                            totalItemsToDisplayEndWeight += componentSize;
-                            itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
-                        }
+                    if (itemById === undefined || y < itemByIdPos + size + componentSize) {
+                        itemsFromStartToDisplayEnd = ii;
+                        totalItemsToDisplayEndWeight += componentSize;
+                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
                     }
                 } else if (y < scrollSize + size + componentSize) {
                     itemsFromStartToDisplayEnd = ii;
@@ -258,10 +261,20 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                 y += componentSize;
             }
 
-            if (itemsFromStartToScrollEnd === -1) {
+            if (isTargetInOverscroll) {
+                const { num } = this.getElementNumToEnd(
+                    collection.length - (checkOverscrollItemsLimit < 0 ? 0 : collection.length - checkOverscrollItemsLimit),
+                    collection, map, typicalItemSize, size, isVertical, collection.length - (collection.length - (targetDisplayItemIndex + 1)),
+                );
+                if (num > 0) {
+                    itemsFromStartToScrollEnd -= num;
+                }
+            }
+
+            if (itemsFromStartToScrollEnd <= -1) {
                 itemsFromStartToScrollEnd = 0;
             }
-            if (itemsFromStartToDisplayEnd === -1) {
+            if (itemsFromStartToDisplayEnd <= -1) {
                 itemsFromStartToDisplayEnd = 0;
             }
             actualScrollSize = isFromId ? itemByIdPos : scrollSize;
