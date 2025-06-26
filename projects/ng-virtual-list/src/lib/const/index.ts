@@ -18,6 +18,8 @@ export const DEFAULT_DIRECTION = Directions.VERTICAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
+export const MAX_SCROLL_TO_ITERATIONS = 5;
+
 // presets
 
 export const BEHAVIOR_AUTO = 'auto';
