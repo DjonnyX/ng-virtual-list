@@ -1,129 +1,133 @@
-<div class="vl-section block cap">
-  <h1>ng-virtual-list</h1>
-  <p class="l">Maximum performance for extremely large lists</p>
-  <p><span>v 17.0.1</span></p>
-</div>
-
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Horizontal list</h2>
-    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
-      [itemRenderer]="hotizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
+<div class="wrapper">
+  <div class="vl-section block cap">
+    <h1 class="center">ng-virtual-list</h1>
+    <p class="l">Maximum performance for extremely large lists</p>
+    <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
+    <img class="logo" [src]="logo"/>
+    <div class="version"><span>v 17.0.2</span></div>
   </div>
-</div>
 
-<ng-template #hotizontalItemRenderer let-data="data">
-  @if (data) {
-  <div class="list__h-container" (click)="onItemClick(data)">
-    <span>{{data.name}}</span>
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Horizontal list</h2>
+      <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
+        [itemRenderer]="hotizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
+    </div>
   </div>
-  }
-</ng-template>
 
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Horizontal group list</h2>
-    <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
-      [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
-  </div>
-</div>
-
-<ng-template #horizontalGroupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-        <div class="list__h-group-container">
-          <span>{{data.name}}</span>
-        </div>
-      }
-      @default {
-        <div class="list__h-container" (click)="onItemClick(data)">
-          <span>{{data.name}}</span>
-        </div>
-      }
-    }
-  }
-</ng-template>
-
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Vertical virtual list</h2>
-    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
-      [itemSize]="40"></ng-virtual-list>
-  </div>
-</div>
-
-<ng-template #itemRenderer let-data="data">
-  @if (data) {
-    <div class="list__container">
+  <ng-template #hotizontalItemRenderer let-data="data">
+    @if (data) {
+    <div class="list__h-container" (click)="onItemClick(data)">
       <span>{{data.name}}</span>
     </div>
-  }
-</ng-template>
+    }
+  </ng-template>
 
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Snap to Item</h2>
-    <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50" [itemSize]="40"
-      [snapToItem]="true"></ng-virtual-list>
-  </div>
-</div>
-
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Scroll to item</h2>
-    <div class="scroll-to__controls">
-      <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="minId"
-        [max]="maxId">
-      <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Horizontal group list</h2>
+      <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
+        [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
     </div>
-    <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
-      [itemSize]="40"></ng-virtual-list>
   </div>
-</div>
 
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Virtual group list</h2>
-    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
-      [stickyMap]="groupItemsStickyMap" [itemSize]="40"></ng-virtual-list>
-  </div>
-</div>
-
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Virtual group list (with snapping)</h2>
-    <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
-      [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
-  </div>
-</div>
-
-<div class="vl-section">
-  <div class="vl-section__container">
-    <h2>Virtual list (with dynamic item size)</h2>
-    <div class="scroll-to__controls">
-      <input type="number" class="scroll-to__input" [(ngModel)]="dlItemId" [required]="true" [min]="minDlId"
-        [max]="maxDlId">
-      <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
-    </div>
-    <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
-      [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
-  </div>
-</div>
-
-<ng-template #groupItemRenderer let-data="data">
-  @if (data) {
-    @switch (data.type) {
-      @case ("group-header") {
-        <div class="list__group-container">
-          <span>{{data.name}}</span>
-        </div>
-      }
-      @default {
-        <div class="list__container">
-          <span>{{data.name}}</span>
-        </div>
+  <ng-template #horizontalGroupItemRenderer let-data="data">
+    @if (data) {
+      @switch (data.type) {
+        @case ("group-header") {
+          <div class="list__h-group-container">
+            <span>{{data.name}}</span>
+          </div>
+        }
+        @default {
+          <div class="list__h-container" (click)="onItemClick(data)">
+            <span>{{data.name}}</span>
+          </div>
+        }
       }
     }
-  }
-</ng-template>
+  </ng-template>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Vertical virtual list</h2>
+      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
+        [itemSize]="40"></ng-virtual-list>
+    </div>
+  </div>
+
+  <ng-template #itemRenderer let-data="data">
+    @if (data) {
+      <div class="list__container">
+        <span>{{data.name}}</span>
+      </div>
+    }
+  </ng-template>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Snap to Item</h2>
+      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50" [itemSize]="40"
+        [snapToItem]="true"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Scroll to item</h2>
+      <div class="scroll-to__controls">
+        <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="minId"
+          [max]="maxId">
+        <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
+      </div>
+      <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
+        [itemSize]="40"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Virtual group list</h2>
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+        [stickyMap]="groupItemsStickyMap" [itemSize]="40"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Virtual group list (with snapping)</h2>
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+        [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Virtual list (with dynamic item size)</h2>
+      <div class="scroll-to__controls">
+        <input type="number" class="scroll-to__input" [(ngModel)]="dlItemId" [required]="true" [min]="minDlId"
+          [max]="maxDlId">
+        <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
+      </div>
+      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+        [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
+    </div>
+  </div>
+
+  <ng-template #groupItemRenderer let-data="data">
+    @if (data) {
+      @switch (data.type) {
+        @case ("group-header") {
+          <div class="list__group-container">
+            <span>{{data.name}}</span>
+          </div>
+        }
+        @default {
+          <div class="list__container">
+            <span>{{data.name}}</span>
+          </div>
+        }
+      }
+    }
+  </ng-template>
+</div>
