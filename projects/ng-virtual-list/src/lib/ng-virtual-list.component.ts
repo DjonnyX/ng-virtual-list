@@ -219,9 +219,16 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
       const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, delta, this._isVertical);
-      if (dynamicSize && delta !== 0) {
+      if (dynamicSize) {
         actualScrollSize = scrollSize + delta;
-        if (scrollSize !== actualScrollSize) {
+        if (snapToItem) {
+          const items = this.items(),
+            isVertical = this._isVertical,
+            targetItem = this._trackBox.getNearestItem(actualScrollSize, items, itemSize, isVertical);
+          if (targetItem) {
+            this.scrollTo(targetItem.id, BEHAVIOR_INSTANT);
+          }
+        } else if (scrollSize !== actualScrollSize) {
           const params: ScrollToOptions = {
             [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
             behavior: BEHAVIOR_INSTANT

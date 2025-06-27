@@ -75,7 +75,9 @@ const generateText = () => {
 };
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {},
+  GROUP_DYNAMIC_ITEMS_WITH_SNAP: IVirtualListCollection = [],
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP: IVirtualListStickyMap = {};
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = 100000; i < l; i++) {
@@ -85,6 +87,8 @@ for (let i = 0, l = 100000; i < l; i++) {
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -109,6 +113,9 @@ export class AppComponent {
 
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
   groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
+
+  groupDynamicItemsWithSanp = GROUP_DYNAMIC_ITEMS_WITH_SNAP;
+  groupDynamicItemsStickyMapWithSanp = GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP;
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
   horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
