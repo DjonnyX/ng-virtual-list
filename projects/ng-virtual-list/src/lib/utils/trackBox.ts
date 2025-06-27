@@ -122,12 +122,18 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this._debounceChanges.execute(this._version);
     }
 
+    /**
+     * Finds the position of a collection element by the given Id
+     */
     getItemPosition<I extends { id: Id }, C extends Array<I>>(id: Id, stickyMap: IVirtualListStickyMap, options: IRecalculateMetricsOptions<I, C>): number {
         const opt = { fromItemId: id, stickyMap, ...options };
         const { scrollSize } = this.recalculateMetrics(opt);
         return scrollSize;
     }
 
+    /**
+     * Updates the collection of display objects
+     */
     updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
         options: Omit<IRecalculateMetricsOptions<I, C>, 'collection'>): { displayItems: IRenderVirtualListCollection; totalSize: number; delta: number; } {
         const opt = { stickyMap, ...options };
@@ -142,6 +148,40 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta };
     }
 
+    /**
+     * Finds the closest element in the collection by scrollSize
+     */
+    getNearestItem<I extends { id: Id }, C extends Array<I>>(scrollSize: number, items: C, itemSize: number, isVertical: boolean): I | undefined {
+        return this.getElementFromStart(scrollSize, items, this._map, itemSize, isVertical);
+    }
+
+    /**
+     * Calculates the position of an element based on the given scrollSize
+     */
+    private getElementFromStart<I extends { id: Id }, C extends Array<I>>(scrollSize: number, collection: C, map: Map<Id, IRect>, typicalItemSize: number,
+        isVertical: boolean): I | undefined {
+        const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
+        let offset = 0;
+        for (let i = 0, l = collection.length; i < l; i++) {
+            const item = collection[i];
+            let itemSize = 0;
+            if (map.has(item.id)) {
+                const bounds = map.get(item.id);
+                itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
+            } else {
+                itemSize = typicalItemSize;
+            }
+            if (offset > scrollSize) {
+                return item;
+            }
+            offset += itemSize;
+        }
+        return undefined;
+    }
+
+    /**
+     * Calculates the entry into the overscroll area and returns the number of overscroll elements
+     */
     private getElementNumToEnd<I extends { id: Id }, C extends Array<I>>(i: number, collection: C, map: Map<Id, IRect>, typicalItemSize: number,
         size: number, isVertical: boolean, indexOffset: number = 0): { num: number, offset: number } {
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
