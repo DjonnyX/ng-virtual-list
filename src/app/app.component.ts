@@ -84,7 +84,7 @@ for (let i = 0, l = 100000; i < l; i++) {
   if (type === 'group-header') {
     groupDynamicIndex++;
   }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
