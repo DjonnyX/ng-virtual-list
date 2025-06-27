@@ -1,6 +1,7 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
-  OnDestroy, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
+  AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, Input,
+  OnDestroy, Output, EventEmitter, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
@@ -13,8 +14,9 @@ import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListSti
 import { Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions } from './enums';
-import { DisposableComponent, TrackBox, isDirection, toggleClassName } from './utils';
+import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IRecalculateMetricsOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
+import { DisposableComponent } from './utils/disposableComponent';
 
 /**
  * Virtual list component.
@@ -246,11 +248,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   }
 
   private _onScrollHandler = (e?: Event) => {
+    this.clearScrollToRepeatExecutionTimeout();
+
     const container = this._container?.nativeElement;
     if (container) {
       const dynamicSize = this.dynamicSize, delta = this._trackBox.delta, scrollSize = (this._isVertical ? container.scrollTop : container.scrollLeft),
         previouseScrollSize = this._$scrollSize.getValue();
-      let actualScrollSize = scrollSize;
+      let actualScrollSize = scrollSize, isImmediateScroll = false;
 
       this._trackBox.deltaDirection = previouseScrollSize > scrollSize ? -1 : 1;
 
@@ -263,7 +267,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
         const container = this._container;
         if (container) {
-          this.scrollImmediately(container, params);
+          isImmediateScroll = true;
+
+          this.scrollImmediately(container, params, () => {
+            const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, delta, this._isVertical);
+            this.onScroll.emit(event);
+          });
 
           this._trackBox.clearDelta();
         }
@@ -271,11 +280,14 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
       this._$scrollSize.next(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      if (!isImmediateScroll) {
+        const event = new ScrollEvent(this._trackBox.scrollDirection, container, this._list!.nativeElement, delta, this._isVertical);
+        this.onScroll.emit(event);
+      }
     }
   }
 
-  private scrollImmediately(container: ElementRef<HTMLDivElement>, params: ScrollOptions) {
+  private scrollImmediately(container: ElementRef<HTMLDivElement>, params: ScrollOptions, cb?: () => void) {
     this.clearScrollImmediately();
 
     container.nativeElement.removeEventListener(SCROLL_END, this._onScrollEndHandler);
@@ -284,6 +296,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         container.nativeElement.removeEventListener(SCROLL_END, handler);
 
         container.nativeElement.scroll(params);
+
+        if (cb !== undefined) {
+          cb();
+        }
 
         container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
       }
@@ -317,6 +333,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       const itemSize = this.itemSize, snapToItem = this.snapToItem, dynamicSize = this.dynamicSize, delta = this._trackBox.delta,
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
+      const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, delta, this._isVertical);
       if (dynamicSize && delta !== 0) {
         actualScrollSize = scrollSize + delta;
         if (scrollSize !== actualScrollSize) {
@@ -346,7 +363,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
       this._$scrollSize.next(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      this.onScrollEnd.emit(event);
     }
   }
 
@@ -539,7 +556,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * The method scrolls the list to the element with the given id and returns the value of the scrolled area.
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
-  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
+  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO as ScrollBehavior) {
     this.scrollToExecutor(id, behavior);
   }
 
@@ -601,7 +618,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
               } else {
                 this._$scrollSize.next(scrollSize);
 
-                this.onScroll.emit({ scrollSize, direction: this._trackBox.scrollDirection });
+                const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, this._trackBox.delta, this._isVertical);
+                this.onScroll.emit(event);
 
                 container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
                 container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
@@ -640,6 +658,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
+
     this.clearScrollToRepeatExecutionTimeout();
     if (this._trackBox) {
       this._trackBox.dispose();
