@@ -213,7 +213,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
 
                 if (isFromId) {
                     if (itemById === undefined) {
-                        if (stickyMap && stickyMap[collectionItem.id] > 0) {
+                        if (collectionItem.id !== fromItemId && stickyMap && stickyMap[collectionItem.id] > 0) {
                             stickyComponentSize = componentSize;
                             stickyCollectionItem = collectionItem;
                         }
@@ -402,7 +402,6 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             if (snap) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
-                    stickyItemSize = size;
                     if (sticky > 0) {
                         const measures = {
                             x: isVertical ? 0 : actualSnippedPosition,
@@ -422,6 +421,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
 
                         stickyItem = { id, measures, data: itemData, config };
                         stickyItemIndex = i;
+                        stickyItemSize = size;
 
                         displayItems.push(stickyItem);
                         break;
@@ -457,7 +457,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                     const itemData: I = items[i];
 
                     const item: IRenderVirtualListItem = { id, measures, data: itemData, config };
-                    if (!nextSticky && stickyItemIndex < i && snap && stickyMap[id] > 0 && pos <= scrollSize + size) {
+                    if (!nextSticky && stickyItemIndex < i && stickyMap[id] > 0 && pos <= scrollSize + size + stickyItemSize) {
                         item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
                         item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
                         nextSticky = item;
