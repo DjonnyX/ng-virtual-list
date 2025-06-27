@@ -4,7 +4,7 @@
     <p class="l">Maximum performance for extremely large lists</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 14.0.5</span></div>
+    <div class="version"><span>v 14.0.6</span></div>
   </div>
 
   <div class="vl-section">
@@ -103,6 +103,14 @@
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
         [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
         [snap]="true"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Virtual list (with dynamic item size) (snap to item)</h2>
+      <ng-virtual-list class="list" [items]="groupDynamicItemsWithSanp" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+        [stickyMap]="groupDynamicItemsStickyMapWithSanp" [dynamicSize]="true" [snap]="true" [snapToItem]="true"></ng-virtual-list>
     </div>
   </div>
 
