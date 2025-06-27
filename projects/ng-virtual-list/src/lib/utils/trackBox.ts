@@ -11,6 +11,7 @@ import { ISize } from "../types";
 import { debounce } from "./debounce";
 import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
 import { IVirtualListStickyMap } from "../models";
+import { getCollectionRemovedOrUpdatedItems } from "./collection";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
@@ -116,10 +117,42 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, version);
     };
 
+    private _previousCollection: Array<{ id: Id }> | null | undefined;
+
     private _debounceChanges = debounce(this._fireChanges, 0);
 
     protected override fireChange() {
         this._debounceChanges.execute(this._version);
+    }
+
+    /**
+     * Scans the collection for deleted items and flushes the deleted item cache.
+     */
+    resetCollection<I extends { id: Id }, C extends Array<I>>(currentCollection: C | null | undefined): void {
+        if (currentCollection !== undefined && currentCollection !== null && currentCollection === this._previousCollection) {
+            console.warn('Attention! The collection must be immutable.');
+            return;
+        }
+        const removedOrUpdatedItems = getCollectionRemovedOrUpdatedItems(this._previousCollection, currentCollection);
+        this.clearCache(removedOrUpdatedItems);
+
+        this._previousCollection = currentCollection;
+    }
+
+    /**
+     * Clears the cache of items from the list
+     */
+    protected clearCache<I extends { id: Id }, C extends Array<I>>(items: C | null | undefined): void {
+        if (!items || items.length === 0) {
+            return;
+        }
+
+        for (let i = 0, l = items.length; i < l; i++) {
+            const item = items[i], id = item.id;
+            if (this._map.has(id)) {
+                this._map.delete(id);
+            }
+        }
     }
 
     /**
