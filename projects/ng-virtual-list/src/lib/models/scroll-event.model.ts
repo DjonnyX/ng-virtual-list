@@ -16,4 +16,8 @@ export interface IScrollEvent {
      * A value of 1 indicates the direction is down or right (if the list direction is horizontal).
      */
     direction: ScrollDirection;
+    /**
+     * If true then indicates that the list has been scrolled to the end.
+     */
+    isEnd: boolean;
 }
