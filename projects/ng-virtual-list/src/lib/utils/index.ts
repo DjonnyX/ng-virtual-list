@@ -3,13 +3,13 @@ import { debounce } from "./debounce";
 import { toggleClassName } from './toggleClassName';
 import { Tracker } from "./tracker";
 import { TrackBox } from "./trackBox";
-import { DisposableComponent } from './disposableComponent';
+import { ScrollEvent } from "./scrollEvent";
 
 export {
-    DisposableComponent,
-    debounce,
     isDirection,
+    debounce,
     toggleClassName,
+    ScrollEvent,
     TrackBox,
     Tracker,
 };
