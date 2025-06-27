@@ -16,7 +16,7 @@ import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListSti
 import { Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions } from './enums';
-import { TrackBox, isDirection, toggleClassName } from './utils';
+import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IRecalculateMetricsOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
 
 /**
@@ -134,11 +134,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onScrollHandler = (e?: Event) => {
+    this.clearScrollToRepeatExecutionTimeout();
+
     const container = this._container()?.nativeElement;
     if (container) {
       const dynamicSize = this.dynamicSize(), delta = this._trackBox.delta, scrollSize = (this._isVertical ? container.scrollTop : container.scrollLeft),
         previouseScrollSize = this._scrollSize();
-      let actualScrollSize = scrollSize;
+      let actualScrollSize = scrollSize, isImmediateScroll = false;
 
       this._trackBox.deltaDirection = previouseScrollSize > scrollSize ? -1 : 1;
 
@@ -151,7 +153,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         const container = this._container();
         if (container) {
-          this.scrollImmediately(container, params);
+          isImmediateScroll = true;
+
+          this.scrollImmediately(container, params, () => {
+            const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, delta, this._isVertical);
+            this.onScroll.emit(event);
+          });
 
           this._trackBox.clearDelta();
         }
@@ -159,11 +166,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
       this._scrollSize.set(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      if (!isImmediateScroll) {
+        const event = new ScrollEvent(this._trackBox.scrollDirection, container, this._list()!.nativeElement, delta, this._isVertical);
+        this.onScroll.emit(event);
+      }
     }
   }
 
-  private scrollImmediately(container: ElementRef<HTMLDivElement>, params: ScrollOptions) {
+  private scrollImmediately(container: ElementRef<HTMLDivElement>, params: ScrollOptions, cb?: () => void) {
     this.clearScrollImmediately();
 
     container.nativeElement.removeEventListener(SCROLL_END, this._onScrollEndHandler);
@@ -172,6 +182,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         container.nativeElement.removeEventListener(SCROLL_END, handler);
 
         container.nativeElement.scroll(params);
+
+        if (cb !== undefined) {
+          cb();
+        }
 
         container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
       }
@@ -205,6 +219,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       const itemSize = this.itemSize(), snapToItem = this.snapToItem(), dynamicSize = this.dynamicSize(), delta = this._trackBox.delta,
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
+      const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, delta, this._isVertical);
       if (dynamicSize && delta !== 0) {
         actualScrollSize = scrollSize + delta;
         if (scrollSize !== actualScrollSize) {
@@ -234,7 +249,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
       this._scrollSize.set(actualScrollSize);
 
-      this.onScroll.emit({ scrollSize: actualScrollSize, direction: this._trackBox.scrollDirection });
+      this.onScrollEnd.emit(event);
     }
   }
 
@@ -485,7 +500,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               } else {
                 this._scrollSize.set(scrollSize);
 
-                this.onScroll.emit({ scrollSize, direction: this._trackBox.scrollDirection });
+                const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, this._trackBox.delta, this._isVertical);
+                this.onScroll.emit(event);
 
                 container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
                 container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);

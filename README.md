@@ -472,6 +472,19 @@ Methods
 
 <br/>
 
+## Previous versions
+
+| Angular version | ng-virtual-list version | git | npm |
+|--|--|--|--|
+| 19.x | 19.1.15 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.14](https://www.npmjs.com/package/ng-virtual-list/v/19.1.15) |
+| 18.x | 18.0.6 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.5](https://www.npmjs.com/package/ng-virtual-list/v/18.0.6) |
+| 17.x | 17.0.3 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.2](https://www.npmjs.com/package/ng-virtual-list/v/17.0.3) |
+| 16.x | 16.0.6 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.5](https://www.npmjs.com/package/ng-virtual-list/v/16.0.6) |
+| 15.x | 15.0.4 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.3](https://www.npmjs.com/package/ng-virtual-list/v/15.0.4) |
+| 14.x | 14.0.4 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.3](https://www.npmjs.com/package/ng-virtual-list/v/14.0.4) |
+
+<br/>
+
 ## Development server
 
 To start a local development server, run:
