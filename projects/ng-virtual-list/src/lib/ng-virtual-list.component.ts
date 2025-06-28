@@ -1,10 +1,9 @@
 import {
   AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, Input,
   OnDestroy, Output, EventEmitter, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
-  WritableSignal,
   ChangeDetectorRef,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
@@ -68,6 +67,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
 
+  private _itemsTransform = (v: IVirtualListCollection | undefined) => {
+    this._trackBox.resetCollection(v);
+    return v;
+  };
+
   /**
    * Collection of list items.
    */
@@ -77,7 +81,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this._$items.next(v);
+    const transformedValue = this._itemsTransform(v);
+
+    this._$items.next(transformedValue);
 
     this._cdr.markForCheck();
   };
