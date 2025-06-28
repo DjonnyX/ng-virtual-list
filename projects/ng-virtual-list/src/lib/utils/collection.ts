@@ -19,7 +19,7 @@ export const getCollectionRemovedOrUpdatedItems = <I extends { id: Id }, C exten
         const item = previousCollection[i], id = item.id;
         if (item) {
             if (collectionDict.hasOwnProperty(id)) {
-                if (JSON.stringify(item) === JSON.stringify(collectionDict[id])) {
+                if (item === collectionDict[id]) {
                     continue;
                 }
             }
