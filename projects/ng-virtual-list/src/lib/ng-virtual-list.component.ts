@@ -66,6 +66,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
 
+  private _itemsTransform = (v: IVirtualListCollection | undefined) => {
+    this._trackBox.resetCollection(v);
+    return v;
+  };
+
   /**
    * Collection of list items.
    */
@@ -75,7 +80,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$items.next(v);
+    const transformedValue = this._itemsTransform(v);
+
+    this._$items.next(transformedValue);
 
     this._cdr.markForCheck();
   };
