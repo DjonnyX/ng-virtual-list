@@ -4,7 +4,7 @@ import { Id } from "../types"
  * Returns the removed or updated elements of a collection.
  */
 export const getCollectionRemovedOrUpdatedItems = <I extends { id: Id }, C extends Array<I>>(previousCollection: C | null | undefined, currentCollection: C | null | undefined): C => {
-    const result = new Array<I> as C;
+    const result = new Array<I>() as C;
     if (!currentCollection || currentCollection.length === 0 || !previousCollection || previousCollection.length === 0) {
         return (previousCollection ? [...previousCollection] : []) as C;
     }
