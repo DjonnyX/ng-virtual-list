@@ -60,10 +60,19 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
    */
   onScrollEnd = output<IScrollEvent>();
 
+  private _itemsOptions = {
+    transform: (v: IVirtualListCollection | undefined) => {
+      this._trackBox.resetCollection(v);
+      return v;
+    },
+  } as any;
+
   /**
    * Collection of list items.
    */
-  items = input.required<IVirtualListCollection>();
+  items = input.required<IVirtualListCollection>({
+    ...this._itemsOptions,
+  });
 
   /**
    * Determines whether elements will snap. Default value is "true".
