@@ -9,7 +9,7 @@ import { CacheMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
 import { debounce } from "./debounce";
-import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
+import { DEFAULT_ITEMS_OFFSET, HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
 import { IVirtualListStickyMap } from "../models";
 import { getCollectionRemovedOrUpdatedItems } from "./collection";
 
@@ -35,6 +35,7 @@ export interface IMetrics {
     rightItemLength: number;
     rightItemsWeight: number;
     scrollSize: number;
+    sizeOfAddedItems: number;
     sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
     snap: boolean;
     snippedPos: number;
@@ -93,6 +94,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this._displayComponents = v;
     }
 
+    enabledBufferOptimization: boolean = false;
+
     constructor(trackingPropertyName: string) {
         super();
 
@@ -117,6 +120,10 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
         this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, version);
     };
 
+    private _isExistAddedItems = false;
+
+    private _addedItemsMap: { [id: Id]: { id: Id } } = {};
+
     private _previousCollection: Array<{ id: Id }> | null | undefined;
 
     private _debounceChanges = debounce(this._fireChanges, 0);
@@ -133,10 +140,23 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             console.warn('Attention! The collection must be immutable.');
             return;
         }
-        const removedOrUpdatedItems = getCollectionRemovedOrUpdatedItems(this._previousCollection, currentCollection);
-        this.clearCache(removedOrUpdatedItems);
+        const { deletedOrUpdated, added } = getCollectionRemovedOrUpdatedItems(this._previousCollection, currentCollection);
+        this.clearCache(deletedOrUpdated);
+
+        this.startScrollDeltaCalculationIfNeed(added);
 
         this._previousCollection = currentCollection;
+    }
+
+    private startScrollDeltaCalculationIfNeed<I extends { id: Id }, C extends Array<I>>(added: C) {
+        if (added.length > 0) {
+            this._isExistAddedItems = true;
+        }
+
+        for (let i = 0, l = added.length; i < l; i++) {
+            const item = added[i];
+            this._addedItemsMap[item.id] = item;
+        }
     }
 
     /**
@@ -250,6 +270,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
             map = this._map,
+            leftItemsOffset = this.enabledBufferOptimization ? this.deltaDirection === 1 ? DEFAULT_ITEMS_OFFSET : itemsOffset : itemsOffset,
+            rightItemsOffset = this.enabledBufferOptimization ? this.deltaDirection === -1 ? DEFAULT_ITEMS_OFFSET : itemsOffset : itemsOffset,
             checkOverscrollItemsLimit = Math.ceil(size / typicalItemSize),
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [],
@@ -261,6 +283,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             leftItemsWeight = 0, rightItemsWeight = 0,
             leftHiddenItemsWeight = 0,
             totalItemsToDisplayEndWeight = 0,
+            sizeOfAddedItems = 0,
             itemById: I | undefined = undefined,
             itemByIdPos: number = 0,
             targetDisplayItemIndex: number = -1,
@@ -269,7 +292,8 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             totalSize = 0,
             startIndex;
 
-        if (dynamicSize) {
+        // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
+        if (dynamicSize || this._isExistAddedItems) {
             let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i];
@@ -321,14 +345,24 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
                     if (itemById === undefined || y < itemByIdPos + size + componentSize) {
                         itemsFromStartToDisplayEnd = ii;
                         totalItemsToDisplayEndWeight += componentSize;
-                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
+                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
+                    }
+                    if (y > itemByIdPos + size + componentSize) {
+                        if (this._addedItemsMap.hasOwnProperty(collectionItem.id)) {
+                            sizeOfAddedItems += componentSize;
+                        }
                     }
                 } else if (y < scrollSize + size + componentSize) {
                     itemsFromStartToDisplayEnd = ii;
                     totalItemsToDisplayEndWeight += componentSize;
-                    itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + itemsOffset;
-                } else if (i < itemsFromDisplayEndToOffsetEnd) {
-                    rightItemsWeight += componentSize;
+                    itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
+                } else {
+                    if (i < itemsFromDisplayEndToOffsetEnd) {
+                        rightItemsWeight += componentSize;
+                    }
+                    if (this._addedItemsMap.hasOwnProperty(collectionItem.id)) {
+                        sizeOfAddedItems += componentSize;
+                    }
                 }
 
                 y += componentSize;
@@ -352,15 +386,17 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             }
             actualScrollSize = isFromId ? itemByIdPos : scrollSize;
 
-            leftItemsWeights.splice(0, leftItemsWeights.length - itemsOffset);
+            leftItemsWeights.splice(0, leftItemsWeights.length - leftItemsOffset);
             leftItemsWeights.forEach(v => {
                 leftItemsWeight += v;
             });
 
-            leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset);
-            rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalLength
-                ? totalLength - itemsFromStartToDisplayEnd : itemsOffset;
-        } else {
+            leftItemLength = Math.min(itemsFromStartToScrollEnd, leftItemsOffset);
+            rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
+                ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
+        } else
+        // Buffer optimization does not work on fast linear algorithm
+        {
             itemsFromStartToScrollEnd = Math.floor(scrollSize / typicalItemSize);
             itemsFromStartToDisplayEnd = Math.ceil((scrollSize + size) / typicalItemSize);
             leftItemLength = Math.min(itemsFromStartToScrollEnd, itemsOffset);
@@ -379,11 +415,16 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
             startPosition = leftHiddenItemsWeight - leftItemsWeight,
             renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
-            delta = totalSize - this._previouseFullHeigh;
+            delta = totalSize - this._previouseFullSize,
+            scrollDelta = sizeOfAddedItems;
 
         if (this.scrollDirection === -1) {
-            this._delta += delta;
+            if (this._isExistAddedItems && sizeOfAddedItems > 0) {
+                this.stopScrollDeltaCalculation();
+            }
+            this._delta += delta - scrollDelta;
         }
+
         const metrics: IMetrics = {
             delta: this._delta,
             normalizedItemWidth: w,
@@ -404,6 +445,7 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             rightItemLength,
             rightItemsWeight,
             scrollSize: actualScrollSize,
+            sizeOfAddedItems,
             sizeProperty,
             snap,
             snippedPos,
@@ -415,10 +457,13 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
             typicalItemSize,
         };
 
-        this._previouseFullHeigh = totalSize;
+        this._previouseFullSize = totalSize;
 
         return metrics;
     }
+
+    protected _scrollDelta: number = 0;
+    get scrollDelta() { return this._scrollDelta; }
 
     clearDeltaDirection() {
         this.clearScrollDirectionCache();
@@ -427,9 +472,16 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
     clearDelta(clearDirectionDetector = false): void {
         this._delta = 0;
 
+        this.stopScrollDeltaCalculation();
+
         if (clearDirectionDetector) {
             this.clearScrollDirectionCache();
         }
+    }
+
+    protected stopScrollDeltaCalculation() {
+        this._isExistAddedItems = false;
+        this._addedItemsMap = {};
     }
 
     protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
@@ -577,6 +629,13 @@ export class TrackBox extends CacheMap<Id, IRect, CacheMapEvents, CacheMapListen
 
     untrackComponentByIdProperty(component?: NgVirtualListItemComponent | undefined) {
         this._tracker.untrackComponentByIdProperty(component);
+    }
+
+    getItemBounds(id: Id): IRect | undefined {
+        if (this.has(id)) {
+            return this.get(id);
+        }
+        return undefined;
     }
 
     protected cacheElements(): void {
