@@ -48,8 +48,23 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._deltaDirection;
     }
 
+    protected _likeAChat: boolean = false;
+
+    set likeAChat(v: boolean) {
+        if (this._likeAChat === v) {
+            return;
+        }
+
+        if (v) {
+            this._scrollDirection = -1;
+        }
+        this._scrollDirectionCache = [];
+
+        this._likeAChat = v;
+    }
+
     private _scrollDirectionCache: Array<ScrollDirection> = [];
-    private _scrollDirection: ScrollDirection = -1;
+    private _scrollDirection: ScrollDirection = 1;
     get scrollDirection() {
         return this._scrollDirection;
     }
