@@ -3,13 +3,12 @@ import {
   OnDestroy, output, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
   WritableSignal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
+  DEFAULT_ITEMS_OFFSET, DEFAULT_OPTIMIZE_FOR_END, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
@@ -91,6 +90,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
    * Works only if the property dynamic = true
    */
   enabledBufferOptimization = input<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
+
+  /**
+   * If true, optimization for lists that start from the end is enabled (chat mode enabled).
+   */
+  likeAChat = input<boolean>(DEFAULT_OPTIMIZE_FOR_END);
 
   /**
    * Rendering element template.
@@ -293,8 +297,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     const $enabledBufferOptimization = toObservable(this.enabledBufferOptimization);
 
     $enabledBufferOptimization.pipe(
+      takeUntilDestroyed(),
       tap(v => {
         this._trackBox.enabledBufferOptimization = v;
+      }),
+    ).subscribe();
+
+    const $likeAChat = toObservable(this.likeAChat);
+
+    $likeAChat.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.likeAChat = v;
       }),
     ).subscribe();
 
@@ -552,7 +566,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft),
         offsetSize = (this._isVertical ? containerEl.nativeElement.offsetHeight : containerEl.nativeElement.offsetWidth),
         listSize = (this._isVertical ? this._list()?.nativeElement.offsetHeight ?? 0 : this._list()?.nativeElement.offsetLeft ?? 0);
-      this._trackBox.deltaDirection = this._scrollSize() >= scrollSize || (scrollSize + offsetSize) >= listSize ? -1 : 1;
+      this._trackBox.deltaDirection = this._scrollSize() >= scrollSize ? -1 : this.likeAChat() && (scrollSize + offsetSize) >= listSize ? -1 : 1;
 
       const event = new ScrollEvent({
         direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
@@ -565,7 +579,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onContainerScrollEndHandler = (e: Event) => {
-    this._trackBox.deltaDirection = -1;
+    this._trackBox.deltaDirection = this.likeAChat() ? -1 : 1;
 
     const containerEl = this._container();
     if (containerEl) {
