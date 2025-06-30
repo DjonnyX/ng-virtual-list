@@ -452,6 +452,7 @@ Inputs
 | snapToItem | boolean? = false | Determines whether scroll positions will be snapped to the element. Default value is "false". |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
+| enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 
 <br/>
 
@@ -476,12 +477,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.20 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.20](https://www.npmjs.com/package/ng-virtual-list/v/19.1.20) |
-| 18.x | 18.0.9 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.9](https://www.npmjs.com/package/ng-virtual-list/v/18.0.9) |
-| 17.x | 17.0.6 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.6](https://www.npmjs.com/package/ng-virtual-list/v/17.0.6) |
-| 16.x | 16.0.9 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.9](https://www.npmjs.com/package/ng-virtual-list/v/16.0.9) |
-| 15.x | 15.0.7 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.7](https://www.npmjs.com/package/ng-virtual-list/v/15.0.7) |
-| 14.x | 14.0.7 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.7](https://www.npmjs.com/package/ng-virtual-list/v/14.0.7) |
+| 19.x | 19.1.22 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.22](https://www.npmjs.com/package/ng-virtual-list/v/19.1.22) |
+| 18.x | 18.0.11 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.11](https://www.npmjs.com/package/ng-virtual-list/v/18.0.11) |
+| 17.x | 17.0.8 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.8](https://www.npmjs.com/package/ng-virtual-list/v/17.0.8) |
+| 16.x | 16.0.11 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.11](https://www.npmjs.com/package/ng-virtual-list/v/16.0.11) |
+| 15.x | 15.0.9 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.9](https://www.npmjs.com/package/ng-virtual-list/v/15.0.9) |
+| 14.x | 14.0.9 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.9](https://www.npmjs.com/package/ng-virtual-list/v/14.0.9) |
 
 <br/>
 

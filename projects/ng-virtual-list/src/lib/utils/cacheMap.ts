@@ -15,7 +15,7 @@ type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 0;
+const MAX_SCROLL_DIRECTION_POOL = 8, CLEAR_SCROLL_DIRECTION_TO = 0;
 
 /**
  * Cache map.
@@ -29,7 +29,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected _version: number = 0;
 
-    protected _previouseFullHeigh: number = 0;
+    protected _previouseFullSize: number = 0;
 
     protected _delta: number = 0;
 
@@ -45,6 +45,21 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
     get deltaDirection() {
         return this._deltaDirection;
+    }
+
+    protected _likeAChat: boolean = false;
+
+    set likeAChat(v: boolean) {
+        if (this._likeAChat === v) {
+            return;
+        }
+
+        if (v) {
+            this._scrollDirection = -1;
+        }
+        this._scrollDirectionCache = [];
+
+        this._likeAChat = v;
     }
 
     private _scrollDirectionCache: Array<ScrollDirection> = [];
