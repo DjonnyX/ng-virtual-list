@@ -430,6 +430,7 @@ Outputs
 |---|---|---|
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
+| enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 
 <br/>
 
