@@ -1,6 +1,6 @@
 import { ScrollDirection } from "../models";
 import { debounce } from "./debounce";
-import { EventEmitter } from "./eventEmitter";
+import { EventEmitter, TEventHandler } from "./eventEmitter";
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => Map<I, B>;
@@ -15,7 +15,7 @@ type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 0;
+const MAX_SCROLL_DIRECTION_POOL = 8, CLEAR_SCROLL_DIRECTION_TO = 0;
 
 /**
  * Cache map.
@@ -24,12 +24,13 @@ const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 0;
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = CacheMapListeners> extends EventEmitter<E, L> implements ICacheMap {
+export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L extends TEventHandler = CacheMapListeners>
+    extends EventEmitter<E, L> implements ICacheMap {
     protected _map = new Map<I, B>();
 
     protected _version: number = 0;
 
-    protected _previouseFullHeigh: number = 0;
+    protected _previouseFullSize: number = 0;
 
     protected _delta: number = 0;
 
@@ -48,7 +49,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     private _scrollDirectionCache: Array<ScrollDirection> = [];
-    private _scrollDirection: ScrollDirection = 1;
+    private _scrollDirection: ScrollDirection = -1;
     get scrollDirection() {
         return this._scrollDirection;
     }
