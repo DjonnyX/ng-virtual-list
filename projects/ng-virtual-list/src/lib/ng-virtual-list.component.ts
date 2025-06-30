@@ -3,20 +3,20 @@ import {
   OnDestroy, Output, EventEmitter, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
   ChangeDetectorRef,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
   DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
-import { Id } from './types';
+import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions } from './enums';
 import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IRecalculateMetricsOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * Virtual list component.
@@ -63,6 +63,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
    */
   @Output()
   onScrollEnd = new EventEmitter<IScrollEvent>();
+
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
@@ -125,11 +126,30 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   };
   get snapToItem() { return this._$snapToItem.getValue(); }
 
+  private _$enabledBufferOptimization = new BehaviorSubject<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
+  readonly $enabledBufferOptimization = this._$enabledBufferOptimization.asObservable();
+  /**
+   * Enables buffer optimization.
+   * Can only be used if items in the collection are not added or updated. Otherwise, artifacts in the form of twitching of the scroll area are possible.
+   * Works only if the property dynamic = true
+   */
+  @Input()
+  set enabledBufferOptimization(v: boolean) {
+    if (this._$enabledBufferOptimization.getValue() === v) {
+      return;
+    }
+
+    this._$enabledBufferOptimization.next(v);
+
+    this._cdr.markForCheck();
+  };
+  get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
+
   private _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   readonly $itemRenderer = this._$itemRenderer.asObservable();
   /**
-   * Rendering element template.
-   */
+  * Rendering element template.
+  */
   @Input()
   set itemRenderer(v: TemplateRef<any>) {
     if (this._$itemRenderer.getValue() === v) {
@@ -260,38 +280,27 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
     const container = this._container?.nativeElement;
     if (container) {
-      const dynamicSize = this.dynamicSize, delta = this._trackBox.delta, scrollSize = (this._isVertical ? container.scrollTop : container.scrollLeft),
-        previouseScrollSize = this._$scrollSize.getValue();
+      const dynamicSize = this.dynamicSize, delta = this._trackBox.delta, scrollSize = (this._isVertical ? container.scrollTop : container.scrollLeft);
       let actualScrollSize = scrollSize, isImmediateScroll = false;
-
-      this._trackBox.deltaDirection = previouseScrollSize > scrollSize ? -1 : 1;
 
       if (dynamicSize && delta !== 0) {
         actualScrollSize = scrollSize + delta;
         const params: ScrollToOptions = {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-          behavior: BEHAVIOR_INSTANT
+          behavior: BEHAVIOR_INSTANT as ScrollBehavior
         };
 
         const container = this._container;
         if (container) {
           isImmediateScroll = true;
 
-          this.scrollImmediately(container, params, () => {
-            const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, delta, this._isVertical);
-            this.onScroll.emit(event);
-          });
+          this.scrollImmediately(container, params);
 
           this._trackBox.clearDelta();
         }
       }
 
       this._$scrollSize.next(actualScrollSize);
-
-      if (!isImmediateScroll) {
-        const event = new ScrollEvent(this._trackBox.scrollDirection, container, this._list!.nativeElement, delta, this._isVertical);
-        this.onScroll.emit(event);
-      }
     }
   }
 
@@ -341,7 +350,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       const itemSize = this.itemSize, snapToItem = this.snapToItem, dynamicSize = this.dynamicSize, delta = this._trackBox.delta,
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
-      const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, delta, this._isVertical);
       if (dynamicSize) {
         actualScrollSize = scrollSize + delta;
         if (snapToItem) {
@@ -369,7 +377,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (scrollSize !== actualScrollSize) {
           const params: ScrollToOptions = {
             [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-            behavior: BEHAVIOR_INSTANT
+            behavior: BEHAVIOR_INSTANT as ScrollBehavior
           };
 
           container.nativeElement.scroll(params);
@@ -377,8 +385,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       }
 
       this._$scrollSize.next(actualScrollSize);
-
-      this.onScrollEnd.emit(event);
     }
   }
 
@@ -410,6 +416,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     this.$initialized = this._$initialized.asObservable();
 
     this._trackBox.displayComponents = this._displayComponents;
+
+    const $enabledBufferOptimization = this.$enabledBufferOptimization;
+
+    $enabledBufferOptimization.pipe(
+      tap(v => {
+        this._trackBox.enabledBufferOptimization = v;
+      }),
+    ).subscribe();
 
     const $bounds = this._$bounds.asObservable().pipe(
       filter(b => !!b),
@@ -565,6 +579,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * Returns the bounds of an element with a given id
+   */
+  getItemBounds(id: Id): IRect | undefined {
+    return this._trackBox.getItemBounds(id);
+  }
+
+  /**
    * The method scrolls the list to the element with the given id and returns the value of the scrolled area.
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
@@ -625,13 +646,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               if (scrollSize < _scrollSize && iteration < MAX_SCROLL_TO_ITERATIONS) {
                 this.clearScrollToRepeatExecutionTimeout();
                 this._scrollToRepeatExecutionTimeout = setTimeout(() => {
-                  this.scrollToExecutor(id, BEHAVIOR_INSTANT, iteration + 1);
+                  this.scrollToExecutor(id, BEHAVIOR_INSTANT as ScrollBehavior, iteration + 1);
                 });
               } else {
                 this._$scrollSize.next(scrollSize);
-
-                const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list!.nativeElement, this._trackBox.delta, this._isVertical);
-                this.onScroll.emit(event);
 
                 container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
                 container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
@@ -650,14 +668,51 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT) {
+  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior) {
     const items = this.items, latItem = items[items.length > 0 ? items.length - 1 : 0];
     this.scrollTo(latItem.id, behavior);
+  }
+
+  private _onContainerScrollHandler = (e: Event) => {
+    const containerEl = this._container;
+    if (containerEl) {
+      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft),
+        offsetSize = (this._isVertical ? containerEl.nativeElement.offsetHeight : containerEl.nativeElement.offsetWidth),
+        listSize = (this._isVertical ? this._list?.nativeElement.offsetHeight ?? 0 : this._list?.nativeElement.offsetLeft ?? 0);
+      this._trackBox.deltaDirection = this._$scrollSize.getValue() >= scrollSize || (scrollSize + offsetSize) >= listSize ? -1 : 1;
+
+      const event = new ScrollEvent({
+        direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
+        list: this._list!.nativeElement, delta: this._trackBox.delta,
+        scrollDelta: this._trackBox.scrollDelta, isVertical: this._isVertical,
+      });
+
+      this.onScroll.emit(event);
+    }
+  }
+
+  private _onContainerScrollEndHandler = (e: Event) => {
+    this._trackBox.deltaDirection = -1;
+
+    const containerEl = this._container;
+    if (containerEl) {
+      const event = new ScrollEvent({
+        direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
+        list: this._list!.nativeElement, delta: this._trackBox.delta,
+        scrollDelta: this._trackBox.scrollDelta, isVertical: this._isVertical,
+      });
+
+      this.onScrollEnd.emit(event);
+    }
   }
 
   ngAfterViewInit(): void {
     const containerEl = this._container;
     if (containerEl) {
+      // for direction calculation
+      containerEl.nativeElement.addEventListener(SCROLL, this._onContainerScrollHandler);
+      containerEl.nativeElement.addEventListener(SCROLL_END, this._onContainerScrollEndHandler);
+
       containerEl.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
       containerEl.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
 
@@ -679,6 +734,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     if (containerEl) {
       containerEl.nativeElement.removeEventListener(SCROLL, this._onScrollHandler);
       containerEl.nativeElement.removeEventListener(SCROLL_END, this._onScrollEndHandler);
+      containerEl.nativeElement.removeEventListener(SCROLL, this._onContainerScrollHandler);
+      containerEl.nativeElement.removeEventListener(SCROLL_END, this._onContainerScrollEndHandler);
 
       if (this._resizeObserver) {
         this._resizeObserver.unobserve(containerEl.nativeElement);
