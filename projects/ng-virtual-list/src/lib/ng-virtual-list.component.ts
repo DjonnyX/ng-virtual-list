@@ -168,21 +168,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         if (container) {
           isImmediateScroll = true;
 
-          this.scrollImmediately(container, params, () => {
-            const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, delta, this._trackBox.scrollDelta, this._isVertical);
-            this.onScroll.emit(event);
-          });
+          this.scrollImmediately(container, params);
 
           this._trackBox.clearDelta();
         }
       }
 
       this._scrollSize.set(actualScrollSize);
-
-      if (!isImmediateScroll) {
-        const event = new ScrollEvent(this._trackBox.scrollDirection, container, this._list()!.nativeElement, delta, this._trackBox.scrollDelta, this._isVertical);
-        this.onScroll.emit(event);
-      }
     }
   }
 
@@ -232,7 +224,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       const itemSize = this.itemSize(), snapToItem = this.snapToItem(), dynamicSize = this.dynamicSize(), delta = this._trackBox.delta,
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
-      const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, delta, this._trackBox.scrollDelta, this._isVertical);
       if (dynamicSize) {
         actualScrollSize = scrollSize + delta;
         if (snapToItem) {
@@ -268,8 +259,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       }
 
       this._scrollSize.set(actualScrollSize);
-
-      this.onScrollEnd.emit(event);
     }
   }
 
@@ -535,9 +524,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               } else {
                 this._scrollSize.set(scrollSize);
 
-                const event = new ScrollEvent(this._trackBox.scrollDirection, container.nativeElement, this._list()!.nativeElement, this._trackBox.delta, this._trackBox.scrollDelta, this._isVertical);
-                this.onScroll.emit(event);
-
                 container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
                 container.nativeElement.addEventListener(SCROLL_END, this._onScrollEndHandler);
               }
@@ -567,11 +553,30 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
         offsetSize = (this._isVertical ? containerEl.nativeElement.offsetHeight : containerEl.nativeElement.offsetWidth),
         listSize = (this._isVertical ? this._list()?.nativeElement.offsetHeight ?? 0 : this._list()?.nativeElement.offsetLeft ?? 0);
       this._trackBox.deltaDirection = this._scrollSize() >= scrollSize || (scrollSize + offsetSize) >= listSize ? -1 : 1;
+
+      const event = new ScrollEvent({
+        direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
+        list: this._list()!.nativeElement, delta: this._trackBox.delta,
+        scrollDelta: this._trackBox.scrollDelta, isVertical: this._isVertical,
+      });
+
+      this.onScroll.emit(event);
     }
   }
 
   private _onContainerScrollEndHandler = (e: Event) => {
     this._trackBox.deltaDirection = -1;
+
+    const containerEl = this._container();
+    if (containerEl) {
+      const event = new ScrollEvent({
+        direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
+        list: this._list()!.nativeElement, delta: this._trackBox.delta,
+        scrollDelta: this._trackBox.scrollDelta, isVertical: this._isVertical,
+      });
+
+      this.onScrollEnd.emit(event);
+    }
   }
 
   ngAfterViewInit(): void {

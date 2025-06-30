@@ -8,6 +8,9 @@ interface ICollectionDelta<I extends { id: Id }, C extends Array<I>> {
 
 /**
  * Returns the removed or updated elements of a collection.
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/collection.ts
+ * @author Evgenii Grebennikov
+ * @email djonnyx@gmail.com
  */
 export const getCollectionRemovedOrUpdatedItems = <I extends { id: Id }, C extends Array<I>>(previousCollection: C | null | undefined, currentCollection: C | null | undefined):
     ICollectionDelta<I, C> => {
