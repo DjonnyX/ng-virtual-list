@@ -12,6 +12,22 @@ export interface IScrollEvent {
      */
     scrollSize: number;
     /**
+     * Full size of the scroll area
+     */
+    scrollWeight: number;
+    /**
+     * Viewport size
+     */
+    size: number;
+    /**
+     * Size of the list of elements
+     */
+    listSize: number;
+    /**
+     * Specifies whether the list orientation is vertical.
+     */
+    isVertical: boolean;
+    /**
      * A value of -1 indicates the direction is up or left (if the list direction is horizontal).
      * A value of 1 indicates the direction is down or right (if the list direction is horizontal).
      */
@@ -19,5 +35,17 @@ export interface IScrollEvent {
     /**
      * If true then indicates that the list has been scrolled to the end.
      */
+    isStart: boolean;
+    /**
+     * If true then indicates that the list has been scrolled to the end.
+     */
     isEnd: boolean;
+    /**
+     * Delta of marked and unmarked area
+     */
+    delta: number;
+    /**
+     * Scroll delta
+     */
+    scrollDelta: number;
 }
