@@ -452,6 +452,7 @@ Inputs
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
+| likeAChat | boolean? = false | If true, optimization for lists that start from the end is enabled. |
 
 <br/>
 
