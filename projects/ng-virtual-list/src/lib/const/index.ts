@@ -10,6 +10,8 @@ export const DEFAULT_SNAP = false;
 
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = true;
 
+export const DEFAULT_OPTIMIZE_FOR_END = false;
+
 export const DEFAULT_SNAP_TO_ITEM = false;
 
 export const DEFAULT_DYNAMIC_SIZE = false;
