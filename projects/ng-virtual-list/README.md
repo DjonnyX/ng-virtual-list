@@ -1,5 +1,6 @@
 # NgVirtualList
 Maximum performance for extremely large lists.
+10x more resource intensive than standard lists
 
 Angular version 18.X.X.
 
@@ -28,9 +29,9 @@ Template:
 
 <ng-template #hotizontalItemRenderer let-data="data">
   @if (data) {
-  <div class="list__h-container" (click)="onItemClick(data)">
-    <span>{{data.name}}</span>
-  </div>
+    <div class="list__h-container" (click)="onItemClick(data)">
+      <span>{{data.name}}</span>
+    </div>
   }
 </ng-template>
 ```
@@ -68,14 +69,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__h-group-container">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-group-container">
+          <span>{{data.name}}</span>
+        </div>
       }
       @default {
-      <div class="list__h-container" (click)="onItemClick(data)">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-container" (click)="onItemClick(data)">
+          <span>{{data.name}}</span>
+        </div>
       }
     }
   }
@@ -124,9 +125,9 @@ Template:
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
-  <div class="list__container">
-    <p>{{data.name}}</p>
-  </div>
+    <div class="list__container">
+      <p>{{data.name}}</p>
+    </div>
   }
 </ng-template>
 ```
@@ -167,14 +168,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
@@ -194,14 +195,14 @@ Template (with snapping):
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
