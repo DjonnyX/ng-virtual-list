@@ -1,6 +1,7 @@
 # NgVirtualList
 
 Maximum performance for extremely large lists.
+10x more resource intensive than standard lists
 
 ![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
@@ -29,9 +30,9 @@ Template:
 
 <ng-template #hotizontalItemRenderer let-data="data">
   @if (data) {
-  <div class="list__h-container" (click)="onItemClick(data)">
-    <span>{{data.name}}</span>
-  </div>
+    <div class="list__h-container" (click)="onItemClick(data)">
+      <span>{{data.name}}</span>
+    </div>
   }
 </ng-template>
 ```
@@ -69,14 +70,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__h-group-container">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-group-container">
+          <span>{{data.name}}</span>
+        </div>
       }
       @default {
-      <div class="list__h-container" (click)="onItemClick(data)">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-container" (click)="onItemClick(data)">
+          <span>{{data.name}}</span>
+        </div>
       }
     }
   }
@@ -125,9 +126,9 @@ Template:
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
-  <div class="list__container">
-    <p>{{data.name}}</p>
-  </div>
+    <div class="list__container">
+      <p>{{data.name}}</p>
+    </div>
   }
 </ng-template>
 ```
@@ -168,14 +169,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
@@ -195,14 +196,14 @@ Template (with snapping):
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
@@ -477,12 +478,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.22 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.22](https://www.npmjs.com/package/ng-virtual-list/v/19.1.22) |
-| 18.x | 18.0.11 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.11](https://www.npmjs.com/package/ng-virtual-list/v/18.0.11) |
-| 17.x | 17.0.8 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.8](https://www.npmjs.com/package/ng-virtual-list/v/17.0.8) |
-| 16.x | 16.0.11 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.11](https://www.npmjs.com/package/ng-virtual-list/v/16.0.11) |
-| 15.x | 15.0.9 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.9](https://www.npmjs.com/package/ng-virtual-list/v/15.0.9) |
-| 14.x | 14.0.9 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.9](https://www.npmjs.com/package/ng-virtual-list/v/14.0.9) |
+| 19.x | 19.1.23 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.23](https://www.npmjs.com/package/ng-virtual-list/v/19.1.23) |
+| 18.x | 18.0.12 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.12](https://www.npmjs.com/package/ng-virtual-list/v/18.0.12) |
+| 17.x | 17.0.9 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.9](https://www.npmjs.com/package/ng-virtual-list/v/17.0.9) |
+| 16.x | 16.0.12 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.12](https://www.npmjs.com/package/ng-virtual-list/v/16.0.12) |
+| 15.x | 15.0.10 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.10](https://www.npmjs.com/package/ng-virtual-list/v/15.0.10) |
+| 14.x | 14.0.10 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.10](https://www.npmjs.com/package/ng-virtual-list/v/14.0.10) |
 
 <br/>
 
