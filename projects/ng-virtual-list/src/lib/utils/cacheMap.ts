@@ -28,9 +28,9 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
     extends EventEmitter<E, L> implements ICacheMap {
     protected _map = new Map<I, B>();
 
-    protected _version: number = 0;
+    protected _snapshot = new Map<I, B>();
 
-    protected _previouseFullSize: number = 0;
+    protected _version: number = 0;
 
     protected _delta: number = 0;
 
@@ -38,7 +38,7 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._delta;
     }
 
-    protected _deltaDirection: ScrollDirection = 1;
+    protected _deltaDirection: ScrollDirection = 0;
     set deltaDirection(v: ScrollDirection) {
         this._deltaDirection = v;
 
@@ -48,23 +48,8 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._deltaDirection;
     }
 
-    protected _likeAChat: boolean = false;
-
-    set likeAChat(v: boolean) {
-        if (this._likeAChat === v) {
-            return;
-        }
-
-        if (v) {
-            this._scrollDirection = -1;
-        }
-        this._scrollDirectionCache = [];
-
-        this._likeAChat = v;
-    }
-
     private _scrollDirectionCache: Array<ScrollDirection> = [];
-    private _scrollDirection: ScrollDirection = 1;
+    private _scrollDirection: ScrollDirection = 0;
     get scrollDirection() {
         return this._scrollDirection;
     }
@@ -98,13 +83,13 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
             dict[dir] += 1;
         }
 
-        if (dict[-1] > dict[1]) {
+        if (dict[-1] > dict[0] && dict[-1] > dict[1]) {
             return -1;
-        } else if (dict[1] > dict[-1]) {
+        } else if (dict[1] > dict[-1] && dict[1] > dict[0]) {
             return 1;
         }
 
-        return -1;
+        return 0;
     }
 
     protected bumpVersion() {
@@ -141,8 +126,14 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._map.forEach(callbackfn, thisArg);
     }
 
+    snapshot() {
+        this._snapshot = new Map(this._map);
+    }
+
     override dispose() {
         super.dispose();
+
+        this._snapshot.clear();
 
         this._map.clear();
     }
