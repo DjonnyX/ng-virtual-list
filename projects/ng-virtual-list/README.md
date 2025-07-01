@@ -1,5 +1,6 @@
 # NgVirtualList
 Maximum performance for extremely large lists.
+10x more resource intensive than standard lists
 
 Angular version 19.X.X.
 
@@ -28,9 +29,9 @@ Template:
 
 <ng-template #hotizontalItemRenderer let-data="data">
   @if (data) {
-  <div class="list__h-container" (click)="onItemClick(data)">
-    <span>{{data.name}}</span>
-  </div>
+    <div class="list__h-container" (click)="onItemClick(data)">
+      <span>{{data.name}}</span>
+    </div>
   }
 </ng-template>
 ```
@@ -68,14 +69,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__h-group-container">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-group-container">
+          <span>{{data.name}}</span>
+        </div>
       }
       @default {
-      <div class="list__h-container" (click)="onItemClick(data)">
-        <span>{{data.name}}</span>
-      </div>
+        <div class="list__h-container" (click)="onItemClick(data)">
+          <span>{{data.name}}</span>
+        </div>
       }
     }
   }
@@ -124,9 +125,9 @@ Template:
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
-  <div class="list__container">
-    <p>{{data.name}}</p>
-  </div>
+    <div class="list__container">
+      <p>{{data.name}}</p>
+    </div>
   }
 </ng-template>
 ```
@@ -167,14 +168,14 @@ Template:
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
@@ -194,14 +195,14 @@ Template (with snapping):
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
-      <div class="list__group-container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__group-container">
+          <p>{{data.name}}</p>
+        </div>
       }
       @default {
-      <div class="list__container">
-        <p>{{data.name}}</p>
-      </div>
+        <div class="list__container">
+          <p>{{data.name}}</p>
+        </div>
       }
     }
   }
@@ -452,7 +453,6 @@ Inputs
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
-| likeAChat | boolean? = false | If true, optimization for lists that start from the end is enabled. |
 
 <br/>
 
