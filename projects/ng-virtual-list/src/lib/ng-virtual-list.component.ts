@@ -8,13 +8,13 @@ import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.co
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
   DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, DEFAULT_SNAP_TO_ITEM, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
-  TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, DEFAULT_OPTIMIZE_FOR_END,
+  TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, IRect } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions } from './enums';
-import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
+import { ScrollEvent, TrackBox, debounce, isDirection, toggleClassName } from './utils';
 import { IRecalculateMetricsOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
 import { DisposableComponent } from './utils/disposableComponent';
 
@@ -68,7 +68,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   readonly $items = this._$items.asObservable();
 
   private _itemsTransform = (v: IVirtualListCollection | undefined) => {
-    this._trackBox.resetCollection(v);
+    this._trackBox.resetCollection(v, this._$itemSize.getValue());
     return v;
   };
 
@@ -144,22 +144,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   };
   get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
 
-  private _$likeAChat = new BehaviorSubject<boolean>(DEFAULT_OPTIMIZE_FOR_END);
-  readonly $likeAChat = this._$likeAChat.asObservable();
-  /**
-   * If true, optimization for lists that start from the end is enabled (chat mode enabled).
-   */
-  @Input()
-  set likeAChat(v: boolean) {
-    if (this._$likeAChat.getValue() === v) {
-      return;
-    }
-
-    this._$likeAChat.next(v);
-
-    this._cdr.markForCheck();
-  };
-  get likeAChat() { return this._$likeAChat.getValue(); }
 
   private _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   readonly $itemRenderer = this._$itemRenderer.asObservable();
@@ -285,6 +269,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   protected _$scrollSize = new BehaviorSubject<number>(0);
 
+  private _isScrollingDebounces = debounce((v: boolean) => {
+    this._isScrolling = v;
+  }, 250);
+
+  private _isScrolling = false;
+  get isScrolling() { return this._isScrolling; }
+
   private _resizeObserver: ResizeObserver | null = null;
 
   private _onResizeHandler = () => {
@@ -292,6 +283,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   }
 
   private _onScrollHandler = (e?: Event) => {
+    this._isScrolling = true;
+    this._isScrollingDebounces.dispose();
+
     this.clearScrollToRepeatExecutionTimeout();
 
     const container = this._container?.nativeElement;
@@ -326,6 +320,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     container.nativeElement.removeEventListener(SCROLL_END, this._onScrollEndHandler);
     const handler = () => {
       if (container) {
+        this._isScrollingDebounces.execute(false);
+
         container.nativeElement.removeEventListener(SCROLL_END, handler);
 
         container.nativeElement.scroll(params);
@@ -358,6 +354,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   }
 
   private _onScrollEndHandler = (e: Event) => {
+    this._isScrollingDebounces.execute(false);
+
     const container = this._container;
     if (container) {
       this._trackBox.clearDelta();
@@ -434,24 +432,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
     this._trackBox.displayComponents = this._displayComponents;
 
-    const $enabledBufferOptimization = this.$enabledBufferOptimization;
-
-    $enabledBufferOptimization.pipe(
-      takeUntil(this._$unsubscribe),
-      tap(v => {
-        this._trackBox.enabledBufferOptimization = v;
-      }),
-    ).subscribe();
-
-    const $likeAChat = this.$likeAChat;
-
-    $likeAChat.pipe(
-      takeUntil(this._$unsubscribe),
-      tap(v => {
-        this._trackBox.likeAChat = v;
-      }),
-    ).subscribe();
-
     const $bounds = this._$bounds.asObservable().pipe(
       filter(b => !!b),
     ), $items = this.$items.pipe(
@@ -467,10 +447,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         map(v => !v ? {} : v),
       ),
       $snap = this.$snap,
+      $snapToItem = this.$snapToItem,
       $isVertical = this.$direction.pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
       ),
       $dynamicSize = this.$dynamicSize,
+      $enabledBufferOptimization = this.$enabledBufferOptimization,
       $cacheVersion = this.$cacheVersion;
 
     $isVertical.pipe(
@@ -490,7 +472,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     ).subscribe();
 
     combineLatest([this.$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize,
-      $itemsOffset, $snap, $isVertical, $dynamicSize, $cacheVersion,
+      $itemsOffset, $snap, $snapToItem, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion,
     ]).pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -498,15 +480,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       filter(([initialized]) => !!initialized),
       switchMap(([,
         bounds, items, stickyMap, scrollSize, itemSize,
-        itemsOffset, snap, isVertical, dynamicSize, cacheVersion,
+        itemsOffset, snap, snapToItem, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
         const { width, height } = bounds as DOMRect;
         let actualScrollSize = scrollSize;
         const opts: IRecalculateMetricsOptions<IVirtualListItem, IVirtualListCollection> = {
           bounds: { width, height }, collection: items, dynamicSize, isVertical, itemSize,
-          itemsOffset, scrollSize: scrollSize, snap,
+          itemsOffset, scrollSize: scrollSize, snap, enabledBufferOptimization,
         };
-        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
+        const { displayItems, totalSize, delta } = this._trackBox.updateCollection(items, stickyMap, {
           ...opts, scrollSize: actualScrollSize,
         });
 
@@ -515,6 +497,25 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         this.createDisplayComponentsIfNeed(displayItems);
 
         this.tracking();
+
+        const container = this._container;
+
+        if (!this.isScrolling && dynamicSize && container) {
+          actualScrollSize = scrollSize + delta;
+          if (snapToItem) {
+            // etc
+          } else
+            if (scrollSize !== actualScrollSize) {
+              const params: ScrollToOptions = {
+                [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
+                behavior: BEHAVIOR_INSTANT as ScrollBehavior
+              };
+
+              this.scrollImmediately(container, params);
+
+              this._trackBox.clearDelta();
+            }
+        }
 
         return of(displayItems);
       }),
@@ -647,7 +648,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
           opts: IRecalculateMetricsOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
             itemsOffset: this.itemsOffset, scrollSize: isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft,
-            snap: this.snap, fromItemId: id,
+            snap: this.snap, fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization,
           },
           scrollSize = this._trackBox.getItemPosition(id, stickyMap, opts),
           params: ScrollToOptions = { [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior };
@@ -704,10 +705,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private _onContainerScrollHandler = (e: Event) => {
     const containerEl = this._container;
     if (containerEl) {
-      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft),
-        offsetSize = (this._isVertical ? containerEl.nativeElement.offsetHeight : containerEl.nativeElement.offsetWidth),
-        listSize = (this._isVertical ? this._list?.nativeElement.offsetHeight ?? 0 : this._list?.nativeElement.offsetLeft ?? 0);
-      this._trackBox.deltaDirection = this._$scrollSize.getValue() >= scrollSize ? -1 : this.likeAChat && (scrollSize + offsetSize) >= listSize ? -1 : 1;
+      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
+      this._trackBox.deltaDirection = this._$scrollSize.getValue() > scrollSize ? -1 : this._$scrollSize.getValue() < scrollSize ? 1 : 0;
 
       const event = new ScrollEvent({
         direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
@@ -720,10 +719,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   }
 
   private _onContainerScrollEndHandler = (e: Event) => {
-    this._trackBox.deltaDirection = this.likeAChat ? -1 : 1;
-
     const containerEl = this._container;
     if (containerEl) {
+      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
+      this._trackBox.deltaDirection = this._$scrollSize.getValue() > scrollSize ? -1 : 0;
+
       const event = new ScrollEvent({
         direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
         list: this._list!.nativeElement, delta: this._trackBox.delta,
@@ -758,6 +758,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
     if (this._trackBox) {
       this._trackBox.dispose();
+    }
+
+    if (this._isScrollingDebounces) {
+      this._isScrollingDebounces.dispose();
     }
 
     const containerEl = this._container;
