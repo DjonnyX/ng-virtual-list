@@ -20,7 +20,7 @@ const MAX_SCROLL_DIRECTION_POOL = 8, CLEAR_SCROLL_DIRECTION_TO = 0;
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -101,7 +101,11 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
     }
 
     set(id: I, bounds: B): Map<I, B> {
-        if (this._map.has(id) && JSON.stringify(this._map.get(id)) === JSON.stringify(bounds)) {
+        if (this._map.has(id)) {
+            const b: any = this._map.get(id), bb: any = bounds;
+            if (b.width === bb.width && b.height === bb.height) {
+                return this._map;
+            }
             return this._map;
         }
 
