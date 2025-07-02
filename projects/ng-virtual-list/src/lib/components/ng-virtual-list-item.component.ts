@@ -55,6 +55,10 @@ export class NgVirtualListItemComponent {
     this._cdr.detectChanges();
   }
 
+  get item() {
+    return this.data;
+  }
+
   get itemId() {
     return this.data?.id;
   }
@@ -69,6 +73,10 @@ export class NgVirtualListItemComponent {
     this.itemRenderer = v;
 
     this._cdr.markForCheck();
+  }
+
+  get element() {
+    return this._elementRef.nativeElement;
   }
 
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>) {
