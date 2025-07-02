@@ -8,7 +8,7 @@ import {
 
 /**
  * Virtual list item component
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -56,6 +56,10 @@ export class NgVirtualListItemComponent {
     this._cdr.detectChanges();
   }
 
+  get item() {
+    return this.data;
+  }
+
   get itemId() {
     return this.data?.id;
   }
@@ -70,6 +74,10 @@ export class NgVirtualListItemComponent {
     this.itemRenderer = v;
 
     this._cdr.markForCheck();
+  }
+
+  get element() {
+    return this._elementRef.nativeElement;
   }
 
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>) {
