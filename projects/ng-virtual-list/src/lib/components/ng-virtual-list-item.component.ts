@@ -42,7 +42,7 @@ export class NgVirtualListItemComponent {
 
     if (data) {
       const styles = this._elementRef.nativeElement.style;
-      styles.zIndex = data.config.sticky;
+      styles.zIndex = String(data.config.sticky);
       if (data.config.snapped) {
         styles.transform = ZEROS_TRANSLATE_3D;
         styles.position = POSITION_STICKY;
@@ -57,6 +57,10 @@ export class NgVirtualListItemComponent {
     this.data.set(v);
   }
 
+  get item() {
+    return this._data;
+  }
+
   get itemId() {
     return this._data?.id;
   }
@@ -67,7 +71,10 @@ export class NgVirtualListItemComponent {
     this.itemRenderer.set(v);
   }
 
-  private _elementRef = inject(ElementRef<HTMLElement>);
+  private _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
+  get element() {
+    return this._elementRef.nativeElement;
+  }
 
   constructor() {
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
