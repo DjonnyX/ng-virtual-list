@@ -1,6 +1,5 @@
 # NgVirtualList
 Maximum performance for extremely large lists.
-10x more resource intensive than standard lists
 
 Angular version 14.X.X.
 
