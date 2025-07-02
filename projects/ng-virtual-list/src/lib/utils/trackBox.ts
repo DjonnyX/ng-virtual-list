@@ -10,7 +10,6 @@ import { ISize } from "../types";
 import { debounce } from "./debounce";
 import { DEFAULT_ITEMS_OFFSET, HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
 import { IVirtualListStickyMap } from "../models";
-import { getCollectionRemovedOrUpdatedItems } from "./collection";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
@@ -102,6 +101,13 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
         this._displayComponents = v;
     }
 
+    /**
+     * Set the trackBy property
+     */
+    set trackingPropertyName(v: string) {
+        this._tracker.trackingPropertyName = v;
+    }
+
     constructor(trackingPropertyName: string) {
         super();
 
@@ -109,8 +115,11 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
     }
 
     override set(id: Id, bounds: IRect): Map<Id, IRect> {
-        if (this._map.has(id) && JSON.stringify(this._map.get(id)) === JSON.stringify(bounds)) {
-            return this._map;
+        if (this._map.has(id)) {
+            const b = this._map.get(id);
+            if (b?.width === bounds.width && b.height === bounds.height) {
+                return this._map;
+            }
         }
 
         const v = this._map.set(id, bounds);
@@ -142,35 +151,74 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
             console.warn('Attention! The collection must be immutable.');
             return;
         }
-        const { deleted, updated, added } = getCollectionRemovedOrUpdatedItems(this._previousCollection, currentCollection);
 
-        this.clearCache(deleted, updated, added, itemSize);
+        this.updateCache(this._previousCollection, currentCollection, itemSize);
 
         this._previousCollection = currentCollection;
     }
 
     /**
-     * Clears the cache of items from the list
+     * Update the cache of items from the list
      */
-    protected clearCache<I extends { id: Id }, C extends Array<I>>(deleted: C | null | undefined, updated: C | null | undefined,
-        added: C | null | undefined, itemSize: number): void {
-        if (deleted) {
-            for (let i = 0, l = deleted.length; i < l; i++) {
-                const item = deleted[i], id = item.id;
-                if (this._map.has(id)) {
-                    this._map.delete(id);
+    protected updateCache<I extends { id: Id }, C extends Array<I>>(previousCollection: C | null | undefined, currentCollection: C | null | undefined,
+        itemSize: number): void {
+        if (!currentCollection || currentCollection.length === 0) {
+            if (previousCollection) {
+                // deleted
+                for (let i = 0, l = previousCollection.length; i < l; i++) {
+                    const item = previousCollection[i], id = item.id;
+                    if (this._map.has(id)) {
+                        this._map.delete(id);
+                    }
                 }
             }
+            return;
         }
-        if (updated) {
-            for (let i = 0, l = updated.length; i < l; i++) {
-                const item = updated[i], id = item.id;
-                this._map.set(id, { ...(this._map.get(id) || { x: 0, y: 0, width: itemSize, height: itemSize }), method: ItemDisplayMethods.UPDATE });
+        if (!previousCollection || previousCollection.length === 0) {
+            if (currentCollection) {
+                // added
+                for (let i = 0, l = currentCollection.length; i < l; i++) {
+                    const item = currentCollection[i], id = item.id;
+                    this._map.set(id, { x: 0, y: 0, width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
+                }
+            }
+            return;
+        }
+        const collectionDict: { [id: Id]: I } = {};
+        for (let i = 0, l = currentCollection.length; i < l; i++) {
+            const item = currentCollection[i];
+            if (item) {
+                collectionDict[item.id] = item;
             }
         }
-        if (added) {
-            for (let i = 0, l = added.length; i < l; i++) {
-                const item = added[i], id = item.id;
+        const notChangedMap: { [id: Id]: I } = {}, deletedMap: { [id: Id]: I } = {}, updatedMap: { [id: Id]: I } = {};
+        for (let i = 0, l = previousCollection.length; i < l; i++) {
+            const item = previousCollection[i], id = item.id;
+            if (item) {
+                if (collectionDict.hasOwnProperty(id)) {
+                    if (item === collectionDict[id]) {
+                        // not changed
+                        notChangedMap[item.id] = item;
+                        this._map.set(id, { ...(this._map.get(id) || { x: 0, y: 0, width: itemSize, height: itemSize }), method: ItemDisplayMethods.NOT_CHANGED });
+                        continue;
+                    } else {
+                        // updated
+                        updatedMap[item.id] = item;
+                        this._map.set(id, { ...(this._map.get(id) || { x: 0, y: 0, width: itemSize, height: itemSize }), method: ItemDisplayMethods.UPDATE });
+                        continue;
+                    }
+                }
+
+                // deleted
+                deletedMap[item.id] = item;
+                this._map.delete(id);
+            }
+        }
+
+        for (let i = 0, l = currentCollection.length; i < l; i++) {
+            const item = currentCollection[i], id = item.id;
+            if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) && !notChangedMap.hasOwnProperty(id)) {
+                // added
                 this._map.set(id, { x: 0, y: 0, width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
             }
         }
@@ -502,6 +550,12 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
         if (clearDirectionDetector) {
             this.clearScrollDirectionCache();
         }
+    }
+
+    changes(): void {
+        this.bumpVersion();
+
+        this.fireChange();
     }
 
     protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
