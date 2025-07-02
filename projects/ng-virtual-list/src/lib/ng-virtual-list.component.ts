@@ -157,7 +157,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onScrollHandler = (e?: Event) => {
-    this._isScrolling = true;
     this._isScrollingDebounces.dispose();
 
     this.clearScrollToRepeatExecutionTimeout();
@@ -194,8 +193,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     container.nativeElement.removeEventListener(SCROLL_END, this._onScrollEndHandler);
     const handler = () => {
       if (container) {
-        this._isScrollingDebounces.execute(false);
-
         container.nativeElement.removeEventListener(SCROLL_END, handler);
 
         container.nativeElement.scroll(params);
@@ -228,8 +225,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onScrollEndHandler = (e: Event) => {
-    this._isScrollingDebounces.execute(false);
-
     const container = this._container();
     if (container) {
       this._trackBox.clearDelta();
@@ -500,7 +495,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   protected scrollToExecutor(id: Id, behavior: ScrollBehavior, iteration: number = 0) {
+    this._isScrolling = true;
+
     this.clearScrollToRepeatExecutionTimeout();
+
     const items = this.items();
     if (!items || !items.length) {
       return;
@@ -574,6 +572,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onContainerScrollHandler = (e: Event) => {
+    this._isScrolling = true;
+
     const containerEl = this._container();
     if (containerEl) {
       const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
@@ -590,6 +590,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   }
 
   private _onContainerScrollEndHandler = (e: Event) => {
+    this._isScrollingDebounces.execute(false);
+
     const containerEl = this._container();
     if (containerEl) {
       const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);

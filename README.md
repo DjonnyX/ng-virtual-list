@@ -1,7 +1,6 @@
 # NgVirtualList
 
 Maximum performance for extremely large lists.
-10x more resource intensive than standard lists
 
 ![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
@@ -478,12 +477,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.23 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.23](https://www.npmjs.com/package/ng-virtual-list/v/19.1.23) |
-| 18.x | 18.0.12 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.12](https://www.npmjs.com/package/ng-virtual-list/v/18.0.12) |
-| 17.x | 17.0.9 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.9](https://www.npmjs.com/package/ng-virtual-list/v/17.0.9) |
-| 16.x | 16.0.12 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.12](https://www.npmjs.com/package/ng-virtual-list/v/16.0.12) |
-| 15.x | 15.0.10 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.10](https://www.npmjs.com/package/ng-virtual-list/v/15.0.10) |
-| 14.x | 14.0.10 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.10](https://www.npmjs.com/package/ng-virtual-list/v/14.0.10) |
+| 19.x | 19.1.24 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.24](https://www.npmjs.com/package/ng-virtual-list/v/19.1.24) |
+| 18.x | 18.0.13 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.13](https://www.npmjs.com/package/ng-virtual-list/v/18.0.13) |
+| 17.x | 17.0.10 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.10](https://www.npmjs.com/package/ng-virtual-list/v/17.0.10) |
+| 16.x | 16.0.13 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.13](https://www.npmjs.com/package/ng-virtual-list/v/16.0.13) |
+| 15.x | 15.0.11 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.11](https://www.npmjs.com/package/ng-virtual-list/v/15.0.11) |
+| 14.x | 14.0.11 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.11](https://www.npmjs.com/package/ng-virtual-list/v/14.0.11) |
 
 <br/>
 
