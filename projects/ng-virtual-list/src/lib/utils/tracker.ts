@@ -37,6 +37,10 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
 
     private _trackingPropertyName!: string;
 
+    set trackingPropertyName(v: string) {
+        this._trackingPropertyName = v;
+    }
+
     constructor(trackingPropertyName: string) {
         this._trackingPropertyName = trackingPropertyName;
     }
@@ -60,20 +64,18 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
                 if (this._trackMap.hasOwnProperty(itemTrackingProperty)) {
                     const lastIndex = this._displayObjectIndexMapById[diId], el = components[lastIndex];
 
-                    this._checkComponentProperty(el?.instance);
-
-                    const elId = el?.instance?.[itemTrackingProperty];
+                    const elId = el?.instance?.id;
                     if (el && elId === diId) {
                         const indexByUntrackedItems = untrackedItems.findIndex(v => {
-                            this._checkComponentProperty(v.instance);
-
-                            return v.instance[itemTrackingProperty] === elId;
+                            return v.instance.id === elId;
                         });
                         if (indexByUntrackedItems > -1) {
-                            el.instance.item = item;
+                            if (el.instance.item !== item) {
+                                el.instance.item = item;
 
-                            if (afterComponentSetup !== undefined) {
-                                afterComponentSetup(el.instance, item);
+                                if (afterComponentSetup !== undefined) {
+                                    afterComponentSetup(el.instance, item);
+                                }
                             }
 
                             untrackedItems.splice(indexByUntrackedItems, 1);
@@ -87,16 +89,16 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
             if (untrackedItems.length > 0) {
                 const el = untrackedItems.shift(), item = items[i];
                 if (el) {
-                    el.instance.item = item;
+                    if (el.instance.item !== item) {
+                        el.instance.item = item;
 
-                    if (this._trackMap) {
-                        this._checkComponentProperty(el.instance);
+                        if (this._trackMap) {
+                            this._trackMap[itemTrackingProperty] = el.instance.id;
+                        }
 
-                        this._trackMap[itemTrackingProperty] = el.instance[itemTrackingProperty];
-                    }
-
-                    if (afterComponentSetup !== undefined) {
-                        afterComponentSetup(el.instance, item);
+                        if (afterComponentSetup !== undefined) {
+                            afterComponentSetup(el.instance, item);
+                        }
                     }
                 }
             }
@@ -114,24 +116,8 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
 
         const propertyIdName = this._trackingPropertyName;
 
-        this._checkComponentProperty(component);
-
         if (this._trackMap && (component as any)[propertyIdName] !== undefined) {
             delete this._trackMap[propertyIdName];
-        }
-    }
-
-    private _checkComponentProperty(component?: C): void {
-        if (!component) {
-            return;
-        }
-
-        const propertyIdName = this._trackingPropertyName;
-
-        try {
-            (component as any)[propertyIdName];
-        } catch (err) {
-            throw Error(`Property ${propertyIdName} does not exist.`);
         }
     }
 
