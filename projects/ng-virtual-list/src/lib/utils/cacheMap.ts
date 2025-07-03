@@ -100,7 +100,11 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     set(id: I, bounds: B): Map<I, B> {
-        if (this._map.has(id) && JSON.stringify(this._map.get(id)) === JSON.stringify(bounds)) {
+        if (this._map.has(id)) {
+            const b: any = this._map.get(id), bb: any = bounds;
+            if (b.width === bb.width && b.height === bb.height) {
+                return this._map;
+            }
             return this._map;
         }
 
