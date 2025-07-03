@@ -164,7 +164,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     const container = this._container()?.nativeElement;
     if (container) {
       const dynamicSize = this.dynamicSize(), delta = this._trackBox.delta, scrollSize = (this._isVertical ? container.scrollTop : container.scrollLeft);
-      let actualScrollSize = scrollSize, isImmediateScroll = false;
+      let actualScrollSize = scrollSize, isScrollIUmmediate = false;
 
       if (dynamicSize && delta !== 0) {
         actualScrollSize = scrollSize + delta;
@@ -175,15 +175,17 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
 
         const container = this._container();
         if (container) {
-          isImmediateScroll = true;
-
-          this.scrollImmediately(container, params);
-
-          this._trackBox.clearDelta();
+          isScrollIUmmediate = true;
+          this.scrollImmediately(container, params, () => {
+            const scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
+            this._scrollSize.set(scrollSize);
+          });
         }
       }
 
-      this._scrollSize.set(actualScrollSize);
+      if (!isScrollIUmmediate) {
+        this._scrollSize.set(actualScrollSize);
+      }
     }
   }
 
@@ -195,8 +197,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       if (container) {
         container.nativeElement.removeEventListener(SCROLL_END, handler);
 
-        container.nativeElement.scroll(params);
-
         if (cb !== undefined) {
           cb();
         }
@@ -207,6 +207,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     container.nativeElement.addEventListener(SCROLL_END, handler);
 
     container.nativeElement.scroll(params);
+
+    this._trackBox.clearDelta();
 
     this._scrollImmediatelyHandler = handler;
   }
@@ -227,12 +229,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _onScrollEndHandler = (e: Event) => {
     const container = this._container();
     if (container) {
-      this._trackBox.clearDelta();
-      this._trackBox.clearDeltaDirection();
-
       const itemSize = this.itemSize(), snapToItem = this.snapToItem(), dynamicSize = this.dynamicSize(), delta = this._trackBox.delta,
         scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
       let actualScrollSize = scrollSize;
+
+      this._trackBox.clearDelta();
+      this._trackBox.clearDeltaDirection();
+
       if (dynamicSize) {
         actualScrollSize = scrollSize + delta;
         if (snapToItem) {
@@ -248,9 +251,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             behavior: BEHAVIOR_INSTANT
           };
 
-          this._scrollSize.set(actualScrollSize);
-
-          container.nativeElement.scroll(params);
+          const container = this._container();
+          if (container) {
+            this.scrollImmediately(container, params, () => {
+              const scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
+              this._scrollSize.set(scrollSize);
+            });
+          }
           return;
         }
       } else {
@@ -263,11 +270,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             behavior: BEHAVIOR_INSTANT
           };
 
-          container.nativeElement.scroll(params);
+          const container = this._container();
+          if (container) {
+            this.scrollImmediately(container, params, () => {
+              const scrollSize = (this._isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft);
+              this._scrollSize.set(scrollSize);
+            });
+          }
         }
       }
-
-      this._scrollSize.set(actualScrollSize);
     }
   }
 
@@ -397,8 +408,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
               };
 
               this.scrollImmediately(container, params);
-
-              this._trackBox.clearDelta();
             }
         }
 
