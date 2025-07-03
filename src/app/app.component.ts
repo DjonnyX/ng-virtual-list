@@ -5,7 +5,7 @@ import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from 
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
 
-const MAX_ITEMS = 100000;
+const MAX_ITEMS = 10000;
 
 const ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
