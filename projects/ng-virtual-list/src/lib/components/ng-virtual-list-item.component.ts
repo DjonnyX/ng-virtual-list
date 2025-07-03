@@ -33,7 +33,7 @@ export class NgVirtualListItemComponent {
   private _cdr = inject(ChangeDetectorRef);
 
   data = signal<IRenderVirtualListItem | undefined>(undefined);
-  _data: IRenderVirtualListItem | undefined = undefined;
+  private _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
     if (this._data === v) {
       return;
@@ -43,7 +43,7 @@ export class NgVirtualListItemComponent {
 
     if (data) {
       const styles = this._elementRef.nativeElement.style;
-      styles.zIndex = data.config.sticky;
+      styles.zIndex = String(data.config.sticky);
       if (data.config.snapped) {
         styles.transform = ZEROS_TRANSLATE_3D;
         styles.position = POSITION_STICKY;
@@ -60,6 +60,12 @@ export class NgVirtualListItemComponent {
     this._cdr.markForCheck();
   }
 
+  itemData: IRenderVirtualListItem | undefined = undefined;
+
+  get item() {
+    return this._data;
+  }
+
   get itemId() {
     return this._data?.id;
   }
@@ -67,16 +73,13 @@ export class NgVirtualListItemComponent {
   itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
   set renderer(v: TemplateRef<any> | undefined) {
-    if (this.itemRenderer() === v) {
-      return;
-    }
-
     this.itemRenderer.set(v);
-
-    this._cdr.markForCheck();
   }
 
-  private _elementRef = inject(ElementRef<HTMLElement>);
+  private _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
+  get element() {
+    return this._elementRef.nativeElement;
+  }
 
   constructor() {
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
