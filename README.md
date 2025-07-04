@@ -478,12 +478,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.25 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.25](https://www.npmjs.com/package/ng-virtual-list/v/19.1.25) |
-| 18.x | 18.0.14 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.14](https://www.npmjs.com/package/ng-virtual-list/v/18.0.14) |
-| 17.x | 17.0.11 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.11](https://www.npmjs.com/package/ng-virtual-list/v/17.0.11) |
-| 16.x | 16.0.14 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.14](https://www.npmjs.com/package/ng-virtual-list/v/16.0.14) |
-| 15.x | 15.0.12 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.12](https://www.npmjs.com/package/ng-virtual-list/v/15.0.12) |
-| 14.x | 14.0.12 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.12](https://www.npmjs.com/package/ng-virtual-list/v/14.0.12) |
+| 19.x | 19.1.27 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.27](https://www.npmjs.com/package/ng-virtual-list/v/19.1.27) |
+| 18.x | 18.0.15 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.15](https://www.npmjs.com/package/ng-virtual-list/v/18.0.15) |
+| 17.x | 17.0.12 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.12](https://www.npmjs.com/package/ng-virtual-list/v/17.0.12) |
+| 16.x | 16.0.15 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.15](https://www.npmjs.com/package/ng-virtual-list/v/16.0.15) |
+| 15.x | 15.0.13 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.13](https://www.npmjs.com/package/ng-virtual-list/v/15.0.13) |
+| 14.x | 14.0.13 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.13](https://www.npmjs.com/package/ng-virtual-list/v/14.0.13) |
 
 <br/>
 
