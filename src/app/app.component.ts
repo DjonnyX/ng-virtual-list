@@ -147,7 +147,7 @@ export class AppComponent {
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef();
     if (list && this.dlItemId !== undefined) {
-      list.scrollTo(this.dlItemId, 'smooth');
+      list.scrollTo(this.dlItemId, 'instant');
     }
   }
 
