@@ -14,9 +14,9 @@ import {
  */
 @Component({
   selector: 'ng-virtual-list-item',
+  standalone: false,
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrl: './ng-virtual-list-item.component.scss',
-  standalone: false,
   host: {
     'class': 'ngvl__item',
   },
@@ -60,8 +60,6 @@ export class NgVirtualListItemComponent {
     this._cdr.markForCheck();
   }
 
-  itemData: IRenderVirtualListItem | undefined = undefined;
-
   get item() {
     return this._data;
   }
@@ -92,7 +90,7 @@ export class NgVirtualListItemComponent {
     return { width, height, x: left, y: top };
   }
 
-  showIfNeed() {
+  show() {
     const styles = this._elementRef.nativeElement.style;
     if (styles.visibility === VISIBILITY_VISIBLE) {
       return;
