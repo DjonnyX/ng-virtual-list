@@ -86,7 +86,7 @@ export class NgVirtualListItemComponent {
     return { width, height, x: left, y: top };
   }
 
-  showIfNeed() {
+  show() {
     const styles = this._elementRef.nativeElement.style;
     if (styles.visibility === VISIBILITY_VISIBLE) {
       return;

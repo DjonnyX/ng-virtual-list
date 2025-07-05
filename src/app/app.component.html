@@ -4,7 +4,7 @@
     <p class="l">Maximum performance for extremely large lists</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo"/>
-    <div class="version"><span>v 18.0.15</span></div>
+    <div class="version"><span>v 18.0.16</span></div>
   </div>
 
   <div class="vl-section">
@@ -66,14 +66,6 @@
 
   <div class="vl-section">
     <div class="vl-section__container">
-      <h2>Snap to Item</h2>
-      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50" [itemSize]="40"
-        [snapToItem]="true"></ng-virtual-list>
-    </div>
-  </div>
-
-  <div class="vl-section">
-    <div class="vl-section__container">
       <h2>Scroll to item</h2>
       <div class="scroll-to__controls">
         <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="minId"
@@ -111,14 +103,6 @@
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
         [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
-    </div>
-  </div>
-
-  <div class="vl-section">
-    <div class="vl-section__container">
-      <h2>Virtual list (with dynamic item size) (snap to item)</h2>
-      <ng-virtual-list class="list" [items]="groupDynamicItemsWithSanp" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
-        [stickyMap]="groupDynamicItemsStickyMapWithSanp" [dynamicSize]="true" [snap]="true" [snapToItem]="true"></ng-virtual-list>
     </div>
   </div>
 

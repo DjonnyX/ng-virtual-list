@@ -139,14 +139,14 @@ export class AppComponent {
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef();
     if (list && this.itemId !== undefined) {
-      list.scrollTo(this.itemId, 'smooth');
+      list.scrollTo(this.itemId, 'smooth' as ScrollBehavior);
     }
   }
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef();
     if (list && this.dlItemId !== undefined) {
-      list.scrollTo(this.dlItemId, 'smooth');
+      list.scrollTo(this.dlItemId, 'instant' as ScrollBehavior);
     }
   }
 
