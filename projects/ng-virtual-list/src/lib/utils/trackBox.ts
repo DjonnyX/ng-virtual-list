@@ -8,7 +8,7 @@ import { CacheMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
 import { debounce } from "./debounce";
-import { DEFAULT_ITEMS_OFFSET, HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
+import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
 import { IVirtualListStickyMap } from "../models";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
@@ -74,7 +74,7 @@ enum ItemDisplayMethods {
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/trackBox.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/utils/trackBox.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -324,13 +324,33 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
             totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
             map = this._map, snapshot = this._snapshot,
-            leftItemsOffset = enabledBufferOptimization ? this.deltaDirection === 1 ? DEFAULT_ITEMS_OFFSET : itemsOffset : itemsOffset,
-            rightItemsOffset = enabledBufferOptimization ? this.deltaDirection === -1 ? DEFAULT_ITEMS_OFFSET : itemsOffset : itemsOffset,
             checkOverscrollItemsLimit = Math.ceil(size / typicalItemSize),
             snippedPos = Math.floor(scrollSize),
             leftItemsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
                 || (typeof fromItemId === 'string' && fromItemId > '-1');
+
+        let leftItemsOffset = 0, rightItemsOffset = 0;
+        if (enabledBufferOptimization) {
+            switch (this.scrollDirection) {
+                case 1: {
+                    leftItemsOffset = 0;
+                    rightItemsOffset = itemsOffset;
+                    break;
+                }
+                case -1: {
+                    leftItemsOffset = itemsOffset;
+                    rightItemsOffset = 0;
+                    break;
+                }
+                case 0:
+                default: {
+                    leftItemsOffset = rightItemsOffset = itemsOffset;
+                }
+            }
+        } else {
+            leftItemsOffset = rightItemsOffset = itemsOffset;
+        }
 
         let itemsFromStartToScrollEnd: number = -1, itemsFromDisplayEndToOffsetEnd = 0, itemsFromStartToDisplayEnd = -1,
             leftItemLength = 0, rightItemLength = 0,
@@ -351,7 +371,7 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
-            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
+            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0, stickyComponentIndex = -1;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem.id;
 
@@ -385,18 +405,25 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
                         if (id !== fromItemId && stickyMap && stickyMap[id] > 0) {
                             stickyComponentSize = componentSize;
                             stickyCollectionItem = collectionItem;
+                            stickyComponentIndex = i;
                         }
 
                         if (id === fromItemId) {
                             targetDisplayItemIndex = i;
-                            if (stickyCollectionItem && stickyMap && stickyMap[stickyCollectionItem.id] > 0) {
+                            if (stickyCollectionItem && stickyMap) {
                                 const { num } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical);
                                 if (num > 0) {
                                     isTargetInOverscroll = true;
                                     y -= size - componentSize;
                                 } else {
-                                    y -= stickyComponentSize;
-                                    leftHiddenItemsWeight -= stickyComponentSize;
+                                    if (stickyMap && !stickyMap[collectionItem.id] && y >= scrollSize && y < scrollSize + stickyComponentSize) {
+                                        const snappedY = scrollSize - stickyComponentSize;
+                                        leftHiddenItemsWeight -= (snappedY - y);
+                                        y = snappedY;
+                                    } else {
+                                        y -= stickyComponentSize;
+                                        leftHiddenItemsWeight -= stickyComponentSize;
+                                    }
                                 }
                             }
                             itemById = collectionItem;
@@ -648,6 +675,7 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
                         nextSticky = item;
                         nextSticky.config.snapped = snapped;
                     }
+
                     displayItems.push(item);
                 }
 
@@ -680,7 +708,7 @@ export class TrackBox extends CacheMap<Id, IRect & { method?: ItemDisplayMethods
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents);
+        this._tracker.track(this._items, this._displayComponents, this.scrollDirection);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {

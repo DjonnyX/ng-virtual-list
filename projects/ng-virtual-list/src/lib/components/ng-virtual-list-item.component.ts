@@ -8,7 +8,7 @@ import {
 
 /**
  * Virtual list item component
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -91,7 +91,7 @@ export class NgVirtualListItemComponent {
     return { width, height, x: left, y: top };
   }
 
-  showIfNeed() {
+  show() {
     const styles = this._elementRef.nativeElement.style;
     if (styles.visibility === VISIBILITY_VISIBLE) {
       return;
