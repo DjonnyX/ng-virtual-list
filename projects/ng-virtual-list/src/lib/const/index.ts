@@ -8,7 +8,7 @@ export const DEFAULT_LIST_SIZE = 400;
 
 export const DEFAULT_SNAP = false;
 
-export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = true;
+export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
 export const DEFAULT_SNAP_TO_ITEM = false;
 
