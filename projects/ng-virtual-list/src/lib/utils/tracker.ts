@@ -1,14 +1,22 @@
 import { ComponentRef } from "@angular/core";
+import { ScrollDirection } from "../models";
 
 type TrackingPropertyId = string | number;
 
+interface IVirtualListItemComponent<I = any> {
+    id: number;
+    item: I;
+    show: () => void;
+    hide: () => void;
+}
+
 /**
  * Tracks display items by property
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class Tracker<I = any, C = { [prop: string]: any; }> {
+export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
     /**
      * display objects dictionary of indexes by id
      */
@@ -48,36 +56,30 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
     /**
      * tracking by propName
      */
-    track(items: Array<any>, components: Array<ComponentRef<any>>,
-        afterComponentSetup?: (component: C, item: I) => void): void {
+    track(items: Array<any>, components: Array<ComponentRef<C>>,
+        direction: ScrollDirection): void {
         if (!items) {
             return;
         }
 
-        const idPropName = this._trackingPropertyName, untrackedItems = [...components];
+        const idPropName = this._trackingPropertyName, untrackedItems = [...components], isDown = direction === 0 || direction === 1;
 
-        for (let i = 0, l = items.length; i < l; i++) {
+        for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
             const item = items[i], itemTrackingProperty = item[idPropName];
 
             if (this._trackMap) {
-                const diId = this._trackMap[itemTrackingProperty];
                 if (this._trackMap.hasOwnProperty(itemTrackingProperty)) {
-                    const lastIndex = this._displayObjectIndexMapById[diId], el = components[lastIndex];
+                    const diId = this._trackMap[itemTrackingProperty],
+                        compIndex = this._displayObjectIndexMapById[diId], comp = components[compIndex];
 
-                    const elId = el?.instance?.id;
-                    if (el && elId === diId) {
+                    const compId = comp?.instance?.id;
+                    if (comp !== undefined && compId == diId) {
                         const indexByUntrackedItems = untrackedItems.findIndex(v => {
-                            return v.instance.id === elId;
+                            return v.instance.id == compId;
                         });
                         if (indexByUntrackedItems > -1) {
-                            if (el.instance.item !== item) {
-                                el.instance.item = item;
-
-                                if (afterComponentSetup !== undefined) {
-                                    afterComponentSetup(el.instance, item);
-                                }
-                            }
-
+                            comp.instance.item = item;
+                            comp.instance.show();
                             untrackedItems.splice(indexByUntrackedItems, 1);
                             continue;
                         }
@@ -89,23 +91,20 @@ export class Tracker<I = any, C = { [prop: string]: any; }> {
             if (untrackedItems.length > 0) {
                 const el = untrackedItems.shift(), item = items[i];
                 if (el) {
-                    if (el.instance.item !== item) {
-                        el.instance.item = item;
+                    el.instance.item = item;
 
-                        if (this._trackMap) {
-                            this._trackMap[itemTrackingProperty] = el.instance.id;
-                        }
-
-                        if (afterComponentSetup !== undefined) {
-                            afterComponentSetup(el.instance, item);
-                        }
+                    if (this._trackMap) {
+                        this._trackMap[itemTrackingProperty] = el.instance.id;
                     }
                 }
             }
         }
 
         if (untrackedItems.length) {
-            throw Error('Tracking by id caused an error.')
+            for (let i = 0, l = untrackedItems.length; i < l; i++) {
+                const comp = untrackedItems[i];
+                comp.instance.hide();
+            }
         }
     }
 
