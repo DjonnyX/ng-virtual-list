@@ -29,7 +29,7 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
-  data: IRenderVirtualListItem | undefined;
+    data: IRenderVirtualListItem | undefined;
 
   set item(v: IRenderVirtualListItem | undefined) {
     if (this.data === v) {
@@ -90,7 +90,7 @@ export class NgVirtualListItemComponent {
     return { width, height, x: left, y: top };
   }
 
-  showIfNeed() {
+  show() {
     const styles = this._elementRef.nativeElement.style;
     if (styles.visibility === VISIBILITY_VISIBLE) {
       return;
