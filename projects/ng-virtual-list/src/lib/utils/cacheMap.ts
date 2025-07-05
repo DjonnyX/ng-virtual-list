@@ -1,6 +1,6 @@
 import { ScrollDirection } from "../models";
 import { debounce } from "./debounce";
-import { EventEmitter } from "./eventEmitter";
+import { EventEmitter, TEventHandler } from "./eventEmitter";
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => Map<I, B>;
@@ -15,7 +15,7 @@ type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 8, CLEAR_SCROLL_DIRECTION_TO = 0;
+const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10;
 
 /**
  * Cache map.
@@ -24,7 +24,8 @@ const MAX_SCROLL_DIRECTION_POOL = 8, CLEAR_SCROLL_DIRECTION_TO = 0;
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = CacheMapListeners> extends EventEmitter<E, L> implements ICacheMap {
+export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L extends TEventHandler = CacheMapListeners>
+    extends EventEmitter<E, L> implements ICacheMap {
     protected _map = new Map<I, B>();
 
     protected _snapshot = new Map<I, B>();
@@ -76,15 +77,23 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
             this._scrollDirectionCache.shift();
         }
         this._scrollDirectionCache.push(v);
-        const dict = { [-1]: 0, [0]: 0, [1]: 0 };
-        for (let i = 0, l = this._scrollDirectionCache.length; i < l; i++) {
-            const dir = this._scrollDirectionCache[i];
+        const dict: { [x: string]: number } = { ['-1']: 0, ['0']: 0, ['1']: 0 };
+        for (let i = 0, l = this._scrollDirectionCache.length, li = l - 1; i < l; i++) {
+            const dir = String(this._scrollDirectionCache[i]);
             dict[dir] += 1;
+            if (i === li) {
+                for (let d in dict) {
+                    if (d === String(v)) {
+                        continue;
+                    }
+                    dict[d] -= 1;
+                }
+            }
         }
 
-        if (dict[-1] > dict[0] && dict[-1] > dict[1]) {
+        if (dict['-1'] > dict['0'] && dict['-1'] > dict['1']) {
             return -1;
-        } else if (dict[1] > dict[-1] && dict[1] > dict[0]) {
+        } else if (dict['1'] > dict['-1'] && dict['1'] > dict['0']) {
             return 1;
         }
 
