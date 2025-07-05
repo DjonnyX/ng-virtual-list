@@ -449,10 +449,9 @@ Inputs
 | itemRenderer | TemplateRef | Rendering element template. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
-| snapToItem | boolean? = false | Determines whether scroll positions will be snapped to the element. Default value is "false". |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
-| enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
+| enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 
 <br/>
@@ -478,12 +477,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.27 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.27](https://www.npmjs.com/package/ng-virtual-list/v/19.1.27) |
-| 18.x | 18.0.15 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.15](https://www.npmjs.com/package/ng-virtual-list/v/18.0.15) |
-| 17.x | 17.0.12 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.12](https://www.npmjs.com/package/ng-virtual-list/v/17.0.12) |
-| 16.x | 16.0.15 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.15](https://www.npmjs.com/package/ng-virtual-list/v/16.0.15) |
-| 15.x | 15.0.13 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.13](https://www.npmjs.com/package/ng-virtual-list/v/15.0.13) |
-| 14.x | 14.0.13 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.13](https://www.npmjs.com/package/ng-virtual-list/v/14.0.13) |
+| 19.x | 19.1.28 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.28](https://www.npmjs.com/package/ng-virtual-list/v/19.1.28) |
+| 18.x | 18.0.16 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.16](https://www.npmjs.com/package/ng-virtual-list/v/18.0.16) |
+| 17.x | 17.0.13 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.13](https://www.npmjs.com/package/ng-virtual-list/v/17.0.13) |
+| 16.x | 16.0.16 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.16](https://www.npmjs.com/package/ng-virtual-list/v/16.0.16) |
+| 15.x | 15.0.14 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.14](https://www.npmjs.com/package/ng-virtual-list/v/15.0.14) |
+| 14.x | 14.0.14 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.14](https://www.npmjs.com/package/ng-virtual-list/v/14.0.14) |
 
 <br/>
 
