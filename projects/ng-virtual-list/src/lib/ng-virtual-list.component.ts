@@ -395,11 +395,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const crudDetected = this._trackBox.crudDetected, dynamicSize = this.dynamicSize(), container = this._container(), itemSize = this.itemSize();
+    const dynamicSize = this.dynamicSize(), container = this._container(), itemSize = this.itemSize();
     if (container) {
       this.clearScrollToRepeatExecutionTimeout();
 
-      if (crudDetected || dynamicSize) {
+      if (dynamicSize) {
         if (container) {
           container.nativeElement.removeEventListener(SCROLL, this._onScrollHandler);
         }
