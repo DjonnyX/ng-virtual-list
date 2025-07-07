@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { IRect } from '../types';
+import { ISize } from '../types';
 import {
   POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
   VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
@@ -16,7 +16,6 @@ import {
   selector: 'ng-virtual-list-item',
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrls: ['./ng-virtual-list-item.component.scss'],
-  standalone: false,
   host: {
     'class': 'ngvl__item',
   },
@@ -30,7 +29,7 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
-  data: IRenderVirtualListItem | undefined;
+    data: IRenderVirtualListItem | undefined;
 
   set item(v: IRenderVirtualListItem | undefined) {
     if (this.data === v) {
@@ -85,10 +84,10 @@ export class NgVirtualListItemComponent {
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }
 
-  getBounds(): IRect {
+  getBounds(): ISize {
     const el: HTMLElement = this._elementRef.nativeElement,
-      { width, height, left, top } = el.getBoundingClientRect();
-    return { width, height, x: left, y: top };
+      { width, height } = el.getBoundingClientRect();
+    return { width, height };
   }
 
   show() {
