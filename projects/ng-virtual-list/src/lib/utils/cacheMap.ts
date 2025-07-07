@@ -2,11 +2,40 @@ import { ScrollDirection } from "../models";
 import { debounce } from "./debounce";
 import { EventEmitter, TEventHandler } from "./eventEmitter";
 
+export class CMap<K = string, V = any> {
+    private _dict: { [k: string | number]: V } = {};
+
+    constructor(dict?: CMap<K, V>) {
+        if (dict) {
+            this._dict = { ...dict._dict };
+        }
+    }
+
+    get(key: K) {
+        const k = String(key);
+        return this._dict[k];
+    }
+    set(key: K, value: V) {
+        const k = String(key);
+        this._dict[k] = value;
+        return this;
+    }
+    has(key: K) {
+        return this._dict.hasOwnProperty(String(key));
+    }
+    delete(key: K) {
+        const k = String(key);
+        delete this._dict[k];
+    }
+    clear() {
+        this._dict = {};
+    }
+}
+
 export interface ICacheMap<I = any, B = any> {
-    set: (id: I, bounds: B) => Map<I, B>;
+    set: (id: I, bounds: B) => CMap<I, B>;
     has: (id: I) => boolean;
     get: (id: I) => B | undefined;
-    forEach: (callbackfn: (value: B, key: I, map: Map<I, B>) => void, thisArg?: any) => void;
 }
 
 type CacheMapEvents = 'change';
@@ -26,9 +55,9 @@ const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10;
  */
 export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L extends TEventHandler = CacheMapListeners>
     extends EventEmitter<E, L> implements ICacheMap {
-    protected _map = new Map<I, B>();
+    protected _map = new CMap<I, B>();
 
-    protected _snapshot = new Map<I, B>();
+    protected _snapshot = new CMap<I, B>();
 
     protected _version: number = 0;
 
@@ -108,7 +137,7 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         this.dispatch('change' as E, this.version);
     }
 
-    set(id: I, bounds: B): Map<I, B> {
+    set(id: I, bounds: B): CMap<I, B> {
         if (this._map.has(id)) {
             const b: any = this._map.get(id), bb: any = bounds;
             if (b.width === bb.width && b.height === bb.height) {
@@ -134,12 +163,8 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         return this._map.get(id);
     }
 
-    forEach(callbackfn: (value: B, key: I, map: Map<I, B>) => void, thisArg?: any): void {
-        return this._map.forEach(callbackfn, thisArg);
-    }
-
     snapshot() {
-        this._snapshot = new Map(this._map);
+        this._snapshot = new CMap(this._map);
     }
 
     override dispose() {
