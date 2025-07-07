@@ -49,7 +49,7 @@ const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10;
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */

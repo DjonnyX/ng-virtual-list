@@ -22,7 +22,7 @@ import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVE
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
