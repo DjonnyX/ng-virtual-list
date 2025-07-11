@@ -562,7 +562,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
             iteration += 1;
           }
 
-          if (iteration < MAX_SCROLL_TO_ITERATIONS) {
+          if (!notChanged || iteration < MAX_SCROLL_TO_ITERATIONS) {
             this.clearScrollToRepeatExecutionTimeout();
             this._scrollToRepeatExecutionTimeout = setTimeout(() => {
               this.scrollToExecutor(id, BEHAVIOR_INSTANT as ScrollBehavior, iteration + 1, notChanged);
