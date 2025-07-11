@@ -103,6 +103,6 @@ export class NgVirtualListItemComponent {
     }
 
     styles.visibility = VISIBILITY_HIDDEN;
-    styles.transform = `${TRANSLATE_3D}(0,0,0)`;
+    styles.transform = ZEROS_TRANSLATE_3D;
   }
 }

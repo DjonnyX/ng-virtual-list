@@ -1,9 +1,10 @@
 # NgVirtualList
+
 Maximum performance for extremely large lists.
 
-Angular version 19.X.X.
+![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
 
-![intro](https://github.com/user-attachments/assets/80fbed6c-9f77-48c3-a7a6-2cedf32aebc2)
+Angular version 19.X.X.
 
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
 
