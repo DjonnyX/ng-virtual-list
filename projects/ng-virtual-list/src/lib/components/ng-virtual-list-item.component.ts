@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { IRect, ISize } from '../types';
+import { ISize } from '../types';
 import {
   POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
   VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
@@ -103,5 +103,6 @@ export class NgVirtualListItemComponent {
     }
 
     styles.visibility = VISIBILITY_HIDDEN;
+    styles.transform = `${TRANSLATE_3D}(0,0,0)`;
   }
 }
