@@ -437,7 +437,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
             iteration += 1;
           }
 
-          if (iteration < MAX_SCROLL_TO_ITERATIONS) {
+          if (!notChanged || iteration < MAX_SCROLL_TO_ITERATIONS) {
             this.clearScrollToRepeatExecutionTimeout();
             this._scrollToRepeatExecutionTimeout = setTimeout(() => {
               this.scrollToExecutor(id, BEHAVIOR_INSTANT, iteration + 1, notChanged);
