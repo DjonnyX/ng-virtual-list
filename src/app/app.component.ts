@@ -5,7 +5,7 @@ import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from 
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
 
-const MAX_ITEMS = 10000;
+const MAX_ITEMS = 50000;
 
 const ITEMS: IVirtualListCollection = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -81,7 +81,7 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP: IVirtualListStickyMap = {};
 
 let groupDynamicIndex = 0;
-for (let i = 0, l = 100000; i < l; i++) {
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   if (type === 'group-header') {
     groupDynamicIndex++;

@@ -149,8 +149,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     get crudDetected() { return this._crudDetected; }
 
     protected override fireChangeIfNeed() {
-        super.fireChangeIfNeed();
-        if (this._version !== this._previousVersion) {
+        if (this.changesDetected()) {
             this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, this._version);
         }
     }
@@ -163,11 +162,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
-        this._previousVersion = this._version;
-
-        this.nextTick(() => {
-            this.lifeCircle();
-        });
+        this.lifeCircleDo();
     }
 
     /**
