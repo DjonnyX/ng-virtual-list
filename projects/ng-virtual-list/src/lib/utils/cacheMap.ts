@@ -38,18 +38,21 @@ export interface ICacheMap<I = any, B = any> {
     get: (id: I) => B | undefined;
 }
 
-type CacheMapEvents = 'change';
+export const CACHE_BOX_CHANGE_EVENT_NAME = 'change';
+
+type CacheMapEvents = typeof CACHE_BOX_CHANGE_EVENT_NAME;
 
 type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10;
+const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10,
+    DIR_BACK = '-1', DIR_NONE = '0', DIR_FORWARD = '1';
 
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -60,6 +63,10 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
     protected _snapshot = new CMap<I, B>();
 
     protected _version: number = 0;
+
+    protected _previousVersion = this._version;
+
+    protected _lifeCircleTimeout: any;
 
     protected _delta: number = 0;
 
@@ -95,6 +102,40 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
 
     constructor() {
         super();
+        this.lifeCircle();
+    }
+
+    protected changesDetected() {
+        return this._version !== this._previousVersion;
+    }
+
+    protected stopLifeCircle() {
+        clearTimeout(this._lifeCircleTimeout);
+    }
+
+    protected nextTick(cb: () => void) {
+        if (this._disposed) {
+            return;
+        }
+
+        this._lifeCircleTimeout = setTimeout(() => {
+            cb();
+        });
+        return this._lifeCircleTimeout;
+    }
+
+    protected lifeCircle() {
+        this.fireChangeIfNeed();
+
+        this.lifeCircleDo();
+    }
+
+    protected lifeCircleDo() {
+        this._previousVersion = this._version;
+
+        this.nextTick(() => {
+            this.lifeCircle();
+        });
     }
 
     clearScrollDirectionCache() {
@@ -106,7 +147,7 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
             this._scrollDirectionCache.shift();
         }
         this._scrollDirectionCache.push(v);
-        const dict: { [x: string]: number } = { ['-1']: 0, ['0']: 0, ['1']: 0 };
+        const dict: { [x: string]: number } = { [DIR_BACK]: 0, [DIR_NONE]: 0, [DIR_FORWARD]: 0 };
         for (let i = 0, l = this._scrollDirectionCache.length, li = l - 1; i < l; i++) {
             const dir = String(this._scrollDirectionCache[i]);
             dict[dir] += 1;
@@ -120,9 +161,9 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
             }
         }
 
-        if (dict['-1'] > dict['0'] && dict['-1'] > dict['1']) {
+        if (dict[DIR_BACK] > dict[DIR_NONE] && dict[DIR_BACK] > dict[DIR_FORWARD]) {
             return -1;
-        } else if (dict['1'] > dict['-1'] && dict['1'] > dict['0']) {
+        } else if (dict[DIR_FORWARD] > dict[DIR_BACK] && dict[DIR_FORWARD] > dict[DIR_NONE]) {
             return 1;
         }
 
@@ -130,11 +171,17 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
     }
 
     protected bumpVersion() {
-        this._version = this._version === Number.MAX_SAFE_INTEGER ? 0 : this._version + 1;
+        if (this.changesDetected()) {
+            return;
+        }
+        const v = this._version === Number.MAX_SAFE_INTEGER ? 0 : this._version + 1;
+        this._version = v;
     }
 
-    protected fireChange() {
-        this.dispatch('change' as E, this.version);
+    protected fireChangeIfNeed() {
+        if (this.changesDetected()) {
+            this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as E, this.version);
+        }
     }
 
     set(id: I, bounds: B): CMap<I, B> {
@@ -149,8 +196,6 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
         const v = this._map.set(id, bounds);
 
         this.bumpVersion();
-
-        this.fireChange();
 
         return v;
     }
@@ -169,6 +214,8 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
 
     override dispose() {
         super.dispose();
+
+        this.stopLifeCircle();
 
         this._snapshot.clear();
 
