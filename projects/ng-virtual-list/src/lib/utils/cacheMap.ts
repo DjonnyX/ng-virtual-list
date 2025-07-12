@@ -60,6 +60,10 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected _version: number = 0;
 
+    protected _previousVersion = this._version;
+
+    protected _lifeCircleTimeout: any;
+
     protected _delta: number = 0;
 
     get delta() {
@@ -94,6 +98,32 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     constructor() {
         super();
+        this.lifeCircle();
+    }
+
+    protected stopLifeCircle() {
+        clearTimeout(this._lifeCircleTimeout);
+    }
+
+    protected nextTick(cb: () => void) {
+        if (this._disposed) {
+            return;
+        }
+
+        this._lifeCircleTimeout = setTimeout(() => {
+            cb();
+        });
+        return this._lifeCircleTimeout;
+    }
+
+    protected lifeCircle() {
+        this.fireChangeIfNeed();
+
+        this._previousVersion = this._version;
+
+        this.nextTick(() => {
+            this.lifeCircle();
+        });
     }
 
     clearScrollDirectionCache() {
@@ -129,11 +159,17 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     protected bumpVersion() {
-        this._version = this._version === Number.MAX_SAFE_INTEGER ? 0 : this._version + 1;
+        if (this._version !== this._previousVersion) {
+            return;
+        }
+        const v = this._version === Number.MAX_SAFE_INTEGER ? 0 : this._version + 1;
+        this._version = v;
     }
 
-    protected fireChange() {
-        this.dispatch('change' as E, this.version);
+    protected fireChangeIfNeed() {
+        if (this._version !== this._previousVersion) {
+            this.dispatch('change' as E, this.version);
+        }
     }
 
     set(id: I, bounds: B): CMap<I, B> {
@@ -148,8 +184,6 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
         const v = this._map.set(id, bounds);
 
         this.bumpVersion();
-
-        this.fireChange();
 
         return v;
     }
@@ -168,6 +202,8 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     override dispose() {
         super.dispose();
+
+        this.stopLifeCircle();
 
         this._snapshot.clear();
 

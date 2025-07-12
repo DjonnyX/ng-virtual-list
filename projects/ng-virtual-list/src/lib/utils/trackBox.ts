@@ -6,7 +6,6 @@ import { Id } from "../types/id";
 import { CacheMap, CMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
-import { debounce } from "./debounce";
 import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
 import { IVirtualListStickyMap } from "../models";
 
@@ -139,15 +138,8 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         const v = this._map.set(id, bounds);
 
         this.bumpVersion();
-
-        this.fireChange();
-
         return v;
     }
-
-    private _fireChanges = (version: number) => {
-        this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, version);
-    };
 
     private _previousCollection: Array<{ id: Id; }> | null | undefined;
 
@@ -156,16 +148,27 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     private _crudDetected = false;
     get crudDetected() { return this._crudDetected; }
 
-    private _debounceChanges = debounce(this._fireChanges, 0);
-
-    protected override fireChange() {
-        this._debounceChanges.execute(this._version);
+    protected override fireChangeIfNeed() {
+        super.fireChangeIfNeed();
+        if (this._version !== this._previousVersion) {
+            this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, this._version);
+        }
     }
 
     private _previousTotalSize = 0;
 
     protected _scrollDelta: number = 0;
     get scrollDelta() { return this._scrollDelta; }
+
+    protected override lifeCircle() {
+        this.fireChangeIfNeed();
+
+        this._previousVersion = this._version;
+
+        this.nextTick(() => {
+            this.lifeCircle();
+        });
+    }
 
     /**
      * Scans the collection for deleted items and flushes the deleted item cache.
@@ -280,7 +283,6 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
         options: IUpdateCollectionOptions<I, C>): IUpdateCollectionReturns {
         const opt = { stickyMap, ...options }, crudDetected = this._crudDetected, deletedItemsMap = this._deletedItemsMap;
-
         if (opt.dynamicSize) {
             this.cacheElements();
         }
@@ -492,7 +494,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             itemsFromStartToScrollEnd = ii;
                         }
                     }
-                } else if (y <= scrollSize - componentSize) {
+                } else if (y < scrollSize - componentSize) {
                     leftItemsWeights.push(componentSize);
                     leftHiddenItemsWeight += componentSize;
                     itemsFromStartToScrollEnd = ii;
@@ -509,7 +511,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                     totalItemsToDisplayEndWeight += componentSize;
                     itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
 
-                    if (y <= scrollSize - componentSize) {
+                    if (y < scrollSize - componentSize) {
                         switch (itemDisplayMethod) {
                             case ItemDisplayMethods.CREATE: {
                                 leftSizeOfAddedItems += componentSizeDelta;
@@ -674,8 +676,6 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
 
     changes(): void {
         this.bumpVersion();
-
-        this.fireChange();
     }
 
     protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
@@ -836,10 +836,6 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
 
     override dispose() {
         super.dispose();
-
-        if (this._debounceChanges) {
-            this._debounceChanges.dispose();
-        }
 
         if (this._tracker) {
             this._tracker.dispose();
