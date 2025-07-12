@@ -38,13 +38,16 @@ export interface ICacheMap<I = any, B = any> {
     get: (id: I) => B | undefined;
 }
 
-type CacheMapEvents = 'change';
+export const CACHE_BOX_CHANGE_EVENT_NAME = 'change';
+
+type CacheMapEvents = typeof CACHE_BOX_CHANGE_EVENT_NAME;
 
 type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10;
+const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10,
+    DIR_BACK = '-1', DIR_NONE = '0', DIR_FORWARD = '1';
 
 /**
  * Cache map.
@@ -101,6 +104,10 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
         this.lifeCircle();
     }
 
+    protected changesDetected() {
+        return this._version !== this._previousVersion;
+    }
+
     protected stopLifeCircle() {
         clearTimeout(this._lifeCircleTimeout);
     }
@@ -119,6 +126,10 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     protected lifeCircle() {
         this.fireChangeIfNeed();
 
+        this.lifeCircleDo();
+    }
+
+    protected lifeCircleDo() {
         this._previousVersion = this._version;
 
         this.nextTick(() => {
@@ -135,7 +146,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
             this._scrollDirectionCache.shift();
         }
         this._scrollDirectionCache.push(v);
-        const dict: { [x: string]: number } = { ['-1']: 0, ['0']: 0, ['1']: 0 };
+        const dict: { [x: string]: number } = { [DIR_BACK]: 0, [DIR_NONE]: 0, [DIR_FORWARD]: 0 };
         for (let i = 0, l = this._scrollDirectionCache.length, li = l - 1; i < l; i++) {
             const dir = String(this._scrollDirectionCache[i]);
             dict[dir] += 1;
@@ -149,9 +160,9 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
             }
         }
 
-        if (dict['-1'] > dict['0'] && dict['-1'] > dict['1']) {
+        if (dict[DIR_BACK] > dict[DIR_NONE] && dict[DIR_BACK] > dict[DIR_FORWARD]) {
             return -1;
-        } else if (dict['1'] > dict['-1'] && dict['1'] > dict['0']) {
+        } else if (dict[DIR_FORWARD] > dict[DIR_BACK] && dict[DIR_FORWARD] > dict[DIR_NONE]) {
             return 1;
         }
 
@@ -159,7 +170,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     protected bumpVersion() {
-        if (this._version !== this._previousVersion) {
+        if (this.changesDetected()) {
             return;
         }
         const v = this._version === Number.MAX_SAFE_INTEGER ? 0 : this._version + 1;
@@ -167,8 +178,8 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     protected fireChangeIfNeed() {
-        if (this._version !== this._previousVersion) {
-            this.dispatch('change' as E, this.version);
+        if (this.changesDetected()) {
+            this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as E, this.version);
         }
     }
 
