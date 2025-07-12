@@ -173,11 +173,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
   private _trackBox = new TrackBox(this.trackBy());
 
   private _onTrackBoxChangeHandler = (v: number) => {
-    this._$cacheVersion.next(v);
+    this._cacheVersion.set(v);
   }
 
-  private _$cacheVersion = new BehaviorSubject<number>(-1);
-  get $cacheVersion() { return this._$cacheVersion.asObservable(); }
+  protected _cacheVersion = signal<number>(-1);
 
   constructor() {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
@@ -218,7 +217,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
       ),
       $dynamicSize = toObservable(this.dynamicSize),
       $enabledBufferOptimization = toObservable(this.enabledBufferOptimization),
-      $cacheVersion = this.$cacheVersion;
+      $cacheVersion = toObservable(this._cacheVersion);
 
     $isVertical.pipe(
       takeUntilDestroyed(),
