@@ -433,9 +433,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
           const _scrollSize = this._trackBox.getItemPosition(id, stickyMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
           const notChanged = actualScrollSize === _scrollSize
-          if (notChanged) {
-            iteration += 1;
-          }
 
           if (!notChanged || iteration < MAX_SCROLL_TO_ITERATIONS) {
             this.clearScrollToRepeatExecutionTimeout();

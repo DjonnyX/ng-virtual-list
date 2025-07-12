@@ -492,7 +492,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             itemsFromStartToScrollEnd = ii;
                         }
                     }
-                } else if (y < scrollSize - componentSize) {
+                } else if (y <= scrollSize - componentSize) {
                     leftItemsWeights.push(componentSize);
                     leftHiddenItemsWeight += componentSize;
                     itemsFromStartToScrollEnd = ii;
@@ -504,12 +504,12 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                         totalItemsToDisplayEndWeight += componentSize;
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
                     }
-                } else if (y < scrollSize + size + componentSize) {
+                } else if (y <= scrollSize + size + componentSize) {
                     itemsFromStartToDisplayEnd = ii;
                     totalItemsToDisplayEndWeight += componentSize;
                     itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
 
-                    if (y < scrollSize - componentSize) {
+                    if (y <= scrollSize - componentSize) {
                         switch (itemDisplayMethod) {
                             case ItemDisplayMethods.CREATE: {
                                 leftSizeOfAddedItems += componentSizeDelta;
