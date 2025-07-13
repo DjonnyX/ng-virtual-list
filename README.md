@@ -470,6 +470,8 @@ Methods
 | Method | Type | Description |
 |--|--|--|
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+| scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 
 <br/>
 
@@ -477,12 +479,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.1.37 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.37](https://www.npmjs.com/package/ng-virtual-list/v/19.1.37) |
-| 18.x | 18.0.21 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.21](https://www.npmjs.com/package/ng-virtual-list/v/18.0.21) |
-| 17.x | 17.0.19 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.19](https://www.npmjs.com/package/ng-virtual-list/v/17.0.19) |
-| 16.x | 16.0.21 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.21](https://www.npmjs.com/package/ng-virtual-list/v/16.0.21) |
-| 15.x | 15.0.20 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.20](https://www.npmjs.com/package/ng-virtual-list/v/15.0.20) |
-| 14.x | 14.0.20 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.20](https://www.npmjs.com/package/ng-virtual-list/v/14.0.20) |
+| 19.x | 19.1.38 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.1.38](https://www.npmjs.com/package/ng-virtual-list/v/19.1.38) |
+| 18.x | 18.0.22 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.0.22](https://www.npmjs.com/package/ng-virtual-list/v/18.0.22) |
+| 17.x | 17.0.20 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.0.20](https://www.npmjs.com/package/ng-virtual-list/v/17.0.20) |
+| 16.x | 16.0.22 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.0.22](https://www.npmjs.com/package/ng-virtual-list/v/16.0.22) |
+| 15.x | 15.0.21 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.0.21](https://www.npmjs.com/package/ng-virtual-list/v/15.0.21) |
+| 14.x | 14.0.22 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.0.22](https://www.npmjs.com/package/ng-virtual-list/v/14.0.22) |
 
 <br/>
 
@@ -500,7 +502,7 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 MIT License
 
-Copyright (c) 2025 Evgenii Grebennikov
+Copyright (c) 2025 djonnyx (Evgenii Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
