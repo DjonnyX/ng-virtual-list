@@ -470,6 +470,8 @@ Methods
 | Method | Type | Description |
 |--|--|--|
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+| scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 
 <br/>
 
@@ -488,7 +490,7 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 MIT License
 
-Copyright (c) 2025 Evgenii Grebennikov
+Copyright (c) 2025 djonnyx (Evgenii Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
