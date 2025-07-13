@@ -447,8 +447,8 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                     }
                 }
 
-                if (this._deletedItemsMap.hasOwnProperty(i)) {
-                    const bounds = this._deletedItemsMap[i], size = bounds[sizeProperty] ?? typicalItemSize;
+                if (deletedItemsMap.hasOwnProperty(i)) {
+                    const bounds = deletedItemsMap[i], size = bounds[sizeProperty] ?? typicalItemSize;
                     if (y < scrollSize - size) {
                         leftSizeOfDeletedItems += size;
                     }
@@ -574,8 +574,8 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                         }
                     }
 
-                    if (this._deletedItemsMap.hasOwnProperty(i)) {
-                        const bounds = this._deletedItemsMap[i], size = bounds[sizeProperty] ?? typicalItemSize;
+                    if (deletedItemsMap.hasOwnProperty(i)) {
+                        const bounds = deletedItemsMap[i], size = bounds[sizeProperty] ?? typicalItemSize;
                         if (y < scrollSize - size) {
                             leftSizeOfDeletedItems += size;
                         }
@@ -606,9 +606,9 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
             rightItemLength = itemsFromStartToDisplayEnd + itemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : itemsOffset;
             leftItemsWeight = leftItemLength * typicalItemSize;
-            rightItemsWeight = rightItemLength * typicalItemSize,
-                leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize,
-                totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize;
+            rightItemsWeight = rightItemLength * typicalItemSize;
+            leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize;
+            totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize;
             totalSize = totalLength * typicalItemSize;
 
             const k = totalSize !== 0 ? previousTotalSize / totalSize : 0;
