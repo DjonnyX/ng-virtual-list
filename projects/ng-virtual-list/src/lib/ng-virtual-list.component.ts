@@ -582,6 +582,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
   }
 
+  /**
+   * Scrolls the scroll area to the desired element with the specified ID.
+   */
   scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior) {
     const items = this.items, latItem = items[items.length > 0 ? items.length - 1 : 0];
     this.scrollTo(latItem.id, behavior);
