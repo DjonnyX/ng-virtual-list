@@ -15,6 +15,7 @@
       ]
     },
     "skipLibCheck": true,
+    "stripInternal": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
