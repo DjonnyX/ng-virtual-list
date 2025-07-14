@@ -1,6 +1,6 @@
 import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
-  OnDestroy, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
+  OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
@@ -32,7 +32,7 @@ import { DisposableComponent } from './utils/disposableComponent';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class NgVirtualListComponent extends DisposableComponent implements AfterViewInit, OnDestroy {
+export class NgVirtualListComponent extends DisposableComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
 
   private _id: number = NgVirtualListComponent.__nextId;
@@ -419,6 +419,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     )
   }
 
+  /** @internal */
   ngOnInit() {
     this._$initialized.next(true);
   }
@@ -622,6 +623,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
   }
 
+  /** @internal */
   ngAfterViewInit(): void {
     const containerEl = this._container;
     if (containerEl) {
@@ -638,6 +640,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
   }
 
+  /** @internal */
   override ngOnDestroy(): void {
     super.ngOnDestroy();
     this.clearScrollToRepeatExecutionTimeout();
