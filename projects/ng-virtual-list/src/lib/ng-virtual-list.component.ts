@@ -1,11 +1,11 @@
 import {
   AfterViewInit, ChangeDetectionStrategy, Component, ComponentRef, ElementRef, inject, input,
-  OnDestroy, output, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
+  OnDestroy, OnInit, output, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
   WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
@@ -35,7 +35,7 @@ import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVE
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
+export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
 
   private _id: number = NgVirtualListComponent.__nextId;
@@ -293,6 +293,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     )
   }
 
+  /** @internal */
   ngOnInit() {
     this._initialized.set(true);
   }
@@ -496,6 +497,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** @internal */
   ngAfterViewInit(): void {
     const containerEl = this._container();
     if (containerEl) {
@@ -512,6 +514,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** @internal */
   ngOnDestroy(): void {
     this.clearScrollToRepeatExecutionTimeout();
 
