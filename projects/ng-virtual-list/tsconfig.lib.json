@@ -8,6 +8,7 @@
     "declarationMap": true,
     "inlineSources": true,
     "skipLibCheck": true,
+    "stripInternal": true,
     "types": []
   },
   "exclude": [
