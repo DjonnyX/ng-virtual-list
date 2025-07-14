@@ -489,7 +489,7 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 MIT License
 
-Copyright (c) 2025 Evgenii Grebennikov
+Copyright (c) 2025 djonnyx (Evgenii Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
