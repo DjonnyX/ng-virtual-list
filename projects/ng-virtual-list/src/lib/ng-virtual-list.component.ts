@@ -368,18 +368,18 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
       switchMap(([,
-        bounds, items, stickyMap, scrollSize, itemSize,
+        bounds, items, stickyMap, _scrollSize, itemSize,
         itemsOffset, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
-        const { width, height } = bounds as DOMRect;
-        let actualScrollSize = (this._isVertical ? this._container?.nativeElement.scrollTop ?? 0 : this._container?.nativeElement.scrollLeft) ?? 0;
+        const { width, height } = bounds as DOMRect, delta = this._trackBox.delta,
+         scrollSize = (this._isVertical ? this._container?.nativeElement.scrollTop ?? 0 : this._container?.nativeElement.scrollLeft) ?? 0,
+         actualScrollSize = scrollSize + delta;
         const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
           bounds: { width, height }, dynamicSize, isVertical, itemSize,
-          itemsOffset, scrollSize: scrollSize, snap, enabledBufferOptimization,
+          itemsOffset, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
         };
-        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
-          ...opts, scrollSize: actualScrollSize,
-        });
+        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, opts);
+
 
         this.resetBoundsSize(isVertical, totalSize);
 
@@ -390,9 +390,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         const container = this._container;
 
         if (container) {
-          const delta = this._trackBox.delta;
-          actualScrollSize = actualScrollSize + delta;
-
           this._trackBox.clearDelta();
 
           if (scrollSize !== actualScrollSize) {
