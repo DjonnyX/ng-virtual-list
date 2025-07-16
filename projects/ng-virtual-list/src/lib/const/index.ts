@@ -44,6 +44,10 @@ export const TRANSLATE_3D = 'translate3d';
 
 export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
 
+export const HIDDEN_ZINDEX = '-1';
+
+export const DEFAULT_ZINDEX = '0';
+
 export const TOP_PROP_NAME = 'top';
 
 export const LEFT_PROP_NAME = 'left';

@@ -21,7 +21,7 @@ export interface IMetrics {
     itemSize: number;
     itemsFromStartToScrollEnd: number;
     itemsFromStartToDisplayEnd: number;
-    itemsOnDisplay: number;
+    itemsOnDisplayWeight: number;
     itemsOnDisplayLength: number;
     isVertical: boolean;
     leftHiddenItemsWeight: number;
@@ -616,7 +616,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         }
         startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
 
-        const itemsOnDisplay = totalItemsToDisplayEndWeight - leftHiddenItemsWeight,
+        const itemsOnDisplayWeight = totalItemsToDisplayEndWeight - leftItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
             startPosition = leftHiddenItemsWeight - leftItemsWeight,
             renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
@@ -632,7 +632,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
             itemSize,
             itemsFromStartToScrollEnd,
             itemsFromStartToDisplayEnd,
-            itemsOnDisplay,
+            itemsOnDisplayWeight,
             itemsOnDisplayLength,
             isVertical,
             leftHiddenItemsWeight,

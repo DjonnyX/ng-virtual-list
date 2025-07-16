@@ -132,6 +132,7 @@ input {
         margin-bottom: 8px;
 
         .scroll-to__input {
+            outline: none;
             background-color: #1a1a1e;
             color: #9191c6;
             border-radius: 3px;
@@ -248,7 +249,7 @@ input {
         justify-content: center;
 
         &:hover {
-            background-color: #24242b;
+            background-color: #17171b;
         }
 
         &>* {
