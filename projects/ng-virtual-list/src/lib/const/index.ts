@@ -10,8 +10,6 @@ export const DEFAULT_SNAP = false;
 
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
-export const DEFAULT_SNAP_TO_ITEM = false;
-
 export const DEFAULT_DYNAMIC_SIZE = false;
 
 export const TRACK_BY_PROPERTY_NAME = 'id';
@@ -45,6 +43,10 @@ export const POSITION_STICKY = 'sticky';
 export const TRANSLATE_3D = 'translate3d';
 
 export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
+
+export const HIDDEN_ZINDEX = '-1';
+
+export const DEFAULT_ZINDEX = '0';
 
 export const TOP_PROP_NAME = 'top';
 
