@@ -73,9 +73,9 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
                         compIndex = this._displayObjectIndexMapById[diId], comp = components[compIndex];
 
                     const compId = comp?.instance?.id;
-                    if (comp !== undefined && compId == diId) {
+                    if (comp !== undefined && compId === diId) {
                         const indexByUntrackedItems = untrackedItems.findIndex(v => {
-                            return v.instance.id == compId;
+                            return v.instance.id === compId;
                         });
                         if (indexByUntrackedItems > -1) {
                             comp.instance.item = item;
@@ -89,12 +89,13 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
             }
 
             if (untrackedItems.length > 0) {
-                const el = untrackedItems.shift(), item = items[i];
-                if (el) {
-                    el.instance.item = item;
+                const comp = untrackedItems.shift(), item = items[i];
+                if (comp) {
+                    comp.instance.item = item;
+                    comp.instance.show();
 
                     if (this._trackMap) {
-                        this._trackMap[itemTrackingProperty] = el.instance.id;
+                        this._trackMap[itemTrackingProperty] = comp.instance.id;
                     }
                 }
             }

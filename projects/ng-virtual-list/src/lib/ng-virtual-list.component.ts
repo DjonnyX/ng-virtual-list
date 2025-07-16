@@ -6,7 +6,7 @@ import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Obse
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
+  DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE, DEFAULT_SNAP, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
@@ -263,14 +263,19 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   protected _displayComponents: Array<ComponentRef<NgVirtualListItemComponent>> = [];
 
-  protected _$bounds = new BehaviorSubject<DOMRect | null>(null);
+  protected _$bounds = new BehaviorSubject<ISize | null>(null);
 
   protected _$scrollSize = new BehaviorSubject<number>(0);
 
   private _resizeObserver: ResizeObserver | null = null;
 
   private _onResizeHandler = () => {
-    this._$bounds.next(this._container?.nativeElement?.getBoundingClientRect() ?? null);
+    const bounds = this._container?.nativeElement?.getBoundingClientRect();
+    if (bounds) {
+      this._$bounds.next({ width: bounds.width, height: bounds.height });
+    } else {
+      this._$bounds.next({ width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
+    }
   }
 
   private _onScrollHandler = (e?: Event) => {
@@ -371,15 +376,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         bounds, items, stickyMap, scrollSize, itemSize,
         itemsOffset, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
-        const { width, height } = bounds as DOMRect;
         let actualScrollSize = (this._isVertical ? this._container?.nativeElement.scrollTop ?? 0 : this._container?.nativeElement.scrollLeft) ?? 0;
-        const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-          bounds: { width, height }, dynamicSize, isVertical, itemSize,
-          itemsOffset, scrollSize: scrollSize, snap, enabledBufferOptimization,
-        };
-        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
-          ...opts, scrollSize: actualScrollSize,
-        });
+        const { width, height } = bounds!,
+          opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
+            bounds: { width, height }, dynamicSize, isVertical, itemSize,
+            itemsOffset, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+          },
+          { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, opts);
 
         this.resetBoundsSize(isVertical, totalSize);
 
