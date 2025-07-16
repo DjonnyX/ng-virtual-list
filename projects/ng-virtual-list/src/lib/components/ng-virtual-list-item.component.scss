@@ -5,6 +5,7 @@
     top: 0;
     box-sizing: border-box;
     overflow: hidden;
+    will-change: scroll-position;
 }
 
 .ngvl-item__container {

@@ -9,7 +9,7 @@ import { combineLatest, distinctUntilChanged, filter, map, Observable, of, switc
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
-  DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_SNAP, HEIGHT_PROP_NAME, LEFT_PROP_NAME,
+  DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE, DEFAULT_SNAP, HEIGHT_PROP_NAME, LEFT_PROP_NAME,
   MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
@@ -135,14 +135,19 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   protected _displayComponents: Array<ComponentRef<NgVirtualListItemComponent>> = [];
 
-  protected _bounds = signal<DOMRect | null>(null);
+  protected _bounds = signal<ISize | null>(null);
 
   protected _scrollSize = signal<number>(0);
 
   private _resizeObserver: ResizeObserver | null = null;
 
   private _onResizeHandler = () => {
-    this._bounds.set(this._container()?.nativeElement?.getBoundingClientRect() ?? null);
+    const bounds = this._container()?.nativeElement?.getBoundingClientRect();
+    if (bounds) {
+      this._bounds.set({ width: bounds.width, height: bounds.height });
+    } else {
+      this._bounds.set({ width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
+    }
   }
 
   private _onScrollHandler = (e?: Event) => {
@@ -245,15 +250,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         bounds, items, stickyMap, scrollSize, itemSize,
         itemsOffset, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
-        const { width, height } = bounds;
         let actualScrollSize = (this._isVertical ? this._container()?.nativeElement.scrollTop ?? 0 : this._container()?.nativeElement.scrollLeft) ?? 0;
-        const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-          bounds: { width, height }, dynamicSize, isVertical, itemSize,
-          itemsOffset, scrollSize: scrollSize, snap, enabledBufferOptimization,
-        };
-        const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
-          ...opts, scrollSize: actualScrollSize,
-        });
+        const { width, height } = bounds,
+          opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
+            bounds: { width, height }, dynamicSize, isVertical, itemSize,
+            itemsOffset, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+          },
+          { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, opts);
 
         this.resetBoundsSize(isVertical, totalSize);
 
@@ -344,11 +347,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   private resetRenderers(itemRenderer?: TemplateRef<HTMLElement>) {
-    const doMap: { [id: number]: number } = {};
-    for (let i = 0, l = this._displayComponents.length; i < l; i++) {
-      const item = this._displayComponents[i];
-      item.instance.renderer = itemRenderer || this.itemRenderer();
-      doMap[item.instance.id] = i;
+    const doMap: { [id: number]: number } = {}, components = this._displayComponents;
+    for (let i = 0, l = components.length; i < l; i++) {
+      const item = components[i];
+      if (item) {
+        const id = item.instance.id;
+        item.instance.renderer = itemRenderer || this.itemRenderer();
+        doMap[id] = i;
+      }
     }
 
     this._trackBox.setDisplayObjectIndexMapById(doMap);
@@ -404,7 +410,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
           container.nativeElement.removeEventListener(SCROLL, this._onScrollHandler);
         }
 
-        const { width, height } = this._bounds() || { width: 0, height: 0 },
+        const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
           stickyMap = this.stickyMap(), items = this.items(), isVertical = this._isVertical, delta = this._trackBox.delta,
           opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
