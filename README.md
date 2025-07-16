@@ -2,7 +2,7 @@
 
 Maximum performance for extremely large lists.
 
-![logo](https://github.com/user-attachments/assets/744c9ef7-50dd-46c1-b254-5df6daee7760)
+<img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
 Angular version 14.X.X.
 
