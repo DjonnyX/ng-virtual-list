@@ -3,6 +3,8 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, Templat
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
+  DEFAULT_ZINDEX,
+  HIDDEN_ZINDEX,
   POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
   VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
@@ -94,6 +96,7 @@ export class NgVirtualListItemComponent {
     }
 
     styles.visibility = VISIBILITY_VISIBLE;
+    styles.zIndex = String(this.data()?.config?.sticky ?? DEFAULT_ZINDEX);
   }
 
   hide() {
@@ -104,5 +107,6 @@ export class NgVirtualListItemComponent {
 
     styles.visibility = VISIBILITY_HIDDEN;
     styles.transform = ZEROS_TRANSLATE_3D;
+    styles.zIndex = HIDDEN_ZINDEX;
   }
 }
