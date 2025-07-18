@@ -125,6 +125,7 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
 
         if (!isRegularSnapped) {
             if (snapedComponent) {
+                snapedComponent.instance.item = null;
                 snapedComponent.instance.hide();
             }
         }
