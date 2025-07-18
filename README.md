@@ -427,6 +427,13 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 }
 ```
 
+- Set up the snapped item (Only SnappingMethod.ADVANCED)
+```css
+.list::part(snapped-item) {
+    color: #71718c;
+}
+```
+
 - Set up the list item
 ```css
 .list::part(item) {
