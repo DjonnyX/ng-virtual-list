@@ -175,6 +175,7 @@ input {
     &::part(scroller) {
         scroll-behavior: auto;
         color: #71718c;
+        background-color: #1a1a1e;
 
         /* custom scrollbar */
         &::-webkit-scrollbar {
