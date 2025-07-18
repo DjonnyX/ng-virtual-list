@@ -108,6 +108,7 @@ export class NgVirtualListItemComponent {
       return;
     }
 
+    styles.position = POSITION_ABSOLUTE;
     styles.visibility = VISIBILITY_HIDDEN;
     styles.transform = ZEROS_TRANSLATE_3D;
     styles.zIndex = HIDDEN_ZINDEX;
