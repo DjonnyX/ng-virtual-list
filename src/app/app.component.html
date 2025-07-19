@@ -4,7 +4,7 @@
     <p class="l">Maximum performance for extremely large lists</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 14.0.28</span></div>
+    <div class="version"><span>v 14.1.0</span></div>
   </div>
 
   <div class="vl-section">
@@ -93,7 +93,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
+        [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" snappingMethod="advanced"
         [snap]="true"></ng-virtual-list>
     </div>
   </div>
