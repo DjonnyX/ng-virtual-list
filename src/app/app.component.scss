@@ -172,6 +172,10 @@ input {
     border: 1px solid #383844;
     background-color: #0f0f11;
 
+    &::part(snapped-item) {
+        color: #71718c;
+    }
+
     &::part(scroller) {
         scroll-behavior: auto;
         color: #71718c;
