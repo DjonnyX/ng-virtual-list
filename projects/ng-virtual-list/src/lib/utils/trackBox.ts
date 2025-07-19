@@ -114,6 +114,26 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         this._displayComponents = v;
     }
 
+    protected _snapedDisplayComponent: ComponentRef<NgVirtualListItemComponent> | null | undefined;
+
+    set snapedDisplayComponent(v: ComponentRef<NgVirtualListItemComponent> | null | undefined) {
+        if (this._snapedDisplayComponent === v) {
+            return;
+        }
+
+        this._snapedDisplayComponent = v;
+    }
+
+    protected _isSnappingMethodAdvanced: boolean = false;
+
+    set isSnappingMethodAdvanced(v: boolean) {
+        if (this._isSnappingMethodAdvanced === v) {
+            return;
+        }
+
+        this._isSnappingMethodAdvanced = v;
+    }
+
     /**
      * Set the trackBy property
      */
@@ -693,7 +713,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
-            const actualSnippedPosition = snippedPos;
+            const actualSnippedPosition = snippedPos, isSnappingMethodAdvanced = this.isSnappingMethodAdvanced;
             let pos = startPosition,
                 renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
@@ -708,6 +728,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             y: isVertical ? actualSnippedPosition : 0,
                             width: normalizedItemWidth,
                             height: normalizedItemHeight,
+                            delta: 0,
                         }, config = {
                             isVertical,
                             sticky,
@@ -715,6 +736,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             snapped: true,
                             snappedOut: false,
                             dynamic: dynamicSize,
+                            isSnappingMethodAdvanced,
                         };
 
                         const itemData: I = items[i];
@@ -745,6 +767,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             y: isVertical ? pos : 0,
                             width: normalizedItemWidth,
                             height: normalizedItemHeight,
+                            delta: 0,
                         }, config = {
                             isVertical,
                             sticky: stickyMap[id],
@@ -752,6 +775,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             snapped: false,
                             snappedOut: false,
                             dynamic: dynamicSize,
+                            isSnappingMethodAdvanced,
                         };
 
                     const itemData: I = items[i];
@@ -762,6 +786,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                         item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
                         nextSticky = item;
                         nextSticky.config.snapped = snapped;
+                        nextSticky.measures.delta = isVertical ? item.measures.y - scrollSize : item.measures.x - scrollSize;
                     }
 
                     displayItems.push(item);
@@ -780,8 +805,10 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                     stickyItem.config.snapped = nextSticky.config.snapped = false;
                     stickyItem.config.snappedOut = true;
                     stickyItem.config.sticky = 1;
+                    stickyItem.measures.delta = isVertical ? stickyItem.measures.y - scrollSize : stickyItem.measures.x - scrollSize;
                 } else {
                     nextSticky.config.snapped = true;
+                    nextSticky.measures.delta = isVertical ? nextSticky.measures.y - scrollSize : nextSticky.measures.x - scrollSize;
                 }
             }
         }
@@ -796,7 +823,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this.scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snapedDisplayComponent, this.scrollDirection);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {
