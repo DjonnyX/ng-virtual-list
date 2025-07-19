@@ -1,3 +1,4 @@
+import { SnappingMethods } from "../enums";
 import { Directions } from "../enums/directions";
 
 export const DEFAULT_ITEM_SIZE = 24;
@@ -20,6 +21,8 @@ export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
 export const MAX_SCROLL_TO_ITERATIONS = 5;
 
+export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
+
 // presets
 
 export const BEHAVIOR_AUTO = 'auto';
@@ -27,6 +30,14 @@ export const BEHAVIOR_AUTO = 'auto';
 export const BEHAVIOR_INSTANT = 'instant';
 
 export const BEHAVIOR_SMOOTH = 'smooth';
+
+export const DISPLAY_BLOCK = 'block';
+
+export const DISPLAY_NONE = 'none';
+
+export const OPACITY_0 = '0';
+
+export const OPACITY_100 = '100';
 
 export const VISIBILITY_VISIBLE = 'visible';
 
