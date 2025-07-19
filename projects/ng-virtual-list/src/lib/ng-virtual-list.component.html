@@ -1,4 +1,9 @@
-<div #container part="scroller" class="ngvl__container">
+@if (snap()) {
+<div #snapped part="snapped-item" class="ngvl__list-snapper">
+  <ng-container #snapRendererContainer></ng-container>
+</div>
+}
+<div #container part="scroller" class="ngvl__scroller">
   <ul #list part="list" class="ngvl__list">
     <ng-container #renderersContainer></ng-container>
   </ul>
