@@ -17,7 +17,12 @@ export interface IRenderVirtualListItem {
     /**
      * Element metrics.
      */
-    measures: IRect;
+    measures: IRect & {
+        /**
+         * Delta is calculated for Snapping Method.ADVANCED
+         */
+        delta: number;
+    };
     /**
      * Element data.
      */

@@ -397,6 +397,13 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 }
 ```
 
+- Set up the snapped item (Only SnappingMethod.ADVANCED)
+```css
+.list::part(snapped-item) {
+    color: #71718c;
+}
+```
+
 - Set up the list item
 ```css
 .list::part(item) {
@@ -419,6 +426,7 @@ Inputs
 | itemRenderer | TemplateRef | Rendering element template. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
+| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
