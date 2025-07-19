@@ -2,10 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Temp
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
-  DEFAULT_ZINDEX,
-  HIDDEN_ZINDEX,
-  POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
-  VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
+  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 
 /**
@@ -31,28 +29,31 @@ export class NgVirtualListItemComponent {
     return this._id;
   }
 
-    data: IRenderVirtualListItem | undefined;
+  regular: boolean = false;
+
+  data: IRenderVirtualListItem | undefined;
 
   set item(v: IRenderVirtualListItem | undefined) {
     if (this.data === v) {
       return;
     }
 
-    const data = this.data = v;
+    this.data = v;
 
-    if (data) {
-      const styles = this._elementRef.nativeElement.style;
-      styles.zIndex = String(data.config.sticky);
-      if (data.config.snapped) {
-        styles.transform = ZEROS_TRANSLATE_3D;
-        styles.position = POSITION_STICKY;
-      } else {
-        styles.position = POSITION_ABSOLUTE;
-        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;
-      }
-      styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : SIZE_100_PERSENT;
-      styles.width = data.config.isVertical ? SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+    this.update();
+
+    this._cdr.detectChanges();
+  }
+
+  private _regularLength: string = SIZE_100_PERSENT;
+  set regularLength(v: string) {
+    if (this._regularLength === v) {
+      return;
     }
+
+    this._regularLength = v;
+
+    this.update();
 
     this._cdr.detectChanges();
   }
@@ -86,6 +87,31 @@ export class NgVirtualListItemComponent {
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }
 
+  protected update() {
+    const data = this.data, regular = this.regular, length = this._regularLength;
+    if (data) {
+      const styles = this._elementRef.nativeElement.style;
+      styles.zIndex = String(data.config.sticky);
+      if (data.config.snapped) {
+        styles.transform = ZEROS_TRANSLATE_3D;
+        if (!data.config.isSnappingMethodAdvanced) {
+          styles.position = POSITION_STICKY;
+        }
+      } else {
+        styles.position = POSITION_ABSOLUTE;
+        if (regular) {
+          styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX} , 0)`;
+        } else {
+          styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;
+        }
+      }
+      styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
+      styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+    }
+
+    this._cdr.markForCheck();
+  }
+
   getBounds(): ISize {
     const el: HTMLElement = this._elementRef.nativeElement,
       { width, height } = el.getBoundingClientRect();
@@ -94,22 +120,38 @@ export class NgVirtualListItemComponent {
 
   show() {
     const styles = this._elementRef.nativeElement.style;
-    if (styles.visibility === VISIBILITY_VISIBLE) {
-      return;
-    }
+    if (this.regular) {
+      if (styles.display === DISPLAY_BLOCK) {
+        return;
+      }
 
-    styles.visibility = VISIBILITY_VISIBLE;
+      styles.display = DISPLAY_BLOCK;
+    } else {
+      if (styles.visibility === VISIBILITY_VISIBLE) {
+        return;
+      }
+
+      styles.visibility = VISIBILITY_VISIBLE;
+    }
     styles.zIndex = String(this.data?.config?.sticky ?? DEFAULT_ZINDEX);
   }
 
   hide() {
     const styles = this._elementRef.nativeElement.style;
-    if (styles.visibility === VISIBILITY_HIDDEN) {
-      return;
-    }
+    if (this.regular) {
+      if (styles.display === DISPLAY_NONE) {
+        return;
+      }
 
+      styles.display = DISPLAY_NONE;
+    } else {
+      if (styles.visibility === VISIBILITY_HIDDEN) {
+        return;
+      }
+
+      styles.visibility = VISIBILITY_HIDDEN;
+    }
     styles.position = POSITION_ABSOLUTE;
-    styles.visibility = VISIBILITY_HIDDEN;
     styles.transform = ZEROS_TRANSLATE_3D;
     styles.zIndex = HIDDEN_ZINDEX;
   }
