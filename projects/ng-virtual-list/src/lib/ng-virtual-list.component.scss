@@ -20,6 +20,7 @@
 }
 
 .ngvl__list-snapper {
+    pointer-events: none;
     position: absolute;
     list-style: none;
     left: 0;
