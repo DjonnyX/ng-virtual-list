@@ -3,8 +3,8 @@
     <h1 class="center">ng-virtual-list</h1>
     <p class="l">Maximum performance for extremely large lists</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
-    <img class="logo" [src]="logo"/>
-    <div class="version"><span>v 15.1.0</span></div>
+    <img class="logo" [src]="logo" />
+    <div class="version"><span>v 15.1.1</span></div>
   </div>
 
   <div class="vl-section">
@@ -59,7 +59,8 @@
     <div class="vl-section__container">
       <h2>Scroll to item</h2>
       <div class="scroll-to__controls">
-        <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="minId" [max]="maxId">
+        <input type="number" class="scroll-to__input" [(ngModel)]="itemId" [required]="true" [min]="minId"
+          [max]="maxId">
         <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
@@ -92,7 +93,8 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
+        [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
+        [snap]="true"></ng-virtual-list>
     </div>
   </div>
 

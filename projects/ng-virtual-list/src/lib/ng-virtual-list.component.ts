@@ -17,6 +17,7 @@ import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
 import { DisposableComponent } from './utils/disposableComponent';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
+import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
 
 /**
  * Virtual list component.
@@ -301,17 +302,29 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private _resizeSnappedComponentHandler = () => {
     const list = this._list, container = this._container, snappedComponent = this._snapedDisplayComponent?.instance;
     if (list && container && snappedComponent) {
-      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect();
+      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect(), listElement = list?.nativeElement,
+        { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
+        { width, height } = this._$bounds.getValue() ?? { width: 0, height: 0 },
+        isScrollable = isVertical ? container.nativeElement.scrollHeight > 0 : container.nativeElement.scrollWidth > 0;
+
+      let scrollBarSize = isVertical ? width - lWidth : height - lHeight, isScrollBarOverlap = true, overlapScrollBarSize = 0;
+      if (scrollBarSize === 0 && isScrollable) {
+        isScrollBarOverlap = true;
+      }
+
+      if (isScrollBarOverlap && IS_FIREFOX) {
+        scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
+      }
+
+      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
+
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
       const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        containerElement = container.nativeElement, listElement = list?.nativeElement,
-        { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
-        { width, height } = this._$bounds.getValue() ?? { width: 0, height: 0 };
+        containerElement = container.nativeElement;
 
-      let left: number, right: number, top: number, bottom: number, scrollBarSize: number;
+      let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
         const snappedY = snappedComponent.item?.measures.y ?? 0, scrollSize = container.nativeElement.scrollTop, delta = snappedY - scrollSize;
-        scrollBarSize = width - lWidth;
         left = 0;
         right = width - scrollBarSize;
         top = sHeight;
@@ -319,7 +332,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         containerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
       } else {
         const snappedX = snappedComponent.item?.measures.x ?? 0, scrollSize = container.nativeElement.scrollLeft, delta = snappedX - scrollSize;
-        scrollBarSize = height - lHeight;
         left = sWidth;
         right = width;
         top = 0;
@@ -770,15 +782,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       this._resizeSnappedObserver.disconnect();
     }
 
-    if (this._snapedDisplayComponent) {
-      this._snapedDisplayComponent.destroy();
-    }
-
     const containerEl = this._container;
     if (containerEl) {
       containerEl.nativeElement.removeEventListener(SCROLL, this._onScrollHandler);
       containerEl.nativeElement.removeEventListener(SCROLL, this._onContainerScrollHandler);
       containerEl.nativeElement.removeEventListener(SCROLL_END, this._onContainerScrollEndHandler);
+    }
+
+    if (this._snapedDisplayComponent) {
+      this._snapedDisplayComponent.destroy();
     }
 
     if (this._displayComponents) {
