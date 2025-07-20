@@ -1,6 +1,7 @@
 # NgVirtualList
 
-Maximum performance for extremely large lists.
+Maximum performance for extremely large lists.<br/>
+Animation of elements is supported.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
