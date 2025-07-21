@@ -320,18 +320,16 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
       const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        containerElement = container.nativeElement;
+        containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
-        const snappedY = snappedComponent.item?.measures.y ?? 0, scrollSize = container.nativeElement.scrollTop, delta = snappedY - scrollSize;
         left = 0;
         right = width - scrollBarSize;
         top = sHeight;
         bottom = height;
         containerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
       } else {
-        const snappedX = snappedComponent.item?.measures.x ?? 0, scrollSize = container.nativeElement.scrollLeft, delta = snappedX - scrollSize;
         left = sWidth;
         right = width;
         top = 0;
