@@ -175,12 +175,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       if (isScrollBarOverlap && IS_FIREFOX) {
         scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
       }
-
-      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
+      const measures = snappedComponent.item?.measures, cw = measures?.width??0, ch = measures?.height ?? 0;
+      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${ch} L ${cw - overlapScrollBarSize} ${ch} L ${cw - overlapScrollBarSize} 0 Z")`;
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
       const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
+        containerElement = container.nativeElement, delta = measures?.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
@@ -198,8 +198,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }
     }
   };
-
-  private _resizeSnappedObserver: ResizeObserver | null = null;
 
   private _componentsResizeObserver = new ResizeObserver(() => {
     this._trackBox.changes();
@@ -417,9 +415,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         comp.instance.regular = true;
         this._snapedDisplayComponent = comp;
         this._trackBox.snapedDisplayComponent = this._snapedDisplayComponent;
-
-        this._resizeSnappedObserver = new ResizeObserver(this._resizeSnappedComponentHandler);
-        this._resizeSnappedObserver.observe(comp.instance.element);
       }
     }
 
@@ -634,10 +629,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     if (this._componentsResizeObserver) {
       this._componentsResizeObserver.disconnect();
-    }
-
-    if (this._resizeSnappedObserver) {
-      this._resizeSnappedObserver.disconnect();
     }
 
     if (this._resizeObserver) {
