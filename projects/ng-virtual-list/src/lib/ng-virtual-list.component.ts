@@ -175,21 +175,22 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       if (isScrollBarOverlap && IS_FIREFOX) {
         scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
       }
-      const measures = snappedComponent.item?.measures, cw = measures?.width??0, ch = measures?.height ?? 0;
-      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${ch} L ${cw - overlapScrollBarSize} ${ch} L ${cw - overlapScrollBarSize} 0 Z")`;
+
+      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 };
+      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${sHeight} L ${sWidth - overlapScrollBarSize} ${sHeight} L ${sWidth - overlapScrollBarSize} 0 Z")`;
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
-      const containerElement = container.nativeElement, delta = measures?.delta ?? 0;
+      const containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
         left = 0;
         right = width - scrollBarSize;
-        top = ch;
+        top = sHeight;
         bottom = height;
         containerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
       } else {
-        left = cw;
+        left = sWidth;
         right = width;
         top = 0;
         bottom = height - scrollBarSize;
