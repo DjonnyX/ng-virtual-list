@@ -179,18 +179,17 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${ch} L ${cw - overlapScrollBarSize} ${ch} L ${cw - overlapScrollBarSize} 0 Z")`;
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
-      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        containerElement = container.nativeElement, delta = measures?.delta ?? 0;
+      const containerElement = container.nativeElement, delta = measures?.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
         left = 0;
         right = width - scrollBarSize;
-        top = sHeight;
+        top = ch;
         bottom = height;
         containerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
       } else {
-        left = sWidth;
+        left = cw;
         right = width;
         top = 0;
         bottom = height - scrollBarSize;
@@ -198,6 +197,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }
     }
   };
+
+  private _resizeSnappedObserver: ResizeObserver | null = null;
 
   private _componentsResizeObserver = new ResizeObserver(() => {
     this._trackBox.changes();
@@ -415,6 +416,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         comp.instance.regular = true;
         this._snapedDisplayComponent = comp;
         this._trackBox.snapedDisplayComponent = this._snapedDisplayComponent;
+
+        this._resizeSnappedObserver = new ResizeObserver(this._resizeSnappedComponentHandler);
+        this._resizeSnappedObserver.observe(comp.instance.element);
       }
     }
 
@@ -633,6 +637,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
+    }
+
+    if (this._resizeSnappedObserver) {
+      this._resizeSnappedObserver.disconnect();
     }
 
     const containerEl = this._container();
