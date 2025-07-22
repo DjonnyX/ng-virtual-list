@@ -726,8 +726,8 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                         const measures = {
                             x: isVertical ? 0 : actualSnippedPosition,
                             y: isVertical ? actualSnippedPosition : 0,
-                            width: normalizedItemWidth,
-                            height: normalizedItemHeight,
+                            width: isVertical ? normalizedItemWidth : size,
+                            height: isVertical ? size : normalizedItemHeight,
                             delta: 0,
                         }, config = {
                             isVertical,
@@ -765,8 +765,8 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                         measures = {
                             x: isVertical ? 0 : pos,
                             y: isVertical ? pos : 0,
-                            width: normalizedItemWidth,
-                            height: normalizedItemHeight,
+                            width: isVertical ? normalizedItemWidth : size,
+                            height: isVertical ? size : normalizedItemHeight,
                             delta: 0,
                         }, config = {
                             isVertical,
