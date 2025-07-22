@@ -488,12 +488,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.2.6 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.2.6](https://www.npmjs.com/package/ng-virtual-list/v/19.2.6) |
+| 19.x | 19.2.12 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.2.12](https://www.npmjs.com/package/ng-virtual-list/v/19.2.12) |
 | 18.x | 18.1.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.1.3](https://www.npmjs.com/package/ng-virtual-list/v/18.1.3) |
 | 17.x | 17.1.3 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.1.3](https://www.npmjs.com/package/ng-virtual-list/v/17.1.3) |
 | 16.x | 16.1.4 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.1.4](https://www.npmjs.com/package/ng-virtual-list/v/16.1.4) |
 | 15.x | 15.1.3 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.1.3](https://www.npmjs.com/package/ng-virtual-list/v/15.1.3) |
-| 14.x | 14.1.3 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.1.3](https://www.npmjs.com/package/ng-virtual-list/v/14.1.3) |
+| 14.x | 14.1.5 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.1.5](https://www.npmjs.com/package/ng-virtual-list/v/14.1.5) |
 
 <br/>
 
