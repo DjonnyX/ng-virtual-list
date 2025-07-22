@@ -316,11 +316,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
       }
 
-      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
+      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 };
+      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${sHeight} L ${sWidth - overlapScrollBarSize} ${sHeight} L ${sWidth - overlapScrollBarSize} 0 Z")`;
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
-      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
+      const containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {

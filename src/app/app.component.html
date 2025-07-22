@@ -93,7 +93,7 @@
           [max]="maxDlId">
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
+      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [snappingMethod]="'advanced'"
         [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
         [snap]="true"></ng-virtual-list>
     </div>
