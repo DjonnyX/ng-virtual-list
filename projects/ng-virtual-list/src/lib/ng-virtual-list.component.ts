@@ -176,11 +176,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
       }
 
-      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 };
-      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${sHeight} L ${sWidth - overlapScrollBarSize} ${sHeight} L ${sWidth - overlapScrollBarSize} 0 Z")`;
+      snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
-      const containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
+      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
+        containerElement = container.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
 
       let left: number, right: number, top: number, bottom: number;
       if (isVertical) {
@@ -636,12 +636,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       this._componentsResizeObserver.disconnect();
     }
 
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
-    }
-
     if (this._resizeSnappedObserver) {
       this._resizeSnappedObserver.disconnect();
+    }
+
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
     }
 
     const containerEl = this._container();
