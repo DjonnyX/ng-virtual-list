@@ -94,6 +94,8 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
                                 } else {
                                     comp.instance.show();
                                 }
+                            } else {
+                                comp.instance.show();
                             }
                             untrackedItems.splice(indexByUntrackedItems, 1);
                             continue;
@@ -120,6 +122,8 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
                         } else {
                             comp.instance.show();
                         }
+                    } else {
+                        comp.instance.show();
                     }
 
                     if (this._trackMap) {
