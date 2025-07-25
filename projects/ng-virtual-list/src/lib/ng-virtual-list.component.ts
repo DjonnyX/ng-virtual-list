@@ -288,6 +288,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   get snappingMethod() { return this._$snappingMethod.getValue(); }
 
   protected _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
+  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
   protected _displayComponents: Array<ComponentRef<NgVirtualListItemComponent>> = [];
 
@@ -434,7 +435,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       tap(v => {
         this._isVertical = v;
         const el: HTMLElement = this._elementRef.nativeElement;
-        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, true);
+        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
       }),
     ).subscribe();
 
