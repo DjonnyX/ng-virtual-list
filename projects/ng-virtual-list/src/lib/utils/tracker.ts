@@ -87,7 +87,16 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
                                 }
                             }
                             comp.instance.item = item;
-                            comp.instance.show();
+
+                            if (snapedComponent) {
+                                if (item['config']['snapped'] || item['config']['snappedOut']) {
+                                    comp.instance.hide();
+                                } else {
+                                    comp.instance.show();
+                                }
+                            } else {
+                                comp.instance.show();
+                            }
                             untrackedItems.splice(indexByUntrackedItems, 1);
                             continue;
                         }
@@ -107,7 +116,15 @@ export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
                         }
                     }
                     comp.instance.item = item;
-                    comp.instance.show();
+                    if (snapedComponent) {
+                        if (item['config']['snapped'] || item['config']['snappedOut']) {
+                            comp.instance.hide();
+                        } else {
+                            comp.instance.show();
+                        }
+                    } else {
+                        comp.instance.show();
+                    }
 
                     if (this._trackMap) {
                         this._trackMap[itemTrackingProperty] = comp.instance.id;
