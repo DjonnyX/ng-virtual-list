@@ -5,10 +5,11 @@
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export const toggleClassName = (el: HTMLElement, className: string, remove = false) => {
+export const toggleClassName = (el: HTMLElement, className: string, removeClassName?: string) => {
     if (!el.classList.contains(className)) {
         el.classList.add(className);
-    } else if (remove) {
-        el.classList.remove(className);
+    }
+    if (removeClassName) {
+        el.classList.remove(removeClassName);
     }
 };
