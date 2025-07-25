@@ -1,16 +1,31 @@
 :host {
     position: relative;
     display: block;
-    width: 400px; // default
+    /* default */
+    width: 400px;
     overflow: hidden;
 }
 
 :host(.horizontal) {
-    height: 48px; // default
+    /* default */
+    height: 48px;
+}
+
+:host(.horizontal) .ngvl__list {
+    display: inline-flex;
+}
+
+:host(.horizontal) .ngvl__scroller {
+    overflow: auto hidden;
+}
+
+:host(.vertical) .ngvl__scroller {
+    overflow: hidden auto;
 }
 
 :host(.vertical) {
-    height: 320px; // default
+    /* default */
+    height: 320px;
 }
 
 .ngvl__scroller {

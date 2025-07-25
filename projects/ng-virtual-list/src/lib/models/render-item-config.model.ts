@@ -34,4 +34,8 @@ export interface IRenderVirtualListItemConfig {
      * Returns true if the snapping method is advanced
      */
     isSnappingMethodAdvanced: boolean;
+    /**
+     * z-index
+     */
+    zIndex: string;
 }
