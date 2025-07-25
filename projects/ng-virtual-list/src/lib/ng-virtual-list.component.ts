@@ -15,7 +15,7 @@ import {
 import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { Direction, Directions, SnappingMethod, SnappingMethods } from './enums';
+import { Direction, Directions, SnappingMethod } from './enums';
 import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
@@ -146,6 +146,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   snappingMethod = input<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
 
   protected _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
+  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
   protected _isVertical = this.getIsVertical();
 
@@ -300,7 +301,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       tap(v => {
         this._isVertical = v;
         const el: HTMLElement = this._elementRef.nativeElement;
-        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, true);
+        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
       }),
     ).subscribe();
 
