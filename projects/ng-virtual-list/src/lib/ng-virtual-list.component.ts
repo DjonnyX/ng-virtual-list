@@ -146,6 +146,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   snappingMethod = input<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
 
   protected _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
+  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
   protected _isVertical = this.getIsVertical();
 
