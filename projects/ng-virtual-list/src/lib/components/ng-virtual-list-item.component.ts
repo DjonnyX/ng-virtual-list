@@ -86,9 +86,9 @@ export class NgVirtualListItemComponent {
     const data = this._data, regular = this.regular, length = this._regularLength;
     if (data) {
       const styles = this._elementRef.nativeElement.style;
-      styles.zIndex = String(data.config.sticky);
+      styles.zIndex = data.config.zIndex;
       if (data.config.snapped) {
-        styles.transform = ZEROS_TRANSLATE_3D;
+        styles.transform = data.config.sticky === 1 ? ZEROS_TRANSLATE_3D : `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;;
         if (!data.config.isSnappingMethodAdvanced) {
           styles.position = POSITION_STICKY;
         }
@@ -126,7 +126,7 @@ export class NgVirtualListItemComponent {
 
       styles.visibility = VISIBILITY_VISIBLE;
     }
-    styles.zIndex = String(this._data?.config?.sticky ?? DEFAULT_ZINDEX);
+    styles.zIndex = this._data?.config?.zIndex ?? DEFAULT_ZINDEX;
   }
 
   hide() {
@@ -138,9 +138,9 @@ export class NgVirtualListItemComponent {
 
       styles.display = DISPLAY_NONE;
     } else {
-      if (styles.visibility === VISIBILITY_HIDDEN) {
-        return;
-      }
+        if (styles.visibility === VISIBILITY_HIDDEN) {
+          return;
+        }
 
       styles.visibility = VISIBILITY_HIDDEN;
     }
