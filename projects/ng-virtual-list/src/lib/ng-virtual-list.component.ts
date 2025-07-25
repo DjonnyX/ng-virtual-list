@@ -301,7 +301,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       tap(v => {
         this._isVertical = v;
         const el: HTMLElement = this._elementRef.nativeElement;
-        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, true);
+        toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
       }),
     ).subscribe();
 
