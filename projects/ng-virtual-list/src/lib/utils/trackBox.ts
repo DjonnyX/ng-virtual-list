@@ -1,13 +1,12 @@
 import { ComponentRef } from "@angular/core";
-import { NgVirtualListItemComponent } from "../components/ng-virtual-list-item.component";
-import { IRenderVirtualListCollection } from "../models/render-collection.model";
+import { IRenderVirtualListCollection, } from "../models/render-collection.model";
 import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CacheMap, CMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
 import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
-import { IVirtualListStickyMap } from "../models";
+import { BaseVirtualListItemComponent, IVirtualListStickyMap } from "../models";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
@@ -65,20 +64,20 @@ export interface IGetItemPositionOptions<I extends { id: Id }, C extends Array<I
 export interface IUpdateCollectionOptions<I extends { id: Id }, C extends Array<I>>
     extends Omit<IRecalculateMetricsOptions<I, C>, 'collection' | 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
 
-type CacheMapEvents = typeof TRACK_BOX_CHANGE_EVENT_NAME;
+export type CacheMapEvents = typeof TRACK_BOX_CHANGE_EVENT_NAME;
 
-type OnChangeEventListener = (version: number) => void;
+export type OnChangeEventListener = (version: number) => void;
 
-type CacheMapListeners = OnChangeEventListener;
+export type CacheMapListeners = OnChangeEventListener;
 
-enum ItemDisplayMethods {
+export enum ItemDisplayMethods {
     CREATE,
     UPDATE,
     DELETE,
     NOT_CHANGED,
 }
 
-interface IUpdateCollectionReturns {
+export interface IUpdateCollectionReturns {
     displayItems: IRenderVirtualListCollection;
     totalSize: number;
     delta: number;
@@ -91,8 +90,10 @@ interface IUpdateCollectionReturns {
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods }, CacheMapEvents, CacheMapListeners> {
-    protected _tracker!: Tracker<IRenderVirtualListItem, NgVirtualListItemComponent>;
+export class TrackBox<C extends BaseVirtualListItemComponent = any>
+    extends CacheMap<Id, ISize & { method?: ItemDisplayMethods }, CacheMapEvents, CacheMapListeners> {
+
+    protected _tracker!: Tracker<C>;
 
     protected _items: IRenderVirtualListCollection | null | undefined;
 
@@ -104,9 +105,9 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         this._items = v;
     }
 
-    protected _displayComponents: Array<ComponentRef<NgVirtualListItemComponent>> | null | undefined;
+    protected _displayComponents: Array<ComponentRef<C>> | null | undefined;
 
-    set displayComponents(v: Array<ComponentRef<NgVirtualListItemComponent>> | null | undefined) {
+    set displayComponents(v: Array<ComponentRef<C>> | null | undefined) {
         if (this._displayComponents === v) {
             return;
         }
@@ -114,9 +115,9 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         this._displayComponents = v;
     }
 
-    protected _snapedDisplayComponent: ComponentRef<NgVirtualListItemComponent> | null | undefined;
+    protected _snapedDisplayComponent: ComponentRef<C> | null | undefined;
 
-    set snapedDisplayComponent(v: ComponentRef<NgVirtualListItemComponent> | null | undefined) {
+    set snapedDisplayComponent(v: ComponentRef<C> | null | undefined) {
         if (this._snapedDisplayComponent === v) {
             return;
         }
@@ -161,11 +162,11 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         return v;
     }
 
-    private _previousCollection: Array<{ id: Id; }> | null | undefined;
+    protected _previousCollection: Array<{ id: Id; }> | null | undefined;
 
-    private _deletedItemsMap: { [index: number]: ISize } = {};
+    protected _deletedItemsMap: { [index: number]: ISize } = {};
 
-    private _crudDetected = false;
+    protected _crudDetected = false;
     get crudDetected() { return this._crudDetected; }
 
     protected override fireChangeIfNeed() {
@@ -174,7 +175,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         }
     }
 
-    private _previousTotalSize = 0;
+    protected _previousTotalSize = 0;
 
     protected _scrollDelta: number = 0;
     get scrollDelta() { return this._scrollDelta; }
@@ -336,7 +337,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     /**
      * Calculates the position of an element based on the given scrollSize
      */
-    private getElementFromStart<I extends { id: Id }, C extends Array<I>>(scrollSize: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
+    protected getElementFromStart<I extends { id: Id }, C extends Array<I>>(scrollSize: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
         isVertical: boolean): I | undefined {
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0;
@@ -360,7 +361,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
     /**
      * Calculates the entry into the overscroll area and returns the number of overscroll elements
      */
-    private getElementNumToEnd<I extends { id: Id }, C extends Array<I>>(i: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
+    protected getElementNumToEnd<I extends { id: Id }, C extends Array<I>>(i: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
         size: number, isVertical: boolean, indexOffset: number = 0): { num: number, offset: number } {
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0, num = 0;
@@ -824,9 +825,9 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
                             zIndex: '0',
                         };
 
-                        if (snapped) {
-                            config.zIndex = '2';
-                        }
+                    if (snapped) {
+                        config.zIndex = '2';
+                    }
 
                     const itemData: I = items[i];
 
@@ -901,7 +902,7 @@ export class TrackBox extends CacheMap<Id, ISize & { method?: ItemDisplayMethods
         this._tracker.displayObjectIndexMapById = v;
     }
 
-    untrackComponentByIdProperty(component?: NgVirtualListItemComponent | undefined) {
+    untrackComponentByIdProperty(component?: C | undefined) {
         this._tracker.untrackComponentByIdProperty(component);
     }
 

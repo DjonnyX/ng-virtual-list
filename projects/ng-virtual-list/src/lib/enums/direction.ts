@@ -6,4 +6,4 @@ import { Directions } from "./directions";
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export type Direction = Directions | 'hotizontal' | 'vertical';
+export type Direction = Directions | 'horizontal' | 'vertical';
