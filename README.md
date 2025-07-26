@@ -25,10 +25,10 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
-    [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [itemsOffset]="50"
+    [itemRenderer]="horizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
-<ng-template #hotizontalItemRenderer let-data="data">
+<ng-template #horizontalItemRenderer let-data="data">
   <div *ngIf="data" class="list__h-container" (click)="onItemClick(data)">
     <span>{{data.name}}</span>
   </div>
@@ -61,7 +61,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
     [itemsOffset]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
