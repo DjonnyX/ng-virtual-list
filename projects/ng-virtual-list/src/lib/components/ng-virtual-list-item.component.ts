@@ -5,6 +5,7 @@ import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
+import { BaseVirtualListItemComponent } from '../models';
 
 /**
  * Virtual list item component
@@ -22,7 +23,7 @@ import {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NgVirtualListItemComponent {
+export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   private static __nextId: number = 0;
 
   private _id!: number;
@@ -41,7 +42,7 @@ export class NgVirtualListItemComponent {
       return;
     }
 
-    const data = this._data = v;
+    this._data = v;
 
     this.update();
 
@@ -83,6 +84,7 @@ export class NgVirtualListItemComponent {
   }
 
   constructor() {
+    super();
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }

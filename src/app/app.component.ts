@@ -6,13 +6,21 @@ import { LOGO } from './const';
 
 const MAX_ITEMS = 50000;
 
-const ITEMS: IVirtualListCollection = [];
+interface ICollectionItem {
+  name: string;
+}
+
+interface IGroupCollectionItem extends ICollectionItem {
+  type: 'group-header' | 'item';
+}
+
+const ITEMS: IVirtualListCollection<ICollectionItem> = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1;
   ITEMS.push({ id, name: `Item: ${id}` });
 }
 
-const HORIZONTAL_ITEMS: IVirtualListCollection = [];
+const HORIZONTAL_ITEMS: IVirtualListCollection<ICollectionItem> = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1;
   HORIZONTAL_ITEMS.push({ id, name: `${id}` });
@@ -24,7 +32,7 @@ const getGroupName = () => {
   return GROUP_NAMES[Math.floor(Math.random() * GROUP_NAMES.length)];
 };
 
-const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
+const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -34,7 +42,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? actualPos : 0;
 }
 
-const GROUP_ITEMS: IVirtualListCollection = [],
+const GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
   GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 let groupIndex = 0;
@@ -76,9 +84,9 @@ const generateText = () => {
   return `${result.join(' ')}.`;
 };
 
-const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
+const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {},
-  GROUP_DYNAMIC_ITEMS_WITH_SNAP: IVirtualListCollection = [],
+  GROUP_DYNAMIC_ITEMS_WITH_SNAP: IVirtualListCollection<IGroupCollectionItem> = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP: IVirtualListStickyMap = {};
 
 let groupDynamicIndex = 0;
@@ -142,18 +150,18 @@ export class AppComponent {
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef();
     if (list && this.itemId !== undefined) {
-      list.scrollTo(this.itemId, 'smooth' as ScrollBehavior);
+      list.scrollTo(this.itemId, 'smooth');
     }
   }
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef();
     if (list && this.dlItemId !== undefined) {
-      list.scrollTo(this.dlItemId, 'instant' as ScrollBehavior);
+      list.scrollTo(this.dlItemId, 'instant');
     }
   }
 
-  onItemClick(data: IVirtualListItem) {
-    console.info(`Click: Item ${data['name']} (ID: ${data.id})`);
+  onItemClick(data: IVirtualListItem<ICollectionItem>) {
+    console.info(`Click: Item ${data.name} (ID: ${data.id})`);
   }
 }

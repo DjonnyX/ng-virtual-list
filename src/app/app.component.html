@@ -5,18 +5,18 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo"/>
-    <div class="version"><span>v 18.2.0</span></div>
+    <div class="version"><span>v 18.3.0</span></div>
   </div>
 
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal list</h2>
-      <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
-        [itemRenderer]="hotizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [itemsOffset]="50"
+        [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
     </div>
   </div>
 
-  <ng-template #hotizontalItemRenderer let-data="data">
+  <ng-template #horizontalItemRenderer let-data="data">
     @if (data) {
     <div class="list__h-container" (click)="onItemClick(data)">
       <span>{{data.name}}</span>
@@ -27,7 +27,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list</h2>
-      <ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
         [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
     </div>
   </div>
