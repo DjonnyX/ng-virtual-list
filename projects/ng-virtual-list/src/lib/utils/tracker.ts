@@ -1,11 +1,14 @@
 import { ComponentRef } from "@angular/core";
-import { ScrollDirection } from "../models";
+import { BaseVirtualListItemComponent, ScrollDirection } from "../models";
+import { Id, ISize } from "../types";
 
 type TrackingPropertyId = string | number;
 
-interface IVirtualListItemComponent<I = any> {
+export interface IVirtualListItemComponent<I = any> {
+    getBounds(): ISize;
+    itemId: Id;
     id: number;
-    item: I;
+    item: I | null;
     show: () => void;
     hide: () => void;
 }
@@ -16,7 +19,7 @@ interface IVirtualListItemComponent<I = any> {
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class Tracker<I = any, C extends IVirtualListItemComponent = any> {
+export class Tracker<C extends BaseVirtualListItemComponent = any> {
     /**
      * display objects dictionary of indexes by id
      */
