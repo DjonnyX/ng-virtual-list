@@ -6,4 +6,4 @@ import { IVirtualListItem } from "./item.model";
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export interface IVirtualListCollection extends Array<IVirtualListItem> { };
+export interface IVirtualListCollection<E = Object> extends Array<IVirtualListItem<E>> { };
