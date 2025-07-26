@@ -6,7 +6,7 @@ import { Id } from "../types/id";
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export interface IVirtualListItem {
+export type IVirtualListItem<E = Object> = E & {
     /**
      * Unique identifier of the element.
      */
