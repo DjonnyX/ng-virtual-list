@@ -25,10 +25,10 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalItems" [itemsOffset]="50"
-    [itemRenderer]="hotizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [itemsOffset]="50"
+    [itemRenderer]="horizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
-<ng-template #hotizontalItemRenderer let-data="data">
+<ng-template #horizontalItemRenderer let-data="data">
   @if (data) {
     <div class="list__h-container" (click)="onItemClick(data)">
       <span>{{data.name}}</span>
@@ -63,7 +63,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="hotizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
     [itemsOffset]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
@@ -488,12 +488,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.3.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.3.2](https://www.npmjs.com/package/ng-virtual-list/v/19.3.2) |
-| 18.x | 18.2.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.2.0](https://www.npmjs.com/package/ng-virtual-list/v/18.2.0) |
-| 17.x | 17.2.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.2.0](https://www.npmjs.com/package/ng-virtual-list/v/17.2.0) |
-| 16.x | 16.2.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.2.0](https://www.npmjs.com/package/ng-virtual-list/v/16.2.0) |
-| 15.x | 15.2.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.2.0](https://www.npmjs.com/package/ng-virtual-list/v/15.2.0) |
-| 14.x | 14.2.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.2.0](https://www.npmjs.com/package/ng-virtual-list/v/14.2.0) |
+| 19.x | 19.3.3 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.3.3](https://www.npmjs.com/package/ng-virtual-list/v/19.3.3) |
+| 18.x | 18.3.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.3.0](https://www.npmjs.com/package/ng-virtual-list/v/18.3.0) |
+| 17.x | 17.3.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.3.0](https://www.npmjs.com/package/ng-virtual-list/v/17.3.0) |
+| 16.x | 16.3.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.3.0](https://www.npmjs.com/package/ng-virtual-list/v/16.3.0) |
+| 15.x | 15.3.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.3.0](https://www.npmjs.com/package/ng-virtual-list/v/15.3.0) |
+| 14.x | 14.3.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.3.0](https://www.npmjs.com/package/ng-virtual-list/v/14.3.0) |
 
 <br/>
 
