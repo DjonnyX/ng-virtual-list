@@ -25,9 +25,9 @@ import { BaseVirtualListItemComponent } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  private static __nextId: number = 0;
+  protected static __nextId: number = 0;
 
-  private _id!: number;
+  protected _id!: number;
   get id() {
     return this._id;
   }
@@ -35,7 +35,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   regular: boolean = false;
 
   data = signal<IRenderVirtualListItem | undefined>(undefined);
-  private _data: IRenderVirtualListItem | undefined = undefined;
+  protected _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
     if (this._data === v) {
       return;
@@ -48,7 +48,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.data.set(v);
   }
 
-  private _regularLength: string = SIZE_100_PERSENT;
+  protected _regularLength: string = SIZE_100_PERSENT;
   set regularLength(v: string) {
     if (this._regularLength === v) {
       return;
@@ -73,7 +73,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.itemRenderer.set(v);
   }
 
-  private _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
+  protected _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
   get element() {
     return this._elementRef.nativeElement;
   }
