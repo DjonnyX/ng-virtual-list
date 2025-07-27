@@ -596,7 +596,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     }
 
                     if (deletedItemsMap.hasOwnProperty(i)) {
-                        const bounds = deletedItemsMap[i], size = bounds[sizeProperty] ?? typicalItemSize;
+                        const bounds = deletedItemsMap[i], size = bounds?.[sizeProperty] ?? typicalItemSize;
                         if (y < scrollSize - size) {
                             leftSizeOfDeletedItems += size;
                         }
@@ -727,6 +727,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             if (snap) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
+                    if (!items[i]) {
+                        continue;
+                    }
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     if (sticky === 1) {
                         const measures = {
