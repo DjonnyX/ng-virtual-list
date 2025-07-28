@@ -40,6 +40,7 @@ export interface IMetrics {
     totalLength: number;
     totalSize: number;
     typicalItemSize: number;
+    isFromItemIdFound: boolean;
 }
 
 export interface IRecalculateMetricsOptions<I extends { id: Id }, C extends Array<I>> {
@@ -283,14 +284,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     getItemPosition<I extends { id: Id }, C extends Array<I>>(id: Id, stickyMap: IVirtualListStickyMap,
         options: IGetItemPositionOptions<I, C>): number {
         const opt = { fromItemId: id, stickyMap, ...options };
-        const { scrollSize } = this.recalculateMetrics({
+        const { scrollSize, isFromItemIdFound } = this.recalculateMetrics({
             ...opt,
             dynamicSize: this._crudDetected || opt.dynamicSize,
             previousTotalSize: this._previousTotalSize,
             crudDetected: this._crudDetected,
             deletedItemsMap: this._deletedItemsMap,
         });
-        return scrollSize;
+        return isFromItemIdFound ? scrollSize : -1;
     }
 
     /**
@@ -439,7 +440,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             isTargetInOverscroll: boolean = false,
             actualScrollSize = itemByIdPos,
             totalSize = 0,
-            startIndex;
+            startIndex: number,
+            isFromItemIdFound = false;
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
@@ -485,6 +487,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         }
 
                         if (id === fromItemId) {
+                            isFromItemIdFound = true;
                             targetDisplayItemIndex = i;
                             if (stickyCollectionItem && stickyMap) {
                                 const { num } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical);
@@ -673,6 +676,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalLength,
             totalSize,
             typicalItemSize,
+            isFromItemIdFound,
         };
 
         return metrics;
@@ -764,9 +768,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (snap) {
                 const startIndex = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1;
                 for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
-                    if (!items[i]) {
-                        continue;
-                    }
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize
                         ? this.get(id)?.[sizeProperty] || typicalItemSize
                         : typicalItemSize;
