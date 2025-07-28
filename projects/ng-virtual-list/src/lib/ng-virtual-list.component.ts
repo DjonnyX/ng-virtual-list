@@ -681,6 +681,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
           },
           scrollSize = this._trackBox.getItemPosition(id, stickyMap, opts),
           params: ScrollToOptions = { [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior };
+
+        if (scrollSize === -1) {
+          container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
+          return;
+        }
+
         this._trackBox.clearDelta();
 
         if (container) {
@@ -700,6 +706,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
           const _scrollSize = this._trackBox.getItemPosition(id, stickyMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
+          if (_scrollSize === -1) {
+            container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
+            return;
+          }
+
           const notChanged = actualScrollSize === _scrollSize
 
           if (!notChanged || iteration < MAX_SCROLL_TO_ITERATIONS) {
@@ -718,9 +729,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
         this._$scrollSize.next(scrollSize);
       } else {
-        const index = items.findIndex(item => item.id === id), scrollSize = index * this.itemSize;
-        const params: ScrollToOptions = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior };
-        container.nativeElement.scrollTo(params);
+        const index = items.findIndex(item => item.id === id);
+        if (index > -1) {
+          const scrollSize = index * this.itemSize;
+          const params: ScrollToOptions = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior };
+          container.nativeElement.scrollTo(params);
+        }
       }
     }
   }
