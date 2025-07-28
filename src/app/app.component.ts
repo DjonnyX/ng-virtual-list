@@ -4,7 +4,7 @@ import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from 
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
 
-const MAX_ITEMS = 100000;
+const MAX_ITEMS = 50000;
 
 interface ICollectionItem {
   name: string;
@@ -38,8 +38,7 @@ const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${id}` });
-  const pos = 1 + Math.round(Math.random()), actualPos = pos === 1 ? 1 : 2;
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? actualPos : 0;
+  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 const GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
@@ -52,8 +51,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
     groupIndex++;
   }
   GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${id}` });
-  const pos = 1 + Math.round(Math.random()), actualPos = pos === 1 ? 1 : 2;
-  GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? actualPos : 0;
+  GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 const CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
@@ -96,10 +94,9 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
     groupDynamicIndex++;
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
-  const pos = 1 + Math.round(Math.random()), actualPos = pos === 1 ? 1 : 2;
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? actualPos : 0;
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
   GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP[id] = type === 'group-header' ? actualPos : 0;
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
