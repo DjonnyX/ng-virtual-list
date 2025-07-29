@@ -5,7 +5,7 @@ Animation of elements is supported.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
-Angular version 15.X.X.
+Angular version 14.X.X.
 
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
 
@@ -25,7 +25,7 @@ npm i ng-virtual-list
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [itemsOffset]="50"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
     [itemRenderer]="horizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data">
@@ -62,7 +62,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [itemsOffset]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
+    [bufferSize]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   <ng-container *ngIf="data" [ngSwitch]="data.type">
@@ -113,7 +113,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [itemsOffset]="50" [itemRenderer]="itemRenderer"
+<ng-virtual-list class="list simple" [items]="items" [bufferSize]="50" [itemRenderer]="itemRenderer"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -152,7 +152,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="50" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -173,7 +173,7 @@ Template:
 
 Template (with snapping):
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [itemsOffset]="50" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
     [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -232,7 +232,7 @@ Template
   <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
 </div>
 
-<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
+<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -284,7 +284,7 @@ Virtual list with height-adjustable elements.
 
 Template
 ```html
-<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="10"
+<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="10"
       [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -414,21 +414,22 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 
 ## API
 
-[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
+[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
 
 Inputs
 
 | Property | Type | Description |
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
-| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items.  The collection of elements must be immutable. |
+| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. The collection of elements must be immutable. |
 | itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
-| itemsOffset | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
+| bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
+| maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
-| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. 1 - position start, 2 - position end. |
+| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. 1 - position start, 2 - position end. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
-| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
-| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
+| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
@@ -439,9 +440,8 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
-| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
-| enabledBufferOptimization | boolean? = true | Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
+| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
+| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
 
 <br/>
 
@@ -449,9 +449,9 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
 | scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
-| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 
 <br/>
 
