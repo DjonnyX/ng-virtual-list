@@ -492,8 +492,8 @@ Methods
 | 19.x | 19.4.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.4.0](https://www.npmjs.com/package/ng-virtual-list/v/19.4.0) |
 | 18.x | 18.4.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.4.0](https://www.npmjs.com/package/ng-virtual-list/v/18.4.0) |
 | 17.x | 17.4.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.4.0](https://www.npmjs.com/package/ng-virtual-list/v/17.4.0) |
-| 16.x | 16.4.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.4.0](https://www.npmjs.com/package/ng-virtual-list/v/16.4.0) |
-| 15.x | 15.4.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.4.0](https://www.npmjs.com/package/ng-virtual-list/v/15.4.0) |
+| 16.x | 16.4.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.4.1](https://www.npmjs.com/package/ng-virtual-list/v/16.4.1) |
+| 15.x | 15.4.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.4.1](https://www.npmjs.com/package/ng-virtual-list/v/15.4.1) |
 | 14.x | 14.4.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.4.0](https://www.npmjs.com/package/ng-virtual-list/v/14.4.0) |
 
 <br/>
