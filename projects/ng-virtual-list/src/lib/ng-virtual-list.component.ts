@@ -4,8 +4,8 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_ITEMS_OFFSET, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
+  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { BaseVirtualListItemComponent, Component$1, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
@@ -237,21 +237,56 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get direction() { return this._$direction.getValue(); }
 
-  protected _$itemsOffset = new BehaviorSubject<number>(DEFAULT_ITEMS_OFFSET);
-  readonly $itemsOffset = this._$itemsOffset.asObservable();
+  /**
+   * @deprecated "itemOffset" parameter is deprecated. Use "bufferSize" and "maxBufferSize".
+   */
+  @Input()
+  set itemsOffset(v: number) {
+    throw Error('"itemOffset" parameter is deprecated. Use "bufferSize" and "maxBufferSize".');
+  };
+
+  protected _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
+  readonly $bufferSize = this._$bufferSize.asObservable();
 
   /**
    * Number of elements outside the scope of visibility. Default value is 2.
    */
   @Input()
-  set itemsOffset(v: number) {
-    if (this._$itemsOffset.getValue() === v) {
+  set bufferSize(v: number) {
+    if (this._$bufferSize.getValue() === v) {
       return;
     }
 
-    this._$itemsOffset.next(v);
+    this._$bufferSize.next(v);
   };
-  get itemsOffset() { return this._$itemsOffset.getValue(); }
+  get bufferSize() { return this._$bufferSize.getValue(); }
+
+  private _maxBufferSizeTransform = (v: number | undefined) => {
+    const bufferSize = this._$bufferSize.getValue();
+    if (v === undefined || v <= bufferSize) {
+      return bufferSize;
+    }
+    return v;
+  };
+
+  protected _$maxBufferSize = new BehaviorSubject<number>(DEFAULT_MAX_BUFFER_SIZE);
+  readonly $maxBufferSize = this._$maxBufferSize.asObservable();
+
+  /**
+   * Maximum number of elements outside the scope of visibility. Default value is 100.
+   * If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled.
+   * The greater the scroll size, the more elements are allocated for rendering.
+   */
+  @Input()
+  set maxBufferSize(v: number) {
+    const val = this._maxBufferSizeTransform(v);
+    if (this._$maxBufferSize.getValue() === val) {
+      return;
+    }
+
+    this._$maxBufferSize.next(val);
+  };
+  get maxBufferSize() { return this._$maxBufferSize.getValue(); }
 
   protected _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
   readonly $trackBy = this._$trackBy.asObservable();
@@ -424,8 +459,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       $itemSize = this.$itemSize.pipe(
         map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
       ),
-      $itemsOffset = this.$itemsOffset.pipe(
-        map(v => v < 0 ? DEFAULT_ITEMS_OFFSET : v),
+      $bufferSize = this.$bufferSize.pipe(
+        map(v => v < 0 ? DEFAULT_BUFFER_SIZE : v),
+      ),
+      $maxBufferSize = this.$maxBufferSize.pipe(
+        map(v => v < 0 ? DEFAULT_MAX_BUFFER_SIZE : v),
       ),
       $stickyMap = this.$stickyMap.pipe(
         map(v => !v ? {} : v),
@@ -465,20 +503,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     ).subscribe();
 
     combineLatest([this.$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize,
-      $itemsOffset, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion,
+      $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion,
     ]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
       switchMap(([,
         bounds, items, stickyMap, scrollSize, itemSize,
-        itemsOffset, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+        bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
         let actualScrollSize = (this._isVertical ? this._container?.nativeElement.scrollTop ?? 0 : this._container?.nativeElement.scrollLeft) ?? 0;
         const { width, height } = bounds!,
           opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, dynamicSize, isVertical, itemSize,
-            itemsOffset, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+            bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
           },
           { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, opts);
 
@@ -675,7 +713,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
           stickyMap = this.stickyMap, items = this.items, isVertical = this._isVertical, delta = this._trackBox.delta,
           opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
-            itemsOffset: this.itemsOffset, scrollSize: (isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft) + delta,
+            bufferSize: this.bufferSize, maxBufferSize: this.maxBufferSize, scrollSize: (isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft) + delta,
             snap: this.snap, fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization,
           },
           scrollSize = this._trackBox.getItemPosition(id, stickyMap, opts),
