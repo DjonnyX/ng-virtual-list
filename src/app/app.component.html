@@ -5,13 +5,13 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo"/>
-    <div class="version"><span>v 20.3.2</span></div>
+    <div class="version"><span>v 20.4.0</span></div>
   </div>
 
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal list</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [itemsOffset]="50"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
         [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
     </div>
   </div>
@@ -27,7 +27,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemsOffset]="50"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
         [itemRenderer]="horizontalGroupItemRenderer" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
     </div>
   </div>
@@ -52,7 +52,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Vertical virtual list</h2>
-      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
+      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50"
         [itemSize]="40"></ng-virtual-list>
     </div>
   </div>
@@ -73,7 +73,7 @@
           [max]="maxId">
         <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [itemsOffset]="50"
+      <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50"
         [itemSize]="40"></ng-virtual-list>
     </div>
   </div>
@@ -81,7 +81,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="50"
         [stickyMap]="groupItemsStickyMap" [itemSize]="40"></ng-virtual-list>
     </div>
   </div>
@@ -89,7 +89,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list (with snapping)</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="20" [maxBufferSize]="200"
         [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
     </div>
   </div>
@@ -102,7 +102,7 @@
           [max]="maxDlId">
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [itemsOffset]="50"
+      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="20" [maxBufferSize]="200"
         [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
     </div>
   </div>
