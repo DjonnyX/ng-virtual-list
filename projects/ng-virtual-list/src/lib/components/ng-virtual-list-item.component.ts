@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
-import { BaseVirtualListItemComponent } from '../models';
+import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 
 /**
  * Virtual list item component
@@ -25,9 +25,9 @@ import { BaseVirtualListItemComponent } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  protected static __nextId: number = 0;
+  private static __nextId: number = 0;
 
-  protected _id!: number;
+  private _id!: number;
   get id() {
     return this._id;
   }
@@ -35,7 +35,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   regular: boolean = false;
 
   data = signal<IRenderVirtualListItem | undefined>(undefined);
-  protected _data: IRenderVirtualListItem | undefined = undefined;
+  private _data: IRenderVirtualListItem | undefined = undefined;
   set item(v: IRenderVirtualListItem | undefined) {
     if (this._data === v) {
       return;
@@ -48,7 +48,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.data.set(v);
   }
 
-  protected _regularLength: string = SIZE_100_PERSENT;
+  private _regularLength: string = SIZE_100_PERSENT;
   set regularLength(v: string) {
     if (this._regularLength === v) {
       return;
@@ -73,10 +73,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.itemRenderer.set(v);
   }
 
-  protected _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
+  private _elementRef: ElementRef<HTMLElement> = inject(ElementRef<HTMLElement>);
   get element() {
     return this._elementRef.nativeElement;
   }
+
+  private _listItemRef = viewChild<ElementRef<HTMLLIElement>>('listItem')
 
   constructor() {
     super();
@@ -84,7 +86,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }
 
-  protected update() {
+  private update() {
     const data = this._data, regular = this.regular, length = this._regularLength;
     if (data) {
       const styles = this._elementRef.nativeElement.style;
