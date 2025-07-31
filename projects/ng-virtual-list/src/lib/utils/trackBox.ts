@@ -5,9 +5,10 @@ import { Id } from "../types/id";
 import { CacheMap, CMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
-import { HEIGHT_PROP_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
-import { BaseVirtualListItemComponent, IVirtualListStickyMap } from "../models";
+import { HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
+import { IVirtualListStickyMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
+import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 
 export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
 
@@ -146,13 +147,21 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      * Set the trackBy property
      */
     set trackingPropertyName(v: string) {
-        this._tracker.trackingPropertyName = v;
+        this._trackingPropertyName = this._tracker.trackingPropertyName = v;
     }
+
+    protected _trackingPropertyName: string = TRACK_BY_PROPERTY_NAME;
 
     constructor(trackingPropertyName: string) {
         super();
 
-        this._tracker = new Tracker(trackingPropertyName);
+        this._trackingPropertyName = trackingPropertyName;
+
+        this.initialize();
+    }
+
+    protected initialize() {
+        this._tracker = new Tracker(this._trackingPropertyName);
     }
 
     override set(id: Id, bounds: ISize): CMap<Id, ISize> {
@@ -829,6 +838,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (snap) {
                 const startIndex = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1;
                 for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
+                    if (!items[i]) {
+                        continue;
+                    }
                     const id = items[i].id, sticky = stickyMap[id], size = dynamicSize
                         ? this.get(id)?.[sizeProperty] || typicalItemSize
                         : typicalItemSize;
@@ -867,6 +879,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             while (renderItems > 0) {
                 if (i >= totalLength) {
                     break;
+                }
+                if (!items[i]) {
+                    continue;
                 }
 
                 const id = items[i].id, size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;

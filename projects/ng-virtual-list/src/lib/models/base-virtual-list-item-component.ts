@@ -19,7 +19,6 @@ export abstract class BaseVirtualListItemComponent {
     abstract itemRenderer: WritableSignal<TemplateRef<any> | undefined>;
     abstract set renderer(v: TemplateRef<any> | undefined);
     abstract get element(): HTMLElement;
-    protected abstract update(): void;
     public abstract getBounds(): ISize;
     public abstract show(): void;
     public abstract hide(): void;
