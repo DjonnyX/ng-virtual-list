@@ -5,7 +5,7 @@ import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
-import { BaseVirtualListItemComponent } from '../models';
+import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 
 /**
  * Virtual list item component
@@ -23,9 +23,9 @@ import { BaseVirtualListItemComponent } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  protected static __nextId: number = 0;
+  private static __nextId: number = 0;
 
-  protected _id!: number;
+  private _id!: number;
   get id() {
     return this._id;
   }
@@ -46,7 +46,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this._cdr.detectChanges();
   }
 
-  protected _regularLength: string = SIZE_100_PERSENT;
+  private _regularLength: string = SIZE_100_PERSENT;
   set regularLength(v: string) {
     if (this._regularLength === v) {
       return;
@@ -83,13 +83,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     return this._elementRef.nativeElement;
   }
 
-  constructor(protected _cdr: ChangeDetectorRef, protected _elementRef: ElementRef<HTMLElement>) {
+  constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>) {
     super();
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListItemComponent.__nextId + 1;
   }
 
-  protected update() {
+  private update() {
     const data = this.data, regular = this.regular, length = this._regularLength;
     if (data) {
       const styles = this._elementRef.nativeElement.style;
