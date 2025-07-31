@@ -4,7 +4,7 @@ import { IRenderVirtualListItem } from './render-item.model';
 
 /**
  * Virtual List Item Interface
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/-basevirtual-list-item-component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -19,7 +19,6 @@ export abstract class BaseVirtualListItemComponent {
     abstract itemRenderer: WritableSignal<TemplateRef<any> | undefined>;
     abstract set renderer(v: TemplateRef<any> | undefined);
     abstract get element(): HTMLElement;
-    protected abstract update(): void;
     public abstract getBounds(): ISize;
     public abstract show(): void;
     public abstract hide(): void;
