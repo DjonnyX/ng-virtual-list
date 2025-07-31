@@ -8,16 +8,19 @@ import {
   DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
-import { BaseVirtualListItemComponent, Component$1, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions, SnappingMethod } from './enums';
-import { ScrollEvent, TrackBox, isDirection, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME } from './utils/trackBox';
+import { ScrollEvent, toggleClassName } from './utils';
+import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME, TrackBox } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
+import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
+import { Component$1 } from './models/component.model';
+import { isDirection } from './utils/isDirection';
 
 /**
  * Virtual list component.
@@ -35,28 +38,28 @@ import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.co
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy {
-  protected static __nextId: number = 0;
+  private static __nextId: number = 0;
 
-  protected _id: number = NgVirtualListComponent.__nextId;
+  private _id: number = NgVirtualListComponent.__nextId;
   /**
    * Readonly. Returns the unique identifier of the component.
    */
   get id() { return this._id; }
 
   @ViewChild('renderersContainer', { read: ViewContainerRef })
-  protected _listContainerRef: ViewContainerRef | undefined;
+  private _listContainerRef: ViewContainerRef | undefined;
 
   @ViewChild('container', { read: ElementRef<HTMLDivElement> })
-  protected _container: ElementRef<HTMLDivElement> | undefined;
+  private _container: ElementRef<HTMLDivElement> | undefined;
 
   @ViewChild('list', { read: ElementRef<HTMLDivElement> })
-  protected _list: ElementRef<HTMLUListElement> | undefined;
+  private _list: ElementRef<HTMLUListElement> | undefined;
 
   @ViewChild('snapRendererContainer', { read: ViewContainerRef })
-  protected _snapContainerRef: ViewContainerRef | undefined;
+  private _snapContainerRef: ViewContainerRef | undefined;
 
   @ViewChild('snapped', { read: ViewContainerRef })
-  protected _snappedContainer: ViewContainerRef | undefined;
+  private _snappedContainer: ViewContainerRef | undefined;
 
   /**
    * Fires when the list has been scrolled.
@@ -71,10 +74,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   onScrollEnd = new EventEmitter<IScrollEvent>();
 
 
-  protected _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
+  private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
 
-  protected _itemsTransform = (v: IVirtualListCollection | undefined) => {
+  private _itemsTransform = (v: IVirtualListCollection | undefined) => {
     this._trackBox.resetCollection(v, this._$itemSize.getValue());
     return v;
   };
@@ -96,7 +99,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get items() { return this._$items.getValue() as IVirtualListCollection; }
 
-  protected _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
+  private _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
   readonly $snap = this._$snap.asObservable();
 
   /**
@@ -114,7 +117,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get snap() { return this._$snap.getValue(); }
 
-  protected _$enabledBufferOptimization = new BehaviorSubject<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
+  private _$enabledBufferOptimization = new BehaviorSubject<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
   readonly $enabledBufferOptimization = this._$enabledBufferOptimization.asObservable();
   /**
    * Experimental!
@@ -135,10 +138,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
 
 
-  protected _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
+  private _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   readonly $itemRenderer = this._$itemRenderer.asObservable();
 
-  protected _$renderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
+  private _$renderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   /**
   * Rendering element template.
   */
@@ -154,7 +157,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get itemRenderer() { return this._$itemRenderer.getValue() as TemplateRef<any>; }
 
-  protected _$stickyMap = new BehaviorSubject<IVirtualListStickyMap>({});
+  private _$stickyMap = new BehaviorSubject<IVirtualListStickyMap>({});
   readonly $stickyMap = this._$stickyMap.asObservable();
 
   /**
@@ -173,7 +176,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get stickyMap() { return this._$stickyMap.getValue(); }
 
-  protected _itemSizeOptions = (v: number | undefined) => {
+  private _itemSizeOptions = (v: number | undefined) => {
     if (v === undefined) {
       return DEFAULT_ITEM_SIZE;
     }
@@ -181,7 +184,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     return Number.isNaN(val) || val <= 0 ? DEFAULT_ITEM_SIZE : val;
   };
 
-  protected _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
+  private _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
   readonly $itemSize = this._$itemSize.asObservable();
 
   /**
@@ -200,7 +203,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get itemSize() { return this._$itemSize.getValue(); }
 
-  protected _$dynamicSize = new BehaviorSubject<boolean>(DEFAULT_DYNAMIC_SIZE);
+  private _$dynamicSize = new BehaviorSubject<boolean>(DEFAULT_DYNAMIC_SIZE);
   readonly $dynamicSize = this._$dynamicSize.asObservable();
 
   /**
@@ -219,7 +222,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get dynamicSize() { return this._$dynamicSize.getValue(); }
 
-  protected _$direction = new BehaviorSubject<Direction>(DEFAULT_DIRECTION);
+  private _$direction = new BehaviorSubject<Direction>(DEFAULT_DIRECTION);
   readonly $direction = this._$direction.asObservable();
 
   /**
@@ -245,7 +248,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     throw Error('"itemOffset" parameter is deprecated. Use "bufferSize" and "maxBufferSize".');
   };
 
-  protected _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
+  private _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
   readonly $bufferSize = this._$bufferSize.asObservable();
 
   /**
@@ -269,7 +272,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     return v;
   };
 
-  protected _$maxBufferSize = new BehaviorSubject<number>(DEFAULT_MAX_BUFFER_SIZE);
+  private _$maxBufferSize = new BehaviorSubject<number>(DEFAULT_MAX_BUFFER_SIZE);
   readonly $maxBufferSize = this._$maxBufferSize.asObservable();
 
   /**
@@ -288,7 +291,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get maxBufferSize() { return this._$maxBufferSize.getValue(); }
 
-  protected _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
+  private _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
   readonly $trackBy = this._$trackBy.asObservable();
 
   /**
@@ -304,9 +307,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get trackBy() { return this._$trackBy.getValue(); }
 
-  protected _isVertical = this.getIsVertical();
+  private _isVertical = this.getIsVertical();
 
-  protected _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
+  private _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
   readonly $snappingMethod = this._$snappingMethod.asObservable();
 
   /**
@@ -324,20 +327,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get snappingMethod() { return this._$snappingMethod.getValue(); }
 
-  protected _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
+  private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
   get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
-  protected _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
+  private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
-  protected _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
+  private _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
 
-  protected _$bounds = new BehaviorSubject<ISize | null>(null);
+  private _$bounds = new BehaviorSubject<ISize | null>(null);
 
-  protected _$scrollSize = new BehaviorSubject<number>(0);
+  private _$scrollSize = new BehaviorSubject<number>(0);
 
-  protected _resizeObserver: ResizeObserver | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
 
-  protected _resizeSnappedComponentHandler = () => {
+  private _resizeSnappedComponentHandler = () => {
     const list = this._list, container = this._container, snappedComponent = this._snapedDisplayComponent?.instance;
     if (list && container && snappedComponent) {
       const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect(), listElement = list?.nativeElement,
@@ -377,9 +380,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   };
 
-  protected _resizeSnappedObserver: ResizeObserver | null = null;
+  private _resizeSnappedObserver: ResizeObserver | null = null;
 
-  protected _onResizeHandler = () => {
+  private _onResizeHandler = () => {
     const bounds = this._container?.nativeElement?.getBoundingClientRect();
     if (bounds) {
       this._$bounds.next({ width: bounds.width, height: bounds.height });
@@ -392,7 +395,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  protected _onScrollHandler = (e?: Event) => {
+  private _onScrollHandler = (e?: Event) => {
     this.clearScrollToRepeatExecutionTimeout();
 
     const container = this._container?.nativeElement;
@@ -403,35 +406,35 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  protected _$initialized = new BehaviorSubject<boolean>(false);
+  private _$initialized = new BehaviorSubject<boolean>(false);
 
   readonly $initialized: Observable<boolean>;
 
   /**
    * Base class of the element component
    */
-  protected _itemComponentClass: Component$1<BaseVirtualListItemComponent> = NgVirtualListItemComponent;
+  private _itemComponentClass: Component$1<BaseVirtualListItemComponent> = NgVirtualListItemComponent;
 
   /**
    * Base class trackBox
    */
-  protected _trackBoxClass: Component$1<TrackBox> = TrackBox;
+  private _trackBoxClass: Component$1<TrackBox> = TrackBox;
 
   /**
    * Dictionary of element sizes by their id
    */
-  protected _trackBox: TrackBox = new this._trackBoxClass(this.trackBy);
+  private _trackBox: TrackBox = new this._trackBoxClass(this.trackBy);
 
-  protected _onTrackBoxChangeHandler = (v: number) => {
+  private _onTrackBoxChangeHandler = (v: number) => {
     this._$cacheVersion.next(v);
   }
 
-  protected _$cacheVersion = new BehaviorSubject<number>(-1);
+  private _$cacheVersion = new BehaviorSubject<number>(-1);
   get $cacheVersion() { return this._$cacheVersion.asObservable(); }
 
   constructor(
-    protected _cdr: ChangeDetectorRef,
-    protected _elementRef: ElementRef<HTMLDivElement>
+    private _cdr: ChangeDetectorRef,
+    private _elementRef: ElementRef<HTMLDivElement>
   ) {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
@@ -552,10 +555,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }),
     ).subscribe();
 
-    this.setupRenderer();
-  }
-
-  protected setupRenderer() {
     const $itemRenderer = this.$itemRenderer;
 
     $itemRenderer.pipe(
@@ -573,11 +572,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.onInit();
   }
 
-  protected onInit() {
+  private onInit() {
     this._$initialized.next(true);
   }
 
-  protected listenCacheChangesIfNeed(value: boolean) {
+  private listenCacheChangesIfNeed(value: boolean) {
     if (value) {
       if (!this._trackBox.hasEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler)) {
         this._trackBox.addEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler);
@@ -589,21 +588,21 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  protected getIsSnappingMethodAdvanced(m?: SnappingMethod) {
+  private getIsSnappingMethodAdvanced(m?: SnappingMethod) {
     const method = m || this._$snappingMethod.getValue();
     return isSnappingMethodAdvenced(method);
   }
 
-  protected getIsVertical(d?: Direction) {
+  private getIsVertical(d?: Direction) {
     const dir = d || this.direction;
     return isDirection(dir, Directions.VERTICAL);
   }
 
-  protected _componentsResizeObserver = new ResizeObserver(() => {
+  private _componentsResizeObserver = new ResizeObserver(() => {
     this._trackBox.changes();
   });
 
-  protected createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
+  private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {
     if (!displayItems || !this._listContainerRef) {
       this._trackBox.setDisplayObjectIndexMapById({});
       return;
@@ -639,11 +638,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.resetRenderers();
   }
 
-  protected updateRegularRenderer() {
+  private updateRegularRenderer() {
     this._resizeSnappedComponentHandler();
   }
 
-  protected resetRenderers(itemRenderer?: TemplateRef<HTMLElement>) {
+  private resetRenderers(itemRenderer?: TemplateRef<HTMLElement>) {
     const doMap: { [id: number]: number } = {};
     for (let i = 0, l = this._displayComponents.length; i < l; i++) {
       const item = this._displayComponents[i];
@@ -662,11 +661,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   /**
    * Tracking by id
    */
-  protected tracking() {
+  private tracking() {
     this._trackBox.track();
   }
 
-  protected resetBoundsSize(isVertical: boolean, totalSize: number) {
+  private resetBoundsSize(isVertical: boolean, totalSize: number) {
     const l = this._list;
     if (l) {
       l.nativeElement.style[isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME] = `${totalSize}${PX}`;
@@ -688,13 +687,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.scrollToExecutor(id, behavior);
   }
 
-  protected _scrollToRepeatExecutionTimeout: any;
+  private _scrollToRepeatExecutionTimeout: any;
 
-  protected clearScrollToRepeatExecutionTimeout() {
+  private clearScrollToRepeatExecutionTimeout() {
     clearTimeout(this._scrollToRepeatExecutionTimeout);
   }
 
-  protected scrollToExecutor(id: Id, behavior: ScrollBehavior, iteration: number = 0, isLastIteration = false) {
+  private scrollToExecutor(id: Id, behavior: ScrollBehavior, iteration: number = 0, isLastIteration = false) {
     const items = this.items;
     if (!items || !items.length) {
       return;
@@ -784,7 +783,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.scrollTo(latItem.id, behavior);
   }
 
-  protected _onContainerScrollHandler = (e: Event) => {
+  private _onContainerScrollHandler = (e: Event) => {
     const containerEl = this._container;
     if (containerEl) {
       const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
@@ -800,7 +799,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  protected _onContainerScrollEndHandler = (e: Event) => {
+  private _onContainerScrollEndHandler = (e: Event) => {
     const containerEl = this._container;
     if (containerEl) {
       const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
@@ -821,7 +820,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.afterViewInit();
   }
 
-  protected afterViewInit() {
+  private afterViewInit() {
     const containerEl = this._container;
     if (containerEl) {
       // for direction calculation
@@ -842,7 +841,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.dispose();
   }
 
-  protected dispose() {
+  private dispose() {
     this.clearScrollToRepeatExecutionTimeout();
 
     if (this._trackBox) {

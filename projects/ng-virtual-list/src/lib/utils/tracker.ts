@@ -1,6 +1,7 @@
 import { ComponentRef } from "@angular/core";
-import { BaseVirtualListItemComponent, ScrollDirection } from "../models";
+import { ScrollDirection } from "../models";
 import { Id, ISize } from "../types";
+import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 
 type TrackingPropertyId = string | number;
 
@@ -23,7 +24,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
     /**
      * display objects dictionary of indexes by id
      */
-    private _displayObjectIndexMapById: { [id: number]: number } = {};
+    protected _displayObjectIndexMapById: { [id: number]: number } = {};
 
     set displayObjectIndexMapById(v: { [id: number]: number }) {
         if (this._displayObjectIndexMapById === v) {
@@ -40,13 +41,13 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
     /**
      * Dictionary displayItems propertyNameId by items propertyNameId
      */
-    private _trackMap: { [id: TrackingPropertyId]: number } | null = {};
+    protected _trackMap: { [id: TrackingPropertyId]: number } | null = {};
 
     get trackMap() {
         return this._trackMap;
     }
 
-    private _trackingPropertyName!: string;
+    protected _trackingPropertyName!: string;
 
     set trackingPropertyName(v: string) {
         this._trackingPropertyName = v;
