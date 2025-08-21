@@ -5,7 +5,7 @@ Flexible, and actively maintained Angular library that excels with high-performa
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
-Angular version 20.X.X.
+Angular version 15.X.X.
 
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
 
