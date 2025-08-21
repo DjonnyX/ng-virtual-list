@@ -1,7 +1,7 @@
 # NgVirtualList
 
 Maximum performance for extremely large lists.<br/>
-Animation of elements is supported.
+Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
@@ -10,6 +10,39 @@ Angular version 19.X.X.
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
 
 [Live Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
+
+<br/>
+
+| **Pros** | **Description** |
+| --- | --- |
+| **High performance** | Only renders items visible in the viewport (plus a buffer), reducing DOM overhead and improving responsiveness—even with very large datasets |
+| **Grouped lists with sticky headers & snapping** | Supports grouping items, sticky headers, and optional “snap” behavior for clean section scrolling |
+| **Angular (14–20) compatibility** | Compatible with Angular versions 14 through 20.x, ensuring seamless integration in modern Angular projects |
+| **Scroll-to capabilities** | Allows programmatic navigation to specific items by ID |
+| **TypeScript support** | Comes with typing for safety and better integration in TypeScript projects |
+
+<br/>
+
+## When to Use It: Ideal Use Cases
+
+Drawing on general virtual-scroll insights and ng-virtual-list features:
+
+Long-Scrolling Lists / Live Feeds
+When displaying hundreds of thousands of items (think social media feeds, chat logs, or news streams), ng-virtual-list ensures smooth and responsive rendering without overwhelming the browser.
+
+Horizontal Carousels or Galleries
+Ideal for media-rich UI elements like image galleries, product cards, or horizontal scrollers where traditional ngFor rendering becomes sluggish.
+
+Grouped Navigation with Section Headers
+For catalogs, logs, or grouped entries (e.g., by date or category), you can use sticky headers and snapping to guide user navigation effectively. 
+
+"Jump to" Item Navigation
+Use cases like directories or chat histories benefit from the ability to scroll directly to specific items by ID. 
+
+Complex or Rich-Content Templates
+As each item may contain images, nested components, or interactions, virtual rendering keeps performance intact even when item complexity increases.
+
+<br/>
 
 ## Installation
 
