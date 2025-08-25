@@ -82,3 +82,14 @@ export const SCROLL_END = 'scrollend';
 export const CLASS_LIST_VERTICAL = 'vertical';
 
 export const CLASS_LIST_HORIZONTAL = 'horizontal';
+
+// styles
+
+export const PART_DEFAULT_ITEM = 'item';
+
+export const PART_ITEM_ODD = ' odd';
+
+export const PART_ITEM_EVEN = ' even';
+
+export const PART_ITEM_SNAPPED = ' snapped';
+
