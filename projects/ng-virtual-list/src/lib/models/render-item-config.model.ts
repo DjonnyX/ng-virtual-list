@@ -7,6 +7,14 @@
  */
 export interface IRenderVirtualListItemConfig {
     /**
+     * Indicates that the element is odd.
+     */
+    odd: boolean;
+    /**
+     * Indicates that the element is even.
+     */
+    even: boolean;
+    /**
      * If greater than 0, the element will have a sticky position with the given zIndex.
      */
     sticky: number;

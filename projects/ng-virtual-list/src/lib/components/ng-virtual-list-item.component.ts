@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inje
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
-  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD, PART_ITEM_SNAPPED,
+  POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 
@@ -33,6 +33,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   private _cdr = inject(ChangeDetectorRef);
 
+  private _part = PART_DEFAULT_ITEM;
+  get part() { return this._part; }
+
   regular: boolean = false;
 
   data = signal<IRenderVirtualListItem | undefined>(undefined);
@@ -43,6 +46,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
 
     this._data = v;
+
+    this.updatePartStr(v);
 
     this.update();
 
@@ -112,6 +117,20 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
 
     this._cdr.markForCheck();
+  }
+
+  private updatePartStr(v: IRenderVirtualListItem | undefined) {
+    let odd = false;
+    if (v?.index !== undefined) {
+      odd = v.index % 2 === 0;
+    }
+
+    let part = PART_DEFAULT_ITEM;
+    part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
+    if (v ? v.config.snapped : false) {
+      part += PART_ITEM_SNAPPED;
+    }
+    this._part = part;
   }
 
   getBounds(): ISize {
