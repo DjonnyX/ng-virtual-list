@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
-  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD,
+  PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
+  VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 
@@ -32,6 +33,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     return this._id;
   }
 
+  private _part = PART_DEFAULT_ITEM;
+  get part() { return this._part; }
+
   regular: boolean = false;
 
   data = signal<IRenderVirtualListItem | undefined>(undefined);
@@ -41,7 +45,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       return;
     }
 
-    const data = this._data = v;
+    this._data = v;
+
+    this.updatePartStr(v);
 
     this.update();
 
@@ -78,8 +84,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     return this._elementRef.nativeElement;
   }
 
-  private _listItemRef = viewChild<ElementRef<HTMLLIElement>>('listItem')
-
   constructor() {
     super();
     this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
@@ -107,6 +111,20 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
       styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     }
+  }
+
+  private updatePartStr(v: IRenderVirtualListItem | undefined) {
+    let odd = false;
+    if (v?.index !== undefined) {
+      odd = v.index % 2 === 0;
+    }
+
+    let part = PART_DEFAULT_ITEM;
+    part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
+    if (v ? v.config.snapped : false) {
+      part += PART_ITEM_SNAPPED;
+    }
+    this._part = part;
   }
 
   getBounds(): ISize {
