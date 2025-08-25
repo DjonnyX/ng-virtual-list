@@ -445,6 +445,29 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 }
 ```
 
+Selecting even elements:
+
+```html
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5"
+  [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
+
+<ng-template #horizontalItemRenderer let-data="data" let-config="config">
+  @if (data) {
+    <div [ngClass]="{'item-container': true, 'even': config.even}">
+      <span>{{data.name}}</span>
+    </div>
+  }
+</ng-template>
+```
+
+```css
+.item-container {
+  &.even {
+      background-color: #1d1d21;
+  }
+}
+```
+
 ## API
 
 [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
