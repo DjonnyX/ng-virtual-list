@@ -11,6 +11,10 @@ import { IRenderVirtualListItemConfig } from "./render-item-config.model";
  */
 export interface IRenderVirtualListItem {
     /**
+     * Element index.
+     */
+    index: number;
+    /**
      * Unique identifier of the element.
      */
     id: Id;
