@@ -1,5 +1,5 @@
 @if (data(); as item) {
-    <li #listItem part="item" class="ngvl-item__container" [ngClass]="{'snapped': item.config.snapped,
+    <li #listItem [part]="part" class="ngvl-item__container" [ngClass]="{'snapped': item.config.snapped,
         'snapped-out': item.config.snappedOut}">
         @if (itemRenderer(); as renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
