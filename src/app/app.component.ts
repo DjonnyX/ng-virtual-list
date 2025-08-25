@@ -1,4 +1,5 @@
 import { Component, viewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
 import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
@@ -39,7 +40,7 @@ const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${id}` });
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? Math.round(Math.random() * 2) === 1 ? 1 : 2 : 0;
 }
 
 const GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
@@ -102,7 +103,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, NgVirtualListComponent],
+  imports: [CommonModule, FormsModule, NgVirtualListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -160,6 +161,6 @@ export class AppComponent {
   }
 
   onItemClick(data: IVirtualListItem<ICollectionItem>) {
-    console.info(`Click: Item ${data.name} (ID: ${data.id})`);
+    console.info(`Click: Item ${data['name']} (ID: ${data.id})`);
   }
 }

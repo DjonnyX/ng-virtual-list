@@ -210,10 +210,14 @@ input {
         width: 100%;
         padding: 6px 12px;
         background-color: #1a1a1e;
-        border-bottom: 1px solid #27272e;
+        // border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         display: flex;
         align-items: center;
+
+        &.even {
+            background-color: #1d1d21;
+        }
 
         &>* {
             height: auto;
@@ -225,7 +229,7 @@ input {
         width: 100%;
         padding: 6px 12px;
         background-color: #25252b;
-        border-bottom: 1px solid #27272e;
+        // border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
@@ -243,7 +247,7 @@ input {
         height: 100%;
         padding: 0 8px;
         background-color: #1a1a1e;
-        border-right: 1px solid #27272e;
+        // border-right: 1px solid #27272e;
         border-bottom: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
@@ -252,6 +256,10 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &.even {
+            background-color: #1d1d21;
+        }
 
         &:hover {
             background-color: #17171b;
@@ -266,7 +274,7 @@ input {
         height: 100%;
         padding: 0 8px;
         background-color: #25252b;
-        border-right: 1px solid #27272e;
+        // border-right: 1px solid #27272e;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
