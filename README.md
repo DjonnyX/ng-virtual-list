@@ -475,6 +475,29 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 }
 ```
 
+Selecting even elements:
+
+```html
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5"
+  [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
+
+<ng-template #horizontalItemRenderer let-data="data" let-config="config">
+  @if (data) {
+    <div [ngClass]="{'item-container': true, 'even': config.even}">
+      <span>{{data.name}}</span>
+    </div>
+  }
+</ng-template>
+```
+
+```css
+.item-container {
+  &.even {
+      background-color: #1d1d21;
+  }
+}
+```
+
 ## API
 
 [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
@@ -522,12 +545,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.4.5 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.4.5](https://www.npmjs.com/package/ng-virtual-list/v/19.4.5) |
-| 18.x | 18.4.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.4.3](https://www.npmjs.com/package/ng-virtual-list/v/18.4.3) |
-| 17.x | 17.4.3 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.4.3](https://www.npmjs.com/package/ng-virtual-list/v/17.4.3) |
-| 16.x | 16.4.4 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.4.4](https://www.npmjs.com/package/ng-virtual-list/v/16.4.4) |
-| 15.x | 15.4.5 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.4.5](https://www.npmjs.com/package/ng-virtual-list/v/15.4.5) |
-| 14.x | 14.4.4 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.4.4](https://www.npmjs.com/package/ng-virtual-list/v/14.4.4) |
+| 19.x | 19.5.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.5.0](https://www.npmjs.com/package/ng-virtual-list/v/19.5.0) |
+| 18.x | 18.5.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.5.0](https://www.npmjs.com/package/ng-virtual-list/v/18.5.0) |
+| 17.x | 17.5.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.5.0](https://www.npmjs.com/package/ng-virtual-list/v/17.5.0) |
+| 16.x | 16.5.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.5.0](https://www.npmjs.com/package/ng-virtual-list/v/16.5.0) |
+| 15.x | 15.5.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.5.0](https://www.npmjs.com/package/ng-virtual-list/v/15.5.0) |
+| 14.x | 14.5.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.5.0](https://www.npmjs.com/package/ng-virtual-list/v/14.5.0) |
 
 <br/>
 
