@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Temp
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD, PART_ITEM_SNAPPED,
-  POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
+  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
+import { NgVirtualListService } from '../ng-virtual-list.service';
 
 /**
  * Virtual list item component
@@ -23,8 +24,6 @@ import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-c
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  private static __nextId: number = 0;
-
   private _id!: number;
   get id() {
     return this._id;
@@ -88,10 +87,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     return this._elementRef.nativeElement;
   }
 
-  constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>) {
+  constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>, private _service: NgVirtualListService) {
     super();
-    this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
-      ? 0 : NgVirtualListItemComponent.__nextId + 1;
+    this._id = this._service.generateComponentId();
   }
 
   private update() {
@@ -175,5 +173,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     styles.position = POSITION_ABSOLUTE;
     styles.transform = ZEROS_TRANSLATE_3D;
     styles.zIndex = HIDDEN_ZINDEX;
+  }
+
+  onClickHandler() {
+    this._service.itemClick(this.data);
   }
 }
