@@ -1,6 +1,5 @@
 import { Component, viewChild } from '@angular/core';
-import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
-import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, IRenderVirtualListItem, ISize } from '../../projects/ng-virtual-list/src/public-api';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
 
@@ -38,7 +37,7 @@ const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${id}` });
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? Math.round(Math.random() * 2) === 1 ? 1 : 2 : 0;
 }
 
 const GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
@@ -158,7 +157,13 @@ export class AppComponent {
     }
   }
 
-  onItemClick(data: IVirtualListItem<ICollectionItem>) {
-    console.info(`Click: Item ${data.name} (ID: ${data.id})`);
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+    if (item) {
+      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+    }
+  }
+
+  onViewportChangeHandler(size: ISize) {
+    console.info(`Viewport changed: ${JSON.stringify(size)}`);
   }
 }
