@@ -8,6 +8,7 @@ import {
   VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
+import { NgVirtualListService } from '../ng-virtual-list.service';
 
 /**
  * Virtual list item component
@@ -26,12 +27,12 @@ import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-c
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  private static __nextId: number = 0;
-
   private _id!: number;
   get id() {
     return this._id;
   }
+
+  protected _service = inject(NgVirtualListService);
 
   private _part = PART_DEFAULT_ITEM;
   get part() { return this._part; }
@@ -86,8 +87,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   constructor() {
     super();
-    this._id = NgVirtualListItemComponent.__nextId = NgVirtualListItemComponent.__nextId === Number.MAX_SAFE_INTEGER
-      ? 0 : NgVirtualListItemComponent.__nextId + 1;
+    this._id = this._service.generateComponentId();
   }
 
   private update() {
@@ -169,5 +169,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     styles.position = POSITION_ABSOLUTE;
     styles.transform = ZEROS_TRANSLATE_3D;
     styles.zIndex = HIDDEN_ZINDEX;
+  }
+
+  onClickHandler() {
+    this._service.itemClick(this._data);
   }
 }

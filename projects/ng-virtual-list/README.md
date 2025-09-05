@@ -59,11 +59,11 @@ npm i ng-virtual-list
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
-    [itemRenderer]="horizontalItemRenderer" [itemSize]="64"></ng-virtual-list>
+    [itemRenderer]="horizontalItemRenderer" [itemSize]="64" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data">
   @if (data) {
-    <div class="list__h-container" (click)="onItemClick(data)">
+    <div class="list__h-container">
       <span>{{data.name}}</span>
     </div>
   }
@@ -72,9 +72,13 @@ Template:
 
 Component:
 ```ts
-import { NgVirtualListComponent, IVirtualListCollection } from 'ng-virtual-list';
+import { NgVirtualListComponent, IVirtualListCollection, IRenderVirtualListItem } from 'ng-virtual-list';
 
-const HORIZONTAL_ITEMS: IVirtualListCollection = [];
+interface ICollectionItem {
+  name: string;
+}
+
+const HORIZONTAL_ITEMS: IVirtualListCollection<ICollectionItem> = [];
 for (let i = 0, l = 1000000; i < l; i++) {
   HORIZONTAL_ITEMS.push({ id: i + 1, name: `${i}` });
 }
@@ -87,6 +91,12 @@ for (let i = 0, l = 1000000; i < l; i++) {
 })
 export class AppComponent {
   horizontalItems = HORIZONTAL_ITEMS;
+
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+    if (item) {
+      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+    }
+  }
 }
 ```
 
@@ -97,7 +107,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true"></ng-virtual-list>
+    [bufferSize]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {
@@ -108,7 +118,7 @@ Template:
         </div>
       }
       @default {
-        <div class="list__h-container" (click)="onItemClick(data)">
+        <div class="list__h-container">
           <span>{{data.name}}</span>
         </div>
       }
@@ -119,7 +129,7 @@ Template:
 
 Component:
 ```ts
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, IRenderVirtualListItem } from 'ng-virtual-list';
 
 const GROUP_NAMES = ['A', 'B', 'C', 'D', 'E'];
 
@@ -127,7 +137,12 @@ const getGroupName = () => {
   return GROUP_NAMES[Math.floor(Math.random() * GROUP_NAMES.length)];
 };
 
-const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection = [],
+interface ICollectionItem {
+  type: 'group-header' | 'item';
+  name: string;
+}
+
+const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<ICollectionItem> = [],
   HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
 
 for (let i = 0, l = 1000000; i < l; i++) {
@@ -145,6 +160,12 @@ for (let i = 0, l = 1000000; i < l; i++) {
 export class AppComponent {
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
   horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
+
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+    if (item) {
+      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+    }
+  }
 }
 ```
 
@@ -526,8 +547,11 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
+| onItemClick | [IRenderVirtualListItem](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/render-item.model.ts) \| undefined | Fires when an element is clicked. |
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
+| onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
+
 
 <br/>
 
