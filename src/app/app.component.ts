@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
-import { NgVirtualListComponent } from '../../projects/ng-virtual-list/src/public-api';
-import { IVirtualListCollection, IVirtualListStickyMap, IVirtualListItem } from '../../projects/ng-virtual-list/src/lib/models';
-import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+import {
+  NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, Id, IRenderVirtualListItem, ISize,
+} from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 
 const MAX_ITEMS = 50000;
@@ -159,7 +159,13 @@ export class AppComponent {
     }
   }
 
-  onItemClick(data: IVirtualListItem<ICollectionItem>) {
-    console.info(`Click: Item ${data.name} (ID: ${data.id})`);
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+    if (item) {
+      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+    }
+  }
+
+  onViewportChangeHandler(size: ISize) {
+    console.info(`Viewport changed: ${JSON.stringify(size)}`);
   }
 }

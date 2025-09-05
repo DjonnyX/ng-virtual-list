@@ -8,7 +8,7 @@ import {
   DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
-import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions, SnappingMethod } from './enums';
@@ -21,6 +21,7 @@ import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.co
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/isDirection';
+import { NgVirtualListService } from './ng-virtual-list.service';
 
 /**
  * Virtual list component.
@@ -36,6 +37,7 @@ import { isDirection } from './utils/isDirection';
   styleUrls: ['./ng-virtual-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
+  providers: [NgVirtualListService],
 })
 export class NgVirtualListComponent extends DisposableComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
@@ -73,6 +75,17 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   @Output()
   onScrollEnd = new EventEmitter<IScrollEvent>();
 
+  /**
+   * Fires when the viewport size is changed.
+   */
+  @Output()
+  onViewportChange = new EventEmitter<ISize>();
+
+  /**
+   * Fires when an element is clicked.
+   */
+  @Output()
+  onItemClick = new EventEmitter<IRenderVirtualListItem<any> | undefined>();
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
@@ -434,12 +447,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   constructor(
     private _cdr: ChangeDetectorRef,
-    private _elementRef: ElementRef<HTMLDivElement>
+    private _elementRef: ElementRef<HTMLDivElement>,
+    private _service: NgVirtualListService,
   ) {
     super();
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
+
+    this._service.initialize(this._trackBox);
 
     this._$initialized = new BehaviorSubject<boolean>(false);
     this.$initialized = this._$initialized.asObservable();
@@ -564,6 +580,21 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       filter(v => !!v),
       tap(v => {
         this._$renderer.next(v);
+      }),
+    ).subscribe();
+
+    $bounds.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(value => {
+        this.onViewportChange.emit(value ?? undefined);
+      }),
+    ).subscribe();
+
+    this._service.$itemClick.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(v => {
+        this.onItemClick.emit(v ?? undefined);
       }),
     ).subscribe();
   }
