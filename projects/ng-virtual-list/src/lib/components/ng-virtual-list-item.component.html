@@ -1,6 +1,6 @@
 <ng-container *ngIf="data">
     <li #listItem [part]="part" class="ngvl-item__container" [ngClass]="{'snapped': data.config.snapped,
-        'snapped-out': data.config.snappedOut}">
+        'snapped-out': data.config.snappedOut}" (click)="onClickHandler()">
         <ng-container *ngIf="itemRenderer">
             <ng-container [ngTemplateOutlet]="itemRenderer"
                 [ngTemplateOutletContext]="{data: data.data || {}, config: data.config}"></ng-container>

@@ -2,25 +2,26 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
   DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
-import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions, SnappingMethod } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME, TrackBox } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/isDirection';
+import { NgVirtualListService } from './ng-virtual-list.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * Virtual list component.
@@ -36,6 +37,7 @@ import { isDirection } from './utils/isDirection';
   styleUrls: ['./ng-virtual-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
+  providers: [NgVirtualListService],
 })
 export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
@@ -73,6 +75,17 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   @Output()
   onScrollEnd = new EventEmitter<IScrollEvent>();
 
+  /**
+   * Fires when the viewport size is changed.
+   */
+  @Output()
+  onViewportChange = new EventEmitter<ISize>();
+
+  /**
+   * Fires when an element is clicked.
+   */
+  @Output()
+  onItemClick = new EventEmitter<IRenderVirtualListItem<any> | undefined>();
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
@@ -434,11 +447,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   constructor(
     private _cdr: ChangeDetectorRef,
-    private _elementRef: ElementRef<HTMLDivElement>
+    private _elementRef: ElementRef<HTMLDivElement>,
+    private _service: NgVirtualListService,
   ) {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
+
+    this._service.initialize(this._trackBox);
 
     this._$initialized = new BehaviorSubject<boolean>(false);
     this.$initialized = this._$initialized.asObservable();
@@ -563,6 +579,21 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       filter(v => !!v),
       tap(v => {
         this._$renderer.next(v);
+      }),
+    ).subscribe();
+
+    $bounds.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(value => {
+        this.onViewportChange.emit(value ?? undefined);
+      }),
+    ).subscribe();
+
+    this._service.$itemClick.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.onItemClick.emit(v ?? undefined);
       }),
     ).subscribe();
   }
