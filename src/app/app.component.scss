@@ -237,10 +237,6 @@ input {
         display: flex;
         align-items: center;
 
-        &.even {
-            background-color: #1d1d21;
-        }
-
         &>* {
             height: auto;
         }
@@ -286,10 +282,6 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
-
-        &.even {
-            background-color: #1d1d21;
-        }
 
         &>* {
             height: auto;

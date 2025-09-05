@@ -12,7 +12,7 @@ import {
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE,
 } from './const';
-import { IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions, SnappingMethod } from './enums';
@@ -23,6 +23,7 @@ import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/isDirection';
+import { NgVirtualListService } from './ng-virtual-list.service';
 
 /**
  * Virtual list component.
@@ -39,6 +40,7 @@ import { isDirection } from './utils/isDirection';
   styleUrl: './ng-virtual-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
+  providers: [NgVirtualListService],
 })
 export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
@@ -48,6 +50,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * Readonly. Returns the unique identifier of the component.
    */
   get id() { return this._id; }
+
+  private _service = inject(NgVirtualListService);
 
   @ViewChild('renderersContainer', { read: ViewContainerRef })
   private _listContainerRef: ViewContainerRef | undefined;
@@ -70,6 +74,16 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * Fires when the list has completed scrolling.
    */
   onScrollEnd = output<IScrollEvent>();
+
+  /**
+   * Fires when the viewport size is changed.
+   */
+  onViewportChange = output<ISize>();
+
+  /**
+   * Fires when an element is clicked.
+   */
+  onItemClick = output<IRenderVirtualListItem<any> | undefined>();
 
   private _itemsOptions = {
     transform: (v: IVirtualListCollection | undefined) => {
@@ -301,6 +315,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
 
+    this._service.initialize(this._trackBox);
+
     this._initialized = signal<boolean>(false);
     this.$initialized = toObservable(this._initialized);
 
@@ -424,6 +440,22 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       filter(v => !!v),
       tap(v => {
         this._itemRenderer.set(v);
+      }),
+    ).subscribe();
+
+    $bounds.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(value => {
+        this.onViewportChange.emit(value as ISize);
+      }),
+    ).subscribe();
+
+    this._service.$itemClick.pipe(
+      takeUntilDestroyed(),
+      filter(v => v !== null),
+      tap(v => {
+        this.onItemClick.emit(v);
       }),
     ).subscribe();
   }
