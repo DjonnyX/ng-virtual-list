@@ -2,11 +2,11 @@
 @let renderer = itemRenderer();
 
 @if (item) {
-    <li #listItem [part]="part" class="ngvl-item__container" [ngClass]="{'snapped': item.config.snapped,
-            'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
-        @if (renderer) {
-            <ng-container [ngTemplateOutlet]="renderer"
-                [ngTemplateOutletContext]="{data: item.data || {}, config: item.config}" />
-        }
-    </li>
+<div #listItem [part]="part" class="ngvl-item__container"
+    [ngClass]="{'snapped': item.config.snapped, 'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
+    @if (renderer) {
+        <ng-container [ngTemplateOutlet]="renderer"
+            [ngTemplateOutletContext]="{data: item.data || {}, config: item.config}" />
+    }
+</div>
 }
