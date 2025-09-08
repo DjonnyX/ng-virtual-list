@@ -199,6 +199,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   private _isVertical = this.getIsVertical();
 
+  get orientation() {
+    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
+  }
+
   private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
   private _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
