@@ -7,6 +7,11 @@ import {
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
+import { map, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const ATTR_AREA_SELECTED = 'area-selected';
 
 /**
  * Virtual list item component
@@ -20,6 +25,7 @@ import { NgVirtualListService } from '../ng-virtual-list.service';
   styleUrls: ['./ng-virtual-list-item.component.scss'],
   host: {
     'class': 'ngvl__item',
+    'role': 'listitem',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,7 +40,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   regular: boolean = false;
 
-  data: IRenderVirtualListItem | undefined;
+  data: IRenderVirtualListItem | undefined = undefined;
+
+  private _$data = new BehaviorSubject<IRenderVirtualListItem | undefined>(this.data);
+  private $data = this._$data.asObservable();
 
   set item(v: IRenderVirtualListItem | undefined) {
     if (this.data === v) {
@@ -46,6 +55,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.updatePartStr(v);
 
     this.update();
+
+    this._$data.next(v);
 
     this._cdr.detectChanges();
   }
@@ -90,6 +101,14 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>, private _service: NgVirtualListService) {
     super();
     this._id = this._service.generateComponentId();
+
+    combineLatest([this.$data, this._service.$itemClick]).pipe(
+      takeUntilDestroyed(),
+      map(([, v]) => v),
+      tap(v => {
+        this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(v?.id === this.itemId));
+      }),
+    ).subscribe();
   }
 
   private update() {
@@ -179,3 +198,4 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this._service.itemClick(this.data);
   }
 }
+
