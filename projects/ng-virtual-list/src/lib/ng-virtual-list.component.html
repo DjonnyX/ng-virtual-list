@@ -2,7 +2,7 @@
   <ng-container #snapRendererContainer></ng-container>
 </div>
 <div #container part="scroller" class="ngvl__scroller">
-  <ul #list part="list" class="ngvl__list">
+  <div role="listbox" [attr.aria-orientation]="orientation" #list part="list" class="ngvl__list">
     <ng-container #renderersContainer></ng-container>
-  </ul>
+  </div>
 </div>
