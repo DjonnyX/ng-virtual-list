@@ -473,11 +473,9 @@ Selecting even elements:
   [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
-  @if (data) {
-    <div [ngClass]="{'item-container': true, 'even': config.even}">
-      <span>{{data.name}}</span>
-    </div>
-  }
+  <div *ngIf="data" [ngClass]="{'item-container': true, 'even': config.even}">
+    <span>{{data.name}}</span>
+  </div>
 </ng-template>
 ```
 
