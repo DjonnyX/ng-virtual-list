@@ -9,6 +9,10 @@ import {
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { map, tap, combineLatest } from 'rxjs';
+
+const ATTR_AREA_SELECTED = 'area-selected';
 
 /**
  * Virtual list item component
@@ -23,6 +27,7 @@ import { NgVirtualListService } from '../ng-virtual-list.service';
   styleUrl: './ng-virtual-list-item.component.scss',
   host: {
     'class': 'ngvl__item',
+    'role': 'listitem',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -88,6 +93,16 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   constructor() {
     super();
     this._id = this._service.generateComponentId();
+
+    const $data = toObservable(this.data);
+
+    combineLatest([$data, this._service.$itemClick]).pipe(
+      takeUntilDestroyed(),
+      map(([, v]) => v),
+      tap(v => {
+        this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(v?.id === this.itemId));
+      }),
+    ).subscribe();
   }
 
   private update() {
