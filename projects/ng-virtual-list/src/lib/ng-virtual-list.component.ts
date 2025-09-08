@@ -322,6 +322,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _isVertical = this.getIsVertical();
 
+  get orientation() {
+    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
+  }
+
   private _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
   readonly $snappingMethod = this._$snappingMethod.asObservable();
 
