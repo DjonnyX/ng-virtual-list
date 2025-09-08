@@ -7,6 +7,10 @@ import {
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
+import { map, takeUntil, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
+
+const ATTR_AREA_SELECTED = 'area-selected';
 
 /**
  * Virtual list item component
@@ -20,10 +24,13 @@ import { NgVirtualListService } from '../ng-virtual-list.service';
   styleUrls: ['./ng-virtual-list-item.component.scss'],
   host: {
     'class': 'ngvl__item',
+    'role': 'listitem',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
+  protected _$unsubscribe = new Subject<void>();
+
   private _id!: number;
   get id() {
     return this._id;
@@ -36,6 +43,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   data: IRenderVirtualListItem | undefined;
 
+  private _$data = new BehaviorSubject<IRenderVirtualListItem | undefined>(this.data);
+  private $data = this._$data.asObservable();
+
   set item(v: IRenderVirtualListItem | undefined) {
     if (this.data === v) {
       return;
@@ -46,6 +56,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.updatePartStr(v);
 
     this.update();
+
+    this._$data.next(v);
 
     this._cdr.detectChanges();
   }
@@ -90,6 +102,14 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>, private _service: NgVirtualListService) {
     super();
     this._id = this._service.generateComponentId();
+
+    combineLatest([this.$data, this._service.$itemClick]).pipe(
+      takeUntil(this._$unsubscribe),
+      map(([, v]) => v),
+      tap(v => {
+        this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(v?.id === this.itemId));
+      }),
+    ).subscribe();
   }
 
   private update() {
@@ -178,4 +198,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   onClickHandler() {
     this._service.itemClick(this.data);
   }
+
+  ngOnDestroy(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
+  }
+
 }
+
