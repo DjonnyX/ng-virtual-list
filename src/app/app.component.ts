@@ -163,6 +163,10 @@ export class AppComponent {
     }
   }
 
+  onSelectHandler(data: Array<Id> | Id | undefined) {
+      console.info(`Select: ${JSON.stringify(data)}`);
+  }
+
   onViewportChangeHandler(size: ISize) {
     console.info(`Viewport changed: ${JSON.stringify(size)}`);
   }
