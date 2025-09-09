@@ -3,7 +3,7 @@
             'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
         @if (itemRenderer(); as renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
-                [ngTemplateOutletContext]="{data: item.data || {}, config: item.config}" />
+                [ngTemplateOutletContext]="{data: item.data || {}, config: config()}" />
             }
     </div>
 }

@@ -172,10 +172,6 @@ input {
     border: 1px solid #383844;
     background-color: #0f0f11;
 
-    &::part(snapped-item) {
-        color: #71718c;
-    }
-
     &::part(scroller) {
         scroll-behavior: auto;
         color: #71718c;
@@ -217,6 +213,10 @@ input {
 
         &.even {
             background-color: #1d1d21;
+        }
+
+        &.selected {
+            background-color: #370949;
         }
 
         &>* {
@@ -263,6 +263,10 @@ input {
 
         &:hover {
             background-color: #17171b;
+        }
+
+        &.selected {
+            background-color: #370949;
         }
 
         &>* {
