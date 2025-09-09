@@ -1,4 +1,5 @@
 @let item = data();
+@let conf = config();
 @let renderer = itemRenderer();
 
 @if (item) {
@@ -6,7 +7,7 @@
         [ngClass]="{'snapped': item.config.snapped, 'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
-                [ngTemplateOutletContext]="{data: item.data || {}, config: item.config}" />
+                [ngTemplateOutletContext]="{data: item.data || {}, config: conf}" />
         }
     </div>
 }
