@@ -1,7 +1,7 @@
 # NgVirtualList
 
 Maximum performance for extremely large lists.<br/>
-Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
+Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
@@ -41,6 +41,8 @@ Use cases like directories or chat histories benefit from the ability to scroll 
 
 Complex or Rich-Content Templates
 As each item may contain images, nested components, or interactions, virtual rendering keeps performance intact even when item complexity increases.
+
+Single and multiple selection of elements
 
 <br/>
 
@@ -508,6 +510,7 @@ Inputs
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
+| selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
 
 <br/>
 
@@ -518,6 +521,7 @@ Outputs
 | onItemClick | [IRenderVirtualListItem](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/render-item.model.ts) \| undefined | Fires when an element is clicked. |
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
+| onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 
 <br/>
