@@ -1,7 +1,7 @@
 # NgVirtualList
 
 Maximum performance for extremely large lists.<br/>
-Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
+Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
@@ -41,6 +41,8 @@ Use cases like directories or chat histories benefit from the ability to scroll 
 
 Complex or Rich-Content Templates
 As each item may contain images, nested components, or interactions, virtual rendering keeps performance intact even when item complexity increases.
+
+Single and multiple selection of elements
 
 <br/>
 
