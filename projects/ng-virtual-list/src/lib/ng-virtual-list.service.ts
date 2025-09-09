@@ -64,12 +64,12 @@ export class NgVirtualListService {
     this._$itemClick.next(data);
     if (data) {
       switch (this._$methodOfSelecting.getValue()) {
-        case 1: {
+        case MethodsForSelectingTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
           this._$selectedIds.next(curr !== data?.id ? data?.id : undefined);
           break;
         }
-        case 2: {
+        case MethodsForSelectingTypes.MULTI_SELECT: {
           const curr = [...(this._$selectedIds.getValue() || []) as Array<Id>], index = curr.indexOf(data.id);
           if (index > -1) {
             curr.splice(index, 1);
@@ -78,6 +78,10 @@ export class NgVirtualListService {
             this._$selectedIds.next([...curr, data.id]);
           }
           break;
+        }
+        case MethodsForSelectingTypes.NONE:
+        default: {
+          this._$selectedIds.next(undefined);
         }
       }
     }
