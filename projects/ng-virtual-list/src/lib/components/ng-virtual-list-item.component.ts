@@ -1,15 +1,17 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { ISize } from '../types';
+import { Id, ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD,
-  PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
-  VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
+  PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D,
+  VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest } from 'rxjs';
+import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
+import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 
 const ATTR_AREA_SELECTED = 'area-selected';
 
@@ -40,6 +42,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   protected _service = inject(NgVirtualListService);
 
+  private _isSelected: boolean = false;
+  config = signal<IRenderVirtualListItemConfig & { selected: boolean }>({} as any);
+
   private _part = PART_DEFAULT_ITEM;
   get part() { return this._part; }
 
@@ -54,7 +59,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     this._data = v;
 
-    this.updatePartStr(v);
+    this.updatePartStr(v, this._isSelected);
+
+    this.updateConfig(v);
 
     this.update();
 
@@ -101,13 +108,42 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     const $data = toObservable(this.data);
 
-    combineLatest([$data, this._service.$itemClick]).pipe(
+    combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds]).pipe(
       takeUntilDestroyed(),
-      map(([, v]) => v),
-      tap(v => {
-        this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(v?.id === this.itemId));
+      map(([, m, ids]) => ({ method: m, ids })),
+      tap(({ method, ids }) => {
+        switch (method) {
+          case MethodsForSelectingTypes.SELECT: {
+            const id = ids as Id | undefined, isSelected = id === this.itemId;
+            this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
+            this._isSelected = isSelected;
+            break;
+          }
+          case MethodsForSelectingTypes.MULTI_SELECT: {
+            const actualIds = ids as Array<Id>, isSelected = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
+            this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
+            this._isSelected = isSelected;
+            break;
+          }
+          case MethodsForSelectingTypes.NONE:
+          default: {
+            this._elementRef.nativeElement.removeAttribute(ATTR_AREA_SELECTED);
+            this._isSelected = false;
+            break;
+          }
+        }
+
+        this.updatePartStr(this._data, this._isSelected);
+
+        this.updateConfig(this._data);
       }),
     ).subscribe();
+  }
+
+  private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
+    this.config.set({ ...v?.config || {}, selected: this._isSelected } as any);
+
+    this._cdr.markForCheck();
   }
 
   private update() {
@@ -135,7 +171,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this._cdr.markForCheck();
   }
 
-  private updatePartStr(v: IRenderVirtualListItem | undefined) {
+  private updatePartStr(v: IRenderVirtualListItem | undefined, isSelected: boolean) {
     let odd = false;
     if (v?.index !== undefined) {
       odd = v.index % 2 === 0;
@@ -145,6 +181,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
     if (v ? v.config.snapped : false) {
       part += PART_ITEM_SNAPPED;
+    }
+    if (isSelected) {
+      part += PART_ITEM_SELECTED;
     }
     this._part = part;
   }
