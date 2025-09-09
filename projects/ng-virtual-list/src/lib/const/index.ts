@@ -95,3 +95,5 @@ export const PART_ITEM_EVEN = ' even';
 
 export const PART_ITEM_SNAPPED = ' snapped';
 
+export const PART_ITEM_SELECTED = ' selected';
+

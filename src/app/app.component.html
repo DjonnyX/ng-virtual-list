@@ -10,16 +10,16 @@
 
   <div class="vl-section">
     <div class="vl-section__container">
-      <h2>Horizontal list</h2>
+      <h2>Horizontal list (Single select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
         [methodForSelecting]="'select'" [itemRenderer]="horizontalItemRenderer" [itemSize]="54"
-        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="1"></ng-virtual-list>
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"></ng-virtual-list>
     </div>
   </div>
 
   <ng-template #horizontalItemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__h-container': true, 'even': config.even}">
+      <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -27,11 +27,11 @@
 
   <div class="vl-section">
     <div class="vl-section__container">
-      <h2>Horizontal group list</h2>
+      <h2>Horizontal group list (Multi select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
         [methodForSelecting]="'multi-select'" [itemRenderer]="horizontalGroupItemRenderer"
         [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onSelect)="onSelectHandler($event)"
-        (onItemClick)="onItemClick($event)" [selectedIds]="[1,2]"></ng-virtual-list>
+        (onItemClick)="onItemClick($event)"></ng-virtual-list>
     </div>
   </div>
 
@@ -39,12 +39,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__h-group-container': true, 'even': config.even}">
+          <div [ngClass]="{'list__h-group-container': true, 'even': config.even, 'selected': config.selected}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__h-container': true, 'even': config.even}">
+          <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
             <span>{{data.name}}</span>
           </div>
         }
@@ -117,12 +117,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__group-container': true, 'even': config.even}">
+          <div [ngClass]="{'list__group-container': true, 'even': config.even, 'selected': config.selected}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__container': true, 'even': config.even}">
+          <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
             <span>{{data.name}}</span>
           </div>
         }
