@@ -1,4 +1,4 @@
-import { SnappingMethods } from "../enums";
+import { MethodsForSelecting, SnappingMethods } from "../enums";
 import { Directions } from "../enums/directions";
 
 export const DEFAULT_ITEM_SIZE = 24;
@@ -24,6 +24,8 @@ export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 export const MAX_SCROLL_TO_ITERATIONS = 5;
 
 export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
+
+export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
 
 // presets
 

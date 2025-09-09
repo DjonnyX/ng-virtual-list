@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { ISize } from '../types';
+import { Id, ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD,
   PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN,
@@ -11,6 +11,7 @@ import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-c
 import { NgVirtualListService } from '../ng-virtual-list.service';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest } from 'rxjs';
+import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 
 const ATTR_AREA_SELECTED = 'area-selected';
 
@@ -96,11 +97,29 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     const $data = toObservable(this.data);
 
-    combineLatest([$data, this._service.$itemClick]).pipe(
+    combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds]).pipe(
       takeUntilDestroyed(),
-      map(([, v]) => v),
-      tap(v => {
-        this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(v?.id === this.itemId));
+      map(([, m, ids]) => ({ method: m, ids })),
+      tap(({ method, ids }) => {
+        if (method > 0) {
+          switch (method) {
+            case MethodsForSelectingTypes.SELECT: {
+              const id = ids as Id | undefined;
+              this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(id === this.itemId));
+              break;
+            }
+            case MethodsForSelectingTypes.MULTI_SELECT: {
+              const actualIds = ids as Array<Id>;
+              this._elementRef.nativeElement.setAttribute(ATTR_AREA_SELECTED, String(this.itemId !== undefined && actualIds && actualIds.includes(this.itemId)));
+              break;
+            }
+            case MethodsForSelectingTypes.NONE:
+            default: {
+              this._elementRef.nativeElement.removeAttribute(ATTR_AREA_SELECTED);
+              break;
+            }
+          }
+        }
       }),
     ).subscribe();
   }

@@ -540,6 +540,7 @@ Inputs
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
+| selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
 
 <br/>
 
@@ -550,6 +551,7 @@ Outputs
 | onItemClick | [IRenderVirtualListItem](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/render-item.model.ts) \| undefined | Fires when an element is clicked. |
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
+| onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 
 
@@ -569,12 +571,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.6.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.6.1](https://www.npmjs.com/package/ng-virtual-list/v/19.6.1) |
-| 18.x | 18.6.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.6.1](https://www.npmjs.com/package/ng-virtual-list/v/18.6.1) |
-| 17.x | 17.6.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.6.1](https://www.npmjs.com/package/ng-virtual-list/v/17.6.1) |
-| 16.x | 16.6.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.6.1](https://www.npmjs.com/package/ng-virtual-list/v/16.6.1) |
-| 15.x | 15.6.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.6.1](https://www.npmjs.com/package/ng-virtual-list/v/15.6.1) |
-| 14.x | 14.6.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.6.1](https://www.npmjs.com/package/ng-virtual-list/v/14.6.1) |
+| 19.x | 19.7.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.0](https://www.npmjs.com/package/ng-virtual-list/v/19.7.0) |
+| 18.x | 18.7.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.0](https://www.npmjs.com/package/ng-virtual-list/v/18.7.0) |
+| 17.x | 17.7.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.0](https://www.npmjs.com/package/ng-virtual-list/v/17.7.0) |
+| 16.x | 16.7.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.0](https://www.npmjs.com/package/ng-virtual-list/v/16.7.0) |
+| 15.x | 15.7.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.0](https://www.npmjs.com/package/ng-virtual-list/v/15.7.0) |
+| 14.x | 14.7.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.0](https://www.npmjs.com/package/ng-virtual-list/v/14.7.0) |
 
 <br/>
 

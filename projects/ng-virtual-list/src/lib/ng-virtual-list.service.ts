@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subject, tap } from 'rxjs';
 import { TrackBox } from './utils/trackBox';
 import { IRenderVirtualListItem } from './models';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Id } from './types';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 
 @Injectable({
   providedIn: 'root'
@@ -12,12 +16,71 @@ export class NgVirtualListService {
   private _$itemClick = new Subject<IRenderVirtualListItem<any> | undefined>();
   $itemClick = this._$itemClick.asObservable();
 
+  private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
+  $selectedIds = this._$selectedIds.asObservable();
+
+  private _$methodOfSelecting = new BehaviorSubject<MethodsForSelectingTypes>(0);
+  $methodOfSelecting = this._$methodOfSelecting.asObservable();
+
+  set methodOfSelecting(v: MethodsForSelectingTypes) {
+    this._$methodOfSelecting.next(v);
+  }
+
   private _trackBox: TrackBox | undefined;
 
-  constructor() { }
+  constructor() {
+    this._$methodOfSelecting.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        switch (v) {
+          case MethodsForSelectingTypes.SELECT: {
+            const curr = this._$selectedIds.getValue();
+            if (typeof curr !== 'number' && typeof curr !== 'string') {
+              this._$selectedIds.next(undefined);
+            }
+            break;
+          }
+          case MethodsForSelectingTypes.MULTI_SELECT: {
+            if (!Array.isArray(this._$selectedIds.getValue())) {
+              this._$selectedIds.next([]);
+            }
+            break;
+          }
+          case MethodsForSelectingTypes.NONE:
+          default: {
+            this._$selectedIds.next(undefined);
+            break;
+          }
+        }
+      }),
+    ).subscribe();
+  }
+
+  setSelectedIds(ids: Array<Id> | Id | undefined) {
+    this._$selectedIds.next(ids);
+  }
 
   itemClick(data: IRenderVirtualListItem | undefined) {
     this._$itemClick.next(data);
+    if (data) {
+      switch (this._$methodOfSelecting.getValue()) {
+        case 1: {
+          const curr = this._$selectedIds.getValue() as (Id | undefined);
+          this._$selectedIds.next(curr !== data?.id ? data?.id : undefined);
+          break;
+        }
+        case 2: {
+          const curr = [...(this._$selectedIds.getValue() || []) as Array<Id>], index = curr.indexOf(data.id);
+          if (index > -1) {
+            curr.splice(index, 1);
+            this._$selectedIds.next(curr);
+          } else {
+            this._$selectedIds.next([...curr, data.id]);
+          }
+          break;
+        }
+      }
+    }
   }
 
   initialize(trackBox: TrackBox) {
