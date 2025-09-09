@@ -1,10 +1,9 @@
 import { Component, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, IRenderVirtualListItem } from '../../projects/ng-virtual-list/src/public-api';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, IRenderVirtualListItem, ISize } from '../../projects/ng-virtual-list/src/public-api';
 import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
-import { ISize } from '../../dist/ng-virtual-list/public-api';
 
 const MAX_ITEMS = 50000;
 
@@ -164,6 +163,10 @@ export class AppComponent {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
+  }
+
+  onSelectHandler(data: Array<Id> | Id | undefined) {
+      console.info(`Select: ${JSON.stringify(data)}`);
   }
 
   onViewportChangeHandler(size: ISize) {
