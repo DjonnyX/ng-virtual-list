@@ -2,16 +2,16 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
+  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { Direction, Directions, SnappingMethod } from './enums';
+import { Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME, TrackBox } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
@@ -21,7 +21,12 @@ import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-co
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/isDirection';
 import { NgVirtualListService } from './ng-virtual-list.service';
+import { isMethodForSelecting } from './utils/isMethodForSelecting';
+import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const ROLE_LIST = 'list',
+  ROLE_LIST_BOX = 'listbox';
 
 /**
  * Virtual list component.
@@ -87,6 +92,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   @Output()
   onItemClick = new EventEmitter<IRenderVirtualListItem<any> | undefined>();
 
+  /**
+   * Fires when an elements are selected.
+   */
+  @Output()
+  onSelect = new EventEmitter<Array<Id> | Id | undefined>();
+
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
 
@@ -111,6 +122,24 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this._cdr.markForCheck();
   };
   get items() { return this._$items.getValue() as IVirtualListCollection; }
+
+  private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
+  readonly $selectedIds = this._$selectedIds.asObservable();
+
+  /**
+   * Sets the selected items.
+   */
+  @Input()
+  set selectedIds(v: Array<Id> | Id | undefined) {
+    if (this._$selectedIds.getValue() === v) {
+      return;
+    }
+
+    this._$selectedIds.next(v);
+
+    this._cdr.markForCheck();
+  };
+  get selectedIds() { return this._$selectedIds.getValue(); }
 
   private _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
   readonly $snap = this._$snap.asObservable();
@@ -347,6 +376,34 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
   get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
+  private _$methodForSelecting = new BehaviorSubject<MethodForSelecting>(DEFAULT_SELECT_METHOD);
+  readonly $methodForSelecting = this._$methodForSelecting.asObservable();
+
+  /**
+   *  Method for selecting list items.
+   * 'select' - List items are selected one by one.
+   * 'multi-select' - Multiple selection of list items.
+   * 'none' - List items are not selectable.
+   */
+  @Input()
+  set methodForSelecting(v: MethodForSelecting) {
+    if (this._$methodForSelecting.getValue() === v) {
+      return;
+    }
+
+    this._$methodForSelecting.next(v);
+  };
+  get methodForSelecting() { return this._$methodForSelecting.getValue(); }
+
+  private _isNotSelecting = this.getIsNotSelecting();
+  get isNotSelecting() { return this._isNotSelecting; }
+
+  private _isSingleSelecting = this.getIsSingleSelecting();
+  get isSingleSelecting() { return this._isSingleSelecting; }
+
+  private _isMultiSelecting = this.getIsMultiSelecting();
+  get isMultiSelecting() { return this._isMultiSelecting; }
+
   private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
   private _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
@@ -500,6 +557,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       $snappingMethod = this.$snappingMethod.pipe(
         map(v => this.getIsSnappingMethodAdvanced(v || DEFAULT_SNAPPING_METHOD)),
       ),
+      $methodForSelecting = this.$methodForSelecting,
+      $selectedIds = this.$selectedIds,
       $cacheVersion = this.$cacheVersion;
 
     $isVertical.pipe(
@@ -515,6 +574,41 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       takeUntilDestroyed(),
       tap(v => {
         this._isSnappingMethodAdvanced = this._trackBox.isSnappingMethodAdvanced = v;
+      }),
+    ).subscribe();
+
+    combineLatest([$methodForSelecting, this.$initialized]).pipe(
+      takeUntilDestroyed(),
+      debounceTime(0),
+      filter(([, init]) => init === true),
+      map(([v]) => (v)),
+      tap(v => {
+        const el = this._list?.nativeElement;
+        if (this.getIsMultiSelecting(v || DEFAULT_SNAPPING_METHOD)) {
+          this._isMultiSelecting = true;
+          this._isNotSelecting = this._isSingleSelecting = false;
+          if (el) {
+            console.log('set role', ROLE_LIST_BOX)
+            el.setAttribute('role', ROLE_LIST_BOX);
+          }
+          this._service.methodOfSelecting = MethodsForSelectingTypes.MULTI_SELECT;
+        } else if (this.getIsSingleSelecting(v || DEFAULT_SNAPPING_METHOD)) {
+          this._isSingleSelecting = true;
+          this._isNotSelecting = this._isMultiSelecting = false;
+          if (el) {
+            console.log('set role', ROLE_LIST_BOX)
+            el.setAttribute('role', ROLE_LIST_BOX);
+          }
+          this._service.methodOfSelecting = MethodsForSelectingTypes.SELECT;
+        } else if (this.getIsNotSelecting(v || DEFAULT_SNAPPING_METHOD)) {
+          this._isNotSelecting = true;
+          this._isSingleSelecting = this._isMultiSelecting = false;
+          if (el) {
+            console.log('set role', ROLE_LIST)
+            el.setAttribute('role', ROLE_LIST);
+          }
+          this._service.methodOfSelecting = MethodsForSelectingTypes.NONE;
+        }
       }),
     ).subscribe();
 
@@ -600,6 +694,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         this.onItemClick.emit(v ?? undefined);
       }),
     ).subscribe();
+
+    this._service.$selectedIds.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.onSelect.emit(v);
+      })
+    ).subscribe();
+
+    $selectedIds.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.setSelectedIds(v);
+      }),
+    ).subscribe();
   }
 
   /** @internal */
@@ -626,6 +734,21 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private getIsSnappingMethodAdvanced(m?: SnappingMethod) {
     const method = m || this._$snappingMethod.getValue();
     return isSnappingMethodAdvenced(method);
+  }
+
+  private getIsNotSelecting(m?: MethodForSelecting) {
+    const method = m || this.methodForSelecting;
+    return isMethodForSelecting(method, MethodsForSelecting.NONE);
+  }
+
+  private getIsSingleSelecting(m?: MethodForSelecting) {
+    const method = m || this.methodForSelecting;
+    return isMethodForSelecting(method, MethodsForSelecting.SELECT);
+  }
+
+  private getIsMultiSelecting(m?: MethodForSelecting) {
+    const method = m || this.methodForSelecting;
+    return isMethodForSelecting(method, MethodsForSelecting.MULTI_SELECT);
   }
 
   private getIsVertical(d?: Direction) {

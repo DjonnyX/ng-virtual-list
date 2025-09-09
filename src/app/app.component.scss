@@ -172,10 +172,6 @@ input {
     border: 1px solid #383844;
     background-color: #0f0f11;
 
-    &::part(snapped-item) {
-        color: #71718c;
-    }
-
     &::part(scroller) {
         scroll-behavior: auto;
         color: #71718c;
@@ -219,6 +215,10 @@ input {
             background-color: #1d1d21;
         }
 
+        &.selected {
+            background-color: #370949;
+        }
+
         &>* {
             height: auto;
         }
@@ -236,10 +236,6 @@ input {
         text-transform: uppercase;
         display: flex;
         align-items: center;
-
-        &.even {
-            background-color: #1d1d21;
-        }
 
         &>* {
             height: auto;
@@ -269,6 +265,10 @@ input {
             background-color: #17171b;
         }
 
+        &.selected {
+            background-color: #370949;
+        }
+
         &>* {
             height: auto;
         }
@@ -286,10 +286,6 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
-
-        &.even {
-            background-color: #1d1d21;
-        }
 
         &>* {
             height: auto;
