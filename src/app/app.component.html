@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 17.7.0</span></div>
+    <div class="version"><span>v 17.7.1</span></div>
   </div>
 
   <div class="vl-section">
@@ -30,7 +30,7 @@
       <h2>Horizontal group list (Multi select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
         [methodForSelecting]="'multi-select'" [itemRenderer]="horizontalGroupItemRenderer"
-        [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onSelect)="onSelectHandler($event)"
+        [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" (onSelect)="onSelectHandler($event)"
         (onItemClick)="onItemClick($event)"></ng-virtual-list>
     </div>
   </div>
@@ -85,7 +85,7 @@
     <div class="vl-section__container">
       <h2>Virtual group list</h2>
       <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="50"
-        [stickyMap]="groupItemsStickyMap" [itemSize]="40" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+        [itemConfigMap]="groupItemConfigMap" [itemSize]="40" (onItemClick)="onItemClick($event)"></ng-virtual-list>
     </div>
   </div>
 
@@ -93,7 +93,7 @@
     <div class="vl-section__container">
       <h2>Virtual group list (with snapping)</h2>
       <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="20"
-        [maxBufferSize]="200" [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"
+        [maxBufferSize]="200" [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="true"
         (onItemClick)="onItemClick($event)"></ng-virtual-list>
     </div>
   </div>
@@ -107,7 +107,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="20" [maxBufferSize]="200" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
+        [bufferSize]="20" [maxBufferSize]="200" [itemConfigMap]="groupDynamicItemConfigMap" [dynamicSize]="true"
         [snap]="true" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)"></ng-virtual-list>
     </div>
