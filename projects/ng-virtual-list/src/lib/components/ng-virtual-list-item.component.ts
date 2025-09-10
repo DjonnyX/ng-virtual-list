@@ -14,6 +14,11 @@ import { map, tap, combineLatest } from 'rxjs';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 
+interface IItemConfig extends IRenderVirtualListItemConfig {
+  selected: boolean;
+
+}
+
 const ATTR_AREA_SELECTED = 'area-selected';
 
 /**
@@ -42,7 +47,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   protected _service = inject(NgVirtualListService);
 
   private _isSelected: boolean = false;
-  config = signal<IRenderVirtualListItemConfig & { selected: boolean }>({} as any);
+  config = signal<IItemConfig>({} as IItemConfig);
 
   private _part = PART_DEFAULT_ITEM;
   get part() { return this._part; }
@@ -136,7 +141,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.set({ ...v?.config || {}, selected: this._isSelected } as any);
+    this.config.set({ ...v?.config || {} as IItemConfig, selected: this._isSelected });
   }
 
   private update() {
