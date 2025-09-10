@@ -130,16 +130,16 @@ export class AppComponent {
   horizontalItems = HORIZONTAL_ITEMS;
 
   groupItems = GROUP_ITEMS;
-  groupItemsStickyMap = GROUP_ITEMS_ITEM_CONFIG_MAP;
+  groupItemConfigMap = GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
-  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP;
+  groupDynamicItemConfigMap = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItemsWithSanp = GROUP_DYNAMIC_ITEMS_WITH_SNAP;
-  groupDynamicItemsStickyMapWithSanp = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP;
+  groupDynamicItemConfigMapWithSanp = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP;
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
-  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP;
+  horizontalGroupItemConfigMap = HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   private _minId: Id = this.items.length > 0 ? this.items[0].id : 0;
   get minId() { return this._minId; };
