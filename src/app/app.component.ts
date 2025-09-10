@@ -1,7 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
-import {
-  NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, Id, IRenderVirtualListItem, ISize,
-} from '../../projects/ng-virtual-list/src/public-api';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize } from '../../projects/ng-virtual-list/src/public-api';
+import { Id } from '../../projects/ng-virtual-list/src/lib/types';
 import { LOGO } from './const';
 
 const MAX_ITEMS = 50000;
@@ -33,16 +32,19 @@ const getGroupName = () => {
 };
 
 const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {};
 
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${id}` });
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP[id] = {
+    sticky: type === 'group-header' ? Math.round(Math.random() * 2) === 1 ? 1 : 2 : 0,
+    selectable: type !== 'group-header',
+  }
 }
 
 const GROUP_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
-  GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  GROUP_ITEMS_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {};
 
 let groupIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -51,7 +53,10 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
     groupIndex++;
   }
   GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${id}` });
-  GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_ITEMS_ITEM_CONFIG_MAP[id] = {
+    sticky: type === 'group-header' ? 1 : 0,
+    selectable: type !== 'group-header',
+  };
 }
 
 const CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
@@ -83,9 +88,9 @@ const generateText = () => {
 };
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {},
+  GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {},
   GROUP_DYNAMIC_ITEMS_WITH_SNAP: IVirtualListCollection<IGroupCollectionItem> = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP: IVirtualListStickyMap = {};
+  GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP: IVirtualListItemConfigMap = {};
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -94,9 +99,15 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
     groupDynamicIndex++;
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP[id] = {
+    sticky: type === 'group-header' ? 1 : 0,
+    selectable: type !== 'group-header',
+  };
   GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP[id] = {
+    sticky: type === 'group-header' ? 1 : 0,
+    selectable: type !== 'group-header',
+  };
 }
 
 @Component({
@@ -118,16 +129,16 @@ export class AppComponent {
   horizontalItems = HORIZONTAL_ITEMS;
 
   groupItems = GROUP_ITEMS;
-  groupItemsStickyMap = GROUP_ITEMS_STICKY_MAP;
+  groupItemsStickyMap = GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
-  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
+  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItemsWithSanp = GROUP_DYNAMIC_ITEMS_WITH_SNAP;
-  groupDynamicItemsStickyMapWithSanp = GROUP_DYNAMIC_ITEMS_STICKY_MAP_WITH_SNAP;
+  groupDynamicItemsStickyMapWithSanp = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP;
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
-  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
+  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   private _minId: Id = this.items.length > 0 ? this.items[0].id : 0;
   get minId() { return this._minId; };

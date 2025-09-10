@@ -2,13 +2,13 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
   DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
-import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListStickyMap } from './models';
+import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
@@ -199,24 +199,36 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get itemRenderer() { return this._$itemRenderer.getValue() as TemplateRef<any>; }
 
-  private _$stickyMap = new BehaviorSubject<IVirtualListStickyMap>({});
-  readonly $stickyMap = this._$stickyMap.asObservable();
 
   /**
-   * Dictionary zIndex by id of the list element. If the value is not set or equal to 0,
-   * then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element.
+   * @deprecated
+   * Use `itemConfigMap` instead.
    */
   @Input()
-  set stickyMap(v: IVirtualListStickyMap) {
-    if (this._$stickyMap.getValue() === v) {
+  stickyMap: any;
+
+  private _$itemConfigMap = new BehaviorSubject<IVirtualListItemConfigMap>({});
+  readonly $itemConfigMap = this._$itemConfigMap.asObservable();
+
+  /**
+   * Sets sticky position and selectable for the list item element. If sticky position is greater than 0, then sticky position is applied. 
+   * If the sticky value is greater than `0`, then the sticky position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`.
+   * selectable determines whether an element can be selected or not. Default value is `true`.
+   * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
+   * @author Evgenii Grebennikov
+   * @email djonnyx@gmail.com
+   */
+  @Input()
+  set itemConfigMap(v: IVirtualListItemConfigMap) {
+    if (this._$itemConfigMap.getValue() === v) {
       return;
     }
 
-    this._$stickyMap.next(v);
+    this._$itemConfigMap.next(v);
 
     this._cdr.markForCheck();
   };
-  get stickyMap() { return this._$stickyMap.getValue(); }
+  get itemConfigMap() { return this._$itemConfigMap.getValue(); }
 
   private _itemSizeOptions = (v: number | undefined) => {
     if (v === undefined) {
@@ -545,7 +557,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       $maxBufferSize = this.$maxBufferSize.pipe(
         map(v => v < 0 ? DEFAULT_MAX_BUFFER_SIZE : v),
       ),
-      $stickyMap = this.$stickyMap.pipe(
+      $itemConfigMap = this.$itemConfigMap.pipe(
         map(v => !v ? {} : v),
       ),
       $snap = this.$snap,
@@ -619,14 +631,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       })
     ).subscribe();
 
-    combineLatest([this.$initialized, $bounds, $items, $stickyMap, $scrollSize, $itemSize,
+    combineLatest([this.$initialized, $bounds, $items, $itemConfigMap, $scrollSize, $itemSize,
       $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion,
     ]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       filter(([initialized]) => !!initialized),
       switchMap(([,
-        bounds, items, stickyMap, scrollSize, itemSize,
+        bounds, items, itemConfigMap, scrollSize, itemSize,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
         let actualScrollSize = (this._isVertical ? this._container?.nativeElement.scrollTop ?? 0 : this._container?.nativeElement.scrollLeft) ?? 0;
@@ -635,7 +647,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
             bounds: { width, height }, dynamicSize, isVertical, itemSize,
             bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
           },
-          { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, opts);
+          { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, opts);
 
         this.resetBoundsSize(isVertical, totalSize);
 
@@ -867,13 +879,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         const { width, height } = this._$bounds.getValue() || { width: 0, height: 0 },
-          stickyMap = this.stickyMap, items = this.items, isVertical = this._isVertical, delta = this._trackBox.delta,
+          itemConfigMap = this.itemConfigMap, items = this.items, isVertical = this._isVertical, delta = this._trackBox.delta,
           opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
             bufferSize: this.bufferSize, maxBufferSize: this.maxBufferSize, scrollSize: (isVertical ? container.nativeElement.scrollTop : container.nativeElement.scrollLeft) + delta,
             snap: this.snap, fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization,
           },
-          scrollSize = this._trackBox.getItemPosition(id, stickyMap, opts),
+          scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, opts),
           params: ScrollToOptions = { [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior };
 
         if (scrollSize === -1) {
@@ -884,7 +896,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         this._trackBox.clearDelta();
 
         if (container) {
-          const { displayItems, totalSize } = this._trackBox.updateCollection(items, stickyMap, {
+          const { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, {
             ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
           }), delta = this._trackBox.delta;
 
@@ -898,7 +910,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
           this.tracking();
 
-          const _scrollSize = this._trackBox.getItemPosition(id, stickyMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
+          const _scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
           if (_scrollSize === -1) {
             container.nativeElement.addEventListener(SCROLL, this._onScrollHandler);
