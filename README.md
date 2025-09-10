@@ -109,7 +109,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="50" [stickyMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [bufferSize]="50" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data">
   @if (data) {
@@ -131,7 +131,7 @@ Template:
 
 Component:
 ```ts
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap, IRenderVirtualListItem } from 'ng-virtual-list';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem } from 'ng-virtual-list';
 
 const GROUP_NAMES = ['A', 'B', 'C', 'D', 'E'];
 
@@ -145,12 +145,12 @@ interface ICollectionItem {
 }
 
 const HORIZONTAL_GROUP_ITEMS: IVirtualListCollection<ICollectionItem> = [],
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  HORIZONTAL_GROUP_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {};
 
 for (let i = 0, l = 1000000; i < l; i++) {
   const id = i + 1, type = Math.random() > .895 ? 'group-header' : 'item';
   HORIZONTAL_GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? getGroupName() : `${i}` });
-  HORIZONTAL_GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  HORIZONTAL_GROUP_ITEM_CONFIG_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -161,7 +161,7 @@ for (let i = 0, l = 1000000; i < l; i++) {
 })
 export class AppComponent {
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
-  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_STICKY_MAP;
+  horizontalGroupItemConfigMap = HORIZONTAL_GROUP_ITEM_CONFIG_MAP;
 
   onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
     if (item) {
@@ -219,7 +219,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -246,7 +246,7 @@ Template:
 Template (with snapping):
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
-    [stickyMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -268,10 +268,10 @@ Template (with snapping):
 
 Component:
 ```ts
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
+import { NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap } from 'ng-virtual-list';
 
 const GROUP_ITEMS: IVirtualListCollection = [],
-  GROUP_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  GROUP_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {};
 
 let groupIndex = 0;
 for (let i = 0, l = 10000000; i < l; i++) {
@@ -280,7 +280,7 @@ for (let i = 0, l = 10000000; i < l; i++) {
     groupIndex++;
   }
   GROUP_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupIndex}` : `Item: ${i}` });
-  GROUP_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_ITEM_CONFIG_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -291,7 +291,7 @@ for (let i = 0, l = 10000000; i < l; i++) {
 })
 export class AppComponent {
   groupItems = GROUP_ITEMS;
-  groupItemsStickyMap = GROUP_ITEMS_STICKY_MAP;
+  groupItemConfigMap = GROUP_ITEM_CONFIG_MAP;
 }
 
 ```
@@ -365,7 +365,7 @@ Virtual list with height-adjustable elements.
 Template
 ```html
 <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="10"
-      [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
+      [itemConfigMap]="groupDynamicItemConfigMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -413,7 +413,7 @@ const generateText = () => {
 };
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  GROUP_DYNAMIC_ITEM_CONFIG_MAP: IVirtualListItemConfigMap = {};
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = 100000; i < l; i++) {
@@ -422,7 +422,7 @@ for (let i = 0, l = 100000; i < l; i++) {
     groupDynamicIndex++;
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}` });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_DYNAMIC_ITEM_CONFIG_MAP[id] = type === 'group-header' ? 1 : 0;
 }
 
 @Component({
@@ -433,7 +433,7 @@ for (let i = 0, l = 100000; i < l; i++) {
 })
 export class AppComponent {
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
-  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
+  groupDynamicItemConfigMap = GROUP_DYNAMIC_ITEM_CONFIG_MAP;
 }
 ```
 
@@ -535,7 +535,8 @@ Inputs
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
-| stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. 1 - position start, 2 - position end. |
+| methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
+| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets sticky position and selectable for the list item element. If sticky position is greater than 0, then sticky position is applied. If the sticky value is greater than `0`, then the sticky position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. Selectable determines whether an element can be selected or not. Default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
@@ -573,12 +574,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.0](https://www.npmjs.com/package/ng-virtual-list/v/19.7.0) |
-| 18.x | 18.7.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.0](https://www.npmjs.com/package/ng-virtual-list/v/18.7.0) |
-| 17.x | 17.7.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.0](https://www.npmjs.com/package/ng-virtual-list/v/17.7.0) |
-| 16.x | 16.7.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.0](https://www.npmjs.com/package/ng-virtual-list/v/16.7.0) |
-| 15.x | 15.7.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.0](https://www.npmjs.com/package/ng-virtual-list/v/15.7.0) |
-| 14.x | 14.7.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.0](https://www.npmjs.com/package/ng-virtual-list/v/14.7.0) |
+| 19.x | 19.7.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.2](https://www.npmjs.com/package/ng-virtual-list/v/19.7.2) |
+| 18.x | 18.7.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.1](https://www.npmjs.com/package/ng-virtual-list/v/18.7.1) |
+| 17.x | 17.7.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.1](https://www.npmjs.com/package/ng-virtual-list/v/17.7.1) |
+| 16.x | 16.7.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.1](https://www.npmjs.com/package/ng-virtual-list/v/16.7.1) |
+| 15.x | 15.7.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.1](https://www.npmjs.com/package/ng-virtual-list/v/15.7.1) |
+| 14.x | 14.7.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.1](https://www.npmjs.com/package/ng-virtual-list/v/14.7.1) |
 
 <br/>
 
