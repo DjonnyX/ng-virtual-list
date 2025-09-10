@@ -17,7 +17,11 @@ export interface IRenderVirtualListItemConfig {
     /**
      * If greater than 0, the element will have a sticky position with the given zIndex.
      */
-    sticky: number;
+    sticky: 0 | 1 | 2;
+    /**
+     * Determines whether an element can be selected or not. Default value is `true`.
+     */
+    selectable: boolean;
     /**
      * Specifies whether the element will snap.
      */
