@@ -6,7 +6,7 @@ import { CacheMap, CMap } from "./cacheMap";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
 import { HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
-import { IVirtualListStickyMap } from "../models";
+import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 
@@ -315,9 +315,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Finds the position of a collection element by the given Id
      */
-    getItemPosition<I extends { id: Id }, C extends Array<I>>(id: Id, stickyMap: IVirtualListStickyMap,
+    getItemPosition<I extends { id: Id }, C extends Array<I>>(id: Id, itemConfigMap: IVirtualListItemConfigMap,
         options: IGetItemPositionOptions<I, C>): number {
-        const opt = { fromItemId: id, stickyMap, ...options };
+        const opt = { fromItemId: id, itemConfigMap, ...options };
         this._defaultBufferSize = opt.bufferSize;
         this._maxBufferSize = opt.maxBufferSize;
 
@@ -334,9 +334,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Updates the collection of display objects
      */
-    updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
+    updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         options: IUpdateCollectionOptions<I, C>): IUpdateCollectionReturns {
-        const opt = { stickyMap, ...options }, crudDetected = this._crudDetected, deletedItemsMap = this._deletedItemsMap;
+        const opt = { itemConfigMap, ...options }, crudDetected = this._crudDetected, deletedItemsMap = this._deletedItemsMap;
         if (opt.dynamicSize) {
             this.cacheElements();
         }
@@ -365,7 +365,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this.snapshot();
         }
 
-        const displayItems = this.generateDisplayCollection(items, stickyMap, { ...metrics, });
+        const displayItems = this.generateDisplayCollection(items, itemConfigMap, { ...metrics, });
         return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected };
     }
 
@@ -460,9 +460,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     protected recalculateMetrics<I extends { id: Id }, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize,
-            bufferSize: minBufferSize, scrollSize, snap, stickyMap, enabledBufferOptimization,
+            bufferSize: minBufferSize, scrollSize, snap, itemConfigMap, enabledBufferOptimization,
             previousTotalSize, crudDetected, deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
-                stickyMap: IVirtualListStickyMap,
+                itemConfigMap: IVirtualListItemConfigMap,
             };
 
         const bufferSize = Math.max(minBufferSize, this._bufferSize),
@@ -551,7 +551,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (isFromId) {
                     if (itemById === undefined) {
-                        if (id !== fromItemId && stickyMap && stickyMap[id] === 1) {
+                        if (id !== fromItemId && itemConfigMap && itemConfigMap[id]?.sticky === 1) {
                             stickyComponentSize = componentSize;
                             stickyCollectionItem = collectionItem;
                         }
@@ -559,13 +559,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         if (id === fromItemId) {
                             isFromItemIdFound = true;
                             targetDisplayItemIndex = i;
-                            if (stickyCollectionItem && stickyMap) {
+                            if (stickyCollectionItem && itemConfigMap) {
                                 const { num } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical);
                                 if (num > 0) {
                                     isTargetInOverscroll = true;
                                     y -= size - componentSize;
                                 } else {
-                                    if (stickyMap && !stickyMap[collectionItem.id] && y >= scrollSize && y < scrollSize + stickyComponentSize) {
+                                    if (itemConfigMap && !itemConfigMap[collectionItem.id] && y >= scrollSize && y < scrollSize + stickyComponentSize) {
                                         const snappedY = scrollSize - stickyComponentSize;
                                         leftHiddenItemsWeight -= (snappedY - y);
                                         y = snappedY;
@@ -768,7 +768,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this.bumpVersion();
     }
 
-    protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, stickyMap: IVirtualListStickyMap,
+    protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         metrics: IMetrics): IRenderVirtualListCollection {
         const {
             width,
@@ -804,7 +804,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = stickyMap[id], size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
+                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                        size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     if (sticky === 1) {
                         const isOdd = i % 2 != 0,
                             measures = {
@@ -817,6 +818,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
+                                selectable,
                                 sticky,
                                 snap,
                                 snapped: true,
@@ -844,9 +846,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = stickyMap[id], size = dynamicSize
-                        ? this.get(id)?.[sizeProperty] || typicalItemSize
-                        : typicalItemSize;
+                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                        size = dynamicSize
+                            ? this.get(id)?.[sizeProperty] || typicalItemSize
+                            : typicalItemSize;
                     if (sticky === 2) {
                         const isOdd = i % 2 != 0,
                             w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight, measures = {
@@ -859,6 +862,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
+                                selectable,
                                 sticky,
                                 snap,
                                 snapped: true,
@@ -894,10 +898,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (id !== stickyItem?.id && id !== endStickyItem?.id) {
                     const isOdd = i % 2 != 0,
-                        snapped = snap && (stickyMap[id] === 1 && pos <= scrollSize || stickyMap[id] === 2 && pos >= scrollSize + boundsSize - size),
+                        sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                        snapped = snap && (sticky === 1 && pos <= scrollSize || sticky === 2 && pos >= scrollSize + boundsSize - size),
                         measures = {
-                            x: isVertical ? stickyMap[id] === 1 ? 0 : boundsSize - size : pos,
-                            y: isVertical ? pos : stickyMap[id] === 2 ? boundsSize - size : 0,
+                            x: isVertical ? sticky === 1 ? 0 : boundsSize - size : pos,
+                            y: isVertical ? pos : sticky === 2 ? boundsSize - size : 0,
                             width: isVertical ? normalizedItemWidth : size,
                             height: isVertical ? size : normalizedItemHeight,
                             delta: 0,
@@ -905,7 +910,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             odd: isOdd,
                             even: !isOdd,
                             isVertical,
-                            sticky: stickyMap[id],
+                            selectable,
+                            sticky: sticky,
                             snap,
                             snapped: false,
                             snappedOut: false,
@@ -921,14 +927,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const itemData: I = items[i];
 
                     const item: IRenderVirtualListItem = { index: i, id, measures, data: itemData, config };
-                    if (!nextSticky && stickyItemIndex < i && stickyMap[id] === 1 && (pos <= scrollSize + size + stickyItemSize)) {
+                    if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + size + stickyItemSize)) {
                         item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
                         item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
                         nextSticky = item;
                         nextSticky.config.snapped = snapped;
                         nextSticky.measures.delta = isVertical ? (item.measures.y - scrollSize) : (item.measures.x - scrollSize);
                         nextSticky.config.zIndex = '3';
-                    } else if (!nextEndSticky && endStickyItemIndex > i && stickyMap[id] === 2 && (pos >= scrollSize + boundsSize - size - endStickyItemSize)) {
+                    } else if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 && (pos >= scrollSize + boundsSize - size - endStickyItemSize)) {
                         item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
                         item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
                         nextEndSticky = item;

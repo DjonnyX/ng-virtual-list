@@ -7,11 +7,14 @@ import {
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
-import { map, tap } from 'rxjs/operators';
+import { map, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+interface IItemConfig extends IRenderVirtualListItemConfig {
+  selected: boolean;
+}
 
 const ATTR_AREA_SELECTED = 'area-selected';
 
@@ -32,6 +35,8 @@ const ATTR_AREA_SELECTED = 'area-selected';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
+  protected _$unsubscribe = new Subject<void>();
+
   private _id!: number;
   get id() {
     return this._id;
@@ -41,7 +46,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   get part() { return this._part; }
 
   private _isSelected: boolean = false;
-  config = new BehaviorSubject<IRenderVirtualListItemConfig & { selected: boolean }>({} as any);
+  config = new BehaviorSubject<IItemConfig>({} as IItemConfig);
 
   regular: boolean = false;
 
@@ -112,7 +117,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     const $data = this.$data;
 
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       map(([, m, ids]) => ({ method: m, ids })),
       tap(({ method, ids }) => {
         switch (method) {
@@ -144,7 +149,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.next({ ...v?.config || {}, selected: this._isSelected } as any);
+    this.config.next({ ...v?.config || {} as IItemConfig, selected: this._isSelected });
   }
 
   private update() {
@@ -235,6 +240,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   onClickHandler() {
     this._service.itemClick(this.data);
+  }
+
+  ngOnDestroy(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
   }
 }
 

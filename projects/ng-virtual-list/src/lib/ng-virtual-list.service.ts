@@ -62,7 +62,7 @@ export class NgVirtualListService {
 
   itemClick(data: IRenderVirtualListItem | undefined) {
     this._$itemClick.next(data);
-    if (data) {
+    if (data && data.config.selectable) {
       switch (this._$methodOfSelecting.getValue()) {
         case MethodsForSelectingTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
