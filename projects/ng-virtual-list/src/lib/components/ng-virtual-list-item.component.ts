@@ -12,6 +12,10 @@ import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 
+interface IItemConfig extends IRenderVirtualListItemConfig {
+  selected: boolean;
+}
+
 const ATTR_AREA_SELECTED = 'area-selected';
 
 /**
@@ -42,7 +46,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   get part() { return this._part; }
 
   private _isSelected: boolean = false;
-  config = new BehaviorSubject<IRenderVirtualListItemConfig & { selected: boolean }>({} as any);
+  config = new BehaviorSubject<IItemConfig>({} as IItemConfig);
 
   regular: boolean = false;
 
@@ -145,7 +149,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.next({ ...v?.config || {}, selected: this._isSelected } as any);
+    this.config.next({ ...v?.config || {} as IItemConfig, selected: this._isSelected });
   }
 
   private update() {
