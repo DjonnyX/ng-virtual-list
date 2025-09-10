@@ -535,6 +535,7 @@ Inputs
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
+| methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | stickyMap | [IVirtualListStickyMap?](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/sticky-map.model.ts) | Dictionary zIndex by id of the list element. If the value is not set or equal to 0, then a simple element is displayed, if the value is greater than 0, then the sticky position mode is enabled for the element. 1 - position start, 2 - position end. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
@@ -566,19 +567,6 @@ Methods
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
 | scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
-
-<br/>
-
-## Previous versions
-
-| Angular version | ng-virtual-list version | git | npm |
-|--|--|--|--|
-| 19.x | 19.7.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.0](https://www.npmjs.com/package/ng-virtual-list/v/19.7.0) |
-| 18.x | 18.7.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.0](https://www.npmjs.com/package/ng-virtual-list/v/18.7.0) |
-| 17.x | 17.7.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.0](https://www.npmjs.com/package/ng-virtual-list/v/17.7.0) |
-| 16.x | 16.7.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.0](https://www.npmjs.com/package/ng-virtual-list/v/16.7.0) |
-| 15.x | 15.7.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.0](https://www.npmjs.com/package/ng-virtual-list/v/15.7.0) |
-| 14.x | 14.7.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.0](https://www.npmjs.com/package/ng-virtual-list/v/14.7.0) |
 
 <br/>
 
