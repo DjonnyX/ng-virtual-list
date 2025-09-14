@@ -16,7 +16,6 @@ import { IRenderVirtualListItemConfig } from '../models/render-item-config.model
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
   selected: boolean;
-
 }
 
 const ATTR_AREA_SELECTED = 'area-selected';

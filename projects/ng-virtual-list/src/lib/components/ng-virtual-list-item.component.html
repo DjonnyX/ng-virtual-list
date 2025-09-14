@@ -7,7 +7,7 @@
         [ngClass]="{'snapped': item.config.snapped, 'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
-                [ngTemplateOutletContext]="{data: item.data || {}, config: conf}" />
+                [ngTemplateOutletContext]="{data: item.data || {}, measures: item.measures || {}, config: conf}" />
         }
     </div>
 }
