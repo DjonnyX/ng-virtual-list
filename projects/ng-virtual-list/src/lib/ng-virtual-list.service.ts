@@ -5,6 +5,7 @@ import { IRenderVirtualListItem } from './models';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Id } from './types';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { DEFAULT_SELECT_BY_CLICK } from './const';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,8 @@ export class NgVirtualListService {
   }
 
   private _trackBox: TrackBox | undefined;
+
+  selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   constructor() {
     this._$methodOfSelecting.pipe(
@@ -58,25 +61,56 @@ export class NgVirtualListService {
   }
 
   setSelectedIds(ids: Array<Id> | Id | undefined) {
-    this._$selectedIds.next(ids);
+    if (JSON.stringify(this._$selectedIds.getValue()) !== JSON.stringify(ids)) {
+      this._$selectedIds.next(ids);
+    }
   }
 
   itemClick(data: IRenderVirtualListItem | undefined) {
-    this._$itemClick.next(data);
+    if (this.selectByClick) {
+      this.select(data);
+    }
+  }
+
+  /**
+   * Selects a list item
+   * @param data 
+   * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
+   */
+  select(data: IRenderVirtualListItem | undefined, selected: boolean | undefined = undefined) {
     if (data && data.config.selectable) {
       switch (this._$methodOfSelecting.getValue()) {
         case MethodsForSelectingTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
-          this._$selectedIds.next(curr !== data?.id ? data?.id : undefined);
+          if (selected === undefined) {
+            this._$selectedIds.next(curr !== data?.id ? data?.id : undefined);
+          } else {
+            this._$selectedIds.next(selected ? data?.id : undefined);
+          }
           break;
         }
         case MethodsForSelectingTypes.MULTI_SELECT: {
           const curr = [...(this._$selectedIds.getValue() || []) as Array<Id>], index = curr.indexOf(data.id);
-          if (index > -1) {
-            curr.splice(index, 1);
-            this._$selectedIds.next(curr);
+          if (selected === undefined) {
+            if (index > -1) {
+              curr.splice(index, 1);
+              this._$selectedIds.next(curr);
+            } else {
+              this._$selectedIds.next([...curr, data.id]);
+            }
+          } else if (selected) {
+            if (index > -1) {
+              this._$selectedIds.next(curr);
+            } else {
+              this._$selectedIds.next([...curr, data.id]);
+            }
           } else {
-            this._$selectedIds.next([...curr, data.id]);
+            if (index > -1) {
+              curr.splice(index, 1);
+              this._$selectedIds.next(curr);
+            } else {
+              this._$selectedIds.next(curr);
+            }
           }
           break;
         }
