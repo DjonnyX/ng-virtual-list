@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, signal, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { Id, ISize } from '../types';
+import { Id, IRect, ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD,
   PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D,
@@ -14,7 +14,15 @@ import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
+  /**
+   * Determines whether the element is selected or not.
+   */
   selected: boolean;
+  /**
+    * Selects a list item
+    * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
+    */
+  select: (selected: boolean | undefined) => void;
 }
 
 const ATTR_AREA_SELECTED = 'area-selected';
@@ -49,6 +57,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   private _isSelected: boolean = false;
   config = signal<IItemConfig>({} as IItemConfig);
 
+  measures = signal<IRect & {
+    /**
+     * Delta is calculated for Snapping Method.ADVANCED
+     */
+    delta: number;
+  } | undefined>(undefined);
+
   private _part = PART_DEFAULT_ITEM;
   get part() { return this._part; }
 
@@ -66,6 +81,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this.updatePartStr(v, this._isSelected);
 
     this.updateConfig(v);
+
+    this.updateMeasures(v);
 
     this.update();
 
@@ -106,6 +123,15 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     return this._elementRef.nativeElement;
   }
 
+  private _selectHandler = (data: IRenderVirtualListItem<any> | undefined) =>
+    /**
+     * Selects a list item
+     * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
+     */
+    (selected: boolean | undefined = undefined) => {
+      this._service.select(data, selected);
+    };
+
   constructor() {
     super();
     this._id = this._service.generateComponentId();
@@ -140,14 +166,18 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
         this.updatePartStr(this._data, this._isSelected);
 
         this.updateConfig(this._data);
+
+        this.updateMeasures(this._data);
       }),
     ).subscribe();
   }
 
-  private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.set({ ...v?.config || {} as IItemConfig, selected: this._isSelected });
+  private updateMeasures(v: IRenderVirtualListItem<any> | undefined) {
+    this.measures.set(v?.measures ? { ...v.measures } : undefined)
+  }
 
-    this._cdr.markForCheck();
+  private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
+    this.config.set({ ...v?.config || {} as IItemConfig, selected: this._isSelected, select: this._selectHandler(v) });
   }
 
   private update() {
