@@ -13,6 +13,7 @@ import {
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE,
   DEFAULT_SELECT_METHOD,
+  DEFAULT_SELECT_BY_CLICK,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
@@ -115,6 +116,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * Sets the selected items.
    */
   selectedIds = input<Array<Id> | Id | undefined>(undefined);
+
+  /**
+   * If false, the element is selected using the config.select method passed to the template; 
+   * if true, the element is selected by clicking on it. The default value is true.
+   */
+  selectByClick = input<boolean>(DEFAULT_SELECT_BY_CLICK);
 
   /**
    * Determines whether elements will snap. Default value is "true".
@@ -370,7 +377,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     this._trackBox.displayComponents = this._displayComponents;
 
-    const $trackBy = toObservable(this.trackBy);
+    const $trackBy = toObservable(this.trackBy),
+      $selectByClick = toObservable(this.selectByClick);
+
+    $selectByClick.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.selectByClick = v;
+      }),
+    ).subscribe();
 
     $trackBy.pipe(
       takeUntilDestroyed(),
@@ -537,15 +552,27 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }),
     ).subscribe();
 
+    let isSelectedIdsFirstEmit = 0;
+
     this._service.$selectedIds.pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       tap(v => {
-        this.onSelect.emit(v);
-      })
+        if (this.isSingleSelecting || (this.isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
+          const curr = this.selectedIds();
+          if ((this.isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) || (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
+            this.onSelect.emit(v);
+          }
+        }
+        if (isSelectedIdsFirstEmit < 3) {
+          isSelectedIdsFirstEmit++;
+        }
+      }),
     ).subscribe();
 
     $selectedIds.pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       tap(v => {
         this._service.setSelectedIds(v);
       }),
