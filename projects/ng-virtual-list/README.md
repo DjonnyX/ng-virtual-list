@@ -537,6 +537,7 @@ Inputs
 | itemRenderer | TemplateRef | Rendering element template. |
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets sticky position and selectable for the list item element. If sticky position is greater than 0, then sticky position is applied. If the sticky value is greater than `0`, then the sticky position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. Selectable determines whether an element can be selected or not. Default value is `true`. |
+| selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
@@ -574,12 +575,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.2](https://www.npmjs.com/package/ng-virtual-list/v/19.7.2) |
-| 18.x | 18.7.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.1](https://www.npmjs.com/package/ng-virtual-list/v/18.7.1) |
-| 17.x | 17.7.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.1](https://www.npmjs.com/package/ng-virtual-list/v/17.7.1) |
-| 16.x | 16.7.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.1](https://www.npmjs.com/package/ng-virtual-list/v/16.7.1) |
-| 15.x | 15.7.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.1](https://www.npmjs.com/package/ng-virtual-list/v/15.7.1) |
-| 14.x | 14.7.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.1](https://www.npmjs.com/package/ng-virtual-list/v/14.7.1) |
+| 19.x | 19.7.3 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.3](https://www.npmjs.com/package/ng-virtual-list/v/19.7.3) |
+| 18.x | 18.7.2 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.2](https://www.npmjs.com/package/ng-virtual-list/v/18.7.2) |
+| 17.x | 17.7.2 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.2](https://www.npmjs.com/package/ng-virtual-list/v/17.7.2) |
+| 16.x | 16.7.2 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.2](https://www.npmjs.com/package/ng-virtual-list/v/16.7.2) |
+| 15.x | 15.7.2 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.2](https://www.npmjs.com/package/ng-virtual-list/v/15.7.2) |
+| 14.x | 14.7.2 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.2](https://www.npmjs.com/package/ng-virtual-list/v/14.7.2) |
 
 <br/>
 
