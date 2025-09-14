@@ -11,6 +11,8 @@ export const DEFAULT_LIST_SIZE = 400;
 
 export const DEFAULT_SNAP = false;
 
+export const DEFAULT_SELECT_BY_CLICK = true;
+
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
 export const DEFAULT_DYNAMIC_SIZE = false;
