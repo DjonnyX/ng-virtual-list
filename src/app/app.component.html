@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 20.7.1</span></div>
+    <div class="version"><span>v 20.7.2</span></div>
   </div>
 
   <div class="vl-section">
@@ -13,7 +13,7 @@
       <h2>Horizontal list (Single select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
         [methodForSelecting]="'select'" [itemRenderer]="horizontalItemRenderer" [itemSize]="54" 
-        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"></ng-virtual-list>
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="2" [selectByClick]="true"></ng-virtual-list>
     </div>
   </div>
 
@@ -30,8 +30,8 @@
       <h2>Horizontal group list (Multi select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
         [methodForSelecting]="'multi-select'" [itemRenderer]="horizontalGroupItemRenderer"
-        [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" (onSelect)="onSelectHandler($event)"
-        (onItemClick)="onItemClick($event)"></ng-virtual-list>
+        [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" 
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"></ng-virtual-list>
     </div>
   </div>
 
@@ -55,14 +55,14 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Vertical virtual list</h2>
-      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50" [itemSize]="40"
-        (onItemClick)="onItemClick($event)"></ng-virtual-list>
+      <ng-virtual-list class="list" [items]="items" [methodForSelecting]="'multi-select'"  [itemRenderer]="itemRenderer" [bufferSize]="50" [itemSize]="40"
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"></ng-virtual-list>
     </div>
   </div>
 
   <ng-template #itemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__container': true, 'even': config.even}">
+      <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
         <span>{{data.name}}</span>
       </div>
     }
