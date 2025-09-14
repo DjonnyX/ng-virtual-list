@@ -5,7 +5,7 @@ import {
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
+  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK, DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
   TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
@@ -140,6 +140,25 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this._cdr.markForCheck();
   };
   get selectedIds() { return this._$selectedIds.getValue(); }
+
+  private _$selectByClick = new BehaviorSubject<boolean>(DEFAULT_SELECT_BY_CLICK);
+  readonly $selectByClick = this._$selectByClick.asObservable();
+
+  /**
+   * If false, the element is selected using the config.select method passed to the template; 
+   * if true, the element is selected by clicking on it. The default value is true.
+   */
+  @Input()
+  set selectByClick(v: boolean) {
+    if (this._$selectByClick.getValue() === v) {
+      return;
+    }
+
+    this._$selectByClick.next(v);
+
+    this._cdr.markForCheck();
+  };
+  get selectByClick() { return this._$selectByClick.getValue(); }
 
   private _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
   readonly $snap = this._$snap.asObservable();
@@ -534,7 +553,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     this._trackBox.displayComponents = this._displayComponents;
 
-    const $trackBy = this.$trackBy;
+    const $trackBy = this.$trackBy,
+      $selectByClick = this.$selectByClick;
+
+    $selectByClick.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.selectByClick = v;
+      }),
+    ).subscribe();
 
     $trackBy.pipe(
       takeUntilDestroyed(),
@@ -600,7 +627,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
           this._isMultiSelecting = true;
           this._isNotSelecting = this._isSingleSelecting = false;
           if (el) {
-            console.log('set role', ROLE_LIST_BOX)
             el.setAttribute('role', ROLE_LIST_BOX);
           }
           this._service.methodOfSelecting = MethodsForSelectingTypes.MULTI_SELECT;
@@ -608,7 +634,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
           this._isSingleSelecting = true;
           this._isNotSelecting = this._isMultiSelecting = false;
           if (el) {
-            console.log('set role', ROLE_LIST_BOX)
             el.setAttribute('role', ROLE_LIST_BOX);
           }
           this._service.methodOfSelecting = MethodsForSelectingTypes.SELECT;
@@ -616,7 +641,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
           this._isNotSelecting = true;
           this._isSingleSelecting = this._isMultiSelecting = false;
           if (el) {
-            console.log('set role', ROLE_LIST)
             el.setAttribute('role', ROLE_LIST);
           }
           this._service.methodOfSelecting = MethodsForSelectingTypes.NONE;
@@ -707,19 +731,32 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }),
     ).subscribe();
 
+    let isSelectedIdsFirstEmit = 0;
+
     this._service.$selectedIds.pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       tap(v => {
-        this.onSelect.emit(v);
-      })
+        if (this.isSingleSelecting || (this.isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
+          const curr = this._$selectedIds.getValue();
+          if ((this.isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) || (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
+            this.onSelect.emit(v);
+          }
+        }
+        if (isSelectedIdsFirstEmit < 3) {
+          isSelectedIdsFirstEmit++;
+        }
+      }),
     ).subscribe();
 
     $selectedIds.pipe(
       takeUntilDestroyed(),
+      distinctUntilChanged(),
       tap(v => {
         this._service.setSelectedIds(v);
       }),
     ).subscribe();
+
   }
 
   /** @internal */
