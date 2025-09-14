@@ -3,7 +3,7 @@
         'snapped-out': data.config.snappedOut}" (click)="onClickHandler()">
         <ng-container *ngIf="itemRenderer">
             <ng-container [ngTemplateOutlet]="itemRenderer"
-                [ngTemplateOutletContext]="{data: data.data || {}, config: config | async}"></ng-container>
+                [ngTemplateOutletContext]="{data: data.data || {}, measures: measures | async, config: config | async}"></ng-container>
         </ng-container>
     </div>
 </ng-container>
