@@ -1,6 +1,6 @@
 @if (data(); as item) {
-    <div #listItem [part]="part" class="ngvl-item__container" [ngClass]="{'snapped': item.config.snapped,
-            'snapped-out': item.config.snappedOut}" (click)="onClickHandler()">
+    <div #listItem [part]="part" class="ngvl-item__container" [attr.index]="item.config.tabIndex" tabindex="1" [ngClass]="{'snapped': item.config.snapped,
+            'snapped-out': item.config.snappedOut, 'focus': focus()}" (click)="onClickHandler()">
         @if (itemRenderer(); as renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
                 [ngTemplateOutletContext]="{data: item.data || {}, measures: measures(), config: config()}" />
