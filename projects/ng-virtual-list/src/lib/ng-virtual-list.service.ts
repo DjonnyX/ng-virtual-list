@@ -31,6 +31,8 @@ export class NgVirtualListService {
 
   private _trackBox: TrackBox | undefined;
 
+  listElement: HTMLDivElement | null = null;
+
   constructor() {
     this._$methodOfSelecting.pipe(
       takeUntilDestroyed(),

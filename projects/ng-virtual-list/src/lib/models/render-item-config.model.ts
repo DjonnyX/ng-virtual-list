@@ -47,6 +47,10 @@ export interface IRenderVirtualListItemConfig {
      */
     isSnappingMethodAdvanced: boolean;
     /**
+     * Tab index.
+     */
+    tabIndex: number;
+    /**
      * z-index
      */
     zIndex: string;
