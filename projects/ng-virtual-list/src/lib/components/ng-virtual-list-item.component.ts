@@ -2,17 +2,21 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Temp
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, IRect, ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
 import { map, takeUntil, tap } from 'rxjs/operators';
-import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, fromEvent, Subject } from 'rxjs';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
+  /**
+   * 
+   */
+  focus: boolean;
   /**
    * Determines whether the element is selected or not.
    */
@@ -24,7 +28,8 @@ interface IItemConfig extends IRenderVirtualListItemConfig {
   select: (selected: boolean | undefined) => void;
 }
 
-const ATTR_AREA_SELECTED = 'area-selected';
+const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'index',
+  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown";
 
 /**
  * Virtual list item component
@@ -54,7 +59,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   get part() { return this._part; }
 
   private _isSelected: boolean = false;
-  config = new BehaviorSubject<IItemConfig>({} as IItemConfig);
+  private _$config = new BehaviorSubject<IItemConfig>({} as IItemConfig);
+  $config = this._$config.asObservable();
 
   measures = new BehaviorSubject<IRect & {
     /**
@@ -62,6 +68,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
      */
     delta: number;
   } | undefined>(undefined);
+
+  private _$focus = new BehaviorSubject<boolean>(false);
+  $focus = this._$focus.asObservable();
 
   regular: boolean = false;
 
@@ -142,6 +151,70 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     const $data = this.$data;
 
+    fromEvent(this.element, 'focusin').pipe(
+      takeUntil(this._$unsubscribe),
+      tap(e => {
+        this._$focus.next(true);
+
+        this.updateConfig(this.data);
+
+        this.updatePartStr(this.data, this._isSelected);
+      }),
+    ).subscribe(),
+
+      fromEvent(this.element, 'focusout').pipe(
+        takeUntil(this._$unsubscribe),
+        tap(e => {
+          this._$focus.next(false);
+
+          this.updateConfig(this.data);
+
+          this.updatePartStr(this.data, this._isSelected);
+        }),
+      ).subscribe(),
+
+      fromEvent<KeyboardEvent>(this.element, 'keydown').pipe(
+        takeUntil(this._$unsubscribe),
+        tap(e => {
+          switch (e.key) {
+            case KEY_SPACE: {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              this._service.select(this.data);
+              break;
+            }
+            case KEY_ARR_LEFT:
+              if (!this._$config.getValue().isVertical) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                this.focusPrev();
+              }
+              break;
+            case KEY_ARR_UP:
+              if (this._$config.getValue().isVertical) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                this.focusPrev();
+              }
+              break;
+            case KEY_ARR_RIGHT:
+              if (!this._$config.getValue().isVertical) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                this.focusNext();
+              }
+              break;
+            case KEY_ARR_DOWN:
+              if (this._$config.getValue().isVertical) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                this.focusNext();
+              }
+              break;
+          }
+        }),
+      ).subscribe();
+
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds]).pipe(
       takeUntil(this._$unsubscribe),
       map(([, m, ids]) => ({ method: m, ids })),
@@ -176,12 +249,32 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     ).subscribe();
   }
 
+  private focusNext() {
+    const tabIndex = this._$config.getValue()?.tabIndex ?? 0;
+    if (this._service.listElement && tabIndex > 0) {
+      const el = this._service.listElement.querySelector<HTMLDivElement>(`[${TABINDEX}="${tabIndex + 1}"]`);
+      if (el) {
+        el.focus();
+      }
+    }
+  }
+
+  private focusPrev() {
+    const tabIndex = this._$config.getValue()?.tabIndex ?? 0;
+    if (this._service.listElement && tabIndex > 1) {
+      const el = this._service.listElement.querySelector<HTMLDivElement>(`[${TABINDEX}="${tabIndex - 1}"]`);
+      if (el) {
+        el.focus();
+      }
+    }
+  }
+
   private updateMeasures(v: IRenderVirtualListItem<any> | undefined) {
     this.measures.next(v?.measures ? { ...v.measures } : undefined)
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.next({ ...v?.config || {} as IItemConfig, selected: this._isSelected, select: this._selectHandler(v) });
+    this._$config.next({ ...v?.config || {} as IItemConfig, selected: this._isSelected, select: this._selectHandler(v), focus: this._$focus.getValue() });
   }
 
   private update() {
@@ -222,6 +315,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
     if (isSelected) {
       part += PART_ITEM_SELECTED;
+    }
+    if (this._$focus.getValue()) {
+      part += PART_ITEM_FOCUSED;
     }
     this._part = part;
   }
@@ -281,4 +377,3 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
   }
 }
-

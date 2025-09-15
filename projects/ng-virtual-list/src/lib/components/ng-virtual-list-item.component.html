@@ -1,9 +1,9 @@
 <ng-container *ngIf="data">
-    <div #listItem [part]="part" class="ngvl-item__container" [ngClass]="{'snapped': data.config.snapped,
-        'snapped-out': data.config.snappedOut}" (click)="onClickHandler()">
+    <div #listItem [part]="part" [attr.index]="data.config.tabIndex" tabindex="1" class="ngvl-item__container" [ngClass]="{'snapped': data.config.snapped,
+        'snapped-out': data.config.snappedOut, 'focus': $focus | async}" (click)="onClickHandler()">
         <ng-container *ngIf="itemRenderer">
             <ng-container [ngTemplateOutlet]="itemRenderer"
-                [ngTemplateOutletContext]="{data: data.data || {}, measures: measures | async, config: config | async}"></ng-container>
+                [ngTemplateOutletContext]="{data: data.data || {}, measures: measures | async, config: $config | async}"></ng-container>
         </ng-container>
     </div>
 </ng-container>
