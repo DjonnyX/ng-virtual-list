@@ -91,11 +91,13 @@ export const CLASS_LIST_HORIZONTAL = 'horizontal';
 
 export const PART_DEFAULT_ITEM = 'item';
 
-export const PART_ITEM_ODD = ' odd';
+export const PART_ITEM_ODD = ' item-odd';
 
-export const PART_ITEM_EVEN = ' even';
+export const PART_ITEM_EVEN = ' item-even';
 
-export const PART_ITEM_SNAPPED = ' snapped';
+export const PART_ITEM_SNAPPED = ' item-snapped';
 
-export const PART_ITEM_SELECTED = ' selected';
+export const PART_ITEM_SELECTED = ' item-selected';
+
+export const PART_ITEM_FOCUSED = ' item-focused';
 
