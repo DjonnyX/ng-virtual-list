@@ -70,7 +70,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   private _container = viewChild<ElementRef<HTMLDivElement>>('container');
 
-  private _list = viewChild<ElementRef<HTMLUListElement>>('list');
+  private _list = viewChild<ElementRef<HTMLDivElement>>('list');
 
   /**
    * Fires when the list has been scrolled.
@@ -375,6 +375,14 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.$initialized = toObservable(this._initialized);
 
     this._trackBox.displayComponents = this._displayComponents;
+
+    toObservable(this._list).pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      tap(v => {
+        this._service.listElement = v!.nativeElement;
+      }),
+    ).subscribe();
 
     const $trackBy = toObservable(this.trackBy),
       $selectByClick = toObservable(this.selectByClick);
