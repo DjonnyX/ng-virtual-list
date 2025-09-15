@@ -27,9 +27,11 @@ export class NgVirtualListService {
     this._$methodOfSelecting.next(v);
   }
 
+  private _trackBox: TrackBox | undefined;
+
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
-  private _trackBox: TrackBox | undefined;
+  listElement: HTMLDivElement | null = null;
 
   constructor() {
     this._$methodOfSelecting.pipe(

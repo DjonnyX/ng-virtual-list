@@ -60,7 +60,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private _container: ElementRef<HTMLDivElement> | undefined;
 
   @ViewChild('list', { read: ElementRef<HTMLDivElement> })
-  private _list: ElementRef<HTMLUListElement> | undefined;
+  private _list: ElementRef<HTMLDivElement> | undefined;
 
   @ViewChild('snapRendererContainer', { read: ViewContainerRef })
   private _snapContainerRef: ViewContainerRef | undefined;
@@ -512,8 +512,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   private _$initialized = new BehaviorSubject<boolean>(false);
+  readonly $initialized = this._$initialized.asObservable();
 
-  readonly $initialized: Observable<boolean>;
+  private _$viewInitialized = new BehaviorSubject<boolean>(false);
+  readonly $viewInitialized = this._$viewInitialized.asObservable();
 
   /**
    * Base class of the element component
@@ -548,8 +550,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     this._service.initialize(this._trackBox);
 
-    this._$initialized = new BehaviorSubject<boolean>(false);
-    this.$initialized = this._$initialized.asObservable();
+    this.$viewInitialized.pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      tap(v => {
+        this._service.listElement = this._list?.nativeElement ?? null;
+      }),
+    ).subscribe();
 
     this._trackBox.displayComponents = this._displayComponents;
 
@@ -1041,6 +1048,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
       this._onResizeHandler();
     }
+
+    this._$viewInitialized.next(true);
   }
 
   /** @internal */
