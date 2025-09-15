@@ -44,6 +44,10 @@ As each item may contain images, nested components, or interactions, virtual ren
 
 Single and multiple selection of elements
 
+Navigating with the keyboard
+
+Support for element animation
+
 <br/>
 
 ## Installation
