@@ -32,6 +32,8 @@ export class NgVirtualListService {
 
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
+  listElement: HTMLDivElement | null = null;
+
   constructor() {
     this._$methodOfSelecting.pipe(
       takeUntil(this._$unsubscribe),
