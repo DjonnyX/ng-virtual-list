@@ -43,9 +43,6 @@ Flexible, and actively maintained Angular library that excels with high-performa
 - Advanced layouts
   - Grouped lists with sticky headers
   - Horizontal or vertical scrolling
-- Advanced layouts
-  - Grouped lists with sticky headers
-  - Horizontal or vertical scrolling
 - Selecting elements
   - Single selection
   - Multiple selection
@@ -639,12 +636,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.6 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.6](https://www.npmjs.com/package/ng-virtual-list/v/19.7.6) |
-| 18.x | 18.7.4 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.4](https://www.npmjs.com/package/ng-virtual-list/v/18.7.4) |
-| 17.x | 17.7.4 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.4](https://www.npmjs.com/package/ng-virtual-list/v/17.7.4) |
-| 16.x | 16.7.4 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.4](https://www.npmjs.com/package/ng-virtual-list/v/16.7.4) |
-| 15.x | 15.7.4 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.4](https://www.npmjs.com/package/ng-virtual-list/v/15.7.4) |
-| 14.x | 14.7.4 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.4](https://www.npmjs.com/package/ng-virtual-list/v/14.7.4) |
+| 19.x | 19.7.7 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.7](https://www.npmjs.com/package/ng-virtual-list/v/19.7.7) |
+| 18.x | 18.7.5 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.5](https://www.npmjs.com/package/ng-virtual-list/v/18.7.5) |
+| 17.x | 17.7.5 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.5](https://www.npmjs.com/package/ng-virtual-list/v/17.7.5) |
+| 16.x | 16.7.5 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.5](https://www.npmjs.com/package/ng-virtual-list/v/16.7.5) |
+| 15.x | 15.7.5 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.5](https://www.npmjs.com/package/ng-virtual-list/v/15.7.5) |
+| 14.x | 14.7.5 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.5](https://www.npmjs.com/package/ng-virtual-list/v/14.7.5) |
 
 <br/>
 
