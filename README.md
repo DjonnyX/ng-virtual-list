@@ -600,7 +600,7 @@ Inputs
 | maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
-| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position, `collapsable` and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property. |
+| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
@@ -609,7 +609,6 @@ Inputs
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
-| collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the collapsed items. |
 
 <br/>
 
@@ -621,7 +620,6 @@ Outputs
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
 | onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
-| onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 
 
