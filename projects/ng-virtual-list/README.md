@@ -1,29 +1,60 @@
 # NgVirtualList
 
-Maximum performance for extremely large lists.<br/>
-Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization.
+🚀 High-performance virtual scrolling for Angular apps. Render 100,000+ items in Angular without breaking a sweat. Smooth, customizable, and developer-friendly.
+
+Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
-Angular version 20.X.X.
+<b>Angular version 20.X.X</b>.
+
+![npm](https://img.shields.io/npm/v/ng-virtual-list)
+![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
+![npm total downloads](https://img.shields.io/npm/dt/ng-virtual-list)
 
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
+[(Code)](https://github.com/DjonnyX/ng-virtual-list-demo)
 
 [Live Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
+[(Code)](https://github.com/DjonnyX/ng-virtual-list-demo/tree/main/src/app)
 
 <br/>
 
-| **Pros** | **Description** |
-| --- | --- |
-| **High performance** | Only renders items visible in the viewport (plus a buffer), reducing DOM overhead and improving responsiveness—even with very large datasets |
-| **Grouped lists with sticky headers & snapping** | Supports grouping items, sticky headers, and optional “snap” behavior for clean section scrolling |
-| **Angular (14–20) compatibility** | Compatible with Angular versions 14 through 20.x, ensuring seamless integration in modern Angular projects |
-| **Scroll-to capabilities** | Allows programmatic navigation to specific items by ID |
-| **TypeScript support** | Comes with typing for safety and better integration in TypeScript projects |
+## ✨ Why use ng-virtual-list?
+
+⚡ Blazing fast — only renders what’s visible (plus a smart buffer).<br/>
+📱 Works everywhere — smooth on desktop & mobile.<br/>
+🔀 Flexible layouts — vertical, horizontal, grouped lists, sticky headers.<br/>
+📏 Dynamic sizes — handles items of varying height/width.<br/>
+🎯 Precise control — scroll to an ID, or snap to positions.<br/>
+🔌 Angular-friendly — simple inputs/outputs, trackBy support.<br/>
 
 <br/>
 
-## When to Use It: Ideal Use Cases
+## ⚙️ Key Features
+
+ Virtualization modes
+- Fixed size (fastest)
+  - Dynamic size (auto-measured)
+  - Scrolling control
+- Scroll to item ID
+  - Smooth or instant scroll
+  - Custom snapping behavior
+- Advanced layouts
+  - Grouped lists with sticky headers
+  - Horizontal or vertical scrolling
+- Advanced layouts
+  - Grouped lists with sticky headers
+  - Horizontal or vertical scrolling
+- Selecting elements
+  - Single selection
+  - Multiple selection
+- Performance tuning
+  - bufferSize and maxBufferSize for fine-grained control
+
+<br/>
+
+## 📱 When to Use It: Ideal Use Cases
 
 Drawing on general virtual-scroll insights and ng-virtual-list features:
 
@@ -50,26 +81,45 @@ Support for element animation
 
 <br/>
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm i ng-virtual-list
 ```
 
-## Examples
+<br/>
 
-### Horizontal virtual list
+## 🚀 Quick Start
+```html
+<ng-virtual-list [items]="items" [bufferSize]="5" [itemRenderer]="itemRenderer" [itemSize]="64"></ng-virtual-list>
+
+<ng-template #itemRenderer let-data="data">
+  @if (data) {
+      <span>{{data.name}}</span>
+  }
+</ng-template>
+```
+```ts
+items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` }));
+```
+
+<br/>
+
+## 📱 Examples
+
+### Horizontal virtual list (Single selection)
 
 ![preview](https://github.com/user-attachments/assets/5a16d4b3-5e66-4d53-ae90-d0eab0b246a1)
 
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
-    [itemRenderer]="horizontalItemRenderer" [itemSize]="64" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [itemRenderer]="horizontalItemRenderer" [itemSize]="64" [methodForSelecting]="'select'"
+    [selectedIds]="2" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
-<ng-template #horizontalItemRenderer let-data="data">
+<ng-template #horizontalItemRenderer let-data="data" let-config="config">
   @if (data) {
-    <div class="list__h-container">
+    <div [ngClass]="{'list__h-container': true, 'selected': config.selected}">
       <span>{{data.name}}</span>
     </div>
   }
@@ -84,10 +134,7 @@ interface ICollectionItem {
   name: string;
 }
 
-const HORIZONTAL_ITEMS: IVirtualListCollection<ICollectionItem> = [];
-for (let i = 0, l = 1000000; i < l; i++) {
-  HORIZONTAL_ITEMS.push({ id: i + 1, name: `${i}` });
-}
+const HORIZONTAL_ITEMS: IVirtualListCollection<ICollectionItem> = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `${i}` }));
 
 @Component({
   selector: 'app-root',
@@ -103,19 +150,24 @@ export class AppComponent {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
   }
+
+  onSelect(data: Array<Id> | Id | undefined) {
+    console.info(`Select: ${JSON.stringify(data)}`);
+  }
 }
 ```
 
-### Horizontal grouped virtual list
+### Horizontal grouped virtual list (Multiple selection)
 
 ![preview](https://github.com/user-attachments/assets/99584660-dc0b-4cd0-9439-9b051163c077)
 
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="50" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [bufferSize]="50" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" [methodForSelecting]="'multi-select'"
+    [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
-<ng-template #horizontalGroupItemRenderer let-data="data">
+<ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
   @if (data) {
     @switch (data.type) {
       @case ("group-header") {
@@ -124,7 +176,7 @@ Template:
         </div>
       }
       @default {
-        <div class="list__h-container">
+        <div [ngClass]="{'list__h-container': true, 'selected': config.selected}">
           <span>{{data.name}}</span>
         </div>
       }
@@ -171,6 +223,10 @@ export class AppComponent {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
+  }
+
+  onSelect(data: Array<Id> | Id | undefined) {
+    console.info(`Select: ${JSON.stringify(data)}`);
   }
 }
 ```
@@ -441,7 +497,9 @@ export class AppComponent {
 }
 ```
 
-## Stylization
+<br/>
+
+## 🖼️ Stylization
 
 List items are encapsulated in shadowDOM, so to override default styles you need to use ::part access
 
@@ -525,7 +583,9 @@ Selecting even elements:
 }
 ```
 
-## API
+<br/>
+
+## 📚 API
 
 [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
 
@@ -540,7 +600,7 @@ Inputs
 | maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
-| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets sticky position and selectable for the list item element. If sticky position is greater than 0, then sticky position is applied. If the sticky value is greater than `0`, then the sticky position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. Selectable determines whether an element can be selected or not. Default value is `true`. |
+| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
@@ -575,20 +635,28 @@ Methods
 
 <br/>
 
-## Previous versions
+## 📦 Previous versions
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.4 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.4](https://www.npmjs.com/package/ng-virtual-list/v/19.7.4) |
-| 18.x | 18.7.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.3](https://www.npmjs.com/package/ng-virtual-list/v/18.7.3) |
-| 17.x | 17.7.3 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.3](https://www.npmjs.com/package/ng-virtual-list/v/17.7.3) |
-| 16.x | 16.7.3 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.3](https://www.npmjs.com/package/ng-virtual-list/v/16.7.3) |
-| 15.x | 15.7.3 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.3](https://www.npmjs.com/package/ng-virtual-list/v/15.7.3) |
-| 14.x | 14.7.3 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.3](https://www.npmjs.com/package/ng-virtual-list/v/14.7.3) |
+| 19.x | 19.7.6 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.6](https://www.npmjs.com/package/ng-virtual-list/v/19.7.6) |
+| 18.x | 18.7.4 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.4](https://www.npmjs.com/package/ng-virtual-list/v/18.7.4) |
+| 17.x | 17.7.4 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.4](https://www.npmjs.com/package/ng-virtual-list/v/17.7.4) |
+| 16.x | 16.7.4 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.4](https://www.npmjs.com/package/ng-virtual-list/v/16.7.4) |
+| 15.x | 15.7.4 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.4](https://www.npmjs.com/package/ng-virtual-list/v/15.7.4) |
+| 14.x | 14.7.4 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.4](https://www.npmjs.com/package/ng-virtual-list/v/14.7.4) |
 
 <br/>
 
-## License
+## 🤝 Contributing
+
+PRs and feature requests are welcome!
+Open an issue or start a discussion to shape the future of [ng-virtual-list](https://github.com/DjonnyX/ng-virtual-list/).
+Try it out, star ⭐ the repo, and let us know what you’re building.
+
+<br/>
+
+## 📄 License
 
 MIT License
 
