@@ -767,7 +767,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   }
 
-  /** @internal */
   ngOnInit() {
     this.onInit();
   }
@@ -1030,7 +1029,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
   }
 
-  /** @internal */
   ngAfterViewInit(): void {
     this.afterViewInit();
   }
@@ -1053,7 +1051,6 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     this._$viewInitialized.next(true);
   }
 
-  /** @internal */
   override ngOnDestroy(): void {
     super.ngOnDestroy();
     this.dispose();
