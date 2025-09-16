@@ -588,7 +588,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   }
 
-  /** @internal */
   ngOnInit() {
     this.onInit();
   }
@@ -851,7 +850,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  /** @internal */
   ngAfterViewInit(): void {
     this.afterViewInit();
   }
@@ -872,7 +870,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  /** @internal */
   ngOnDestroy(): void {
     this.dispose();
   }
