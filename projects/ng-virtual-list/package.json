@@ -1,6 +1,6 @@
 {
   "name": "ng-virtual-list",
-  "version": "15.7.3",
+  "version": "15.7.4",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
@@ -17,7 +17,13 @@
     "grouped",
     "scroll",
     "scrolling",
-    "scroller"
+    "scroller",
+    "select",
+    "multiselect",
+    "multi-select",
+    "multi",
+    "collapsable",
+    "expandable"
   ],
   "peerDependencies": {
     "@angular/common": "^15.2.0",
