@@ -717,8 +717,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * The method scrolls the list to the element with the given id and returns the value of the scrolled area.
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
-  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
-    this.scrollToExecutor(id, behavior);
+  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO, iteration: number = 0) {
+    this.scrollToExecutor(id, behavior, iteration);
   }
 
   private _scrollToRepeatExecutionTimeout: number | undefined;
@@ -813,9 +813,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   /**
    * Scrolls the scroll area to the desired element with the specified ID.
    */
-  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT) {
+  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT, iteration: number = 0) {
     const items = this.items(), latItem = items[items.length > 0 ? items.length - 1 : 0];
-    this.scrollTo(latItem.id, behavior);
+    this.scrollTo(latItem.id, behavior, iteration);
   }
 
   private _onContainerScrollHandler = (e: Event) => {
