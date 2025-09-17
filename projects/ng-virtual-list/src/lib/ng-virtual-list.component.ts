@@ -897,8 +897,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * The method scrolls the list to the element with the given id and returns the value of the scrolled area.
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
-  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO as ScrollBehavior) {
-    this.scrollToExecutor(id, behavior);
+  scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO as ScrollBehavior, iteration: number = 0) {
+    this.scrollToExecutor(id, behavior, iteration);
   }
 
   private _scrollToRepeatExecutionTimeout: any;
@@ -992,9 +992,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   /**
    * Scrolls the scroll area to the desired element with the specified ID.
    */
-  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior) {
+  scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior, iteration: number = 0) {
     const items = this.items, latItem = items[items.length > 0 ? items.length - 1 : 0];
-    this.scrollTo(latItem.id, behavior);
+    this.scrollTo(latItem.id, behavior, iteration);
   }
 
   private _onContainerScrollHandler = (e: Event) => {
