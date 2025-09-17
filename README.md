@@ -43,9 +43,6 @@ Flexible, and actively maintained Angular library that excels with high-performa
 - Advanced layouts
   - Grouped lists with sticky headers
   - Horizontal or vertical scrolling
-- Advanced layouts
-  - Grouped lists with sticky headers
-  - Horizontal or vertical scrolling
 - Selecting elements
   - Single selection
   - Multiple selection
