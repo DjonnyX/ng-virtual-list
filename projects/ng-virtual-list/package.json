@@ -1,12 +1,12 @@
 {
   "name": "ng-virtual-list",
-  "version": "16.7.6",
+  "version": "16.7.7",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
   },
   "license": "MIT",
-  "homepage": "https://github.com/djonnyx/ng-virtual-list/tree/main/projects/ng-virtual-list",
+  "homepage": "https://github.com/djonnyx/ng-virtual-list/tree/16.x/projects/ng-virtual-list",
   "keywords": [
     "ng",
     "angular",
