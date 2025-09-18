@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.10] - 2025-09-18
+
+Code review
+
 ## [19.7.9] - 2025-09-18
 
 Group collapsibility
