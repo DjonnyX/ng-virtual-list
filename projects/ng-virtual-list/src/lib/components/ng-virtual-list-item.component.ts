@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, Templat
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, IRect, ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD,
   PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D,
   VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
@@ -16,7 +16,7 @@ import { IRenderVirtualListItemConfig } from '../models/render-item-config.model
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
   /**
-   * 
+   * Determines whether the element has focus or not.
    */
   focus: boolean;
   /**
@@ -24,14 +24,24 @@ interface IItemConfig extends IRenderVirtualListItemConfig {
    */
   selected: boolean;
   /**
+   * Determines whether the element is collapsed or not.
+   */
+  collapsed: boolean;
+  /**
     * Selects a list item
     * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
     */
   select: (selected: boolean | undefined) => void;
+  /**
+    * Collapse list items
+    * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
+    */
+  collapse: (collapsed: boolean | undefined) => void;
 }
 
 const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'index',
-  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown";
+  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
+  EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown';
 
 /**
  * Virtual list item component
@@ -59,6 +69,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   protected _service = inject(NgVirtualListService);
 
   private _isSelected: boolean = false;
+
+  private _isCollapsed: boolean = false;
+
   config = signal<IItemConfig>({} as IItemConfig);
 
   measures = signal<IRect & {
@@ -70,8 +83,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   focus = signal<boolean>(false);
 
-  private _part = PART_DEFAULT_ITEM;
-  get part() { return this._part; }
+  part = signal<string>(PART_DEFAULT_ITEM);
 
   regular: boolean = false;
 
@@ -84,7 +96,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     this._data = v;
 
-    this.updatePartStr(v, this._isSelected);
+    this.updatePartStr(v, this._isSelected, this._isCollapsed);
 
     this.updateConfig(v);
 
@@ -134,35 +146,44 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       this._service.select(data, selected);
     };
 
+  private _collapseHandler = (data: IRenderVirtualListItem<any> | undefined) =>
+    /**
+    * Collapse list items
+    * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
+    */
+    (collapsed: boolean | undefined = undefined) => {
+      this._service.collapse(data, collapsed);
+    };
+
   constructor() {
     super();
     this._id = this._service.generateComponentId();
 
     const $data = toObservable(this.data);
 
-    fromEvent(this.element, 'focusin').pipe(
+    fromEvent(this.element, EVENT_FOCUS_IN).pipe(
       takeUntilDestroyed(),
       tap(e => {
         this.focus.set(true);
 
         this.updateConfig(this._data);
 
-        this.updatePartStr(this._data, this._isSelected);
+        this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
       }),
     ).subscribe(),
 
-      fromEvent(this.element, 'focusout').pipe(
+      fromEvent(this.element, EVENT_FOCUS_OUT).pipe(
         takeUntilDestroyed(),
         tap(e => {
           this.focus.set(false);
 
           this.updateConfig(this._data);
 
-          this.updatePartStr(this._data, this._isSelected);
+          this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
         }),
       ).subscribe(),
 
-      fromEvent<KeyboardEvent>(this.element, 'keydown').pipe(
+      fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
         takeUntilDestroyed(),
         tap(e => {
           switch (e.key) {
@@ -204,19 +225,19 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
         }),
       ).subscribe();
 
-    combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds]).pipe(
+    combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
       takeUntilDestroyed(),
-      map(([, m, ids]) => ({ method: m, ids })),
-      tap(({ method, ids }) => {
+      map(([, m, selectedIds, collapsedIds]) => ({ method: m, selectedIds, collapsedIds })),
+      tap(({ method, selectedIds, collapsedIds }) => {
         switch (method) {
           case MethodsForSelectingTypes.SELECT: {
-            const id = ids as Id | undefined, isSelected = id === this.itemId;
+            const id = selectedIds as Id | undefined, isSelected = id === this.itemId;
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
             this._isSelected = isSelected;
             break;
           }
           case MethodsForSelectingTypes.MULTI_SELECT: {
-            const actualIds = ids as Array<Id>, isSelected = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
+            const actualIds = selectedIds as Array<Id>, isSelected = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
             this._isSelected = isSelected;
             break;
@@ -229,7 +250,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
           }
         }
 
-        this.updatePartStr(this._data, this._isSelected);
+        const actualIds = collapsedIds, isCollapsed = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
+        this._isCollapsed = isCollapsed;
+
+        this.updatePartStr(this._data, this._isSelected, isCollapsed);
 
         this.updateConfig(this._data);
 
@@ -263,7 +287,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
-    this.config.set({ ...v?.config || {} as IItemConfig, selected: this._isSelected, select: this._selectHandler(v), focus: this.focus() });
+    this.config.set({
+      ...v?.config || {} as IItemConfig, selected: this._isSelected, collapsed: this._isCollapsed, focus: this.focus(),
+      collapse: this._collapseHandler(v), select: this._selectHandler(v)
+    });
   }
 
   private update() {
@@ -289,7 +316,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
   }
 
-  private updatePartStr(v: IRenderVirtualListItem | undefined, isSelected: boolean) {
+  private updatePartStr(v: IRenderVirtualListItem | undefined, isSelected: boolean, isCollapsed: boolean) {
     let odd = false;
     if (v?.index !== undefined) {
       odd = v.index % 2 === 0;
@@ -303,10 +330,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     if (isSelected) {
       part += PART_ITEM_SELECTED;
     }
+    if (isCollapsed) {
+      part += PART_ITEM_COLLAPSED;
+    }
     if (this.focus()) {
       part += PART_ITEM_FOCUSED;
     }
-    this._part = part;
+    this.part.set(part);
   }
 
   getBounds(): ISize {
