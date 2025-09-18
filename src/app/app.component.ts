@@ -94,19 +94,22 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
-  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item';
-  if (type === 'group-header') {
+  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item',
+    isGroup = type === 'group-header';
+  if (isGroup) {
     groupDynamicIndex++;
   }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS.push({ id, type, name: isGroup ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP[id] = {
-    sticky: type === 'group-header' ? 1 : 0,
-    selectable: type !== 'group-header',
+    sticky: isGroup ? 1 : 0,
+    selectable: !isGroup,
+    collapsable: isGroup,
   };
-  GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: type === 'group-header' ? `Group ${id}` : `${id}. ${generateText()}` });
+  GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: isGroup ? `Group ${id}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP[id] = {
-    sticky: type === 'group-header' ? 1 : 0,
-    selectable: type !== 'group-header',
+    sticky: isGroup ? 1 : 0,
+    selectable: !isGroup,
+    collapsable: isGroup,
   };
 }
 
