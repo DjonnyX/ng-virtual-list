@@ -2,7 +2,7 @@
 
 🚀 High-performance virtual scrolling for Angular apps. Render 100,000+ items in Angular without breaking a sweat. Smooth, customizable, and developer-friendly.
 
-Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
+Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
@@ -26,8 +26,9 @@ Flexible, and actively maintained Angular library that excels with high-performa
 📱 Works everywhere — smooth on desktop & mobile.<br/>
 🔀 Flexible layouts — vertical, horizontal, grouped lists, sticky headers.<br/>
 📏 Dynamic sizes — handles items of varying height/width.<br/>
-🎯 Precise control — scroll to an ID, or snap to positions.<br/>
-🔌 Angular-friendly — simple inputs/outputs, trackBy support.<br/>
+🔍 Precise control — scroll to an ID, or snap to positions.<br/>
+✅ Selecting elements — ability to work in Select and MultiSelect modes.<br/>
+🧩 Collapsing group elements — ability to collapse group elements (elements with the "stickiness" parameter).<br/>
 
 <br/>
 
@@ -48,6 +49,8 @@ Flexible, and actively maintained Angular library that excels with high-performa
   - Multiple selection
 - Performance tuning
   - bufferSize and maxBufferSize for fine-grained control
+- Collapsing groups
+  - collapse group elements
 
 <br/>
 
@@ -73,6 +76,8 @@ As each item may contain images, nested components, or interactions, virtual ren
 Single and multiple selection of elements
 
 Navigating with the keyboard
+
+Collapsing groups
 
 Support for element animation
 
@@ -563,6 +568,7 @@ Inputs
 | itemRenderer | TemplateRef | Rendering element template. |
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
+| collapseByClick | boolean? = true | If `false`, the element is collapsed using the config.collapse method passed to the template; if `true`, the element is collapsed by clicking on it. The default value is `true`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
@@ -571,6 +577,7 @@ Inputs
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
+| collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
 
 <br/>
 
@@ -582,7 +589,19 @@ Outputs
 | onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
 | onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
 | onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
+| onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
+
+
+<br/>
+
+Methods
+
+| Method | Type | Description |
+|--|--|--|
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
+| scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 
 
 <br/>
