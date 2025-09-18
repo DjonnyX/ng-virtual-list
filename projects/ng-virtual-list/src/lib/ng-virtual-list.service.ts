@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Id } from './types';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
-import { DEFAULT_SELECT_BY_CLICK } from './const';
+import { DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,9 @@ export class NgVirtualListService {
   private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
   $selectedIds = this._$selectedIds.asObservable();
 
+  private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
+  $collapsedIds = this._$collapsedIds.asObservable();
+
   private _$methodOfSelecting = new BehaviorSubject<MethodsForSelectingTypes>(0);
   $methodOfSelecting = this._$methodOfSelecting.asObservable();
 
@@ -28,6 +31,8 @@ export class NgVirtualListService {
   }
 
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
+
+  collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
 
   private _trackBox: TrackBox | undefined;
 
@@ -67,8 +72,17 @@ export class NgVirtualListService {
     }
   }
 
+  setCollapsedIds(ids: Array<Id>) {
+    if (JSON.stringify(this._$collapsedIds.getValue()) !== JSON.stringify(ids)) {
+      this._$collapsedIds.next(ids);
+    }
+  }
+
   itemClick(data: IRenderVirtualListItem | undefined) {
     this._$itemClick.next(data);
+    if (this.collapseByClick) {
+      this.collapse(data);
+    }
     if (this.selectByClick) {
       this.select(data);
     }
@@ -119,6 +133,38 @@ export class NgVirtualListService {
         case MethodsForSelectingTypes.NONE:
         default: {
           this._$selectedIds.next(undefined);
+        }
+      }
+    }
+  }
+
+  /**
+    * Collapse list items
+    * @param data 
+    * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
+    */
+  collapse(data: IRenderVirtualListItem | undefined, collapsed: boolean | undefined = undefined) {
+    if (data && data.config.sticky > 0 && data.config.collapsable) {
+      const curr = [...(this._$collapsedIds.getValue() || []) as Array<Id>], index = curr.indexOf(data.id);
+      if (collapsed === undefined) {
+        if (index > -1) {
+          curr.splice(index, 1);
+          this._$collapsedIds.next(curr);
+        } else {
+          this._$collapsedIds.next([...curr, data.id]);
+        }
+      } else if (collapsed) {
+        if (index > -1) {
+          this._$collapsedIds.next(curr);
+        } else {
+          this._$collapsedIds.next([...curr, data.id]);
+        }
+      } else {
+        if (index > -1) {
+          curr.splice(index, 1);
+          this._$collapsedIds.next(curr);
+        } else {
+          this._$collapsedIds.next(curr);
         }
       }
     }
