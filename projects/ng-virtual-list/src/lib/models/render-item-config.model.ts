@@ -15,6 +15,11 @@ export interface IRenderVirtualListItemConfig {
      */
     even: boolean;
     /**
+     * Determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property.
+     * Default value is `false`.
+     */
+    collapsable: boolean;
+    /**
      * If greater than 0, the element will have a sticky position with the given zIndex.
      */
     sticky: 0 | 1 | 2;

@@ -10,9 +10,7 @@ import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
-  DEFAULT_MAX_BUFFER_SIZE,
-  DEFAULT_SELECT_METHOD,
-  DEFAULT_SELECT_BY_CLICK,
+  DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
@@ -28,9 +26,14 @@ import { isDirection } from './utils/isDirection';
 import { NgVirtualListService } from './ng-virtual-list.service';
 import { isMethodForSelecting } from './utils/isMethodForSelecting';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { CMap } from './utils/cacheMap';
 
 const ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox';
+
+const validateScrollIteration = (value: number) => {
+  return Number.isNaN(value) || (value < 0) ? 0 : value > MAX_SCROLL_TO_ITERATIONS ? MAX_SCROLL_TO_ITERATIONS : value
+}
 
 /**
  * Virtual list component.
@@ -93,13 +96,18 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   onItemClick = output<IRenderVirtualListItem<any> | undefined>();
 
   /**
-   * Fires when an elements are selected.
+   * Fires when elements are selected.
    */
   onSelect = output<Array<Id> | Id | undefined>();
 
+  /**
+   * Fires when elements are collapsed.
+   */
+  onCollapse = output<Array<Id> | Id | undefined>();
+
   private _itemsOptions = {
     transform: (v: IVirtualListCollection | undefined) => {
-      this._trackBox.resetCollection(v, this.itemSize());
+      // etc
       return v;
     },
   } as any;
@@ -117,10 +125,21 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   selectedIds = input<Array<Id> | Id | undefined>(undefined);
 
   /**
-   * If false, the element is selected using the config.select method passed to the template; 
-   * if true, the element is selected by clicking on it. The default value is true.
+   * Sets the collapsed items.
+   */
+  collapsedIds = input<Array<Id>>([]);
+
+  /**
+   * If `false`, the element is selected using the config.select method passed to the template; 
+   * if `true`, the element is selected by clicking on it. The default value is `true`.
    */
   selectByClick = input<boolean>(DEFAULT_SELECT_BY_CLICK);
+
+  /**
+   * If `false`, the element is collapsed using the config.collapse method passed to the template; 
+   * if `true`, the element is collapsed by clicking on it. The default value is `true`.
+   */
+  collapseByClick = input<boolean>(DEFAULT_COLLAPSE_BY_CLICK);
 
   /**
    * Determines whether elements will snap. Default value is "true".
@@ -143,15 +162,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private _itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
   /**
-   * @deprecated
-   * Use `itemConfigMap` instead.
-   */
-  stickyMap = input();
-
-  /**
-   * Sets sticky position and selectable for the list item element. If sticky position is greater than 0, then sticky position is applied. 
-   * If the sticky value is greater than `0`, then the sticky position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`.
-   * selectable determines whether an element can be selected or not. Default value is `true`.
+   * Sets `sticky` position, `collapsable` and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. 
+   * If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`.
+   * `selectable` determines whether an element can be selected or not. Default value is `true`.
+   * `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property.
    * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
    * @author Evgenii Grebennikov
    * @email djonnyx@gmail.com
@@ -184,18 +198,6 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * Determines the direction in which elements are placed. Default value is "vertical".
    */
   direction = input<Direction>(DEFAULT_DIRECTION);
-
-  private _itemOffsetTransform = {
-    transform: (v: number | undefined) => {
-      throw Error('"itemOffset" parameter is deprecated. Use "bufferSize" and "maxBufferSize".');
-    }
-  } as any;
-
-  /**
-   * Number of elements outside the scope of visibility. Default value is 2.
-   * @deprecated "itemOffset" parameter is deprecated. Use "bufferSize" and "maxBufferSize".
-   */
-  itemsOffset = input<number>(DEFAULT_BUFFER_SIZE, { ...this._itemOffsetTransform });
 
   /**
    * Number of elements outside the scope of visibility. Default value is 2.
@@ -252,6 +254,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
   }
 
+  private _actualItems = signal<IVirtualListCollection>([]);
+
+  private _collapsedItemIds = signal<Array<Id>>([]);
+
   private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
   private _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
@@ -263,11 +269,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private _resizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
-    const list = this._list(), container = this._container(), snappedComponent = this._snapedDisplayComponent?.instance;
+    const list = this._list(), container = this._container(), bounds = this._bounds(), snappedComponent = this._snapedDisplayComponent?.instance;
     if (list && container && snappedComponent) {
       const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect(), listElement = list?.nativeElement,
         { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
-        { width, height } = this._bounds() ?? { width: 0, height: 0 },
+        { width, height } = bounds ?? { width: 0, height: 0 },
         isScrollable = isVertical ? container.nativeElement.scrollHeight > 0 : container.nativeElement.scrollWidth > 0;
 
       let scrollBarSize = isVertical ? width - lWidth : height - lHeight, isScrollBarOverlap = true, overlapScrollBarSize = 0;
@@ -385,12 +391,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     ).subscribe();
 
     const $trackBy = toObservable(this.trackBy),
-      $selectByClick = toObservable(this.selectByClick);
+      $selectByClick = toObservable(this.selectByClick),
+      $collapseByClick = toObservable(this.collapseByClick);
 
     $selectByClick.pipe(
       takeUntilDestroyed(),
       tap(v => {
         this._service.selectByClick = v;
+      }),
+    ).subscribe();
+
+    $collapseByClick.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.collapseByClick = v;
       }),
     ).subscribe();
 
@@ -429,7 +443,48 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       ),
       $methodForSelecting = toObservable(this.methodForSelecting),
       $selectedIds = toObservable(this.selectedIds),
+      $collapsedIds = toObservable(this.collapsedIds),
+      $collapsedItemIds = toObservable(this._collapsedItemIds),
+      $actualItems = toObservable(this._actualItems),
       $cacheVersion = toObservable(this._cacheVersion);
+
+    combineLatest([$items, $itemSize]).pipe(
+      takeUntilDestroyed(),
+      map(([items, itemSize]) => ({ items, itemSize })),
+      tap(({ items, itemSize }) => {
+        this._trackBox.resetCollection(items, itemSize);
+      }),
+    ).subscribe();
+
+    combineLatest([$items, $collapsedItemIds, $itemConfigMap]).pipe(
+      takeUntilDestroyed(),
+      tap(([items, collapsedIds, itemConfigMap]) => {
+        const hiddenItems = new CMap<Id, boolean>();
+
+        let isCollapsed = false;
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item.id, group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
+          if (group) {
+            isCollapsed = collapsed;
+          } else {
+            if (isCollapsed) {
+              hiddenItems.set(id, true);
+            }
+          }
+        }
+
+        const actualItems: IVirtualListCollection = [];
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item.id;
+          if (hiddenItems.has(id)) {
+            continue;
+          }
+          actualItems.push(item);
+        }
+
+        this._actualItems.set(actualItems);
+      }),
+    ).subscribe();
 
     $isVertical.pipe(
       takeUntilDestroyed(),
@@ -483,7 +538,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       })
     ).subscribe();
 
-    combineLatest([this.$initialized, $bounds, $items, $itemConfigMap, $scrollSize, $itemSize,
+    combineLatest([this.$initialized, $bounds, $actualItems, $itemConfigMap, $scrollSize, $itemSize,
       $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion,
     ]).pipe(
       takeUntilDestroyed(),
@@ -494,7 +549,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
         let actualScrollSize = (this._isVertical ? this._container()?.nativeElement.scrollTop ?? 0 : this._container()?.nativeElement.scrollLeft) ?? 0;
-        const { width, height } = bounds as ISize,
+        const { width, height } = bounds!,
           opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, dynamicSize, isVertical, itemSize,
             bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
@@ -548,7 +603,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(value => {
-        this.onViewportChange.emit(value as ISize);
+        this.onViewportChange.emit(value!);
       }),
     ).subscribe();
 
@@ -582,6 +637,34 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       distinctUntilChanged(),
       tap(v => {
         this._service.setSelectedIds(v);
+      }),
+    ).subscribe();
+
+    let isCollapsedIdsFirstEmit = 0;
+
+    this._service.$collapsedIds.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(v => {
+        this._collapsedItemIds.set(v);
+
+        if (isCollapsedIdsFirstEmit >= 2) {
+          const curr = this.collapsedIds();
+          if ((isCollapsedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isCollapsedIdsFirstEmit > 2) {
+            this.onCollapse.emit(v);
+          }
+        }
+        if (isCollapsedIdsFirstEmit < 3) {
+          isCollapsedIdsFirstEmit++;
+        }
+      }),
+    ).subscribe();
+
+    $collapsedIds.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(v => {
+        this._service.setCollapsedIds(v);
       }),
     ).subscribe();
   }
@@ -716,7 +799,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
   scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO, iteration: number = 0) {
-    this.scrollToExecutor(id, behavior, iteration);
+    this.scrollToExecutor(id, behavior, validateScrollIteration(iteration));
   }
 
   private _scrollToRepeatExecutionTimeout: number | undefined;
@@ -726,7 +809,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   private scrollToExecutor(id: Id, behavior: ScrollBehavior, iteration: number = 0, isLastIteration = false) {
-    const items = this.items();
+    const items = this._actualItems();
     if (!items || !items.length) {
       return;
     }
@@ -741,7 +824,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         }
 
         const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-          itemConfigMap = this.itemConfigMap(), items = this.items(), isVertical = this._isVertical, delta = this._trackBox.delta,
+          itemConfigMap = this.itemConfigMap(), items = this._actualItems(), isVertical = this._isVertical, delta = this._trackBox.delta,
           opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
             bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
             bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(),
@@ -813,14 +896,15 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    */
   scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT, iteration: number = 0) {
     const items = this.items(), latItem = items[items.length > 0 ? items.length - 1 : 0];
-    this.scrollTo(latItem.id, behavior, iteration);
+    this.scrollTo(latItem.id, behavior, validateScrollIteration(iteration));
   }
 
   private _onContainerScrollHandler = (e: Event) => {
     const containerEl = this._container();
     if (containerEl) {
-      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
-      this._trackBox.deltaDirection = this._scrollSize() > scrollSize ? -1 : this._scrollSize() < scrollSize ? 1 : 0;
+      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft),
+        currentScollSize = this._scrollSize();
+      this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
 
       const event = new ScrollEvent({
         direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
@@ -835,8 +919,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private _onContainerScrollEndHandler = (e: Event) => {
     const containerEl = this._container();
     if (containerEl) {
-      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft);
-      this._trackBox.deltaDirection = this._scrollSize() > scrollSize ? -1 : 0;
+      const scrollSize = (this._isVertical ? containerEl.nativeElement.scrollTop : containerEl.nativeElement.scrollLeft),
+        currentScollSize = this._scrollSize();
+      this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : 0;
 
       const event = new ScrollEvent({
         direction: this._trackBox.scrollDirection, container: containerEl.nativeElement,
