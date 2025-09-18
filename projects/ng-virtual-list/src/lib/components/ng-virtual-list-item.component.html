@@ -1,10 +1,11 @@
 @let item = data();
 @let _config = config();
+@let _part = part();
 @let _measures = measures();
 @let renderer = itemRenderer();
 
 @if (item) {
-    <div #listItem [part]="part" [attr.index]="item.config.tabIndex" tabindex="1" class="ngvl-item__container"
+    <div #listItem [part]="_part" [attr.index]="item.config.tabIndex" tabindex="0" class="ngvl-item__container"
         [ngClass]="{'snapped': item.config.snapped, 'snapped-out': item.config.snappedOut, 'focus': focus()}" (click)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
