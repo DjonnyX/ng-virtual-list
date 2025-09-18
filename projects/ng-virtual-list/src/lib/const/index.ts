@@ -13,6 +13,8 @@ export const DEFAULT_SNAP = false;
 
 export const DEFAULT_SELECT_BY_CLICK = true;
 
+export const DEFAULT_COLLAPSE_BY_CLICK = true;
+
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
 export const DEFAULT_DYNAMIC_SIZE = false;
@@ -98,6 +100,8 @@ export const PART_ITEM_EVEN = ' item-even';
 export const PART_ITEM_SNAPPED = ' item-snapped';
 
 export const PART_ITEM_SELECTED = ' item-selected';
+
+export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
