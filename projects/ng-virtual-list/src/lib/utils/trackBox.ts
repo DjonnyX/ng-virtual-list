@@ -414,10 +414,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0;
         for (let i = 0, l = collection.length; i < l; i++) {
-            const item = collection[i];
+            const item = collection[i], id = item.id;
             let itemSize = 0;
-            if (map.has(item.id)) {
-                const bounds = map.get(item.id);
+            if (map.has(id)) {
+                const bounds = map.get(id);
                 itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
             } else {
                 itemSize = typicalItemSize;
@@ -438,10 +438,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0, num = 0;
         for (let j = collection.length - indexOffset - 1; j >= i; j--) {
-            const item = collection[j];
+            const item = collection[j], id = item.id;
             let itemSize = 0;
-            if (map.has(item.id)) {
-                const bounds = map.get(item.id);
+            if (map.has(id)) {
+                const bounds = map.get(id);
                 itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
             } else {
                 itemSize = typicalItemSize;
@@ -626,9 +626,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             }
 
             if (isTargetInOverscroll) {
-                const { num } = this.getElementNumToEnd(
-                    collection.length - (checkOverscrollItemsLimit < 0 ? 0 : collection.length - checkOverscrollItemsLimit),
-                    collection, map, typicalItemSize, size, isVertical, collection.length - (collection.length - (targetDisplayItemIndex + 1)),
+                const collectionLength = collection.length, { num } = this.getElementNumToEnd(
+                    collectionLength - (checkOverscrollItemsLimit < 0 ? 0 : collectionLength - checkOverscrollItemsLimit),
+                    collection, map, typicalItemSize, size, isVertical, collectionLength - (collectionLength - (targetDisplayItemIndex + 1)),
                 );
                 if (num > 0) {
                     itemsFromStartToScrollEnd -= num;
@@ -804,7 +804,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0,
+                        selectable = itemConfigMap[id]?.selectable ?? true,
+                        collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     if (sticky === 1) {
                         const isOdd = i % 2 != 0,
@@ -818,6 +820,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
+                                collapsable,
                                 selectable,
                                 sticky,
                                 snap,
@@ -849,7 +852,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0,
+                        selectable = itemConfigMap[id]?.selectable ?? true,
+                        collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize
                             ? this.get(id)?.[sizeProperty] || typicalItemSize
                             : typicalItemSize;
@@ -865,6 +870,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
+                                collapsable,
                                 selectable,
                                 sticky,
                                 snap,
@@ -904,7 +910,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (id !== stickyItem?.id && id !== endStickyItem?.id) {
                     const isOdd = i % 2 != 0,
-                        sticky = itemConfigMap[id]?.sticky ?? 0, selectable = itemConfigMap[id]?.selectable ?? true,
+                        sticky = itemConfigMap[id]?.sticky ?? 0,
+                        selectable = itemConfigMap[id]?.selectable ?? true,
+                        collapsable = itemConfigMap[id]?.collapsable ?? false,
                         snapped = snap && (sticky === 1 && pos <= scrollSize || sticky === 2 && pos >= scrollSize + boundsSize - size),
                         measures = {
                             x: isVertical ? sticky === 1 ? 0 : boundsSize - size : pos,
@@ -916,6 +924,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             odd: isOdd,
                             even: !isOdd,
                             isVertical,
+                            collapsable,
                             selectable,
                             sticky: sticky,
                             snap,
