@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [20.7.9] - 2025-09-18
+## [20.7.7] - 2025-09-18
 
 Group collapsibility
   
@@ -17,7 +17,7 @@ Group collapsibility
 
 - The deprecated stickyMap property has been removed.
 
-## [20.7.8] - 2025-09-17
+## [20.7.6] - 2025-09-17
 
 iterations of the scrollTo methods
   
@@ -29,7 +29,7 @@ iterations of the scrollTo methods
 
 - Added Iteration argument to scrollTo methods
 
-## [20.7.7] - 2025-09-16
+## [20.7.5] - 2025-09-16
 
 Internal marks
   
@@ -37,7 +37,7 @@ Internal marks
 
 - Internal marks has been removed
 
-## [20.7.6] - 2025-09-16
+## [20.7.4] - 2025-09-16
 
 Project description
   
@@ -45,15 +45,7 @@ Project description
 
 - README.md updated
 
-## [20.7.5] - 2025-09-16
-
-Project description
-  
-### Improved 
-
-- README.md updated
-
-## [20.7.4] - 2025-09-15
+## [20.7.3] - 2025-09-15
 
 Focus management during navigation
   
@@ -65,7 +57,7 @@ Focus management during navigation
 
 - README.md updated
 
-## [20.7.3] - 2025-09-14
+## [20.7.2] - 2025-09-14
 
 Item selection improvements
   
@@ -81,14 +73,6 @@ Item selection improvements
 ### Fixed
 
 - Fixed the initial state of selectedIds
-
-## [20.7.2] - 2025-09-10
-
-Project description
-
-### Improved 
-
-- README.md updated
 
 ## [20.7.1] - 2025-09-10
 
