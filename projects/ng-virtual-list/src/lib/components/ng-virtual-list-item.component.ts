@@ -40,7 +40,8 @@ interface IItemConfig extends IRenderVirtualListItemConfig {
 }
 
 const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'index',
-  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown";
+  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
+  EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown';
 
 /**
  * Virtual list item component
@@ -160,7 +161,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
     const $data = toObservable(this.data);
 
-    fromEvent(this.element, 'focusin').pipe(
+    fromEvent(this.element, EVENT_FOCUS_IN).pipe(
       takeUntilDestroyed(),
       tap(e => {
         this.focus.set(true);
@@ -171,18 +172,18 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       }),
     ).subscribe(),
 
-      fromEvent(this.element, 'focusout').pipe(
+      fromEvent(this.element, EVENT_FOCUS_OUT).pipe(
         takeUntilDestroyed(),
         tap(e => {
           this.focus.set(false);
 
           this.updateConfig(this._data);
 
-        this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
+          this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
         }),
       ).subscribe(),
 
-      fromEvent<KeyboardEvent>(this.element, 'keydown').pipe(
+      fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
         takeUntilDestroyed(),
         tap(e => {
           switch (e.key) {
