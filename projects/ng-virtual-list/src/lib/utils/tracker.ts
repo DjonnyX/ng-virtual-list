@@ -67,7 +67,8 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             return;
         }
 
-        const idPropName = this._trackingPropertyName, untrackedItems = [...components], newTrackItems: Array<ComponentRef<C>> = [], isDown = direction === 0 || direction === 1;
+        const idPropName = this._trackingPropertyName, untrackedItems = [...components], newTrackItems: Array<any> = [],
+            isDown = direction === 0 || direction === 1;
         let isRegularSnapped = false;
 
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
@@ -89,24 +90,31 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                                     isRegularSnapped = true;
                                     snapedComponent.instance.item = item;
                                     snapedComponent.instance.show();
+                                } else {
+                                    snapedComponent.instance.item = null;
+                                    snapedComponent.instance.hide();
                                 }
                             }
-                            comp.instance.item = item;
 
                             if (snapedComponent) {
                                 if (item['config']['snapped'] || item['config']['snappedOut']) {
+                                    comp.instance.item = null;
                                     comp.instance.hide();
                                 } else {
+                                    comp.instance.item = item;
                                     comp.instance.show();
                                 }
                             } else {
+                                comp.instance.item = item;
                                 comp.instance.show();
                             }
                             untrackedItems.splice(indexByUntrackedItems, 1);
                             continue;
                         }
                     }
+                } else {
                     this._trackMap.delete(itemTrackingProperty);
+
                 }
             }
 
@@ -116,25 +124,30 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         }
 
         for (let i = 0, l = newTrackItems.length; i < l; i++) {
-            const item = newTrackItems[i], itemTrackingProperty = (item as any)[idPropName];
             if (untrackedItems.length > 0) {
-                const comp = untrackedItems.shift(), item = items[i];
+                const comp = untrackedItems.shift(), item = newTrackItems[i], itemTrackingProperty = (item as any)[idPropName];
+
                 if (comp) {
                     if (snapedComponent) {
                         if (item['config']['snapped'] || item['config']['snappedOut']) {
                             isRegularSnapped = true;
                             snapedComponent.instance.item = item;
                             snapedComponent.instance.show();
+                        } else {
+                            snapedComponent.instance.item = null;
+                            snapedComponent.instance.hide();
                         }
                     }
-                    comp.instance.item = item;
                     if (snapedComponent) {
                         if (item['config']['snapped'] || item['config']['snappedOut']) {
+                            comp.instance.item = null;
                             comp.instance.hide();
                         } else {
+                            comp.instance.item = item;
                             comp.instance.show();
                         }
                     } else {
+                        comp.instance.item = item;
                         comp.instance.show();
                     }
 
@@ -148,6 +161,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         if (untrackedItems.length) {
             for (let i = 0, l = untrackedItems.length; i < l; i++) {
                 const comp = untrackedItems[i];
+                comp.instance.item = null;
                 comp.instance.hide();
             }
         }

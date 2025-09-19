@@ -7,6 +7,7 @@ import { Id } from './types';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
+import { IRenderVirtualListCollection } from './models/render-collection.model';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +38,8 @@ export class NgVirtualListService {
   private _trackBox: TrackBox | undefined;
 
   listElement: HTMLDivElement | null = null;
+
+  collection: IRenderVirtualListCollection = [];
 
   constructor() {
     this._$methodOfSelecting.pipe(
@@ -86,6 +89,10 @@ export class NgVirtualListService {
     if (this.selectByClick) {
       this.select(data);
     }
+  }
+
+  update() {
+    this._trackBox?.changes();
   }
 
   /**
@@ -167,6 +174,16 @@ export class NgVirtualListService {
           this._$collapsedIds.next(curr);
         }
       }
+    }
+  }
+
+  itemToFocus: ((element: HTMLElement, position: number) => void) | undefined;
+
+  focus(element: HTMLElement) {
+    element.focus({ preventScroll: true });
+    if (element.parentElement) {
+      const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
+      this.itemToFocus?.(element, pos);
     }
   }
 
