@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.7.9] - 2025-09-19
+
+Project description
+  
+### Improved 
+
+- README.md updated
+
 ## [20.7.8] - 2025-09-19
 
 Collapsing groups
