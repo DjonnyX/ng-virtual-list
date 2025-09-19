@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.14] - 2025-09-19
+
+`aria-activedescendant`
+
+## Added
+
+- `aria-activedescendant` processed
+
 ## [19.7.13] - 2025-09-19
 
 Snapped elements
