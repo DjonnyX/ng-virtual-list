@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [15.7.8] - 2025-09-19
+
+Collapsing groups
+
+## Improved
+
+- Implemented collapsing groups using the keyboard
+
 ## [15.7.7] - 2025-09-18
 
 Group collapsibility
