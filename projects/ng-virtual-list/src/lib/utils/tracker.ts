@@ -90,9 +90,6 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                                     isRegularSnapped = true;
                                     snapedComponent.instance.item = item;
                                     snapedComponent.instance.show();
-                                } else {
-                                    snapedComponent.instance.item = null;
-                                    snapedComponent.instance.hide();
                                 }
                             }
 
@@ -133,9 +130,6 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                             isRegularSnapped = true;
                             snapedComponent.instance.item = item;
                             snapedComponent.instance.show();
-                        } else {
-                            snapedComponent.instance.item = null;
-                            snapedComponent.instance.hide();
                         }
                     }
                     if (snapedComponent) {

@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.13] - 2025-09-19
+
+Snapped elements
+
+## Fixed
+
+- Fixed display of snapped elements
+
 ## [19.7.12] - 2025-09-19
 
 Navigating elements
