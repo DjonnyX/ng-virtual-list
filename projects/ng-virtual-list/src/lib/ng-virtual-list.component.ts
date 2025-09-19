@@ -261,6 +261,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
   }
 
+  readonly focusedElement = signal<Id | undefined>(undefined);
+
   private _actualItems = signal<IVirtualListCollection>([]);
 
   private _collapsedItemIds = signal<Array<Id>>([]);
@@ -399,6 +401,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     this.$initialized = toObservable(this._initialized);
 
     this._trackBox.displayComponents = this._displayComponents;
+
+    this._service.$focusedId.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.focusedElement.set(v ?? undefined);
+      }),
+    ).subscribe();
 
     toObservable(this._list).pipe(
       takeUntilDestroyed(),
