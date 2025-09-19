@@ -163,7 +163,17 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     super();
     this._id = this._service.generateComponentId();
 
-    const $data = toObservable(this.data);
+    this._elementRef.nativeElement.setAttribute('id', String(this._id));
+
+    const $data = toObservable(this.data),
+      $focus = toObservable(this.focus);
+
+    $focus.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
+      }),
+    ).subscribe();
 
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
       takeUntilDestroyed(),

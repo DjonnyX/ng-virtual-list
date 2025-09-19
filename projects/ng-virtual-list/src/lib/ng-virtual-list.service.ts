@@ -31,6 +31,10 @@ export class NgVirtualListService {
     this._$methodOfSelecting.next(v);
   }
 
+  private _$focusedId = new BehaviorSubject<Id | null>(null);
+  $focusedId = this._$focusedId.asObservable();
+  get focusedId() { return this._$focusedId.getValue(); }
+
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
@@ -185,6 +189,10 @@ export class NgVirtualListService {
       const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
       this.itemToFocus?.(element, pos);
     }
+  }
+
+  areaFocus(id: Id | null) {
+    this._$focusedId.next(id);
   }
 
   initialize(trackBox: TrackBox) {
