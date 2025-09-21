@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 14.7.8</span></div>
+    <div class="version"><span>v 14.7.9</span></div>
   </div>
 
   <div class="vl-section">
@@ -26,7 +26,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list (Multi select)</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="5"
         [methodForSelecting]="'multi-select'" [itemRenderer]="horizontalGroupItemRenderer"
         [itemConfigMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"
         (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"></ng-virtual-list>
