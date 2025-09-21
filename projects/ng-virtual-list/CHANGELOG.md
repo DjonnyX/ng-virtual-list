@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.7.11] - 2025-09-21
+
+Project description
+  
+### Improved 
+
+- README.md updated
+
 ## [16.7.10] - 2025-09-21
 
 Navigating elements
