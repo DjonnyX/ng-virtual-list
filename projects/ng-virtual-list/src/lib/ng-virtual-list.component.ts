@@ -48,6 +48,9 @@ const validateScrollIteration = (value: number) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
   providers: [NgVirtualListService],
+  host: {
+    'style': 'position: relative;'
+  },
 })
 export class NgVirtualListComponent extends DisposableComponent implements AfterViewInit, OnInit, OnDestroy {
   private static __nextId: number = 0;
@@ -418,6 +421,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
   }
 
+  private _$focusedElement = new BehaviorSubject<Id | undefined>(undefined);
+  readonly $focusedElement = this._$focusedElement.asObservable();
+
   private _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
   readonly $snappingMethod = this._$snappingMethod.asObservable();
 
@@ -547,6 +553,16 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
   }
 
+  private itemToFocus = (element: HTMLElement, position: number) => {
+    const container = this._container?.nativeElement;
+    if (container) {
+      const { width, height } = this._$bounds.getValue()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
+        isVertical = this._isVertical, pos = isVertical ? position - (height - elementHeight) * .5 : position - (width - elementWidth) * .5;
+      const params: ScrollToOptions = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior: 'instant' as ScrollBehavior };
+      container.scrollTo(params);
+    }
+  }
+
   private _$initialized = new BehaviorSubject<boolean>(false);
   readonly $initialized = this._$initialized.asObservable();
 
@@ -586,6 +602,14 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     this._id = NgVirtualListComponent.__nextId;
 
     this._service.initialize(this._trackBox);
+    this._service.itemToFocus = this.itemToFocus;
+
+    this._service.$focusedId.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(v => {
+        this._$focusedElement.next(v ?? undefined);
+      }),
+    ).subscribe();
 
     this.$viewInitialized.pipe(
       takeUntil(this._$unsubscribe),
@@ -767,6 +791,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
             bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
           },
           { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, opts);
+
+        this._service.collection = displayItems;
 
         this.resetBoundsSize(isVertical, totalSize);
 
@@ -1058,6 +1084,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
             ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
           }), delta = this._trackBox.delta;
 
+          this._service.collection = displayItems;
+
           this._trackBox.clearDelta();
 
           let actualScrollSize = scrollSize + delta;
@@ -1075,7 +1103,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
             return;
           }
 
-          const notChanged = actualScrollSize === _scrollSize
+          const notChanged = actualScrollSize === _scrollSize;
 
           if (!notChanged || iteration < MAX_SCROLL_TO_ITERATIONS) {
             this.clearScrollToRepeatExecutionTimeout();

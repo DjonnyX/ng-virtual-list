@@ -5,7 +5,7 @@ export const DEFAULT_ITEM_SIZE = 24;
 
 export const DEFAULT_BUFFER_SIZE = 2;
 
-export const DEFAULT_MAX_BUFFER_SIZE = 100;
+export const DEFAULT_MAX_BUFFER_SIZE = 10;
 
 export const DEFAULT_LIST_SIZE = 400;
 
