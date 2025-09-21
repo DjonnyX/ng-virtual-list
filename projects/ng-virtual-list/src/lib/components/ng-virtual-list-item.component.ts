@@ -13,6 +13,7 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest, fromEvent } from 'rxjs';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
+import { validateBoolean } from '../utils/validation';
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
   /**
@@ -147,6 +148,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
      * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
      */
     (selected: boolean | undefined = undefined) => {
+      const valid = validateBoolean(selected, true);
+      if (!valid) {
+        console.error('The "selected" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.select(data, selected);
     };
 
@@ -156,6 +162,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
     (collapsed: boolean | undefined = undefined) => {
+      const valid = validateBoolean(collapsed, true);
+      if (!valid) {
+        console.error('The "collapsed" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.collapse(data, collapsed);
     };
 
