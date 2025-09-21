@@ -599,7 +599,7 @@ Inputs
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. The collection of elements must be immutable. |
 | itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
-| maxBufferSize | number? = 100 | Maximum number of elements outside the scope of visibility. Default value is 100. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
+| maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
@@ -644,12 +644,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.11 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.11](https://www.npmjs.com/package/ng-virtual-list/v/19.7.11) |
-| 18.x | 18.7.9 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.9](https://www.npmjs.com/package/ng-virtual-list/v/18.7.9) |
-| 17.x | 17.7.9 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.9](https://www.npmjs.com/package/ng-virtual-list/v/17.7.9) |
-| 16.x | 16.7.8 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.8](https://www.npmjs.com/package/ng-virtual-list/v/16.7.8) |
-| 15.x | 15.7.8 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.8](https://www.npmjs.com/package/ng-virtual-list/v/15.7.8) |
-| 14.x | 14.7.8 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.8](https://www.npmjs.com/package/ng-virtual-list/v/14.7.8) |
+| 19.x | 19.7.14 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.14](https://www.npmjs.com/package/ng-virtual-list/v/19.7.14) |
+| 18.x | 18.7.10 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.10](https://www.npmjs.com/package/ng-virtual-list/v/18.7.10) |
+| 17.x | 17.7.11 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.11](https://www.npmjs.com/package/ng-virtual-list/v/17.7.11) |
+| 16.x | 16.7.9 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.9](https://www.npmjs.com/package/ng-virtual-list/v/16.7.9) |
+| 15.x | 15.7.9 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.9](https://www.npmjs.com/package/ng-virtual-list/v/15.7.9) |
+| 14.x | 14.7.9 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.9](https://www.npmjs.com/package/ng-virtual-list/v/14.7.9) |
 
 <br/>
 
