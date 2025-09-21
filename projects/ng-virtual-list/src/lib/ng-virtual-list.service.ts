@@ -7,6 +7,7 @@ import { Id } from './types';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
+import { IRenderVirtualListCollection } from './models/render-collection.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,11 +33,17 @@ export class NgVirtualListService {
 
   private _trackBox: TrackBox | undefined;
 
+  private _$focusedId = new BehaviorSubject<Id | null>(null);
+  $focusedId = this._$focusedId.asObservable();
+  get focusedId() { return this._$focusedId.getValue(); }
+
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
 
   listElement: HTMLDivElement | null = null;
+
+  collection: IRenderVirtualListCollection = [];
 
   constructor() {
     this._$methodOfSelecting.pipe(
@@ -86,6 +93,10 @@ export class NgVirtualListService {
     if (this.selectByClick) {
       this.select(data);
     }
+  }
+
+  update() {
+    this._trackBox?.changes();
   }
 
   /**
@@ -172,6 +183,20 @@ export class NgVirtualListService {
 
   initialize(trackBox: TrackBox) {
     this._trackBox = trackBox;
+  }
+
+  itemToFocus: ((element: HTMLElement, position: number) => void) | undefined;
+
+  focus(element: HTMLElement) {
+    element.focus({ preventScroll: true });
+    if (element.parentElement) {
+      const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
+      this.itemToFocus?.(element, pos);
+    }
+  }
+
+  areaFocus(id: Id | null) {
+    this._$focusedId.next(id);
   }
 
   generateComponentId() {
