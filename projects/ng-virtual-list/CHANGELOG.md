@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [15.7.9] - 2025-09-21
+
+Navigating elements
+
+## Fixed
+
+- Fixed navigating elements using the keyboard
+
 ## [15.7.8] - 2025-09-19
 
 Collapsing groups
