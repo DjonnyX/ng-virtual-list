@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.7.10] - 2025-09-21
+
+Navigating elements
+
+## Fixed
+
+- Fixed navigating elements using the keyboard
+
 ## [20.7.9] - 2025-09-19
 
 Project description
