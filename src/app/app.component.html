@@ -28,7 +28,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list (Multi select)</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="50"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="5"
         [methodForSelecting]="'multi-select'" [itemRenderer]="horizontalGroupItemRenderer"
         [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" (onSelect)="onSelectHandler($event)"
         (onItemClick)="onItemClick($event)" [selectedIds]="[3,2]"></ng-virtual-list>
