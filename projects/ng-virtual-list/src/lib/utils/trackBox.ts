@@ -94,7 +94,7 @@ const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/trackBox.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/trackBox.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */

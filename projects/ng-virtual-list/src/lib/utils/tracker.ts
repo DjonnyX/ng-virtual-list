@@ -17,7 +17,7 @@ export interface IVirtualListItemComponent<I = any> {
 
 /**
  * Tracks display items by property
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
