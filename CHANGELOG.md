@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.15] - 2025-09-21
+
+Vulnerabilities
+
+## Fixed
+
+- Added validation of incoming parameters
+- Some vulnerabilities have been fixed
+
 ## [19.7.14] - 2025-09-19
 
 `aria-activedescendant`
