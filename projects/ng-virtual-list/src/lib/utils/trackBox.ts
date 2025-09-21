@@ -878,7 +878,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
-                                tabIndex: count,
+                                tabIndex: items.length,
                                 zIndex: '1',
                             };
 
@@ -889,8 +889,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         endStickyItemSize = size;
 
                         displayItems.push(endStickyItem);
-
-                        count++;
                         break;
                     }
                 }
@@ -936,6 +934,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             zIndex: '0',
                         };
 
+                    count++;
+
                     if (snapped) {
                         config.zIndex = '2';
                     }
@@ -960,8 +960,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     }
 
                     displayItems.push(item);
-
-                    count++;
                 }
 
                 renderItems -= 1;
