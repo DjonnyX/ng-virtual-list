@@ -38,13 +38,17 @@ interface IItemConfig extends IRenderVirtualListItemConfig {
   collapse: (collapsed: boolean | undefined) => void;
 }
 
-const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'index',
+const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'ng-vl-index',
   KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown';
 
+const getElementByIndex = (index: number) => {
+  return `[${TABINDEX}="${index}"]`;
+}
+
 /**
  * Virtual list item component
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/ng-virtual-list-item.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -164,7 +168,17 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     super();
     this._id = this._service.generateComponentId();
 
-    const $data = toObservable(this.data);
+    this._elementRef.nativeElement.setAttribute('id', String(this._id));
+
+    const $data = toObservable(this.data),
+      $focus = toObservable(this.focus);
+
+    $focus.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
+      }),
+    ).subscribe();
 
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
       takeUntilDestroyed(),
@@ -273,21 +287,31 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   private focusNext() {
-    const tabIndex = this.config()?.tabIndex ?? 0;
-    if (this._service.listElement && tabIndex > 0) {
-      const el = this._service.listElement.querySelector<HTMLDivElement>(`[${TABINDEX}="${tabIndex + 1}"]`);
-      if (el) {
-        el.focus();
+    if (this._service.listElement) {
+      const tabIndex = this._data?.config?.tabIndex ?? 0, length = this._service.collection?.length ?? 0;
+      let index = tabIndex;
+      while (index <= length) {
+        index++;
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        if (el) {
+          this._service.focus(el);
+          break;
+        }
       }
     }
   }
 
   private focusPrev() {
-    const tabIndex = this.config()?.tabIndex ?? 0;
-    if (this._service.listElement && tabIndex > 1) {
-      const el = this._service.listElement.querySelector<HTMLDivElement>(`[${TABINDEX}="${tabIndex - 1}"]`);
-      if (el) {
-        el.focus();
+    if (this._service.listElement) {
+      const tabIndex = this._data?.config?.tabIndex ?? 0;
+      let index = tabIndex;
+      while (index >= 0) {
+        index--;
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        if (el) {
+          this._service.focus(el);
+          break;
+        }
       }
     }
   }
@@ -309,6 +333,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       const styles = this._elementRef.nativeElement.style;
       styles.zIndex = data.config.zIndex;
       if (data.config.snapped) {
+        this._elementRef.nativeElement.setAttribute('position', data.config.sticky === 1 ? '0' : `${data.config.isVertical ? data.measures.y : data.measures.x}`);
         styles.transform = data.config.sticky === 1 ? ZEROS_TRANSLATE_3D : `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;;
         if (!data.config.isSnappingMethodAdvanced) {
           styles.position = POSITION_STICKY;
@@ -316,8 +341,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       } else {
         styles.position = POSITION_ABSOLUTE;
         if (regular) {
+          this._elementRef.nativeElement.setAttribute('position', '0');
           styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX} , 0)`;
         } else {
+          this._elementRef.nativeElement.setAttribute('position', `${data.config.isVertical ? data.measures.y : data.measures.x}`);
           styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX} , 0)`;
         }
       }
