@@ -5,7 +5,7 @@
 @let renderer = itemRenderer();
 
 @if (item) {
-    <div #listItem [part]="_part" [attr.index]="item.config.tabIndex" tabindex="0" class="ngvl-item__container"
+    <div #listItem [part]="_part" [attr.ng-vl-index]="_config.tabIndex || -1" tabindex="0" class="ngvl-item__container"
         [ngClass]="{'snapped': item.config.snapped, 'snapped-out': item.config.snappedOut, 'focus': focus()}" (click)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer"
