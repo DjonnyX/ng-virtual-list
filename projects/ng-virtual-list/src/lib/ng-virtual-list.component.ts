@@ -2,11 +2,12 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE,
-  DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK, DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME,
-  TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION,
+  DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK,
+  DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END,
+  TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
@@ -25,13 +26,34 @@ import { NgVirtualListService } from './ng-virtual-list.service';
 import { isMethodForSelecting } from './utils/isMethodForSelecting';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { CMap } from './utils/cacheMap';
+import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
+import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 
 const ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox';
 
 const validateScrollIteration = (value: number) => {
   return Number.isNaN(value) || (value < 0) ? 0 : value > MAX_SCROLL_TO_ITERATIONS ? MAX_SCROLL_TO_ITERATIONS : value
-}
+},
+  validateId = (id: Id) => {
+    const valid = validateString(id as string) || validateFloat(id as number);
+    if (!valid) {
+      throw Error('The "id" parameter must be of type `Id`.');
+    }
+  },
+  validateScrollBehavior = (behavior: ScrollBehavior) => {
+    const valid = validateString(behavior as string) &&
+      (behavior === 'auto' as ScrollBehavior || behavior === 'instant' as ScrollBehavior || behavior === 'smooth' as ScrollBehavior);
+    if (!valid) {
+      throw Error('The "behavior" parameter must have the value `auto`, `instant` or `smooth`.');
+    }
+  },
+  validateIteration = (iteration: number | undefined) => {
+    const valid = validateInt(iteration, true);
+    if (!valid) {
+      throw Error('The "iteration" parameter must be of type `number`.');
+    }
+  };
 
 /**
  * Virtual list component.
@@ -116,6 +138,26 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   readonly $items = this._$items.asObservable();
 
   private _itemsTransform = (v: IVirtualListCollection | undefined) => {
+    let valid = validateArray(v, true);
+    if (valid) {
+      if (v) {
+        for (let i = 0, l = v.length; i < l; i++) {
+          const item = v[i];
+          valid = validateObject(item, true);
+          if (valid) {
+            if (item && !(validateFloat(item.id as number, true) || validateString(item.id as string, true))) {
+              valid = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!valid) {
+      console.error('The "items" parameter must be of type `IVirtualListCollection` or `undefined`.');
+      return [];
+    }
     return v;
   };
 
@@ -139,6 +181,27 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
   readonly $selectedIds = this._$selectedIds.asObservable();
 
+  private _selectedIdsTransform = (v: Array<Id> | Id | undefined) => {
+    let valid = validateArray(v as any, true) || validateString(v as any, true) || validateFloat(v as any, true);
+    if (valid) {
+      if (v && Array.isArray(v)) {
+        for (let i = 0, l = v.length; i < l; i++) {
+          const item = v[i];
+          valid = validateString(item as any) || validateFloat(item as any);
+          if (!valid) {
+            break;
+          }
+        }
+      }
+    }
+
+    if (!valid) {
+      console.error('The "selectedIds" parameter must be of type `Array<Id> | Id` or `undefined`.');
+      return this._isMultiSelecting ? [] : undefined;
+    }
+    return v;
+  };
+
   /**
    * Sets the selected items.
    */
@@ -148,7 +211,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$selectedIds.next(v);
+    const transformedValue = this._selectedIdsTransform(v);
+
+    this._$selectedIds.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -156,6 +221,27 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
   readonly $collapsedIds = this._$collapsedIds.asObservable();
+
+  private _collapsedIdsTransform = (v: Array<Id>) => {
+    let valid = validateArray(v as any);
+    if (valid) {
+      if (v && Array.isArray(v)) {
+        for (let i = 0, l = v.length; i < l; i++) {
+          const item = v[i];
+          valid = validateString(item as any) || validateFloat(item as any);
+          if (!valid) {
+            break;
+          }
+        }
+      }
+    }
+
+    if (!valid) {
+      console.error('The "collapsedIds" parameter must be of type `Array<Id> | Id` or `undefined`.');
+      return [];
+    }
+    return v;
+  };
 
   /**
    * Sets the collapsed items.
@@ -166,7 +252,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$collapsedIds.next(v);
+    const transformedValue = this._collapsedIdsTransform(v);
+
+    this._$collapsedIds.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -174,6 +262,16 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$selectByClick = new BehaviorSubject<boolean>(DEFAULT_SELECT_BY_CLICK);
   readonly $selectByClick = this._$selectByClick.asObservable();
+
+  private _selectByClickTransform = (v: boolean) => {
+    const valid = validateBoolean(v);
+
+    if (!valid) {
+      console.error('The "selectByClick" parameter must be of type `boolean`.');
+      return DEFAULT_SELECT_BY_CLICK;
+    }
+    return v;
+  };
 
   /**
    * If `false`, the element is selected using the config.select method passed to the template; 
@@ -185,7 +283,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$selectByClick.next(v);
+    const transformedValue = this._selectByClickTransform(v);
+
+    this._$selectByClick.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -193,6 +293,16 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$collapseByClick = new BehaviorSubject<boolean>(DEFAULT_COLLAPSE_BY_CLICK);
   readonly $collapseByClick = this._$collapseByClick.asObservable();
+
+  private _collapseByClickTransform = (v: boolean) => {
+    const valid = validateBoolean(v);
+
+    if (!valid) {
+      console.error('The "collapseByClick" parameter must be of type `boolean`.');
+      return DEFAULT_COLLAPSE_BY_CLICK;
+    }
+    return v;
+  };
 
   /**
    * If `false`, the element is collapsed using the config.collapse method passed to the template; 
@@ -204,7 +314,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$collapseByClick.next(v);
+    const transformedValue = this._collapseByClickTransform(v);
+
+    this._$collapseByClick.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -212,6 +324,16 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
   readonly $snap = this._$snap.asObservable();
+
+  private _snapTransform = (v: boolean) => {
+    const valid = validateBoolean(v);
+
+    if (!valid) {
+      console.error('The "snap" parameter must be of type `boolean`.');
+      return DEFAULT_SNAP;
+    }
+    return v;
+  };
 
   /**
    * Determines whether elements will snap. Default value is "true".
@@ -222,7 +344,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$snap.next(v);
+    const transformedValue = this._snapTransform(v);
+
+    this._$snap.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -230,6 +354,17 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$enabledBufferOptimization = new BehaviorSubject<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
   readonly $enabledBufferOptimization = this._$enabledBufferOptimization.asObservable();
+
+  private _enabledBufferOptimizationTransform = (v: boolean) => {
+    const valid = validateBoolean(v);
+
+    if (!valid) {
+      console.error('The "enabledBufferOptimization" parameter must be of type `boolean`.');
+      return DEFAULT_ENABLED_BUFFER_OPTIMIZATION;
+    }
+    return v;
+  };
+
   /**
    * Experimental!
    * Enables buffer optimization.
@@ -242,15 +377,28 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$enabledBufferOptimization.next(v);
+    const transformedValue = this._enabledBufferOptimizationTransform(v);
+
+    this._$enabledBufferOptimization.next(transformedValue);
 
     this._cdr.markForCheck();
   };
   get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
 
-
   private _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   readonly $itemRenderer = this._$itemRenderer.asObservable();
+
+  private _itemRendererTransform = (v: TemplateRef<any>) => {
+    let valid = validateObject(v);
+    if (v && !(typeof v.elementRef === 'object' && typeof v.createEmbeddedView === 'function')) {
+      valid = false;
+    }
+
+    if (!valid) {
+      throw Error('The "itemRenderer" parameter must be of type `TemplateRef`.');
+    }
+    return v;
+  };
 
   private _$renderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
   /**
@@ -262,7 +410,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$itemRenderer.next(v);
+    const transformedValue = this._itemRendererTransform(v);
+
+    this._$itemRenderer.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -270,6 +420,30 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$itemConfigMap = new BehaviorSubject<IVirtualListItemConfigMap>({});
   readonly $itemConfigMap = this._$itemConfigMap.asObservable();
+
+  private _itemConfigMapTransform = (v: IVirtualListItemConfigMap) => {
+    let valid = validateObject(v);
+    if (valid) {
+      if (v) {
+        for (let id in v) {
+          const item = v[id];
+          if (!item ||
+            !validateBoolean(item.collapsable, true) ||
+            !validateBoolean(item.selectable, true) ||
+            !(item.sticky === undefined || item.sticky === 0 || item.sticky === 1 || item.sticky === 2)
+          ) {
+            valid = false;
+            break;
+          }
+        }
+      }
+    }
+    if (!valid) {
+      console.error('The "itemConfigMap" parameter must be of type `IVirtualListItemConfigMap`.');
+      return {};
+    }
+    return v;
+  };
 
   /**
    * Sets `sticky` position, `collapsable` and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. 
@@ -286,22 +460,27 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$itemConfigMap.next(v);
+    const transformedValue = this._itemConfigMapTransform(v);
+
+    this._$itemConfigMap.next(transformedValue);
 
     this._cdr.markForCheck();
   };
   get itemConfigMap() { return this._$itemConfigMap.getValue(); }
 
-  private _itemSizeOptions = (v: number | undefined) => {
-    if (v === undefined) {
+  private _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
+  readonly $itemSize = this._$itemSize.asObservable();
+
+  private _itemSizeTransform = (v: number) => {
+    const valid = validateFloat(v);
+    if (!valid) {
+      console.error('The "itemSize" parameter must be of type `number` or `undefined`.');
       return DEFAULT_ITEM_SIZE;
     }
+
     const val = Number(v);
     return Number.isNaN(val) || val <= 0 ? DEFAULT_ITEM_SIZE : val;
   };
-
-  private _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
-  readonly $itemSize = this._$itemSize.asObservable();
 
   /**
    * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
@@ -313,7 +492,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$itemSize.next(this._itemSizeOptions(v));
+    const transformedValue = this._itemSizeTransform(v);
+
+    this._$itemSize.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -321,6 +502,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$dynamicSize = new BehaviorSubject<boolean>(DEFAULT_DYNAMIC_SIZE);
   readonly $dynamicSize = this._$dynamicSize.asObservable();
+
+  private _dynamicSizeTransform = (v: boolean) => {
+    const valid = validateBoolean(v);
+    if (!valid) {
+      console.error('The "dynamicSize" parameter must be of type `boolean`.');
+      return DEFAULT_DYNAMIC_SIZE;
+    }
+    return v;
+  };
 
   /**
    * If true then the items in the list can have different sizes and the itemSize property is ignored.
@@ -332,7 +522,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$dynamicSize.next(v);
+    const transformedValue = this._dynamicSizeTransform(v);
+
+    this._$dynamicSize.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -340,6 +532,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$direction = new BehaviorSubject<Direction>(DEFAULT_DIRECTION);
   readonly $direction = this._$direction.asObservable();
+
+  private _directionTransform = (v: Direction) => {
+    const valid = validateString(v) && (v === 'horizontal' || v === 'vertical');
+    if (!valid) {
+      console.error('The "direction" parameter must have the value `horizontal` or `vertical`.');
+      return DEFAULT_DIRECTION;
+    }
+    return v;
+  };
 
   /**
    * Determines the direction in which elements are placed. Default value is "vertical".
@@ -350,7 +551,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$direction.next(v);
+    const transformedValue = this._directionTransform(v);
+
+    this._$direction.next(transformedValue);
 
     this._cdr.markForCheck();
   };
@@ -358,6 +561,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
   readonly $bufferSize = this._$bufferSize.asObservable();
+
+  private _bufferSizeTransform = (v: number) => {
+    const valid = validateInt(v);
+    if (!valid) {
+      console.error('The "bufferSize" parameter must be of type `number`.');
+      return DEFAULT_BUFFER_SIZE;
+    }
+    return v;
+  };
 
   /**
    * Number of elements outside the scope of visibility. Default value is 2.
@@ -368,20 +580,29 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$bufferSize.next(v);
+    const transformedValue = this._bufferSizeTransform(v);
+
+    this._$bufferSize.next(transformedValue);
   };
   get bufferSize() { return this._$bufferSize.getValue(); }
 
-  private _maxBufferSizeTransform = (v: number | undefined) => {
-    const bufferSize = this._$bufferSize.getValue();
-    if (v === undefined || v <= bufferSize) {
-      return bufferSize;
-    }
-    return v;
-  };
-
   private _$maxBufferSize = new BehaviorSubject<number>(DEFAULT_MAX_BUFFER_SIZE);
   readonly $maxBufferSize = this._$maxBufferSize.asObservable();
+
+  private _maxBufferSizeTransform = (v: number) => {
+    let val = v;
+    const valid = validateInt(v, true);
+    if (!valid) {
+      console.error('The "maxBufferSize" parameter must be of type `number`.');
+      val = DEFAULT_MAX_BUFFER_SIZE;
+    }
+
+    const bufferSize = this._$bufferSize.getValue();
+    if (val === undefined || val <= bufferSize) {
+      return bufferSize;
+    }
+    return val;
+  };
 
   /**
    * Maximum number of elements outside the scope of visibility. Default value is 100.
@@ -399,33 +620,17 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   };
   get maxBufferSize() { return this._$maxBufferSize.getValue(); }
 
-  private _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
-  readonly $trackBy = this._$trackBy.asObservable();
-
-  /**
-   * The name of the property by which tracking is performed
-   */
-  @Input()
-  set trackBy(v: string) {
-    if (this._$trackBy.getValue() === v) {
-      return;
-    }
-
-    this._$trackBy.next(v);
-  };
-  get trackBy() { return this._$trackBy.getValue(); }
-
-  private _isVertical = this.getIsVertical();
-
-  get orientation() {
-    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
-  }
-
-  private _$focusedElement = new BehaviorSubject<Id | undefined>(undefined);
-  readonly $focusedElement = this._$focusedElement.asObservable();
-
   private _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
   readonly $snappingMethod = this._$snappingMethod.asObservable();
+
+  private _snappingMethodTransform = (v: SnappingMethod) => {
+    const valid = validateString(v) && (v === 'normal' || v === 'advanced');
+    if (!valid) {
+      console.error('The "snappingMethod" parameter must have the value `normal` or `advanced`.');
+      return DEFAULT_SNAPPING_METHOD;
+    }
+    return v;
+  };
 
   /**
    * Snapping method.
@@ -438,15 +643,23 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$snappingMethod.next(v);
+    const transformedValue = this._snappingMethodTransform(v);
+
+    this._$snappingMethod.next(transformedValue);
   };
   get snappingMethod() { return this._$snappingMethod.getValue(); }
 
-  private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
-  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
-
   private _$methodForSelecting = new BehaviorSubject<MethodForSelecting>(DEFAULT_SELECT_METHOD);
   readonly $methodForSelecting = this._$methodForSelecting.asObservable();
+
+  private _methodForSelectingTransform = (v: MethodForSelecting) => {
+    const valid = validateString(v) && (v === 'none' || v === 'select' || 'multi-select');
+    if (!valid) {
+      console.error('The "methodForSelecting" parameter must have the value `none`, `select` or `multi-select`.');
+      return DEFAULT_SELECT_METHOD;
+    }
+    return v;
+  };
 
   /**
    *  Method for selecting list items.
@@ -460,9 +673,50 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       return;
     }
 
-    this._$methodForSelecting.next(v);
+    const transformedValue = this._methodForSelectingTransform(v);
+
+    this._$methodForSelecting.next(transformedValue);
   };
   get methodForSelecting() { return this._$methodForSelecting.getValue(); }
+
+  private _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
+  readonly $trackBy = this._$trackBy.asObservable();
+
+  private _trackByTransform = (v: string) => {
+    const valid = validateString(v);
+    if (!valid) {
+      console.error('The "trackBy" parameter must be of type `string`.');
+      return TRACK_BY_PROPERTY_NAME;
+    }
+    return v;
+  };
+
+  /**
+   * The name of the property by which tracking is performed
+   */
+  @Input()
+  set trackBy(v: string) {
+    if (this._$trackBy.getValue() === v) {
+      return;
+    }
+
+    const transformedValue = this._trackByTransform(v);
+
+    this._$trackBy.next(transformedValue);
+  };
+  get trackBy() { return this._$trackBy.getValue(); }
+
+  private _isVertical = this.getIsVertical();
+
+  get orientation() {
+    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
+  }
+
+  private _$focusedElement = new BehaviorSubject<Id | undefined>(undefined);
+  readonly $focusedElement = this._$focusedElement.asObservable();
+
+  private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
+  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
   private _isNotSelecting = this.getIsNotSelecting();
   get isNotSelecting() { return this._isNotSelecting; }
@@ -674,8 +928,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       ),
       $methodForSelecting = this.$methodForSelecting,
       $selectedIds = this.$selectedIds,
-      $collapsedIds = this.$collapsedIds,
-      $collapsedItemIds = this._$collapsedItemIds.asObservable(),
+      $collapsedIds = this.$collapsedIds.pipe(
+        map(v => Array.isArray(v) ? v : []),
+      ),
+      $collapsedItemIds = this._$collapsedItemIds.asObservable().pipe(
+        map(v => Array.isArray(v) ? v : []),
+      ),
       $actualItems = this._$actualItems.asObservable(),
       $cacheVersion = this.$cacheVersion;
 
@@ -840,15 +1098,15 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     $bounds.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
-      tap(value => {
-        this.onViewportChange.emit(value ?? undefined);
+      tap(v => {
+        this.onViewportChange.emit(objectAsReadonly(v ?? undefined));
       }),
     ).subscribe();
 
     this._service.$itemClick.pipe(
       takeUntil(this._$unsubscribe),
       tap(v => {
-        this.onItemClick.emit(v ?? undefined);
+        this.onItemClick.emit(objectAsReadonly(v ?? undefined));
       }),
     ).subscribe();
 
@@ -861,7 +1119,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         if (this.isSingleSelecting || (this.isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
           const curr = this._$selectedIds.getValue();
           if ((this.isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) || (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
-            this.onSelect.emit(v);
+            this.onSelect.emit(copyValueAsReadonly(v));
           }
         }
         if (isSelectedIdsFirstEmit < 3) {
@@ -889,7 +1147,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         if (isCollapsedIdsFirstEmit >= 2) {
           const curr = this._$collapsedIds.getValue();
           if ((isCollapsedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isCollapsedIdsFirstEmit > 2) {
-            this.onCollapse.emit(v);
+            this.onCollapse.emit(copyValueAsReadonly(v));
           }
         }
         if (isCollapsedIdsFirstEmit < 3) {
@@ -1030,6 +1288,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * Returns the bounds of an element with a given id
    */
   getItemBounds(id: Id): ISize | undefined {
+    validateId(id);
     return this._trackBox.getItemBounds(id);
   }
 
@@ -1038,6 +1297,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * Behavior accepts the values ​​"auto", "instant" and "smooth".
    */
   scrollTo(id: Id, behavior: ScrollBehavior = BEHAVIOR_AUTO, iteration: number = 0) {
+    validateId(id);
+    validateScrollBehavior(behavior);
+    validateIteration(iteration);
     this.scrollToExecutor(id, behavior, validateScrollIteration(iteration));
   }
 
@@ -1135,6 +1397,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * Scrolls the scroll area to the desired element with the specified ID.
    */
   scrollToEnd(behavior: ScrollBehavior = BEHAVIOR_INSTANT as ScrollBehavior, iteration: number = 0) {
+    validateScrollBehavior(behavior);
+    validateIteration(iteration);
     const items = this._$actualItems.getValue(), latItem = items[items.length > 0 ? items.length - 1 : 0];
     this.scrollTo(latItem.id, behavior, validateScrollIteration(iteration));
   }
