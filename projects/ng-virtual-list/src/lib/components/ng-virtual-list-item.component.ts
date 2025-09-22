@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Temp
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, IRect, ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN,
+  PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
@@ -11,6 +12,7 @@ import { map, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, fromEvent, Subject } from 'rxjs';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
+import { validateBoolean } from '../utils/validation';
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
   /**
@@ -162,6 +164,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
      * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
      */
     (selected: boolean | undefined = undefined) => {
+      const valid = validateBoolean(selected, true);
+      if (!valid) {
+        console.error('The "selected" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.select(data, selected);
     };
 
@@ -171,6 +178,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
     (collapsed: boolean | undefined = undefined) => {
+      const valid = validateBoolean(collapsed, true);
+      if (!valid) {
+        console.error('The "collapsed" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.collapse(data, collapsed);
     };
 
