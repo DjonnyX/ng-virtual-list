@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [18.7.11] - 2025-09-22
+
+Vulnerabilities
+
+## Fixed
+
+- Added validation of incoming parameters
+- Some vulnerabilities have been fixed
+
 ## [18.7.10] - 2025-09-21
 
 Navigating elements
