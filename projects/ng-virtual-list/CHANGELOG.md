@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.7.12] - 2025-09-22
+
+Vulnerabilities
+
+## Fixed
+
+- Added validation of incoming parameters
+- Some vulnerabilities have been fixed
+
 ## [17.7.11] - 2025-09-21
 
 Project description
