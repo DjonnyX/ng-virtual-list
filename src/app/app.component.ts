@@ -97,7 +97,7 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item',
-  isGroup = type === 'group-header';
+    isGroup = type === 'group-header';
   if (isGroup) {
     groupDynamicIndex++;
   }
@@ -186,5 +186,13 @@ export class AppComponent {
 
   onViewportChangeHandler(size: ISize) {
     console.info(`Viewport changed: ${JSON.stringify(size)}`);
+  }
+
+  onScrollReachStartHandler() {
+    console.info(`onScrollReachStart`);
+  }
+
+  onScrollReachEndHandler() {
+    console.info(`onScrollReachEnd`);
   }
 }
