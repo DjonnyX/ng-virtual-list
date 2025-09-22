@@ -2,16 +2,17 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Temp
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, IRect, ISize } from '../types';
 import {
-  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
+  DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN,
+  PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
 import { NgVirtualListService } from '../ng-virtual-list.service';
-import { map, tap } from 'rxjs/operators';
+import { map, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, fromEvent, Subject } from 'rxjs';
 import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { validateBoolean } from '../utils/validation';
 
 interface IItemConfig extends IRenderVirtualListItemConfig {
   /**
@@ -63,6 +64,8 @@ const getElementByIndex = (index: number) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
+  protected _$unsubscribe = new Subject<void>();
+
   private _id!: number;
   get id() {
     return this._id;
@@ -161,6 +164,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
      * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
      */
     (selected: boolean | undefined = undefined) => {
+      const valid = validateBoolean(selected, true);
+      if (!valid) {
+        console.error('The "selected" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.select(data, selected);
     };
 
@@ -170,6 +178,11 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
     (collapsed: boolean | undefined = undefined) => {
+      const valid = validateBoolean(collapsed, true);
+      if (!valid) {
+        console.error('The "collapsed" parameter must be of type `boolean` or `undefined`.');
+        return;
+      }
       this._service.collapse(data, collapsed);
     };
 
@@ -183,14 +196,14 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     this._elementRef.nativeElement.setAttribute('id', String(this._id));
 
     $focus.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
       }),
     ).subscribe();
 
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(e => {
         this._$focus.next(true);
 
@@ -201,7 +214,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     ).subscribe(),
 
       fromEvent(this.element, EVENT_FOCUS_OUT).pipe(
-        takeUntilDestroyed(),
+        takeUntil(this._$unsubscribe),
         tap(e => {
           this._$focus.next(false);
 
@@ -212,7 +225,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       ).subscribe(),
 
       fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
-        takeUntilDestroyed(),
+        takeUntil(this._$unsubscribe),
         tap(e => {
           switch (e.key) {
             case KEY_SPACE: {
@@ -259,7 +272,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       ).subscribe();
 
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       map(([, m, selectedIds, collapsedIds]) => ({ method: m, selectedIds, collapsedIds })),
       tap(({ method, selectedIds, collapsedIds }) => {
         switch (method) {
@@ -434,4 +447,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   onClickHandler() {
     this._service.itemClick(this.data);
   }
+
+  ngOnDestroy(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
+  }
 }
+
