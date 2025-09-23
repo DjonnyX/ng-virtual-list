@@ -4,7 +4,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, Observable, of, skip, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
@@ -129,6 +129,16 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    */
   onCollapse = output<Array<Id> | Id | undefined>();
 
+  /**
+   * Fires when the scroll reaches the start.
+   */
+  onScrollReachStart = output<void>();
+
+  /**
+   * Fires when the scroll reaches the end.
+   */
+  onScrollReachEnd = output<void>();
+
   private _itemsOptions = {
     transform: (v: IVirtualListCollection | undefined) => {
       let valid = validateArray(v, true);
@@ -191,8 +201,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   selectedIds = input<Array<Id> | Id | undefined>(undefined, { ...this._selectedIdsOptions });
 
   private _collapsedIdsOptions = {
-    transform: (v: Array<Id> | Id | undefined) => {
-      let valid = validateArray(v as any, true) || validateString(v as any, true) || validateFloat(v as any, true);
+    transform: (v: Array<Id>) => {
+      let valid = validateArray(v as any, true);
       if (valid) {
         if (v && Array.isArray(v)) {
           for (let i = 0, l = v.length; i < l; i++) {
@@ -206,7 +216,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       }
 
       if (!valid) {
-        console.error('The "collapsedIds" parameter must be of type `Array<Id> | Id` or `undefined`.');
+        console.error('The "collapsedIds" parameter must be of type `Array<Id>.');
         return [];
       }
       return v;
@@ -293,10 +303,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   private _itemRendererOptions = {
     transform: (v: TemplateRef<any>) => {
-      const valid = validateObject(v);
-      if (v) {
-        Object.hasOwn(v, 'elementRef');
-        Object.hasOwn(v, 'createEmbeddedView');
+      let valid = validateObject(v);
+      if (v && !(typeof v.elementRef === 'object' && typeof v.createEmbeddedView === 'function')) {
+        valid = false;
       }
 
       if (!valid) {
@@ -525,6 +534,10 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   private _scrollSize = signal<number>(0);
 
+  private _isScrollStart = signal<boolean>(true);
+
+  private _isScrollFinished = signal<boolean>(false);
+
   private _resizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
@@ -664,7 +677,31 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
     const $trackBy = toObservable(this.trackBy),
       $selectByClick = toObservable(this.selectByClick),
-      $collapseByClick = toObservable(this.collapseByClick);
+      $collapseByClick = toObservable(this.collapseByClick),
+      $isScrollStart = toObservable(this._isScrollStart),
+      $isScrollFinished = toObservable(this._isScrollFinished);
+
+    $isScrollStart.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachStart.emit();
+        }
+      }),
+    ).subscribe();
+
+    $isScrollFinished.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachEnd.emit();
+        }
+      }),
+    ).subscribe();
 
     $selectByClick.pipe(
       takeUntilDestroyed(),
@@ -839,6 +876,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         this.createDisplayComponentsIfNeed(displayItems);
 
         this.tracking();
+
+        const scrollLength = (this._isVertical ? this._container()?.nativeElement.scrollHeight ?? 0 : this._container()?.nativeElement.scrollWidth) ?? 0,
+          actualScrollLength = scrollLength === 0 ? 0 : scrollLength - (this._isVertical ? height : width),
+          scrollPosition = actualScrollSize + this._trackBox.delta;
+
+        this._isScrollStart.set(scrollPosition === 0);
+        this._isScrollFinished.set(scrollPosition === actualScrollLength);
 
         if (this._isSnappingMethodAdvanced) {
           this.updateRegularRenderer();

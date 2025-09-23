@@ -3,7 +3,7 @@ import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, IRect, ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_FOCUSED, PART_ITEM_ODD,
-  PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D,
+  PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, PART_ITEM_NEW, 
   VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
 } from '../const';
 import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
@@ -382,6 +382,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
     if (isCollapsed) {
       part += PART_ITEM_COLLAPSED;
+    }
+    if (v ? v.config.new : false) {
+      part += PART_ITEM_NEW;
     }
     if (this.focus()) {
       part += PART_ITEM_FOCUSED;
