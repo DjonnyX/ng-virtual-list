@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.21] - 2025-09-24
+
+Collection reset
+
+## Fixed
+
+- Collection reset fixed
+
 ## [19.7.20] - 2025-09-23
 
 Positioning list items

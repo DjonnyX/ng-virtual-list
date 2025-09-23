@@ -10,7 +10,10 @@ import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 
-export const TRACK_BOX_CHANGE_EVENT_NAME = 'change';
+export enum TrackBoxEvents {
+    CHANGE = 'change',
+    RESET = 'reset',
+}
 
 export interface IMetrics {
     delta: number;
@@ -68,11 +71,13 @@ export interface IGetItemPositionOptions<I extends { id: Id }, C extends Array<I
 export interface IUpdateCollectionOptions<I extends { id: Id }, C extends Array<I>>
     extends Omit<IRecalculateMetricsOptions<I, C>, 'collection' | 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
 
-export type CacheMapEvents = typeof TRACK_BOX_CHANGE_EVENT_NAME;
+export type CacheMapEvents = TrackBoxEvents.CHANGE | TrackBoxEvents.RESET;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type CacheMapListeners = OnChangeEventListener;
+export type OnResetEventListener = (reseted: boolean) => void;
+
+export type CacheMapListeners = OnChangeEventListener | OnResetEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -90,7 +95,10 @@ export interface IUpdateCollectionReturns {
 
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
-    DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000;
+    DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
+    IS_NEW = 'isNew';
+
+type Cache = ISize & { method?: ItemDisplayMethods } & { [prop: string]: any };
 
 /**
  * An object that performs tracking, calculations and caching.
@@ -99,7 +107,7 @@ const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
  * @email djonnyx@gmail.com
  */
 export class TrackBox<C extends BaseVirtualListItemComponent = any>
-    extends CacheMap<Id, ISize & { method?: ItemDisplayMethods } & { [prop: string]: any }, CacheMapEvents, CacheMapListeners> {
+    extends CacheMap<Id, Cache, CacheMapEvents, CacheMapListeners> {
 
     protected _tracker!: Tracker<C>;
 
@@ -197,7 +205,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected override fireChangeIfNeed() {
         if (this.changesDetected()) {
-            this.dispatch(TRACK_BOX_CHANGE_EVENT_NAME, this._version);
+            this.dispatch(TrackBoxEvents.CHANGE, this._version);
         }
     }
 
@@ -225,7 +233,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _resetBufferSizeTimer: number | undefined;
 
-    protected isInit: boolean = true;
+    protected isReseted: boolean = true;
 
     protected override lifeCircle() {
         this.fireChangeIfNeed();
@@ -242,12 +250,23 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        if (this.isInit && !(!this._previousCollection || this._previousCollection.length === 0)) {
-            this.isInit = false;
+        let reseted = this.isReseted;
+        if (reseted) {
+            if (!(!this._previousCollection || this._previousCollection.length === 0)) {
+                reseted = false;
+            }
         }
+
+        if (!reseted && (!currentCollection || currentCollection.length === 0)) {
+            reseted = true;
+        }
+
+        this.isReseted = reseted;
+        this.dispatch(TrackBoxEvents.RESET, reseted);
+
         this.updateCache(this._previousCollection, currentCollection, itemSize);
 
-        this._previousCollection = currentCollection;
+        this._previousCollection = [...(currentCollection || [])];
     }
 
     /**
@@ -529,7 +548,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             isFromItemIdFound = false,
             deltaFromStartCreation = 0;
 
-        let isNew = !this.isInit && (scrollSize === 0);
+        let isNew = !this.isReseted && (scrollSize === 0);
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
@@ -542,7 +561,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const bounds = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
                     componentSize = bounds[sizeProperty];
                     itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                    const isItemNew = (bounds as any).isNew ?? this._isLazy;
+                    const isItemNew = (bounds satisfies Cache)?.[IS_NEW] ?? this._isLazy;
                     if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
                         isNew = false;
                     }
@@ -688,7 +707,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (map.has(id)) {
                         const bounds = map.get(id)!;
                         itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                        const isItemNew = (bounds as any).isNew ?? this._isLazy;
+                        const isItemNew = (bounds satisfies Cache)?.[IS_NEW] ?? this._isLazy;
                         if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
                             isNew = false;
                         }
@@ -838,7 +857,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, cache = this.get(id), sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = items[i].id, cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
@@ -851,7 +870,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: isVertical ? size : normalizedItemHeight,
                                 delta: 0,
                             }, config = {
-                                new: (cache as any).isNew === true,
+                                new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
@@ -887,7 +906,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, cache = this.get(id), sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = items[i].id, cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize
@@ -902,7 +921,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: h,
                                 delta: 0,
                             }, config = {
-                                new: (cache as any).isNew === true,
+                                new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
@@ -940,7 +959,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     continue;
                 }
 
-                const id = items[i].id, cache = this.get(id),
+                const id = items[i].id, cache = this.get(id)!,
                     size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
 
                 if (id !== stickyItem?.id && id !== endStickyItem?.id) {
@@ -956,7 +975,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             height: isVertical ? size : normalizedItemHeight,
                             delta: 0,
                         }, config = {
-                            new: (cache as any).isNew === true,
+                            new: (cache satisfies Cache)?.[IS_NEW] === true,
                             odd: isOdd,
                             even: !isOdd,
                             isVertical,
