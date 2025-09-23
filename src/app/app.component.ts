@@ -186,4 +186,12 @@ export class AppComponent {
   onViewportChangeHandler(size: ISize) {
     console.info(`Viewport changed: ${JSON.stringify(size)}`);
   }
+
+  onScrollReachStartHandler() {
+    console.info(`onScrollReachStart`);
+  }
+
+  onScrollReachEndHandler() {
+    console.info(`onScrollReachEnd`);
+  }
 }
