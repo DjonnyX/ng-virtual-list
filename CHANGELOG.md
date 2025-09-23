@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.20] - 2025-09-23
+
+Positioning list items
+
+## Fixed
+
+- Fixed positioning in the linear algorithm when adding elements to a collection
+
 ## [19.7.19] - 2025-09-23
 
 Collection Mode
