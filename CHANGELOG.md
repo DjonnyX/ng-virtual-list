@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.18] - 2025-09-23
+
+Adding new elements to a collection
+
+## Fixed
+
+- Fixed handling of adding new elements to a collection (for lazy loading)
+
 ## [19.7.17] - 2025-09-23
 
 Adding new elements to a collection
