@@ -97,7 +97,7 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item',
-  isGroup = type === 'group-header';
+    isGroup = type === 'group-header';
   if (isGroup) {
     groupDynamicIndex++;
   }
@@ -133,16 +133,16 @@ export class AppComponent {
   horizontalItems = HORIZONTAL_ITEMS;
 
   groupItems = GROUP_ITEMS;
-  groupItemConfigMap = GROUP_ITEMS_ITEM_CONFIG_MAP;
+  groupItemsStickyMap = GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
-  groupDynamicItemConfigMap = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP;
+  groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP;
 
   groupDynamicItemsWithSanp = GROUP_DYNAMIC_ITEMS_WITH_SNAP;
-  groupDynamicItemConfigMapWithSanp = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP;
+  groupDynamicItemsStickyMapWithSanp = GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP;
 
   horizontalGroupItems = HORIZONTAL_GROUP_ITEMS;
-  horizontalGroupItemConfigMap = HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP;
+  horizontalGroupItemsStickyMap = HORIZONTAL_GROUP_ITEMS_ITEM_CONFIG_MAP;
 
   private _minId: Id = this.items.length > 0 ? this.items[0].id : 0;
   get minId() { return this._minId; };
@@ -186,5 +186,13 @@ export class AppComponent {
 
   onViewportChangeHandler(size: ISize) {
     console.info(`Viewport changed: ${JSON.stringify(size)}`);
+  }
+
+  onScrollReachStartHandler() {
+    console.info(`onScrollReachStart`);
+  }
+
+  onScrollReachEndHandler() {
+    console.info(`onScrollReachEnd`);
   }
 }

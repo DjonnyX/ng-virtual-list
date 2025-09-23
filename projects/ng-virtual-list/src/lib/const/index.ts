@@ -93,6 +93,8 @@ export const CLASS_LIST_HORIZONTAL = 'horizontal';
 
 export const PART_DEFAULT_ITEM = 'item';
 
+export const PART_ITEM_NEW = ' item-new';
+
 export const PART_ITEM_ODD = ' item-odd';
 
 export const PART_ITEM_EVEN = ' item-even';
