@@ -626,6 +626,8 @@ Outputs
 | onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
 | onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
+| onScrollReachStart | void | Fires when the scroll reaches the start. |
+| onScrollReachEnd | void | Fires when the scroll reaches the end. |
 
 
 <br/>
@@ -644,12 +646,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.15 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.15](https://www.npmjs.com/package/ng-virtual-list/v/19.7.15) |
-| 18.x | 18.7.11 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.11](https://www.npmjs.com/package/ng-virtual-list/v/18.7.11) |
-| 17.x | 17.7.12 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.12](https://www.npmjs.com/package/ng-virtual-list/v/17.7.12) |
-| 16.x | 16.7.10 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.10](https://www.npmjs.com/package/ng-virtual-list/v/16.7.10) |
-| 15.x | 15.7.10 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.10](https://www.npmjs.com/package/ng-virtual-list/v/15.7.10) |
-| 14.x | 14.7.10 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.10](https://www.npmjs.com/package/ng-virtual-list/v/14.7.10) |
+| 19.x | 19.7.18 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.18](https://www.npmjs.com/package/ng-virtual-list/v/19.7.18) |
+| 18.x | 18.7.12 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.12](https://www.npmjs.com/package/ng-virtual-list/v/18.7.12) |
+| 17.x | 17.7.13 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.13](https://www.npmjs.com/package/ng-virtual-list/v/17.7.13) |
+| 16.x | 16.7.11 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.11](https://www.npmjs.com/package/ng-virtual-list/v/16.7.11) |
+| 15.x | 15.7.11 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.11](https://www.npmjs.com/package/ng-virtual-list/v/15.7.11) |
+| 14.x | 14.7.12 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.12](https://www.npmjs.com/package/ng-virtual-list/v/14.7.12) |
 
 <br/>
 
