@@ -143,6 +143,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._isSnappingMethodAdvanced = v;
     }
 
+    protected _isLazy: boolean = false;
+
+    set isLazy(v: boolean) {
+        if (this._isLazy === v) {
+            return;
+        }
+
+        this._isLazy = v;
+    }
+
     /**
      * Set the trackBy property
      */
@@ -530,8 +540,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const bounds = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
                     componentSize = bounds[sizeProperty];
                     itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                    const isItemNew = (bounds as any).isNew ?? true;
-                    if (isNew && (this.isInit || (!isItemNew && i > 0))) {
+                    const isItemNew = (bounds as any).isNew ?? this._isLazy;
+                    if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
                         isNew = false;
                     }
                     switch (itemDisplayMethod) {
