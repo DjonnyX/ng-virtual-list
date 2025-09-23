@@ -1098,6 +1098,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
         this.tracking();
 
+        const scrollLength = (this._isVertical ? this._container?.nativeElement.scrollHeight ?? 0 : this._container?.nativeElement.scrollWidth) ?? 0,
+          actualScrollLength = scrollLength === 0 ? 0 : scrollLength - (this._isVertical ? height : width),
+          scrollPosition = actualScrollSize + this._trackBox.delta;
+
+        this._$isScrollStart.next(scrollPosition === 0);
+        this._$isScrollFinished.next(scrollPosition === actualScrollLength);
+
         if (this._isSnappingMethodAdvanced) {
           this.updateRegularRenderer();
         }
