@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.19] - 2025-09-23
+
+Collection Mode
+
+## Added
+
+- Added collection mode property
+
 ## [19.7.18] - 2025-09-23
 
 Adding new elements to a collection
