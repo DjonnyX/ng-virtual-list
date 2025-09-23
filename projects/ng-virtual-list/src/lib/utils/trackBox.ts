@@ -529,9 +529,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             isFromItemIdFound = false,
             deltaFromStartCreation = 0;
 
+        let isNew = !this.isInit && (scrollSize === 0);
+
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
-            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0, isNew = true;
+            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem.id;
 
@@ -686,8 +688,15 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (map.has(id)) {
                         const bounds = map.get(id)!;
                         itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
+                        const isItemNew = (bounds as any).isNew ?? this._isLazy;
+                        if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
+                            isNew = false;
+                        }
                         if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
-                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED });
+                            if (isNew) {
+                                deltaFromStartCreation += componentSize;
+                            }
+                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED, isNew });
                         }
                     }
 
@@ -701,7 +710,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (y < scrollSize - componentSize) {
                         switch (itemDisplayMethod) {
                             case ItemDisplayMethods.CREATE: {
-                                leftSizeOfUpdatedItems += componentSize;
+                                if (!isNew) {
+                                    leftSizeOfUpdatedItems += componentSize;
+                                }
                                 break;
                             }
                             case ItemDisplayMethods.UPDATE: {
