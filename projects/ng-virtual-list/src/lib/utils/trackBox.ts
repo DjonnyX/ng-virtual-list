@@ -530,17 +530,17 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const bounds = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
                     componentSize = bounds[sizeProperty];
                     itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                    if (isNew && (this.isInit || itemDisplayMethod !== ItemDisplayMethods.CREATE)) {
+                    const isItemNew = (bounds as any).isNew ?? true;
+                    if (isNew && (this.isInit || (!isItemNew && i > 0))) {
                         isNew = false;
                     }
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
-                            const isUpdatedNew = (bounds as any).isNew;
                             const snapshotBounds = snapshot.get(id);
                             const componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
-                            componentSizeDelta = isUpdatedNew ? 0 : componentSnapshotSize;
+                            componentSizeDelta = isItemNew ? 0 : componentSnapshotSize;
                             map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED, isNew: false });
-                            if (isUpdatedNew) {
+                            if (isItemNew) {
                                 deltaFromStartCreation += componentSize;
                             }
                             break;
