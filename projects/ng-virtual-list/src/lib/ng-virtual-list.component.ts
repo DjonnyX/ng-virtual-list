@@ -2,7 +2,7 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, skip, switchMap, takeUntil, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION,
   DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK,
@@ -59,7 +59,7 @@ const validateScrollIteration = (value: number) => {
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -132,7 +132,19 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * Fires when elements are collapsed.
    */
   @Output()
-  onCollapse = new EventEmitter<Array<Id> | Id | undefined>();
+  onCollapse = new EventEmitter<Array<Id>>();
+
+  /**
+   * Fires when the scroll reaches the start.
+   */
+  @Output()
+  onScrollReachStart = new EventEmitter<void>();
+
+  /**
+   * Fires when the scroll reaches the end.
+   */
+  @Output()
+  onScrollReachEnd = new EventEmitter<void>();
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
@@ -237,7 +249,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
 
     if (!valid) {
-      console.error('The "collapsedIds" parameter must be of type `Array<Id> | Id` or `undefined`.');
+      console.error('The "collapsedIds" parameter must be of type `Array<Id>` or `undefined`.');
       return [];
     }
     return v;
@@ -450,7 +462,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`.
    * `selectable` determines whether an element can be selected or not. Default value is `true`.
    * `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property.
-   * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
+   * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
    * @author Evgenii Grebennikov
    * @email djonnyx@gmail.com
    */
@@ -739,6 +751,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$scrollSize = new BehaviorSubject<number>(0);
 
+  private _$isScrollStart = new BehaviorSubject<boolean>(true);
+
+  private _$isScrollFinished = new BehaviorSubject<boolean>(false);
+
   private _resizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
@@ -877,7 +893,31 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
     const $trackBy = this.$trackBy,
       $selectByClick = this.$selectByClick,
-      $collapseByClick = this.$collapseByClick;
+      $collapseByClick = this.$collapseByClick,
+      $isScrollStart = this._$isScrollStart.asObservable(),
+      $isScrollFinished = this._$isScrollFinished.asObservable();
+
+    $isScrollStart.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachStart.emit();
+        }
+      }),
+    ).subscribe();
+
+    $isScrollFinished.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachEnd.emit();
+        }
+      }),
+    ).subscribe();
 
     $selectByClick.pipe(
       takeUntil(this._$unsubscribe),
@@ -1057,6 +1097,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
         this.createDisplayComponentsIfNeed(displayItems);
 
         this.tracking();
+
+        const scrollLength = (this._isVertical ? this._container?.nativeElement.scrollHeight ?? 0 : this._container?.nativeElement.scrollWidth) ?? 0,
+          actualScrollLength = scrollLength === 0 ? 0 : scrollLength - (this._isVertical ? height : width),
+          scrollPosition = actualScrollSize + this._trackBox.delta;
+
+        this._$isScrollStart.next(scrollPosition === 0);
+        this._$isScrollFinished.next(scrollPosition === actualScrollLength);
 
         if (this._isSnappingMethodAdvanced) {
           this.updateRegularRenderer();
