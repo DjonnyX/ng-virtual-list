@@ -12,11 +12,12 @@ import {
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK,
+  DEFAULT_COLLECTION_MODE,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
+import { CollectionMode, CollectionModes, Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME, TrackBox } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
@@ -30,6 +31,7 @@ import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { CMap } from './utils/cacheMap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
+import { isCollectionMode } from './utils/isCollectionMode';
 
 const ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox';
@@ -410,6 +412,22 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    */
   direction = input<Direction>(DEFAULT_DIRECTION, { ...this._directionOptions });
 
+  private _collectionModeOptions = {
+    transform: (v: CollectionMode) => {
+      const valid = validateString(v) && (v === 'normal' || v === 'lazy');
+      if (!valid) {
+        console.error('The "direction" parameter must have the value `normal` or `lazy`.');
+        return DEFAULT_COLLECTION_MODE;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Determines the action modes for collection elements. Default value is "normal".
+   */
+  collectionMode = input<CollectionMode>(DEFAULT_COLLECTION_MODE, { ...this._collectionModeOptions });
+
   private _bufferSizeOptions = {
     transform: (v: number) => {
       const valid = validateInt(v);
@@ -514,6 +532,8 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
   get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
+
+  private _isLazy = this.getIsLazy();
 
   private _isVertical = this.getIsVertical();
 
@@ -746,6 +766,9 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       $isVertical = toObservable(this.direction).pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
       ),
+      $isLazy = toObservable(this.collectionMode).pipe(
+        map(v => this.getIsLazy(v || DEFAULT_COLLECTION_MODE)),
+      ),
       $dynamicSize = toObservable(this.dynamicSize),
       $enabledBufferOptimization = toObservable(this.enabledBufferOptimization),
       $snappingMethod = toObservable(this.snappingMethod).pipe(
@@ -761,6 +784,13 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       ),
       $actualItems = toObservable(this._actualItems),
       $cacheVersion = toObservable(this._cacheVersion);
+
+    $isLazy.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.isLazy = v;
+      }),
+    ).subscribe();
 
     combineLatest([$items, $itemSize]).pipe(
       takeUntilDestroyed(),
@@ -1035,6 +1065,11 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   private getIsVertical(d?: Direction) {
     const dir = d || this.direction();
     return isDirection(dir, Directions.VERTICAL);
+  }
+
+  private getIsLazy(m?: CollectionMode) {
+    const mode = m || this.collectionMode();
+    return isCollectionMode(mode, CollectionModes.LAZY);
   }
 
   private createDisplayComponentsIfNeed(displayItems: IRenderVirtualListCollection | null) {

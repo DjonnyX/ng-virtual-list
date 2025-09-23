@@ -143,6 +143,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._isSnappingMethodAdvanced = v;
     }
 
+    protected _isLazy: boolean = false;
+
+    set isLazy(v: boolean) {
+        if (this._isLazy === v) {
+            return;
+        }
+
+        this._isLazy = v;
+    }
+
     /**
      * Set the trackBy property
      */
@@ -531,7 +541,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     componentSize = bounds[sizeProperty];
                     itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
                     const isItemNew = (bounds as any).isNew ?? true;
-                    if (isNew && (this.isInit || (!isItemNew && i > 0))) {
+                    if (isNew && (this.isInit || (!isItemNew && (!this._isLazy || i > 0)))) {
                         isNew = false;
                     }
                     switch (itemDisplayMethod) {
