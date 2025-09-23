@@ -7,6 +7,10 @@
  */
 export interface IRenderVirtualListItemConfig {
     /**
+     * Determines whether an element is new in the collection.
+     */
+    new: boolean;
+    /**
      * Indicates that the element is odd.
      */
     odd: boolean;

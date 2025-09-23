@@ -99,7 +99,7 @@ const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
  * @email djonnyx@gmail.com
  */
 export class TrackBox<C extends BaseVirtualListItemComponent = any>
-    extends CacheMap<Id, ISize & { method?: ItemDisplayMethods }, CacheMapEvents, CacheMapListeners> {
+    extends CacheMap<Id, ISize & { method?: ItemDisplayMethods } & { [prop: string]: any }, CacheMapEvents, CacheMapListeners> {
 
     protected _tracker!: Tracker<C>;
 
@@ -215,6 +215,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _resetBufferSizeTimer: number | undefined;
 
+    protected isInit: boolean = true;
+
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
@@ -230,6 +232,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
+        if (this.isInit && !(!this._previousCollection || this._previousCollection.length === 0)) {
+            this.isInit = false;
+        }
         this.updateCache(this._previousCollection, currentCollection, itemSize);
 
         this._previousCollection = currentCollection;
@@ -511,11 +516,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             actualScrollSize = itemByIdPos,
             totalSize = 0,
             startIndex: number,
-            isFromItemIdFound = false;
+            isFromItemIdFound = false,
+            deltaFromStartCreation = 0;
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
-            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
+            let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0, isNew = true;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem.id;
 
@@ -524,17 +530,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const bounds = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
                     componentSize = bounds[sizeProperty];
                     itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
+                    if (isNew && (this.isInit || itemDisplayMethod !== ItemDisplayMethods.CREATE)) {
+                        isNew = false;
+                    }
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
+                            const isUpdatedNew = (bounds as any).isNew;
                             const snapshotBounds = snapshot.get(id);
                             const componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
-                            componentSizeDelta = componentSnapshotSize;
-                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED });
+                            componentSizeDelta = isUpdatedNew ? 0 : componentSnapshotSize;
+                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED, isNew: false });
+                            if (isUpdatedNew) {
+                                deltaFromStartCreation += componentSize;
+                            }
                             break;
                         }
                         case ItemDisplayMethods.CREATE: {
-                            componentSizeDelta = typicalItemSize;
-                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED });
+                            componentSizeDelta = isNew ? 0 : typicalItemSize;
+                            map.set(id, { ...bounds, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, isNew });
                             break;
                         }
                     }
@@ -714,7 +727,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
             startPosition = leftHiddenItemsWeight - leftItemsWeight,
             renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
-            delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems;
+            delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + deltaFromStartCreation;
 
         const metrics: IMetrics = {
             delta,
@@ -804,10 +817,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = items[i].id, cache = this.get(id), sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
-                        size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
+                        size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
                     if (sticky === 1) {
                         const isOdd = i % 2 != 0,
                             measures = {
@@ -817,6 +830,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: isVertical ? size : normalizedItemHeight,
                                 delta: 0,
                             }, config = {
+                                new: (cache as any).isNew === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
@@ -852,11 +866,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!items[i]) {
                         continue;
                     }
-                    const id = items[i].id, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = items[i].id, cache = this.get(id), sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize
-                            ? this.get(id)?.[sizeProperty] || typicalItemSize
+                            ? cache?.[sizeProperty] || typicalItemSize
                             : typicalItemSize;
                     if (sticky === 2) {
                         const isOdd = i % 2 != 0,
@@ -867,6 +881,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: h,
                                 delta: 0,
                             }, config = {
+                                new: (cache as any).isNew === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
@@ -904,7 +919,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     continue;
                 }
 
-                const id = items[i].id, size = dynamicSize ? this.get(id)?.[sizeProperty] || typicalItemSize : typicalItemSize;
+                const id = items[i].id, cache = this.get(id),
+                    size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
 
                 if (id !== stickyItem?.id && id !== endStickyItem?.id) {
                     const isOdd = i % 2 != 0,
@@ -919,6 +935,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             height: isVertical ? size : normalizedItemHeight,
                             delta: 0,
                         }, config = {
+                            new: (cache as any).isNew === true,
                             odd: isOdd,
                             even: !isOdd,
                             isVertical,
@@ -1035,7 +1052,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 continue;
             }
             const bounds = component.instance.getBounds();
-            this.set(itemId, bounds);
+            this.set(itemId, { ...(this.get(itemId) || {}), ...bounds });
         }
     }
 
