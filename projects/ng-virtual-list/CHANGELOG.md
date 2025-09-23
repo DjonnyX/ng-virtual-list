@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [14.7.12] - 2025-09-23
+
+Scroll events
+
+## Fixed
+
+- `onScrollReachStart` and `onScrollReachEnd` events have been corrected
+
 ## [14.7.11] - 2025-09-23
 
 Scroll events
