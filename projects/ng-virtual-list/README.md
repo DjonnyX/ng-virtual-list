@@ -626,6 +626,8 @@ Outputs
 | onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
 | onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
+| onScrollReachStart | void | Fires when the scroll reaches the start. |
+| onScrollReachEnd | void | Fires when the scroll reaches the end. |
 
 
 <br/>
