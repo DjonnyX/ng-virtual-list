@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [16.7.11] - 2025-09-23
+
+Scroll events
+
+## Added
+
+- `onScrollReachStart` and `onScrollReachEnd` events have been added
+
 ## [16.7.10] - 2025-09-22
 
 Vulnerabilities
