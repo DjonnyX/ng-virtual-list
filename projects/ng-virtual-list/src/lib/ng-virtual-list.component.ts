@@ -2,7 +2,7 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, skip, switchMap, takeUntil, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION,
   DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK,
@@ -132,7 +132,19 @@ export class NgVirtualListComponent extends DisposableComponent implements After
    * Fires when elements are collapsed.
    */
   @Output()
-  onCollapse = new EventEmitter<Array<Id> | Id | undefined>();
+  onCollapse = new EventEmitter<Array<Id>>();
+
+  /**
+   * Fires when the scroll reaches the start.
+   */
+  @Output()
+  onScrollReachStart = new EventEmitter<void>();
+
+  /**
+   * Fires when the scroll reaches the end.
+   */
+  @Output()
+  onScrollReachEnd = new EventEmitter<void>();
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
   readonly $items = this._$items.asObservable();
@@ -237,7 +249,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     }
 
     if (!valid) {
-      console.error('The "collapsedIds" parameter must be of type `Array<Id> | Id` or `undefined`.');
+      console.error('The "collapsedIds" parameter must be of type `Array<Id>` or `undefined`.');
       return [];
     }
     return v;
@@ -739,6 +751,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _$scrollSize = new BehaviorSubject<number>(0);
 
+  private _$isScrollStart = new BehaviorSubject<boolean>(true);
+
+  private _$isScrollFinished = new BehaviorSubject<boolean>(false);
+
   private _resizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
@@ -877,7 +893,31 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
     const $trackBy = this.$trackBy,
       $selectByClick = this.$selectByClick,
-      $collapseByClick = this.$collapseByClick;
+      $collapseByClick = this.$collapseByClick,
+      $isScrollStart = this._$isScrollStart.asObservable(),
+      $isScrollFinished = this._$isScrollFinished.asObservable();
+
+    $isScrollStart.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachStart.emit();
+        }
+      }),
+    ).subscribe();
+
+    $isScrollFinished.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      skip(1),
+      tap(v => {
+        if (v) {
+          this.onScrollReachEnd.emit();
+        }
+      }),
+    ).subscribe();
 
     $selectByClick.pipe(
       takeUntil(this._$unsubscribe),
