@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.22] - 2025-09-24
+
+Examples
+
+## Improved
+
+- Optimized the settings of the buffer for examples of use
+
 ## [19.7.21] - 2025-09-24
 
 Collection reset
