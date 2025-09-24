@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [16.7.12] - 2025-09-24
+
+Collection Mode
+
+## Added
+
+- Added collection mode property
+
+## Fixed
+
+- Collection reset fixed
+- Fixed positioning in the linear algorithm when adding elements to a collection
+
+## Improved
+
+- Optimized the settings of the buffer for examples of use
+
 ## [16.7.11] - 2025-09-23
 
 Scroll events
