@@ -1,4 +1,4 @@
-import { MethodsForSelecting, SnappingMethods } from "../enums";
+import { CollectionModes, MethodsForSelecting, SnappingMethods } from "../enums";
 import { Directions } from "../enums/directions";
 
 export const DEFAULT_ITEM_SIZE = 24;
@@ -22,6 +22,8 @@ export const DEFAULT_DYNAMIC_SIZE = false;
 export const TRACK_BY_PROPERTY_NAME = 'id';
 
 export const DEFAULT_DIRECTION = Directions.VERTICAL;
+
+export const DEFAULT_COLLECTION_MODE = CollectionModes.NORMAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
