@@ -2,19 +2,19 @@ import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, OnInit, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, skip, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION,
   DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK,
   DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END,
-  TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
+  TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, DEFAULT_COLLECTION_MODE,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
+import { CollectionMode, CollectionModes, Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TRACK_BOX_CHANGE_EVENT_NAME, TrackBox } from './utils/trackBox';
+import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/trackBox';
 import { DisposableComponent } from './utils/disposableComponent';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
@@ -28,6 +28,7 @@ import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { CMap } from './utils/cacheMap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
+import { isCollectionMode } from './utils/isCollectionMode';
 
 const ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox';
@@ -571,6 +572,35 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   };
   get direction() { return this._$direction.getValue(); }
 
+  private _$collectionMode = new BehaviorSubject<CollectionMode>(DEFAULT_COLLECTION_MODE);
+  readonly $collectionMode = this._$collectionMode.asObservable();
+
+  private _collectionModeTransform = (v: CollectionMode) => {
+    const valid = validateString(v) && (v === 'normal' || v === 'lazy');
+    if (!valid) {
+      console.error('The "direction" parameter must have the value `normal` or `lazy`.');
+      return DEFAULT_COLLECTION_MODE;
+    }
+    return v;
+  };
+
+  /**
+   * Determines the action modes for collection elements. Default value is "normal".
+   */
+  @Input()
+  set collectionMode(v: CollectionMode) {
+    if (this._$collectionMode.getValue() === v) {
+      return;
+    }
+
+    const transformedValue = this._collectionModeTransform(v);
+
+    this._$collectionMode.next(transformedValue);
+
+    this._cdr.markForCheck();
+  };
+  get collectionMode() { return this._$collectionMode.getValue(); }
+
   private _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
   readonly $bufferSize = this._$bufferSize.asObservable();
 
@@ -720,6 +750,8 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private _isVertical = this.getIsVertical();
 
+  private _isLazy = this.getIsLazy();
+
   get orientation() {
     return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
   }
@@ -861,6 +893,24 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private _$cacheVersion = new BehaviorSubject<number>(-1);
   get $cacheVersion() { return this._$cacheVersion.asObservable(); }
 
+  private _isResetedReachStart = true;
+
+  private _onTrackBoxResetHandler = (v: boolean) => {
+    if (v) {
+      this._isResetedReachStart = true;
+
+      const container = this._container?.nativeElement;
+      if (container) {
+        const params: ScrollToOptions = {
+          [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0,
+          behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+        };
+
+        container.scrollTo(params);
+      }
+    }
+  };
+
   constructor(
     private _cdr: ChangeDetectorRef,
     private _elementRef: ElementRef<HTMLDivElement>,
@@ -896,22 +946,22 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       $collapseByClick = this.$collapseByClick,
       $isScrollStart = this._$isScrollStart.asObservable(),
       $isScrollFinished = this._$isScrollFinished.asObservable();
+      
 
     $isScrollStart.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
-      skip(1),
       tap(v => {
-        if (v) {
+        if (v && !this._isResetedReachStart) {
           this.onScrollReachStart.emit();
         }
+        this._isResetedReachStart = false;
       }),
-    ).subscribe();
+    ).subscribe()
 
     $isScrollFinished.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
-      skip(1),
       tap(v => {
         if (v) {
           this.onScrollReachEnd.emit();
@@ -961,6 +1011,9 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       $isVertical = this.$direction.pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
       ),
+      $isLazy = this.$collectionMode.pipe(
+        map(v => this.getIsLazy(v || DEFAULT_COLLECTION_MODE)),
+      ),
       $dynamicSize = this.$dynamicSize,
       $enabledBufferOptimization = this.$enabledBufferOptimization,
       $snappingMethod = this.$snappingMethod.pipe(
@@ -976,6 +1029,13 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       ),
       $actualItems = this._$actualItems.asObservable(),
       $cacheVersion = this.$cacheVersion;
+
+    $isLazy.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(v => {
+        this._trackBox.isLazy = v;
+      }),
+    ).subscribe();
 
     combineLatest([$items, $itemSize, this.$initialized]).pipe(
       takeUntil(this._$unsubscribe),
@@ -1222,12 +1282,12 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
   private listenCacheChangesIfNeed(value: boolean) {
     if (value) {
-      if (!this._trackBox.hasEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler)) {
-        this._trackBox.addEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler);
+      if (!this._trackBox.hasEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler)) {
+        this._trackBox.addEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler);
       }
     } else {
-      if (this._trackBox.hasEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler)) {
-        this._trackBox.removeEventListener(TRACK_BOX_CHANGE_EVENT_NAME, this._onTrackBoxChangeHandler);
+      if (this._trackBox.hasEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler)) {
+        this._trackBox.removeEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler);
       }
     }
   }
@@ -1255,6 +1315,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
   private getIsVertical(d?: Direction) {
     const dir = d || this.direction;
     return isDirection(dir, Directions.VERTICAL);
+  }
+
+  private getIsLazy(m?: CollectionMode) {
+    const mode = m || this.collectionMode;
+    return isCollectionMode(mode, CollectionModes.LAZY);
   }
 
   private _componentsResizeObserver = new ResizeObserver(() => {
