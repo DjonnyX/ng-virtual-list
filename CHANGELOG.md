@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.23] - 2025-09-24
+
+Focusing an element
+
+## Improved
+
+- Implemented an API for focusing on an element by a given ID
+
 ## [19.7.22] - 2025-09-24
 
 Examples
