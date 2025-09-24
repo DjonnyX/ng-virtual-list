@@ -115,7 +115,7 @@ items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` })
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="50"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5" [maxBufferSize]="20"
     [itemRenderer]="horizontalItemRenderer" [itemSize]="64" [methodForSelecting]="'select'"
     [selectedIds]="2" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
@@ -166,8 +166,8 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="50" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true" [methodForSelecting]="'multi-select'"
-    [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [bufferSize]="5" [maxBufferSize]="20" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true"
+    methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
   @if (data) {
@@ -239,7 +239,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [bufferSize]="50" [itemRenderer]="itemRenderer"
+<ng-virtual-list class="list simple" [items]="items" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="itemRenderer"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -280,7 +280,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="groupItemRenderer"
     [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -307,7 +307,7 @@ Template:
 
 Template (with snapping):
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="50" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="groupItemRenderer"
     [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -372,7 +372,7 @@ Template
   <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
 </div>
 
-<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50"
+<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="5" [maxBufferSize]="20"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -426,7 +426,7 @@ Virtual list with height-adjustable elements.
 
 Template
 ```html
-<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="10"
+<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="5" [maxBufferSize]="20"
       [itemConfigMap]="groupDynamicItemConfigMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -565,7 +565,7 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 Selecting even elements:
 
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5" [maxBufferSize]="20"
   [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
@@ -604,6 +604,7 @@ Inputs
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
 | collapseByClick | boolean? = true | If `false`, the element is collapsed using the config.collapse method passed to the template; if `true`, the element is collapsed by clicking on it. The default value is `true`. |
+| collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
@@ -646,12 +647,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.18 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.18](https://www.npmjs.com/package/ng-virtual-list/v/19.7.18) |
-| 18.x | 18.7.12 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.12](https://www.npmjs.com/package/ng-virtual-list/v/18.7.12) |
-| 17.x | 17.7.13 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.13](https://www.npmjs.com/package/ng-virtual-list/v/17.7.13) |
-| 16.x | 16.7.11 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.11](https://www.npmjs.com/package/ng-virtual-list/v/16.7.11) |
-| 15.x | 15.7.11 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.11](https://www.npmjs.com/package/ng-virtual-list/v/15.7.11) |
-| 14.x | 14.7.12 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.12](https://www.npmjs.com/package/ng-virtual-list/v/14.7.12) |
+| 19.x | 19.7.22 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.22](https://www.npmjs.com/package/ng-virtual-list/v/19.7.22) |
+| 18.x | 18.7.13 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.13](https://www.npmjs.com/package/ng-virtual-list/v/18.7.13) |
+| 17.x | 17.7.14 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.14](https://www.npmjs.com/package/ng-virtual-list/v/17.7.14) |
+| 16.x | 16.7.12 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.12](https://www.npmjs.com/package/ng-virtual-list/v/16.7.12) |
+| 15.x | 15.7.12 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.12](https://www.npmjs.com/package/ng-virtual-list/v/15.7.12) |
+| 14.x | 14.7.13 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.13](https://www.npmjs.com/package/ng-virtual-list/v/14.7.13) |
 
 <br/>
 
