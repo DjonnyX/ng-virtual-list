@@ -4,12 +4,16 @@ import { IVirtualListItem } from './item.model';
 import { IVirtualListItemConfigMap } from './item-config-map.model';
 import { IVirtualListCollection } from './collection.model';
 import { IRenderVirtualListItem } from './render-item.model';
+import { IDisplayObjectConfig } from './display-object-config.model';
+import { IDisplayObjectMeasures } from './display-object-measures.model';
 
 export type {
-    ScrollDirection,
+    IDisplayObjectConfig,
+    IDisplayObjectMeasures,
     IScrollEvent,
     IVirtualListItem,
     IVirtualListItemConfigMap,
     IVirtualListCollection,
     IRenderVirtualListItem,
+    ScrollDirection,
 }
