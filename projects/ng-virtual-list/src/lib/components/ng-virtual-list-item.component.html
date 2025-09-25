@@ -1,6 +1,6 @@
 <ng-container *ngIf="data">
     <div #listItem [part]="$part | async" [attr.ng-vl-index]="data.config.tabIndex || -1" tabindex="0" class="ngvl-item__container" [ngClass]="{'snapped': data.config.snapped,
-        'snapped-out': data.config.snappedOut, 'focus': $focus | async}" (click)="onClickHandler()">
+        'snapped-out': data.config.snappedOut, 'focus': $focused | async}" (click)="onClickHandler()">
         <ng-container *ngIf="itemRenderer">
             <ng-container [ngTemplateOutlet]="itemRenderer"
                 [ngTemplateOutletContext]="{data: data.data || {}, measures: measures | async, config: $config | async}"></ng-container>
