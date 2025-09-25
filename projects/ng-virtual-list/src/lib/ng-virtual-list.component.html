@@ -1,3 +1,6 @@
+<div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
+  {{ $screenReaderFormattedMessage | async}}
+</div>
 <div *ngIf="snap" #snapped part="snapped-item" class="ngvl__list-snapper">
   <ng-container #snapRendererContainer></ng-container>
 </div>
