@@ -13,9 +13,9 @@ import {
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
-import { Id, ISize } from './types';
+import { FocusAlignment, Id, ISize } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { CollectionMode, CollectionModes, Direction, Directions, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
+import { CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting, SnappingMethod } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/trackBox';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
@@ -32,7 +32,9 @@ import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/isCollectionMode';
 
 const ROLE_LIST = 'list',
-  ROLE_LIST_BOX = 'listbox';
+  ROLE_LIST_BOX = 'listbox',
+  ITEM_ID = 'item-id',
+  ITEM_CONTAINER = 'ngvl-item__container';
 
 const validateScrollIteration = (value: number) => {
   return Number.isNaN(value) || (value < 0) ? 0 : value > MAX_SCROLL_TO_ITERATIONS ? MAX_SCROLL_TO_ITERATIONS : value
@@ -54,8 +56,13 @@ const validateScrollIteration = (value: number) => {
     if (!valid) {
       throw Error('The "iteration" parameter must be of type `number`.');
     }
+  },
+  validateFocusAlignment = (align: FocusAlignment) => {
+    const valid = validateString(align as string) && (align === 'none' || align === 'start' || align === 'center' || align === 'end');
+    if (!valid) {
+      throw Error('The "align" parameter must have the value `none`, `start`, `center` or `end`.');
+    }
   };
-
 
 /**
  * Virtual list component.
@@ -629,13 +636,34 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     }
   }
 
-  private itemToFocus = (element: HTMLElement, position: number) => {
+  private itemToFocus = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER) => {
     const container = this._container()?.nativeElement;
     if (container) {
       const { width, height } = this._bounds()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
-        isVertical = this._isVertical, pos = isVertical ? position - (height - elementHeight) * .5 : position - (width - elementWidth) * .5;
-      const params: ScrollToOptions = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior: 'instant' };
-      container.scrollTo(params);
+        isVertical = this._isVertical;
+      let pos: number = Number.NaN;
+      switch (align) {
+        case FocusAlignments.START: {
+          pos = isVertical ? position : position;
+          break;
+        }
+        case FocusAlignments.CENTER: {
+          pos = isVertical ? position - (height - elementHeight) * .5 : position - (width - elementWidth) * .5;
+          break;
+        }
+        case FocusAlignments.END: {
+          pos = isVertical ? position - (height - elementHeight) : position - (width - elementWidth);
+          break;
+        }
+        case FocusAlignments.NONE:
+        default: {
+          break;
+        }
+      }
+      if (!Number.isNaN(pos)) {
+        const params: ScrollToOptions = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior: 'instant' };
+        container.scrollTo(params);
+      }
     }
   }
 
@@ -1170,6 +1198,21 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   getItemBounds(id: Id): ISize | undefined {
     validateId(id);
     return this._trackBox.getItemBounds(id);
+  }
+
+  /**
+   * Focus an list item by a given id.
+   */
+  focus(id: Id, align: FocusAlignment = FocusAlignments.NONE) {
+    validateId(id);
+    validateFocusAlignment(align);
+    const el = this._list()?.nativeElement.querySelector<HTMLDivElement>(`[${ITEM_ID}="${id}"]`);
+    if (el) {
+      const focusedEl = el.querySelector<HTMLDivElement>(`.${ITEM_CONTAINER}`);
+      if (focusedEl) {
+        this._service.focus(focusedEl, align);
+      }
+    }
   }
 
   /**

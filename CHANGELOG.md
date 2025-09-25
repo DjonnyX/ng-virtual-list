@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.7.15] - 2025-09-25
+
+Focusing an element
+
+## Improved
+
+- Implemented an API for focusing on an element by a given ID
+
 ## [17.7.14] - 2025-09-24
 
 Collection Mode
