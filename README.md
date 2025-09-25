@@ -579,6 +579,7 @@ Inputs
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
 | collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
+| screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
 
 <br/>
 

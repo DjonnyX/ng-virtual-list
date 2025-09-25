@@ -44,7 +44,20 @@ export class NgVirtualListService {
 
   listElement: HTMLDivElement | null = null;
 
-  collection: IRenderVirtualListCollection = [];
+  private _$displayItems = new BehaviorSubject<IRenderVirtualListCollection>([]);
+  readonly $displayItems = this._$displayItems.asObservable();
+
+  private _collection: IRenderVirtualListCollection = [];
+  set collection(v: IRenderVirtualListCollection) {
+    if (this._collection === v) {
+      return;
+    }
+
+    this._collection = v;
+
+    this._$displayItems.next(v);
+  }
+  get collection() { return this._collection; }
 
   constructor() {
     this._$methodOfSelecting.pipe(

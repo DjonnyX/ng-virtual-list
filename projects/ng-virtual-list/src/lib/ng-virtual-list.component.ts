@@ -7,7 +7,7 @@ import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_BUFFER_SIZE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_DIRECTION,
   DEFAULT_DYNAMIC_SIZE, DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_LIST_SIZE, DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_BY_CLICK,
   DEFAULT_SELECT_METHOD, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD, HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END,
-  TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, DEFAULT_COLLECTION_MODE,
+  TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, DEFAULT_COLLECTION_MODE, DEFAULT_SCREEN_READER_MESSAGE,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { FocusAlignment, Id, ISize } from './types';
@@ -63,6 +63,33 @@ const validateScrollIteration = (value: number) => {
       throw Error('The "align" parameter must have the value `none`, `start`, `center` or `end`.');
     }
   };
+
+const formatScreenReaderMessage = (items: IRenderVirtualListCollection, messagePattern: string | undefined, scrollSize: number,
+  isVertical: boolean, bounds: ISize) => {
+  if (!messagePattern) {
+    return '';
+  }
+  const list = items ?? [], size = isVertical ? bounds.height : bounds.width;
+  let start = Number.NaN, end = Number.NaN, prevItem: IRenderVirtualListItem | undefined;
+  for (let i = 0, l = list.length; i < l; i++) {
+    const item = list[i], position = isVertical ? item.measures.y : item.measures.x,
+      itemSize = isVertical ? item.measures.height : item.measures.width;
+    if (((position + itemSize) >= scrollSize) && Number.isNaN(start)) {
+      start = item.index + 1;
+    }
+    if ((position >= (scrollSize + size)) && Number.isNaN(end) && prevItem) {
+      end = prevItem.index + 1;
+    }
+    prevItem = item;
+  }
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return '';
+  }
+  let formatted = messagePattern ?? '';
+  formatted = formatted.replace('$1', `${start}`);
+  formatted = formatted.replace('$2', `${end}`);
+  return formatted;
+};
 
 /**
  * Virtual list component.
@@ -756,6 +783,39 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
   };
   get trackBy() { return this._$trackBy.getValue(); }
 
+  private _$screenReaderMessage = new BehaviorSubject<string>(DEFAULT_SCREEN_READER_MESSAGE);
+  readonly $screenReaderMessage = this._$screenReaderMessage.asObservable();
+
+  private _screenReaderMessageTransform = (v: string) => {
+    const valid = validateString(v);
+    if (!valid) {
+      console.error('The "screenReaderMessage" parameter must be of type `string`.');
+      return DEFAULT_SCREEN_READER_MESSAGE;
+    }
+    return v;
+  };
+
+  /**
+   * Message for screen reader.
+   * The message format is: "some text $1 some text $2",
+   * where $1 is the number of the first element of the screen collection,
+   * $2 is the number of the last element of the screen collection.
+   */
+  @Input()
+  set screenReaderMessage(v: string) {
+    if (this._$screenReaderMessage.getValue() === v) {
+      return;
+    }
+
+    const transformedValue = this._screenReaderMessageTransform(v);
+
+    this._$screenReaderMessage.next(transformedValue);
+  };
+  get screenReaderMessage() { return this._$screenReaderMessage.getValue(); }
+
+  private _$screenReaderFormattedMessage = new BehaviorSubject<string>(DEFAULT_SCREEN_READER_MESSAGE);
+  readonly $screenReaderFormattedMessage = this._$screenReaderFormattedMessage.asObservable();
+
   private _isVertical = this.getIsVertical();
 
   private _isLazy = this.getIsLazy();
@@ -1056,7 +1116,20 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         map(v => Array.isArray(v) ? v : []),
       ),
       $actualItems = this._$actualItems.asObservable(),
+      $screenReaderMessage = this.$screenReaderMessage,
+      $displayItems = this._service.$displayItems,
       $cacheVersion = this.$cacheVersion;
+
+    combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      debounceTime(100),
+      tap(([items, screenReaderMessage, isVertical, scrollSize, bounds]) => {
+        this._$screenReaderFormattedMessage.next(
+          formatScreenReaderMessage(items, screenReaderMessage, scrollSize, isVertical, bounds!)
+        );
+      }),
+    ).subscribe();
 
     $isLazy.pipe(
       takeUntilDestroyed(),
