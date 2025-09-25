@@ -12,6 +12,7 @@ import {
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, SCROLL, SCROLL_END, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
+  DEFAULT_SCREEN_READER_MESSAGE,
 } from './const';
 import { IRenderVirtualListItem, IScrollEvent, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { FocusAlignment, Id, ISize } from './types';
@@ -64,6 +65,17 @@ const validateScrollIteration = (value: number) => {
       throw Error('The "align" parameter must have the value `none`, `start`, `center` or `end`.');
     }
   };
+
+const formatScreenReaderMessage = (items: IRenderVirtualListCollection, messagePattern: string | undefined) => {
+  if (!messagePattern) {
+    return '';
+  }
+  const start = items?.length ? items[0].index + 1 : 0, end = items?.length ? items[items.length - 1].index + 1 : 0;
+  let formatted = messagePattern ?? '';
+  formatted = formatted.replace('$1', `${start}`);
+  formatted = formatted.replace('$2', `${end}`);
+  return formatted;
+};
 
 /**
  * Virtual list component.
@@ -527,6 +539,27 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
    */
   trackBy = input<string>(TRACK_BY_PROPERTY_NAME, { ...this._trackByOptions });
 
+  private _screenReaderMessageOptions = {
+    transform: (v: string) => {
+      const valid = validateString(v);
+      if (!valid) {
+        console.error('The "screenReaderMessage" parameter must be of type `string`.');
+        return DEFAULT_SCREEN_READER_MESSAGE;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Message for screen reader.
+   * The message format is: "some text $1 some text $2",
+   * where $1 is the number of the first element of the screen collection,
+   * $2 is the number of the last element of the screen collection.
+   */
+  screenReaderMessage = input<string>(DEFAULT_SCREEN_READER_MESSAGE, { ...this._screenReaderMessageOptions });
+
+  readonly screenReaderFormattedMessage = signal<string>(this.screenReaderMessage());
+
   private _isNotSelecting = this.getIsNotSelecting();
   get isNotSelecting() { return this._isNotSelecting; }
 
@@ -829,7 +862,19 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
         map(v => Array.isArray(v) ? v : []),
       ),
       $actualItems = toObservable(this._actualItems),
+      $screenReaderMessage = toObservable(this.screenReaderMessage),
+      $displayItems = this._service.$displayItems,
       $cacheVersion = toObservable(this._cacheVersion);
+
+    combineLatest([$displayItems, $screenReaderMessage]).pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      tap(([items, screenReaderMessage]) => {
+        this.screenReaderFormattedMessage.set(
+          formatScreenReaderMessage(items, screenReaderMessage)
+        );
+      }),
+    ).subscribe();
 
     $isLazy.pipe(
       takeUntilDestroyed(),
