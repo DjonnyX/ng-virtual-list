@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.26] - 2025-09-25
+
+Screen reader
+
+## Improved
+
+- The position of the message block for screen reader has been moved to the beginning
+
 ## [19.7.25] - 2025-09-25
 
 Screen reader

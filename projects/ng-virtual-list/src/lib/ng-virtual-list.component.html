@@ -1,3 +1,7 @@
+<div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
+  {{ screenReaderFormattedMessage() }}
+</div>
+
 @if (snap()) {
   <div #snapped part="snapped-item" class="ngvl__list-snapper">
     <ng-container #snapRendererContainer></ng-container>
@@ -8,8 +12,4 @@
     part="list" class="ngvl__list">
     <ng-container #renderersContainer></ng-container>
   </div>
-</div>
-
-<div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
-  {{ screenReaderFormattedMessage() }}
 </div>
