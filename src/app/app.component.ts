@@ -163,13 +163,20 @@ export class AppComponent {
     const list = this._listContainerRef;
     if (list && this.itemId !== undefined) {
       list.scrollTo(this.itemId, 'smooth' as ScrollBehavior);
+      setTimeout(() => {
+        list.focus(this.itemId);
+      }, 1500);
     }
   }
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef;
     if (list && this.dlItemId !== undefined) {
+      list.focus(this.dlItemId)
       list.scrollTo(this.dlItemId, 'instant' as ScrollBehavior);
+      setTimeout(() => {
+        list.focus(this.dlItemId);
+      }, 100);
     }
   }
 
