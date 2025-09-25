@@ -66,11 +66,27 @@ const validateScrollIteration = (value: number) => {
     }
   };
 
-const formatScreenReaderMessage = (items: IRenderVirtualListCollection, messagePattern: string | undefined) => {
+const formatScreenReaderMessage = (items: IRenderVirtualListCollection, messagePattern: string | undefined, scrollSize: number,
+  isVertical: boolean, bounds: ISize) => {
   if (!messagePattern) {
     return '';
   }
-  const start = items?.length ? items[0].index + 1 : 0, end = items?.length ? items[items.length - 1].index + 1 : 0;
+  const list = items ?? [], size = isVertical ? bounds.height : bounds.width;
+  let start = Number.NaN, end = Number.NaN, prevItem: IRenderVirtualListItem | undefined;
+  for (let i = 0, l = list.length; i < l; i++) {
+    const item = list[i], position = isVertical ? item.measures.y : item.measures.x,
+      itemSize = isVertical ? item.measures.height : item.measures.width;
+    if (((position + itemSize) >= scrollSize) && Number.isNaN(start)) {
+      start = item.index + 1;
+    }
+    if ((position >= (scrollSize + size)) && Number.isNaN(end) && prevItem) {
+      end = prevItem.index + 1;
+    }
+    prevItem = item;
+  }
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return '';
+  }
   let formatted = messagePattern ?? '';
   formatted = formatted.replace('$1', `${start}`);
   formatted = formatted.replace('$2', `${end}`);
@@ -866,12 +882,12 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
       $displayItems = this._service.$displayItems,
       $cacheVersion = toObservable(this._cacheVersion);
 
-    combineLatest([$displayItems, $screenReaderMessage]).pipe(
+    combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      tap(([items, screenReaderMessage]) => {
+      tap(([items, screenReaderMessage, isVertical, scrollSize, bounds]) => {
         this.screenReaderFormattedMessage.set(
-          formatScreenReaderMessage(items, screenReaderMessage)
+          formatScreenReaderMessage(items, screenReaderMessage, scrollSize, isVertical, bounds)
         );
       }),
     ).subscribe();
