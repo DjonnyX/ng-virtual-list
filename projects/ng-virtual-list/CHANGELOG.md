@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.7.16] - 2025-09-26
+
+Screen reader
+
+## Added
+
+- Screen reader support has been implemented
+
 ## [17.7.15] - 2025-09-25
 
 Focusing an element

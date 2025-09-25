@@ -1,10 +1,15 @@
+<div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
+  {{ screenReaderFormattedMessage() }}
+</div>
+
 @if (snap()) {
   <div #snapped part="snapped-item" class="ngvl__list-snapper">
     <ng-container #snapRendererContainer></ng-container>
   </div>
 }
 <div #container part="scroller" class="ngvl__scroller">
-  <div [attr.aria-orientation]="orientation" [attr.aria-activedescendant]="focusedElement()" #list part="list" class="ngvl__list">
+  <div [attr.aria-orientation]="orientation" [attr.aria-activedescendant]="focusedElement()" tabindex="0" #list
+    part="list" class="ngvl__list">
     <ng-container #renderersContainer></ng-container>
   </div>
 </div>
