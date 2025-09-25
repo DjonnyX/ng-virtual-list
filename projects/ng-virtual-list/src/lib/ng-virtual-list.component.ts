@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
@@ -885,6 +885,7 @@ export class NgVirtualListComponent implements AfterViewInit, OnInit, OnDestroy 
     combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
+      debounceTime(100),
       tap(([items, screenReaderMessage, isVertical, scrollSize, bounds]) => {
         this.screenReaderFormattedMessage.set(
           formatScreenReaderMessage(items, screenReaderMessage, scrollSize, isVertical, bounds)

@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.27] - 2025-09-26
+
+Screen reader
+
+## Improved
+
+- Performance has been optimized
+
 ## [19.7.26] - 2025-09-25
 
 Screen reader
