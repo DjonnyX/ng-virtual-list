@@ -589,7 +589,7 @@ Selecting even elements:
 
 ## 📚 API
 
-[NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
+### [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
 
 Inputs
 
@@ -640,6 +640,25 @@ Methods
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
 | scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
+| focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
+
+<br/>
+
+### Template API
+
+```html
+<ng-template #itemRenderer let-data="data" let-config="config" let-measures="measures">
+  <!-- content -->
+</ng-template>
+```
+
+Properties
+
+| Property | Type | Description |
+|--|--|--|
+| data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
+| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
+| measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| undefined | Display object metrics. |
 
 <br/>
 
@@ -647,12 +666,12 @@ Methods
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 19.x | 19.7.22 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.22](https://www.npmjs.com/package/ng-virtual-list/v/19.7.22) |
-| 18.x | 18.7.13 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.13](https://www.npmjs.com/package/ng-virtual-list/v/18.7.13) |
-| 17.x | 17.7.14 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.14](https://www.npmjs.com/package/ng-virtual-list/v/17.7.14) |
-| 16.x | 16.7.12 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.12](https://www.npmjs.com/package/ng-virtual-list/v/16.7.12) |
-| 15.x | 15.7.12 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.12](https://www.npmjs.com/package/ng-virtual-list/v/15.7.12) |
-| 14.x | 14.7.13 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.13](https://www.npmjs.com/package/ng-virtual-list/v/14.7.13) |
+| 19.x | 19.7.23 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.7.23](https://www.npmjs.com/package/ng-virtual-list/v/19.7.23) |
+| 18.x | 18.7.14 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.7.14](https://www.npmjs.com/package/ng-virtual-list/v/18.7.14) |
+| 17.x | 17.7.15 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.7.15](https://www.npmjs.com/package/ng-virtual-list/v/17.7.15) |
+| 16.x | 16.7.13 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.7.13](https://www.npmjs.com/package/ng-virtual-list/v/16.7.13) |
+| 15.x | 15.7.13 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.7.13](https://www.npmjs.com/package/ng-virtual-list/v/15.7.13) |
+| 14.x | 14.7.14 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.7.14](https://www.npmjs.com/package/ng-virtual-list/v/14.7.14) |
 
 <br/>
 
