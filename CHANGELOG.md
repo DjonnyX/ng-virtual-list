@@ -1,6 +1,22 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.25] - 2025-09-25
+
+Screen reader
+
+## Fixed
+
+- Fixed generation of item numbers for screen readers
+
+## [19.7.24] - 2025-09-25
+
+Screen reader
+
+## Added
+
+- Screen reader support has been implemented
+
 ## [19.7.23] - 2025-09-24
 
 Focusing an element

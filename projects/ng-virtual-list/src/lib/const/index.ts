@@ -33,6 +33,8 @@ export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
 
 export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
 
+export const DEFAULT_SCREEN_READER_MESSAGE = 'Showing items $1 to $2';
+
 // presets
 
 export const BEHAVIOR_AUTO = 'auto';
