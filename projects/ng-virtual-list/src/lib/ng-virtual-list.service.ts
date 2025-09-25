@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Subject, tap } from 'rxjs';
+import { Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { TrackBox } from './utils/trackBox';
 import { IRenderVirtualListItem } from './models';
-import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Id } from './types';
+import { IRenderVirtualListCollection } from './models/render-collection.model';
+import { FocusAlignments } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { FocusAlignment, Id } from './types';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
-import { IRenderVirtualListCollection } from './models/render-collection.model';
 
 @Injectable({
   providedIn: 'root'
@@ -185,13 +186,13 @@ export class NgVirtualListService {
     this._trackBox = trackBox;
   }
 
-  itemToFocus: ((element: HTMLElement, position: number) => void) | undefined;
+  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment) => void) | undefined;
 
-  focus(element: HTMLElement) {
+  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER) {
     element.focus({ preventScroll: true });
     if (element.parentElement) {
       const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
-      this.itemToFocus?.(element, pos);
+      this.itemToFocus?.(element, pos, align);
     }
   }
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, TemplateRef } from '@angular/core';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { Id, IRect, ISize } from '../types';
+import { FocusAlignment, Id, ISize } from '../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_NEW,
   PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
@@ -10,36 +10,13 @@ import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-c
 import { NgVirtualListService } from '../ng-virtual-list.service';
 import { map, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, fromEvent, Subject } from 'rxjs';
-import { IRenderVirtualListItemConfig } from '../models/render-item-config.model';
 import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
 import { validateBoolean } from '../utils/validation';
+import { FocusAlignments } from '../enums';
+import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-interface IItemConfig extends IRenderVirtualListItemConfig {
-  /**
-   * Determines whether the element has focus or not.
-   */
-  focus: boolean;
-  /**
-   * Determines whether the element is selected or not.
-   */
-  selected: boolean;
-  /**
-   * Determines whether the element is collapsed or not.
-   */
-  collapsed: boolean;
-  /**
-    * Selects a list item
-    * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
-    */
-  select: (selected: boolean | undefined) => void;
-  /**
-    * Collapse list items
-    * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
-    */
-  collapse: (collapsed: boolean | undefined) => void;
-}
-
-const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'ng-vl-index',
+const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'ng-vl-index', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
   KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown';
 
@@ -64,8 +41,6 @@ const getElementByIndex = (index: number) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
-  protected _$unsubscribe = new Subject<void>();
-
   private _id!: number;
   get id() {
     return this._id;
@@ -78,25 +53,20 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   private _isCollapsed: boolean = false;
 
-  private _$config = new BehaviorSubject<IItemConfig>({} as IItemConfig);
+  private _$config = new BehaviorSubject<IDisplayObjectConfig>({} as IDisplayObjectConfig);
   $config = this._$config.asObservable();
 
-  measures = new BehaviorSubject<IRect & {
-    /**
-     * Delta is calculated for Snapping Method.ADVANCED
-     */
-    delta: number;
-  } | undefined>(undefined);
+  measures = new BehaviorSubject<IDisplayObjectMeasures | undefined>(undefined);
 
-  private _$focus = new BehaviorSubject<boolean>(false);
-  $focus = this._$focus.asObservable();
+  private _$focused = new BehaviorSubject<boolean>(false);
+  $focused = this._$focused.asObservable();
 
   private _$part = new BehaviorSubject<string>(PART_DEFAULT_ITEM);
   $part = this._$part.asObservable();
 
   regular: boolean = false;
 
-  data: IRenderVirtualListItem | undefined = undefined;
+  data: IRenderVirtualListItem | undefined;
 
   private _$data = new BehaviorSubject<IRenderVirtualListItem | undefined>(this.data);
   private $data = this._$data.asObservable();
@@ -186,26 +156,34 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       this._service.collapse(data, collapsed);
     };
 
+  private _focusHandler = () =>
+    /**
+    * Focus a list item
+    */
+    (align: FocusAlignment = FocusAlignments.CENTER) => {
+      this.focus(align);
+    };
+
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>, private _service: NgVirtualListService) {
     super();
     this._id = this._service.generateComponentId();
 
     const $data = this.$data,
-      $focus = this.$focus;
+      $focus = this.$focused;
 
     this._elementRef.nativeElement.setAttribute('id', String(this._id));
 
     $focus.pipe(
-      takeUntil(this._$unsubscribe),
+      takeUntilDestroyed(),
       tap(v => {
         this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
       }),
     ).subscribe();
 
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
-      takeUntil(this._$unsubscribe),
+      takeUntilDestroyed(),
       tap(e => {
-        this._$focus.next(true);
+        this._$focused.next(true);
 
         this.updateConfig(this.data);
 
@@ -214,9 +192,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     ).subscribe(),
 
       fromEvent(this.element, EVENT_FOCUS_OUT).pipe(
-        takeUntil(this._$unsubscribe),
+        takeUntilDestroyed(),
         tap(e => {
-          this._$focus.next(false);
+          this._$focused.next(false);
 
           this.updateConfig(this.data);
 
@@ -225,7 +203,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       ).subscribe(),
 
       fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
-        takeUntil(this._$unsubscribe),
+        takeUntilDestroyed(),
         tap(e => {
           switch (e.key) {
             case KEY_SPACE: {
@@ -272,7 +250,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       ).subscribe();
 
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
-      takeUntil(this._$unsubscribe),
+      takeUntilDestroyed(),
       map(([, m, selectedIds, collapsedIds]) => ({ method: m, selectedIds, collapsedIds })),
       tap(({ method, selectedIds, collapsedIds }) => {
         switch (method) {
@@ -338,20 +316,32 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
   }
 
+  private focus(align: FocusAlignment = FocusAlignments.CENTER) {
+    if (this._service.listElement) {
+      const tabIndex = this.data?.config?.tabIndex ?? 0;
+      let index = tabIndex;
+      const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+      if (el) {
+        this._service.focus(el, align);
+      }
+    }
+  }
+
   private updateMeasures(v: IRenderVirtualListItem<any> | undefined) {
     this.measures.next(v?.measures ? { ...v.measures } : undefined)
   }
 
   private updateConfig(v: IRenderVirtualListItem<any> | undefined) {
     this._$config.next({
-      ...v?.config || {} as IItemConfig, selected: this._isSelected, collapsed: this._isCollapsed, focus: this._$focus.getValue(),
-      collapse: this._collapseHandler(v), select: this._selectHandler(v)
+      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
+      collapse: this._collapseHandler(v), select: this._selectHandler(v), focus: this._focusHandler(),
     });
   }
 
   private update() {
     const data = this.data, regular = this.regular, length = this._regularLength;
     if (data) {
+      this._elementRef.nativeElement.setAttribute(ID, `${data.id}`);
       const styles = this._elementRef.nativeElement.style;
       styles.zIndex = data.config.zIndex;
       if (data.config.snapped) {
@@ -372,6 +362,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       }
       styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
       styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+    } else {
+      this._elementRef.nativeElement.removeAttribute(ID);
     }
 
     this._cdr.markForCheck();
@@ -397,7 +389,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     if (v ? v.config.new : false) {
       part += PART_ITEM_NEW;
     }
-    if (this._$focus.getValue()) {
+    if (this._$focused.getValue()) {
       part += PART_ITEM_FOCUSED;
     }
     this._$part.next(part);
@@ -449,13 +441,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   onClickHandler() {
     this._service.itemClick(this.data);
-  }
-
-  ngOnDestroy(): void {
-    if (this._$unsubscribe) {
-      this._$unsubscribe.next();
-      this._$unsubscribe.complete();
-    }
   }
 }
 
