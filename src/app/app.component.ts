@@ -164,6 +164,9 @@ export class AppComponent {
     const list = this._listContainerRef();
     if (list && this.itemId !== undefined) {
       list.scrollTo(this.itemId, 'smooth');
+      setTimeout(() => {
+        list.focus(this.itemId);
+      }, 1500);
     }
   }
 
@@ -171,6 +174,9 @@ export class AppComponent {
     const list = this._dynamicListContainerRef();
     if (list && this.dlItemId !== undefined) {
       list.scrollTo(this.dlItemId, 'instant');
+      setTimeout(() => {
+        list.focus(this.dlItemId);
+      }, 100);
     }
   }
 
