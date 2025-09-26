@@ -1,13 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [20.7.16] - 2025-09-26
+## [20.7.17] - 2025-09-26
 
 Examples
 
 ## Added
 
 - Added link to examples in README.md
+
+## [20.7.16] - 2025-09-26
+
+Project description
+  
+### Improved 
+
+- README.md updated
 
 ## [20.7.15] - 2025-09-26
 
