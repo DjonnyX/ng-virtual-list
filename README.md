@@ -17,7 +17,7 @@ Flexible, and actively maintained Angular library that excels with high-performa
 
 [Live Examples (Storybook)](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
 
-[Examples](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
+[Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
 [(Code)](https://github.com/DjonnyX/ng-virtual-list-demo/tree/main/src/app)
 
 <br/>
