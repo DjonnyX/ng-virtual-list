@@ -15,7 +15,9 @@ Flexible, and actively maintained Angular library that excels with high-performa
 [Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
 [(Code)](https://github.com/DjonnyX/ng-virtual-list-demo)
 
-[Live Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
+[Live Examples (Storybook)](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
+
+[Examples](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
 [(Code)](https://github.com/DjonnyX/ng-virtual-list-demo/tree/main/src/app)
 
 <br/>
@@ -630,6 +632,8 @@ Outputs
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 | onScrollReachStart | void | Fires when the scroll reaches the start. |
 | onScrollReachEnd | void | Fires when the scroll reaches the end. |
+
+<br/>
 
 Methods
 
