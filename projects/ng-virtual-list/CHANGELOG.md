@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.7.28] - 2025-09-26
+
+Examples
+
+## Added
+
+- Added link to examples in README.md
+
 ## [19.7.27] - 2025-09-26
 
 Screen reader
