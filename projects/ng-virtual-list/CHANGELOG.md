@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [20.7.16] - 2025-09-26
 
-Project description
-  
-### Improved 
+Examples
 
-- README.md updated
+## Added
+
+- Added link to examples in README.md
 
 ## [20.7.15] - 2025-09-26
 
