@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [16.7.16] - 2025-09-27
+
+Jerking when scrolling
+
+## Fixed
+
+- Fixed jerking when scrolling
+
 ## [16.7.15] - 2025-09-26
 
 Examples
