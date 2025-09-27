@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.7.19] - 2025-09-27
+
+Project description
+  
+### Improved 
+
+- README.md updated (fixed Previous versions)
+
 ## [20.7.18] - 2025-09-27
 
 Jerking when scrolling
