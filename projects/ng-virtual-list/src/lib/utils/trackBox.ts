@@ -1092,7 +1092,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 continue;
             }
             const bounds = component.instance.getBounds();
-            this.set(itemId, { ...(this.get(itemId) || {}), ...bounds });
+            this.set(itemId, bounds);
         }
     }
 
