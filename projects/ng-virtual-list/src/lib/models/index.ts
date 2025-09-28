@@ -6,6 +6,7 @@ import { IVirtualListCollection } from './collection.model';
 import { IRenderVirtualListItem } from './render-item.model';
 import { IDisplayObjectConfig } from './display-object-config.model';
 import { IDisplayObjectMeasures } from './display-object-measures.model';
+import { IScrollOptions } from './scroll-options.model';
 
 export type {
     IDisplayObjectConfig,
@@ -16,4 +17,5 @@ export type {
     IVirtualListCollection,
     IRenderVirtualListItem,
     ScrollDirection,
+    IScrollOptions,
 }
