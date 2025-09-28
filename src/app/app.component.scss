@@ -207,6 +207,9 @@ input {
     }
 
     &__container {
+        cursor: pointer;
+        user-select: none;
+        word-break: break-all;
         height: 100%;
         width: 100%;
         padding: 6px 12px;
@@ -230,6 +233,9 @@ input {
     }
 
     &__group-container {
+        cursor: pointer;
+        user-select: none;
+        word-break: break-all;
         height: 100%;
         width: 100%;
         padding: 6px 12px;
@@ -249,6 +255,8 @@ input {
 
     &__h-container {
         cursor: pointer;
+        user-select: none;
+        word-break: break-all;
         height: 100%;
         padding: 0 8px;
         background-color: #1a1a1e;
@@ -280,6 +288,9 @@ input {
     }
 
     &__h-group-container {
+        cursor: pointer;
+        user-select: none;
+        word-break: break-all;
         height: 100%;
         padding: 0 8px;
         background-color: #25252b;
