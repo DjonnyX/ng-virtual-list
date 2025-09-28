@@ -160,23 +160,26 @@ export class AppComponent {
   dlItemId: Id = this._minDlId;
 
   onButtonScrollToIdClickHandler = (e: Event) => {
-    const list = this._listContainerRef;
-    if (list && this.itemId !== undefined) {
-      list.scrollTo(this.itemId, 'smooth' as ScrollBehavior);
-      setTimeout(() => {
-        list.focus(this.itemId);
-      }, 1500);
+    const list = this._listContainerRef, id = this.itemId;
+    if (list && id !== undefined) {
+      list.scrollTo(id, () => {
+        list.focus(id);
+        console.info(`scrollTo finished. id: ${id}`);
+      }, {
+        behavior: 'smooth',
+      });
     }
   }
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
-    const list = this._dynamicListContainerRef;
-    if (list && this.dlItemId !== undefined) {
-      list.focus(this.dlItemId)
-      list.scrollTo(this.dlItemId, 'instant' as ScrollBehavior);
-      setTimeout(() => {
-        list.focus(this.dlItemId);
-      }, 100);
+    const list = this._dynamicListContainerRef, id = this.dlItemId;
+    if (list && id !== undefined) {
+      list.scrollTo(id, () => {
+        list.focus(id);
+        console.info(`scrollTo finished. id: ${id}`);
+      }, {
+        behavior: 'instant',
+      });
     }
   }
 
