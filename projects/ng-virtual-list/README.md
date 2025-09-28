@@ -639,8 +639,8 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior: ScrollBehavior = 'auto') => number | The method scrolls the list to the element with the given id and returns the value of the scrolled area. Behavior accepts the values ​​"auto", "instant" and "smooth". |
-| scrollToEnd | (behavior?: ScrollBehavior) => void | Scrolls the scroll area to the desired element with the specified ID. |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
+| scrollToEnd | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the last item in the collection. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
 
