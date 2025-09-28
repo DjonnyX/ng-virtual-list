@@ -1,7 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [14.7.16] - 2025-09-27
+## [14.7.18] - 2025-09-28
+
+Scrolling methods
+
+## Improved
+- Scrolling methods have been reworked
+
+## Added
+- Add `scrollEnd` callback
+- Add `scrollToEnd` callback
+
+## [14.7.17] - 2025-09-27
 
 Jerking when scrolling
 
