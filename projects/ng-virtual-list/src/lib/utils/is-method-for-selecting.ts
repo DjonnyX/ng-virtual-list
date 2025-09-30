@@ -6,7 +6,7 @@ const NONE_ALIASES = [MethodsForSelecting.NONE, 'none'],
 
 /**
  * Defines the method for selecting list items.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/isMethodForSelecting.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/is-method-for-selecting.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */

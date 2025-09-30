@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
-import { TrackBox } from './utils/trackBox';
+import { TrackBox } from './utils/track-box';
 import { IRenderVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments } from './enums';
