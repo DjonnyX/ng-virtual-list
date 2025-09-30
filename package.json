@@ -1,6 +1,6 @@
 {
   "name": "virtual-list",
-  "version": "14.7.18",
+  "version": "14.8.0",
   "author": {
     "name": "Evgenii Grebennikov",
     "email": "djonnyx@gmail.com"
@@ -10,8 +10,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:lib": "ng test --watch=false && ng build ng-virtual-list",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test ng-virtual-list"
   },
   "private": true,
   "dependencies": {

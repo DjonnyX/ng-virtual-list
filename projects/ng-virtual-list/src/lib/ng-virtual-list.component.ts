@@ -18,21 +18,21 @@ import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting, SnappingMethod,
 } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/trackBox';
-import { DisposableComponent } from './utils/disposableComponent';
+import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/track-box';
+import { DisposableComponent } from './utils/disposable-component';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
 import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
-import { isDirection } from './utils/isDirection';
+import { isDirection } from './utils/is-direction';
 import { NgVirtualListService } from './ng-virtual-list.service';
-import { isMethodForSelecting } from './utils/isMethodForSelecting';
+import { isMethodForSelecting } from './utils/is-method-for-selecting';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
-import { CMap } from './utils/cacheMap';
+import { CMap } from './utils/cache-map';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
-import { isCollectionMode } from './utils/isCollectionMode';
+import { isCollectionMode } from './utils/is-collection-mode';
 
 interface IScrollParams {
   id: Id;
@@ -204,10 +204,10 @@ export class NgVirtualListComponent extends DisposableComponent implements After
     if (valid) {
       if (v) {
         for (let i = 0, l = v.length; i < l; i++) {
-          const item = v[i];
+          const item = v[i], trackBy = this.trackBy;
           valid = validateObject(item, true);
           if (valid) {
-            if (item && !(validateFloat(item.id as number, true) || validateString(item.id as string, true))) {
+            if (item && !(validateFloat(item[trackBy] as number, true) || validateString(item[trackBy] as string, true))) {
               valid = false;
               break;
             }
@@ -1166,14 +1166,14 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       }),
     ).subscribe();
 
-    combineLatest([$items, $collapsedItemIds, $itemConfigMap]).pipe(
+    combineLatest([$items, $collapsedItemIds, $itemConfigMap, $trackBy]).pipe(
       takeUntil(this._$unsubscribe),
-      tap(([items, collapsedIds, itemConfigMap]) => {
+      tap(([items, collapsedIds, itemConfigMap, trackBy]) => {
         const hiddenItems = new CMap<Id, boolean>();
 
         let isCollapsed = false;
         for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item.id, group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
+          const item = items[i], id = item[trackBy], group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
           if (group) {
             isCollapsed = collapsed;
           } else {
@@ -1185,7 +1185,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
         const actualItems: IVirtualListCollection = [];
         for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item.id;
+          const item = items[i], id = item[trackBy];
           if (hiddenItems.has(id)) {
             continue;
           }
@@ -1405,11 +1405,11 @@ export class NgVirtualListComponent extends DisposableComponent implements After
 
     const $scrollTo = this.$scrollTo;
 
-    combineLatest([$container, $scrollTo]).pipe(
+    combineLatest([$container, $trackBy, $scrollTo]).pipe(
       takeUntil(this._$unsubscribe),
       filter(([container]) => container !== undefined),
-      map(([container, event]) => ({ container: container?.nativeElement, event })),
-      switchMap(({ container, event }) => {
+      map(([container, trackBy, event]) => ({ container: container?.nativeElement, trackBy, event })),
+      switchMap(({ container, trackBy, event }) => {
         const cnt = container!, { id, behavior = BEHAVIOR_INSTANT, iteration = 0, isLastIteration = false, scrollCalled = false, cb } = event;
         const items = this._$actualItems.getValue();
         if (items && items.length) {
@@ -1479,7 +1479,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
               return of([true, { id, container: cnt, scrollCalled, cb }]);
             }
           } else {
-            const index = items.findIndex(item => item.id === id);
+            const index = items.findIndex(item => item[trackBy] === id);
             if (index > -1) {
               const isVertical = this._isVertical,
                 currentScollSize = (isVertical ? cnt.scrollTop : cnt.scrollLeft), scrollSize = index * this.itemSize;
@@ -1769,7 +1769,7 @@ export class NgVirtualListComponent extends DisposableComponent implements After
       iteration = options?.iteration ?? 0;
     validateScrollBehavior(behavior);
     validateIteration(iteration);
-    const items = this.items, latItem = items[items.length > 0 ? items.length - 1 : 0], id = latItem.id,
+    const items = this.items, trackBy = this.trackBy, latItem = items[items.length > 0 ? items.length - 1 : 0], id = latItem[trackBy],
       actualIteration = validateScrollIteration(iteration);
     this._$scrollTo.next({ id, behavior, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb });
   }
