@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.8.0] - 2025-09-30
+
+Tests and stabilization
+
+## Fixed
+- Buffer calculation errors have been fixed
+- Fixed trackBy
+- Some fixes in the lazy mode
+
+## Added
+- Tests have been implemented
+
 ## [19.7.30] - 2025-09-27
 
 Scrolling methods
@@ -9,8 +21,8 @@ Scrolling methods
 - Scrolling methods have been reworked
 
 ## Added
-- Add `scrollEnd` callback
-- Add `scrollToEnd` callback
+- Added `scrollEnd` callback
+- Added `scrollToEnd` callback
 
 ## [19.7.29] - 2025-09-28
 
