@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
     CommonModule,
     FormsModule,
     AppRoutingModule,
-    NgVirtualListModule
+    NgVirtualListModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

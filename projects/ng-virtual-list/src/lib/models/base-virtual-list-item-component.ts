@@ -16,7 +16,6 @@ export abstract class BaseVirtualListItemComponent {
     abstract set item(v: IRenderVirtualListItem | null | undefined);
     abstract get item(): IRenderVirtualListItem | null | undefined;
     abstract get itemId(): Id | undefined;
-    abstract itemRenderer: TemplateRef<any> | undefined;
     abstract set renderer(v: TemplateRef<any> | undefined);
     abstract get element(): HTMLElement;
     public abstract getBounds(): ISize;
