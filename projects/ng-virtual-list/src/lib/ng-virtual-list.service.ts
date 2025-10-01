@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, takeUntil, tap } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { TrackBox } from './utils/trackBox';
+import { TrackBox } from './utils/track-box';
 import { IRenderVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments } from './enums';

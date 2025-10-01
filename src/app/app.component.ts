@@ -6,10 +6,12 @@ import { LOGO } from './const';
 const MAX_ITEMS = 50000;
 
 interface ICollectionItem {
+  id: Id;
   name: string;
 }
 
 interface IGroupCollectionItem extends ICollectionItem {
+  id: Id;
   type: 'group-header' | 'item';
 }
 
