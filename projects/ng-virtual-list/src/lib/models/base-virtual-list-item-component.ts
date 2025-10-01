@@ -1,4 +1,4 @@
-import { TemplateRef, WritableSignal } from '@angular/core';
+import { TemplateRef } from '@angular/core';
 import { Id, ISize } from '../types';
 import { IRenderVirtualListItem } from './render-item.model';
 
@@ -10,13 +10,11 @@ import { IRenderVirtualListItem } from './render-item.model';
  */
 export abstract class BaseVirtualListItemComponent {
     abstract get id(): number;
-    abstract data: WritableSignal<IRenderVirtualListItem | undefined>;
     abstract regular: boolean;
     abstract set regularLength(v: string)
     abstract set item(v: IRenderVirtualListItem | null | undefined);
     abstract get item(): IRenderVirtualListItem | null | undefined;
     abstract get itemId(): Id | undefined;
-    abstract itemRenderer: WritableSignal<TemplateRef<any> | undefined>;
     abstract set renderer(v: TemplateRef<any> | undefined);
     abstract get element(): HTMLElement;
     public abstract getBounds(): ISize;
