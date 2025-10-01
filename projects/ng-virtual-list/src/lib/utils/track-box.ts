@@ -2,10 +2,12 @@ import { ComponentRef } from "@angular/core";
 import { IRenderVirtualListCollection, } from "../models/render-collection.model";
 import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
-import { CacheMap, CMap } from "./cacheMap";
+import { CacheMap, CMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { ISize } from "../types";
-import { HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME } from "../const";
+import {
+    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+} from "../const";
 import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
@@ -48,7 +50,7 @@ export interface IMetrics {
     isFromItemIdFound: boolean;
 }
 
-export interface IRecalculateMetricsOptions<I extends { id: Id }, C extends Array<I>> {
+export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
     bounds: ISize;
     collection: C;
     isVertical: boolean;
@@ -65,10 +67,10 @@ export interface IRecalculateMetricsOptions<I extends { id: Id }, C extends Arra
     deletedItemsMap: { [index: number]: ISize; };
 }
 
-export interface IGetItemPositionOptions<I extends { id: Id }, C extends Array<I>>
+export interface IGetItemPositionOptions<I extends IItem, C extends Array<I>>
     extends Omit<IRecalculateMetricsOptions<I, C>, 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
 
-export interface IUpdateCollectionOptions<I extends { id: Id }, C extends Array<I>>
+export interface IUpdateCollectionOptions<I extends IItem, C extends Array<I>>
     extends Omit<IRecalculateMetricsOptions<I, C>, 'collection' | 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
 
 export type CacheMapEvents = TrackBoxEvents.CHANGE | TrackBoxEvents.RESET;
@@ -93,16 +95,20 @@ export interface IUpdateCollectionReturns {
     crudDetected: boolean;
 }
 
+interface IItem<I = any> {
+    [prop: string]: I;
+}
+
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
     IS_NEW = 'isNew';
 
-type Cache = ISize & { method?: ItemDisplayMethods } & { [prop: string]: any };
+type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/utils/trackBox.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/track-box.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -182,21 +188,21 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._tracker = new Tracker(this._trackingPropertyName);
     }
 
-    override set(id: Id, bounds: ISize): CMap<Id, ISize> {
+    override set(id: Id, cache: Cache): CMap<Id, ISize> {
         if (this._map.has(id)) {
             const b = this._map.get(id);
-            if (b?.width === bounds.width && b.height === bounds.height) {
+            if (b?.width === cache.width && b.height === cache.height) {
                 return this._map;
             }
         }
 
-        const v = this._map.set(id, bounds);
+        const v = this._map.set(id, cache);
 
         this.bumpVersion();
         return v;
     }
 
-    protected _previousCollection: Array<{ id: Id; }> | null | undefined;
+    protected _previousCollection: Array<IItem> | null | undefined;
 
     protected _deletedItemsMap: { [index: number]: ISize } = {};
 
@@ -233,7 +239,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _resetBufferSizeTimer: number | undefined;
 
-    protected isReseted: boolean = true;
+    protected _isReseted: boolean = true;
 
     protected override lifeCircle() {
         this.fireChangeIfNeed();
@@ -244,24 +250,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Scans the collection for deleted items and flushes the deleted item cache.
      */
-    resetCollection<I extends { id: Id; }, C extends Array<I>>(currentCollection: C | null | undefined, itemSize: number): void {
-        if (currentCollection !== undefined && currentCollection !== null && currentCollection === this._previousCollection) {
+    resetCollection<I extends IItem, C extends Array<I>>(currentCollection: C | null | undefined,
+        itemSize: number): void {
+        if (currentCollection !== undefined && currentCollection !== null &&
+            currentCollection === this._previousCollection) {
             console.warn('Attention! The collection must be immutable.');
             return;
         }
 
-        let reseted = this.isReseted;
-        if (reseted) {
-            if (!(!this._previousCollection || this._previousCollection.length === 0)) {
-                reseted = false;
-            }
-        }
+        const reseted = !((!!this._previousCollection && this._previousCollection.length > 0) &&
+            (!!currentCollection && currentCollection.length > 0));
 
-        if (!reseted && (!currentCollection || currentCollection.length === 0)) {
-            reseted = true;
-        }
+        this._isReseted = reseted;
 
-        this.isReseted = reseted;
         this.dispatch(TrackBoxEvents.RESET, reseted);
 
         this.updateCache(this._previousCollection, currentCollection, itemSize);
@@ -272,15 +273,17 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Update the cache of items from the list
      */
-    protected updateCache<I extends { id: Id; }, C extends Array<I>>(previousCollection: C | null | undefined, currentCollection: C | null | undefined,
+    protected updateCache<I extends IItem, C extends Array<I>>(previousCollection: C | null | undefined,
+        currentCollection: C | null | undefined,
         itemSize: number): void {
+        const trackBy = this._trackingPropertyName;
         let crudDetected = false;
 
         if (!currentCollection || currentCollection.length === 0) {
             if (previousCollection) {
                 // deleted
                 for (let i = 0, l = previousCollection.length; i < l; i++) {
-                    const item = previousCollection[i], id = item.id;
+                    const item = previousCollection[i], id = item[trackBy];
                     crudDetected = true;
                     if (this._map.has(id)) {
                         this._map.delete(id);
@@ -294,49 +297,57 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 // added
                 for (let i = 0, l = currentCollection.length; i < l; i++) {
                     crudDetected = true;
-                    const item = currentCollection[i], id = item.id;
+                    const item = currentCollection[i], id = item[trackBy];
                     this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
                 }
             }
             return;
         }
-        const collectionDict: { [id: Id]: I } = {};
+        const collectionDict: IItem<I> = {};
         for (let i = 0, l = currentCollection.length; i < l; i++) {
             const item = currentCollection[i];
             if (item) {
-                collectionDict[item.id] = item;
+                collectionDict[item[trackBy]] = item;
             }
         }
-        const notChangedMap: { [id: Id]: I } = {}, deletedMap: { [id: Id]: I } = {}, deletedItemsMap: { [index: number]: ISize } = {}, updatedMap: { [id: Id]: I } = {};
+        const notChangedMap: IItem<I> = {}, deletedMap: IItem<I> = {}, deletedItemsMap: { [index: number]: ISize } = {},
+            updatedMap: IItem<I> = {};
         for (let i = 0, l = previousCollection.length; i < l; i++) {
-            const item = previousCollection[i], id = item.id;
+            const item = previousCollection[i], id = item[trackBy];
             if (item) {
                 if (collectionDict.hasOwnProperty(id)) {
                     if (item === collectionDict[id]) {
                         // not changed
-                        notChangedMap[item.id] = item;
-                        this._map.set(id, { ...(this._map.get(id) || { width: itemSize, height: itemSize }), method: ItemDisplayMethods.NOT_CHANGED });
+                        notChangedMap[item[trackBy]] = item;
+                        this._map.set(id, {
+                            ...(this._map.get(id) || { width: itemSize, height: itemSize }),
+                            method: ItemDisplayMethods.NOT_CHANGED
+                        });
                         continue;
                     } else {
                         // updated
                         crudDetected = true;
-                        updatedMap[item.id] = item;
-                        this._map.set(id, { ...(this._map.get(id) || { width: itemSize, height: itemSize }), method: ItemDisplayMethods.UPDATE });
+                        updatedMap[item[trackBy]] = item;
+                        this._map.set(id, {
+                            ...(this._map.get(id) || { width: itemSize, height: itemSize }),
+                            method: ItemDisplayMethods.UPDATE
+                        });
                         continue;
                     }
                 }
 
                 // deleted
                 crudDetected = true;
-                deletedMap[item.id] = item;
-                deletedItemsMap[i] = this._map.get(item.id);
+                deletedMap[id] = item;
+                deletedItemsMap[i] = this._map.get(id);
                 this._map.delete(id);
             }
         }
 
         for (let i = 0, l = currentCollection.length; i < l; i++) {
-            const item = currentCollection[i], id = item.id;
-            if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) && !notChangedMap.hasOwnProperty(id)) {
+            const item = currentCollection[i], id = item[trackBy];
+            if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
+                !notChangedMap.hasOwnProperty(id)) {
                 // added
                 crudDetected = true;
                 this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
@@ -349,7 +360,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Finds the position of a collection element by the given Id
      */
-    getItemPosition<I extends { id: Id }, C extends Array<I>>(id: Id, itemConfigMap: IVirtualListItemConfigMap,
+    getItemPosition<I extends IItem, C extends Array<I>>(id: Id, itemConfigMap: IVirtualListItemConfigMap,
         options: IGetItemPositionOptions<I, C>): number {
         const opt = { fromItemId: id, itemConfigMap, ...options };
         this._defaultBufferSize = opt.bufferSize;
@@ -368,9 +379,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Updates the collection of display objects
      */
-    updateCollection<I extends { id: Id }, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
+    updateCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         options: IUpdateCollectionOptions<I, C>): IUpdateCollectionReturns {
-        const opt = { itemConfigMap, ...options }, crudDetected = this._crudDetected, deletedItemsMap = this._deletedItemsMap;
+        const opt = { itemConfigMap, ...options }, crudDetected = this._crudDetected,
+            deletedItemsMap = this._deletedItemsMap;
         if (opt.dynamicSize) {
             this.cacheElements();
         }
@@ -401,13 +413,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         const displayItems = this.generateDisplayCollection(items, itemConfigMap, { ...metrics, });
         return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected };
-    }
-
-    /**
-     * Finds the closest element in the collection by scrollSize
-     */
-    getNearestItem<I extends { id: Id }, C extends Array<I>>(scrollSize: number, items: C, itemSize: number, isVertical: boolean): I | undefined {
-        return this.getElementFromStart(scrollSize, items, this._map, itemSize, isVertical);
     }
 
     protected _previousScrollSize = 0;
@@ -441,42 +446,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     }
 
     /**
-     * Calculates the position of an element based on the given scrollSize
-     */
-    protected getElementFromStart<I extends { id: Id }, C extends Array<I>>(scrollSize: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
-        isVertical: boolean): I | undefined {
-        const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
-        let offset = 0;
-        for (let i = 0, l = collection.length; i < l; i++) {
-            const item = collection[i], id = item.id;
-            let itemSize = 0;
-            if (map.has(id)) {
-                const bounds = map.get(id);
-                itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
-            } else {
-                itemSize = typicalItemSize;
-            }
-            if (offset > scrollSize) {
-                return item;
-            }
-            offset += itemSize;
-        }
-        return undefined;
-    }
-
-    /**
      * Calculates the entry into the overscroll area and returns the number of overscroll elements
      */
-    protected getElementNumToEnd<I extends { id: Id }, C extends Array<I>>(i: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
+    protected getElementNumToEnd<I extends IItem, C extends Array<I>>(i: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
         size: number, isVertical: boolean, indexOffset: number = 0): { num: number, offset: number } {
-        const sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
+        const trackBy = this._trackingPropertyName, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0, num = 0;
         for (let j = collection.length - indexOffset - 1; j >= i; j--) {
-            const item = collection[j], id = item.id;
+            const item = collection[j], id = item[trackBy];
             let itemSize = 0;
             if (map.has(id)) {
-                const bounds = map.get(id);
-                itemSize = bounds ? bounds[sizeProperty] : typicalItemSize;
+                const cache = map.get(id);
+                itemSize = cache ? cache[sizeProperty] : typicalItemSize;
             } else {
                 itemSize = typicalItemSize;
             }
@@ -492,14 +473,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Calculates list metrics
      */
-    protected recalculateMetrics<I extends { id: Id }, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
+    protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize,
             bufferSize: minBufferSize, scrollSize, snap, itemConfigMap, enabledBufferOptimization,
             previousTotalSize, crudDetected, deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
-            };
+            }, roundedScrollSize = Math.round(scrollSize);
 
-        const bufferSize = Math.max(minBufferSize, this._bufferSize),
+        const trackBy = this._trackingPropertyName, bufferSize = Math.max(minBufferSize, this._bufferSize),
             { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
             size = isVertical ? height : width, totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
@@ -548,44 +529,44 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             isFromItemIdFound = false,
             deltaFromStartCreation = 0;
 
-        let isNew = !this.isReseted && (scrollSize === 0);
+        let isNew = !this._isReseted && (roundedScrollSize === 0);
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
             let y = 0, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
-                const ii = i + 1, collectionItem = collection[i], id = collectionItem.id;
+                const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
                 let componentSize = 0, componentSizeDelta = 0, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
                 if (map.has(id)) {
-                    const bounds = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
-                    componentSize = bounds[sizeProperty];
-                    itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                    const isItemNew = (bounds satisfies Cache)?.[IS_NEW] ?? this._isLazy;
-                    if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
+                    const cache = map.get(id) || { width: typicalItemSize, height: typicalItemSize };
+                    componentSize = cache[sizeProperty];
+                    itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
+                    const isItemNew = (cache satisfies Cache)?.[IS_NEW] ?? (this._isLazy && this._isReseted);
+                    if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0][trackBy]]?.sticky) || (roundedScrollSize > 0)) {
                         isNew = false;
                     }
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
-                            const snapshotBounds = snapshot.get(id);
-                            const componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
-                            componentSizeDelta = isItemNew ? 0 : componentSnapshotSize;
-                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED, isNew: false });
-                            if (isItemNew) {
+                            const snapshotBounds = snapshot.get(id),
+                                componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
+                            componentSizeDelta = componentSnapshotSize;
+                            map.set(id, { ...cache, method: ItemDisplayMethods.NOT_CHANGED, isNew: false });
+                            if (isNew) {
                                 deltaFromStartCreation += componentSize;
                             }
                             break;
                         }
                         case ItemDisplayMethods.CREATE: {
                             componentSizeDelta = isNew ? 0 : typicalItemSize;
-                            map.set(id, { ...bounds, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, isNew });
+                            map.set(id, { ...cache, method: ItemDisplayMethods.UPDATE, isNew });
                             break;
                         }
                     }
                 }
 
                 if (deletedItemsMap.hasOwnProperty(i)) {
-                    const bounds = deletedItemsMap[i], size = bounds?.[sizeProperty] ?? typicalItemSize;
+                    const cache = deletedItemsMap[i], size = cache?.[sizeProperty] ?? typicalItemSize;
                     if (y < scrollSize - size) {
                         leftSizeOfDeletedItems += size;
                     }
@@ -609,7 +590,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                     isTargetInOverscroll = true;
                                     y -= size - componentSize;
                                 } else {
-                                    if (itemConfigMap && !itemConfigMap[collectionItem.id] && y >= scrollSize && y < scrollSize + stickyComponentSize) {
+                                    if (itemConfigMap && !itemConfigMap[id] && y >= scrollSize && y < scrollSize + stickyComponentSize) {
                                         const snappedY = scrollSize - stickyComponentSize;
                                         leftHiddenItemsWeight -= (snappedY - y);
                                         y = snappedY;
@@ -672,7 +653,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (isTargetInOverscroll) {
                 const collectionLength = collection.length, { num } = this.getElementNumToEnd(
                     collectionLength - (checkOverscrollItemsLimit < 0 ? 0 : collectionLength - checkOverscrollItemsLimit),
-                    collection, map, typicalItemSize, size, isVertical, collectionLength - (collectionLength - (targetDisplayItemIndex + 1)),
+                    collection, map, typicalItemSize, size, isVertical,
+                    collectionLength - (collectionLength - (targetDisplayItemIndex + 1)),
                 );
                 if (num > 0) {
                     itemsFromStartToScrollEnd -= num;
@@ -702,25 +684,25 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (crudDetected) {
                 let y = 0;
                 for (let i = 0, l = collection.length; i < l; i++) {
-                    const collectionItem = collection[i], id = collectionItem.id;
+                    const collectionItem = collection[i], id = collectionItem[trackBy];
                     let componentSize = typicalItemSize, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
                     if (map.has(id)) {
-                        const bounds = map.get(id)!;
-                        itemDisplayMethod = bounds?.method ?? ItemDisplayMethods.UPDATE;
-                        const isItemNew = (bounds satisfies Cache)?.[IS_NEW] ?? this._isLazy;
-                        if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0].id]?.sticky)) {
+                        const cache = map.get(id)!;
+                        itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
+                        const isItemNew = (cache satisfies Cache)?.[IS_NEW] ?? this._isLazy;
+                        if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0][trackBy]]?.sticky)) {
                             isNew = false;
                         }
                         if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
                             if (isNew) {
                                 deltaFromStartCreation += componentSize;
                             }
-                            map.set(id, { ...bounds, method: ItemDisplayMethods.NOT_CHANGED, isNew });
+                            map.set(id, { ...cache, method: ItemDisplayMethods.NOT_CHANGED, isNew });
                         }
                     }
 
                     if (deletedItemsMap.hasOwnProperty(i)) {
-                        const bounds = deletedItemsMap[i], size = bounds?.[sizeProperty] ?? typicalItemSize;
+                        const cache = deletedItemsMap[i], size = cache?.[sizeProperty] ?? typicalItemSize;
                         if (y < scrollSize - size) {
                             leftSizeOfDeletedItems += size;
                         }
@@ -821,7 +803,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this.bumpVersion();
     }
 
-    protected generateDisplayCollection<I extends { id: Id }, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
+    protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         metrics: IMetrics): IRenderVirtualListCollection {
         const {
             width,
@@ -844,7 +826,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
-            const actualSnippedPosition = snippedPos, isSnappingMethodAdvanced = this.isSnappingMethodAdvanced,
+            const trackBy = this._trackingPropertyName, actualSnippedPosition = snippedPos,
+                isSnappingMethodAdvanced = this.isSnappingMethodAdvanced,
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = boundsSize;
             let pos = startPosition,
                 renderItems = renderItemsLength,
@@ -854,10 +837,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             if (snap) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
-                    if (!items[i]) {
+                    const collectionItem = items[i];
+                    if (!collectionItem) {
                         continue;
                     }
-                    const id = items[i].id, cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
@@ -886,7 +870,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 zIndex: '1',
                             };
 
-                        const itemData: I = items[i];
+                        const itemData: I = collectionItem;
 
                         stickyItem = { index: i, id, measures, data: itemData, config };
                         stickyItemIndex = i;
@@ -901,12 +885,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             }
 
             if (snap) {
-                const startIndex = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1;
+                const si = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1, startIndex = si < 0 ? si : si;
                 for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
-                    if (!items[i]) {
+                    const collectionItem = items[i];
+                    if (!collectionItem) {
                         continue;
                     }
-                    const id = items[i].id, cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize
@@ -914,7 +899,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             : typicalItemSize;
                     if (sticky === 2) {
                         const isOdd = i % 2 != 0,
-                            w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight, measures = {
+                            w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight,
+                            measures = {
                                 x: isVertical ? 0 : actualEndSnippedPosition - w,
                                 y: isVertical ? actualEndSnippedPosition - h : 0,
                                 width: w,
@@ -937,7 +923,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 zIndex: '1',
                             };
 
-                        const itemData: I = items[i];
+                        const itemData: I = collectionItem;
 
                         endStickyItem = { index: i, id, measures, data: itemData, config };
                         endStickyItemIndex = i;
@@ -955,11 +941,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 if (i >= totalLength) {
                     break;
                 }
-                if (!items[i]) {
+                const collectionItem = items[i];
+                if (!collectionItem) {
                     continue;
                 }
 
-                const id = items[i].id, cache = this.get(id)!,
+                const id = collectionItem[trackBy], cache = this.get(id)!,
                     size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
 
                 if (id !== stickyItem?.id && id !== endStickyItem?.id) {
@@ -997,7 +984,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         config.zIndex = '2';
                     }
 
-                    const itemData: I = items[i];
+                    const itemData: I = collectionItem;
 
                     const item: IRenderVirtualListItem = { index: i, id, measures, data: itemData, config };
                     if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + size + stickyItemSize)) {
@@ -1007,7 +994,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         nextSticky.config.snapped = snapped;
                         nextSticky.measures.delta = isVertical ? (item.measures.y - scrollSize) : (item.measures.x - scrollSize);
                         nextSticky.config.zIndex = '3';
-                    } else if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 && (pos >= scrollSize + boundsSize - size - endStickyItemSize)) {
+                    } else if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
+                        (pos >= scrollSize + boundsSize - size - endStickyItemSize)) {
                         item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
                         item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
                         nextEndSticky = item;
@@ -1039,7 +1027,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            if (nextEndSticky && endStickyItem && nextEndSticky.measures[axis] >= scrollSize + boundsSize - endStickyItemSize - nextEndSticky.measures[sizeProperty]) {
+            if (nextEndSticky && endStickyItem &&
+                (nextEndSticky.measures[axis] >= scrollSize + boundsSize - endStickyItemSize - nextEndSticky.measures[sizeProperty])) {
                 if (nextEndSticky.measures[axis] < scrollSize + boundsSize - endStickyItemSize) {
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
                     endStickyItem.config.snapped = nextEndSticky.config.snapped = false;

@@ -2,12 +2,12 @@ export type TEventHandler = (...args: Array<any>) => void;
 
 /**
  * Simple event emitter
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/utils/eventEmitter.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/event-emitter.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
 export class EventEmitter<E = string, H = TEventHandler> {
-    private _listeners: {
+    protected _listeners: {
         [eventName: string]: Array<TEventHandler>,
     } = {};
 
