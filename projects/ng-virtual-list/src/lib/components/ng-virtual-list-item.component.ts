@@ -66,7 +66,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   regular: boolean = false;
 
-  data: IRenderVirtualListItem | undefined;
+  data: IRenderVirtualListItem | undefined = undefined;
 
   private _$data = new BehaviorSubject<IRenderVirtualListItem | undefined>(this.data);
   private $data = this._$data.asObservable();

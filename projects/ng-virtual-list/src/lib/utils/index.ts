@@ -1,9 +1,9 @@
 import { debounce } from "./debounce";
-import { toggleClassName } from './toggleClassName';
+import { toggleClassName } from './toggle-class-name';
 import {
     IMetrics,
-} from "./trackBox";
-import { ScrollEvent } from "./scrollEvent";
+} from "./track-box";
+import { ScrollEvent } from "./scroll-event";
 
 export {
     debounce,
