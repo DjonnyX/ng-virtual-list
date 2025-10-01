@@ -24,7 +24,7 @@ export const bufferInterpolation = (currentBufferValue: number, array: Array<num
         array.push(value);
     }
 
-    while (array.length >= bufferSize) {
+    while (array.length > bufferSize) {
         array.shift();
     }
 
