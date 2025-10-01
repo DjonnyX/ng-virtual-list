@@ -1,9 +1,9 @@
 import { ScrollDirection } from "../models";
 import { debounce } from "./debounce";
-import { EventEmitter, TEventHandler } from "./eventEmitter";
+import { EventEmitter } from "./event-emitter";
 
 export class CMap<K = string, V = any> {
-    private _dict: { [k: string | number]: V } = {};
+    protected _dict: { [k: string | number]: V } = {};
 
     constructor(dict?: CMap<K, V>) {
         if (dict) {
@@ -30,12 +30,17 @@ export class CMap<K = string, V = any> {
     clear() {
         this._dict = {};
     }
+    toObject() {
+        return this._dict;
+    }
 }
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => CMap<I, B>;
     has: (id: I) => boolean;
     get: (id: I) => B | undefined;
+    delete: (id: I) => void;
+    clear: () => void;
 }
 
 export const CACHE_BOX_CHANGE_EVENT_NAME = 'change';
@@ -52,12 +57,11 @@ const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10,
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/cacheMap.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/utils/cache-map.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
-export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L extends TEventHandler = CacheMapListeners>
-    extends EventEmitter<E, L> implements ICacheMap {
+export class CacheMap<I = string | number, B = any, E extends string = CacheMapEvents, L = CacheMapListeners> extends EventEmitter<E, L> implements ICacheMap {
     protected _map = new CMap<I, B>();
 
     protected _snapshot = new CMap<I, B>();
@@ -206,6 +210,14 @@ export class CacheMap<I = string | number, B = any, E extends string = CacheMapE
 
     get(id: I): B | undefined {
         return this._map.get(id);
+    }
+
+    delete(id: I) {
+        this._map.delete(id);
+    }
+
+    clear() {
+        this._map.clear();
     }
 
     snapshot() {

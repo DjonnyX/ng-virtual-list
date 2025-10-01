@@ -1,8 +1,9 @@
 import { ComponentRef } from "@angular/core";
 import { ScrollDirection } from "../models";
-import { Id, ISize } from "../types";
+import { IRenderVirtualListCollection } from "../models/render-collection.model";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
-import { CMap } from "./cacheMap";
+import { Id, ISize } from "../types";
+import { CMap } from "./cache-map";
 
 type TrackingPropertyId = string | number;
 
@@ -17,7 +18,7 @@ export interface IVirtualListItemComponent<I = any> {
 
 /**
  * Tracks display items by property
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
  * @author Evgenii Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -61,18 +62,18 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
     /**
      * tracking by propName
      */
-    track(items: Array<any>, components: Array<ComponentRef<C>>, snapedComponent: ComponentRef<C> | null | undefined,
+    track(items: IRenderVirtualListCollection, components: Array<ComponentRef<C>>, snapedComponent: ComponentRef<C> | null | undefined,
         direction: ScrollDirection): void {
         if (!items) {
             return;
         }
 
-        const idPropName = this._trackingPropertyName, untrackedItems = [...components], newTrackItems: Array<any> = [],
+        const untrackedItems = [...components], newTrackItems: Array<any> = [],
             isDown = direction === 0 || direction === 1;
         let isRegularSnapped = false;
 
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
-            const item = items[i], itemTrackingProperty = item[idPropName];
+            const item = items[i], itemTrackingProperty = item.id;
 
             if (this._trackMap) {
                 if (this._trackMap.has(itemTrackingProperty)) {
@@ -122,7 +123,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
 
         for (let i = 0, l = newTrackItems.length; i < l; i++) {
             if (untrackedItems.length > 0) {
-                const comp = untrackedItems.shift(), item = newTrackItems[i], itemTrackingProperty = (item as any)[idPropName];
+                const comp = untrackedItems.shift(), item = newTrackItems[i], itemTrackingProperty = item.id;
 
                 if (comp) {
                     if (snapedComponent) {
