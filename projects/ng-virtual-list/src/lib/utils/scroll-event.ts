@@ -6,13 +6,15 @@ interface IScrollEventParams {
     list: HTMLElement;
     delta: number;
     scrollDelta: number;
+    scrollSize: number;
     isVertical: boolean;
+    itemsRange: [number, number] | undefined;
 }
 
 /**
  * Scroll event.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/scroll-event.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export class ScrollEvent implements IScrollEvent {
@@ -46,11 +48,14 @@ export class ScrollEvent implements IScrollEvent {
     private _scrollDelta: number = 0;
     get scrollDelta() { return this._scrollDelta; }
 
+    private _itemsRange: [number, number] | undefined;
+    get itemsRange() { return this._itemsRange; }
+
     constructor(params: IScrollEventParams) {
-        const { direction, isVertical, container, list, delta, scrollDelta } = params;
+        const { direction, container, list, scrollSize, delta, isVertical, scrollDelta, itemsRange } = params;
         this._direction = direction;
         this._isVertical = isVertical;
-        this._scrollSize = isVertical ? container.scrollTop : container.scrollLeft;
+        this._scrollSize = scrollSize;
         this._scrollWeight = isVertical ? container.scrollHeight : container.scrollWidth;
         this._listSize = isVertical ? list.offsetHeight : list.offsetWidth;
         this._size = isVertical ? container.offsetHeight : container.offsetWidth;
@@ -58,5 +63,6 @@ export class ScrollEvent implements IScrollEvent {
         this._delta = delta;
         this._scrollDelta = scrollDelta;
         this._isStart = this._scrollSize === 0;
+        this._itemsRange = itemsRange;
     }
 }

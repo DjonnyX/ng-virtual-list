@@ -1,11 +1,24 @@
 import { Component, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize } from '../../projects/ng-virtual-list/src/public-api';
-import { Id } from '../../projects/ng-virtual-list/src/lib/types';
+import {
+  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
+  ScrollBarTheme, RoundedCorner,
+} from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 
-const MAX_ITEMS = 50000;
+const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
+  ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
+  SCROLLBAR_GRADIENT: ScrollBarTheme = {
+    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
+    strokeAnimationDuration: 1000,
+    thickness: 6,
+    roundCorner: ROUND_CORNER,
+    rippleColor: 'rgba(255,255,255,0.5)',
+  };
+
+const MAX_ITEMS = 10000;
 
 interface ICollectionItem {
   id: Id;
@@ -21,6 +34,12 @@ const ITEMS: IVirtualListCollection<ICollectionItem> = [];
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1;
   ITEMS.push({ id, name: `Item: ${id}` });
+}
+
+const ITEMS_RTL: IVirtualListCollection<ICollectionItem> = [];
+for (let i = 0, l = MAX_ITEMS; i < l; i++) {
+  const id = i + 1;
+  ITEMS_RTL.push({ id, name: `פָּרִיט: ${id}` });
 }
 
 const HORIZONTAL_ITEMS: IVirtualListCollection<ICollectionItem> = [];
@@ -99,19 +118,20 @@ const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IGroupCollectionItem> = [],
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item',
-    isGroup = type === 'group-header';
+    isGroup = type === 'group-header',
+    sticky = 1;
   if (isGroup) {
     groupDynamicIndex++;
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: isGroup ? `Group ${id}. ${generateText()}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP[id] = {
-    sticky: isGroup ? 1 : 0,
+    sticky: isGroup ? sticky : 0,
     selectable: !isGroup,
     collapsable: isGroup,
   };
   GROUP_DYNAMIC_ITEMS_WITH_SNAP.push({ id, type, name: isGroup ? `Group ${id}` : `${id}. ${generateText()}` });
   GROUP_DYNAMIC_ITEMS_ITEM_CONFIG_MAP_WITH_SNAP[id] = {
-    sticky: isGroup ? 1 : 0,
+    sticky: isGroup ? sticky : 0,
     selectable: !isGroup,
     collapsable: isGroup,
   };
@@ -130,7 +150,11 @@ export class AppComponent {
 
   protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
 
+  scrollbarTheme = SCROLLBAR_GRADIENT;
+
   items = ITEMS;
+
+  itemsRtl = ITEMS_RTL;
 
   horizontalItems = HORIZONTAL_ITEMS;
 

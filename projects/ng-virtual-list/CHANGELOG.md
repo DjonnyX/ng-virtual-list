@@ -1,34 +1,53 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.9.0] - 2026-02-27
+
+Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
+
+### Added
+- Added `langToDir` property
+- Added `loading` property
+- Added `scrollbarTheme` property
+- Added `clickDistance` property
+- Added `waitForPreparation` property
+- Added `scrollStartOffset` property
+- Added `scrollEndOffset` property
+- Added `snapScrollToBottom` property
+- Added `snapToEndTransitionInstantOffset` property
+- Added `scrollbarMinSize` property
+
+### Fixed
+- Fixed CBE-2025-9864 security vulnerability
+
 ## [19.8.0] - 2025-09-30
 
 Tests and stabilization
 
-## Fixed
+### Fixed
 - Buffer calculation errors have been fixed
 - Fixed trackBy
 - Some fixes in the lazy mode
 
-## Added
+### Added
 - Tests have been implemented
 
 ## [19.7.30] - 2025-09-27
 
 Scrolling methods
 
-## Improved
+### Improved
 - Scrolling methods have been reworked
 
-## Added
+### Added
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
 
-## [19.7.29] - 2025-09-28
+## [19.7.29] - 2025-09-27
 
 Jerking when scrolling
 
-## Fixed
+### Fixed
 
 - Fixed jerking when scrolling
 
@@ -36,7 +55,7 @@ Jerking when scrolling
 
 Examples
 
-## Added
+### Added
 
 - Added link to examples in README.md
 
@@ -44,7 +63,7 @@ Examples
 
 Screen reader
 
-## Improved
+### Improved
 
 - Performance has been optimized
 
@@ -52,7 +71,7 @@ Screen reader
 
 Screen reader
 
-## Improved
+### Improved
 
 - The position of the message block for screen reader has been moved to the beginning
 
@@ -60,7 +79,7 @@ Screen reader
 
 Screen reader
 
-## Fixed
+### Fixed
 
 - Fixed generation of item numbers for screen readers
 
@@ -68,7 +87,7 @@ Screen reader
 
 Screen reader
 
-## Added
+### Added
 
 - Screen reader support has been implemented
 
@@ -76,7 +95,7 @@ Screen reader
 
 Focusing an element
 
-## Improved
+### Improved
 
 - Implemented an API for focusing on an element by a given ID
 
@@ -84,7 +103,7 @@ Focusing an element
 
 Examples
 
-## Improved
+### Improved
 
 - Optimized the settings of the buffer for examples of use
 
@@ -92,7 +111,7 @@ Examples
 
 Collection reset
 
-## Fixed
+### Fixed
 
 - Collection reset fixed
 
@@ -100,7 +119,7 @@ Collection reset
 
 Positioning list items
 
-## Fixed
+### Fixed
 
 - Fixed positioning in the linear algorithm when adding elements to a collection
 
@@ -108,7 +127,7 @@ Positioning list items
 
 Collection Mode
 
-## Added
+### Added
 
 - Added collection mode property
 
@@ -116,7 +135,7 @@ Collection Mode
 
 Adding new elements to a collection
 
-## Fixed
+### Fixed
 
 - Fixed handling of adding new elements to a collection (for lazy loading)
 
@@ -124,7 +143,7 @@ Adding new elements to a collection
 
 Adding new elements to a collection
 
-## Improved
+### Improved
 
 - Improved handling of adding new elements to a collection (for lazy loading)
 
@@ -132,7 +151,7 @@ Adding new elements to a collection
 
 Scroll events
 
-## Added
+### Added
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
@@ -140,7 +159,7 @@ Scroll events
 
 Vulnerabilities
 
-## Fixed
+### Fixed
 
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
@@ -149,7 +168,7 @@ Vulnerabilities
 
 `aria-activedescendant`
 
-## Added
+### Added
 
 - `aria-activedescendant` processed
 
@@ -157,7 +176,7 @@ Vulnerabilities
 
 Snapped elements
 
-## Fixed
+### Fixed
 
 - Fixed display of snapped elements
 
@@ -165,7 +184,7 @@ Snapped elements
 
 Navigating elements
 
-## Fixed
+### Fixed
 
 - Fixed navigating elements using the keyboard
 
@@ -173,7 +192,7 @@ Navigating elements
 
 Collapsing groups
 
-## Improved
+### Improved
 
 - Implemented collapsing groups using the keyboard
 
@@ -258,7 +277,7 @@ Item selection improvements
 - Added API for selecting an element
 - Measures passed to element template
   
-### Fixed
+#### Fixed
 
 - Fixed the initial state of selectedIds
 

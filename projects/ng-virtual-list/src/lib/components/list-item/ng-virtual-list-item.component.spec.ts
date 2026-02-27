@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgVirtualListItemComponent } from './ng-virtual-list-item.component';
-import { NgVirtualListService } from '../ng-virtual-list.service';
-import { IRenderVirtualListItem } from '../models/render-item.model';
-import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
+import { NgVirtualListService } from '../../ng-virtual-list.service';
+import { IRenderVirtualListItem } from '../../models/render-item.model';
+import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
 
 const generateItem = (data?: Partial<IRenderVirtualListItem>): IRenderVirtualListItem => {
   return {
