@@ -3,13 +3,14 @@
 </div>
 
 @if (snap()) {
-  <div #snapped part="snapped-item" class="ngvl__list-snapper">
-    <ng-container #snapRendererContainer></ng-container>
+  <div #snappedContainer class="ngvl__snapped-container">
+    <div #snapped part="snapped-item" class="ngvl__list-snapper">
+      <ng-container #snapRendererContainer></ng-container>
+    </div>
   </div>
 }
-<div #container part="scroller" class="ngvl__scroller">
-  <div [attr.aria-orientation]="orientation" [attr.aria-activedescendant]="focusedElement()" tabindex="0" #list
-    part="list" class="ngvl__list">
-    <ng-container #renderersContainer></ng-container>
-  </div>
-</div>
+<ng-scroller class="ngvl__list-scroller" #scroller [classes]="classes()" [startOffset]="scrollStartOffset()" [direction]="direction()"
+  [endOffset]="scrollEndOffset()" [scrollbarTheme]="scrollbarTheme()" [focusedElement]="focusedElement()" [loading]="loading()"
+  [scrollbarMinSize]="scrollbarMinSize()">
+  <ng-container #renderersContainer></ng-container>
+</ng-scroller>

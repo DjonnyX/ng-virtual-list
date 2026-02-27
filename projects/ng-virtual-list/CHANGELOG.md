@@ -1,136 +1,206 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [20.8.0] - 2025-09-01
+## [19.9.0] - 2026-02-26
+
+Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
+
+### Added
+- Added `langToDir` property
+- Added `loading` property
+- Added `scrollbarTheme` property
+- Added `clickDistance` property
+- Added `waitForPreparation` property
+- Added `scrollStartOffset` property
+- Added `scrollEndOffset` property
+- Added `snapScrollToBottom` property
+- Added `snapToEndTransitionInstantOffset` property
+- Added `scrollbarMinSize` property
+
+### Fixed
+- Fixed CBE-2025-9864 security vulnerability
+
+## [19.8.0] - 2025-09-30
 
 Tests and stabilization
 
-## Fixed
+### Fixed
 - Buffer calculation errors have been fixed
 - Fixed trackBy
 - Some fixes in the lazy mode
 
-## Added
+### Added
 - Tests have been implemented
 
-## [20.7.20] - 2025-09-28
+## [19.7.30] - 2025-09-27
 
 Scrolling methods
 
-## Improved
+### Improved
 - Scrolling methods have been reworked
 
-## Added
+### Added
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
 
-## [20.7.19] - 2025-09-27
-
-Project description
-  
-### Improved 
-
-- README.md updated (fixed Previous versions)
-
-## [20.7.18] - 2025-09-27
+## [19.7.29] - 2025-09-27
 
 Jerking when scrolling
 
-## Fixed
+### Fixed
 
 - Fixed jerking when scrolling
 
-## [20.7.17] - 2025-09-26
+## [19.7.28] - 2025-09-26
 
 Examples
 
-## Added
+### Added
 
 - Added link to examples in README.md
 
-## [20.7.16] - 2025-09-26
-
-Project description
-  
-### Improved 
-
-- README.md updated
-
-## [20.7.15] - 2025-09-26
+## [19.7.27] - 2025-09-26
 
 Screen reader
 
-## Added
+### Improved
+
+- Performance has been optimized
+
+## [19.7.26] - 2025-09-25
+
+Screen reader
+
+### Improved
+
+- The position of the message block for screen reader has been moved to the beginning
+
+## [19.7.25] - 2025-09-25
+
+Screen reader
+
+### Fixed
+
+- Fixed generation of item numbers for screen readers
+
+## [19.7.24] - 2025-09-25
+
+Screen reader
+
+### Added
 
 - Screen reader support has been implemented
 
-## [20.7.14] - 2025-09-25
+## [19.7.23] - 2025-09-24
 
 Focusing an element
 
-## Improved
+### Improved
 
 - Implemented an API for focusing on an element by a given ID
 
-## [20.7.13] - 2025-09-24
+## [19.7.22] - 2025-09-24
 
-Collection Mode
+Examples
 
-## Added
-
-- Added collection mode property
-
-## Fixed
-
-- Collection reset fixed
-- Fixed positioning in the linear algorithm when adding elements to a collection
-
-## Improved
+### Improved
 
 - Optimized the settings of the buffer for examples of use
 
-## [20.7.12] - 2025-09-23
+## [19.7.21] - 2025-09-24
+
+Collection reset
+
+### Fixed
+
+- Collection reset fixed
+
+## [19.7.20] - 2025-09-23
+
+Positioning list items
+
+### Fixed
+
+- Fixed positioning in the linear algorithm when adding elements to a collection
+
+## [19.7.19] - 2025-09-23
+
+Collection Mode
+
+### Added
+
+- Added collection mode property
+
+## [19.7.18] - 2025-09-23
+
+Adding new elements to a collection
+
+### Fixed
+
+- Fixed handling of adding new elements to a collection (for lazy loading)
+
+## [19.7.17] - 2025-09-23
+
+Adding new elements to a collection
+
+### Improved
+
+- Improved handling of adding new elements to a collection (for lazy loading)
+
+## [19.7.16] - 2025-09-22
 
 Scroll events
 
-## Added
+### Added
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
-## [20.7.11] - 2025-09-22
+## [19.7.15] - 2025-09-21
 
 Vulnerabilities
 
-## Fixed
+### Fixed
 
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
 
-## [20.7.10] - 2025-09-21
+## [19.7.14] - 2025-09-19
+
+`aria-activedescendant`
+
+### Added
+
+- `aria-activedescendant` processed
+
+## [19.7.13] - 2025-09-19
+
+Snapped elements
+
+### Fixed
+
+- Fixed display of snapped elements
+
+## [19.7.12] - 2025-09-19
 
 Navigating elements
 
-## Fixed
+### Fixed
 
 - Fixed navigating elements using the keyboard
 
-## [20.7.9] - 2025-09-19
-
-Project description
-  
-### Improved 
-
-- README.md updated
-
-## [20.7.8] - 2025-09-19
+## [19.7.11] - 2025-09-19
 
 Collapsing groups
 
-## Improved
+### Improved
 
 - Implemented collapsing groups using the keyboard
 
-## [20.7.7] - 2025-09-18
+## [19.7.10] - 2025-09-18
+
+Code review
+
+## [19.7.9] - 2025-09-18
 
 Group collapsibility
   
@@ -146,7 +216,7 @@ Group collapsibility
 
 - The deprecated stickyMap property has been removed.
 
-## [20.7.6] - 2025-09-17
+## [19.7.8] - 2025-09-17
 
 iterations of the scrollTo methods
   
@@ -158,7 +228,7 @@ iterations of the scrollTo methods
 
 - Added Iteration argument to scrollTo methods
 
-## [20.7.5] - 2025-09-16
+## [19.7.7] - 2025-09-16
 
 Internal marks
   
@@ -166,7 +236,7 @@ Internal marks
 
 - Internal marks has been removed
 
-## [20.7.4] - 2025-09-16
+## [19.7.6] - 2025-09-16
 
 Project description
   
@@ -174,7 +244,15 @@ Project description
 
 - README.md updated
 
-## [20.7.3] - 2025-09-15
+## [19.7.5] - 2025-09-16
+
+Project description
+  
+### Improved 
+
+- README.md updated
+
+## [19.7.4] - 2025-09-15
 
 Focus management during navigation
   
@@ -186,7 +264,7 @@ Focus management during navigation
 
 - README.md updated
 
-## [20.7.2] - 2025-09-14
+## [19.7.3] - 2025-09-14
 
 Item selection improvements
   
@@ -199,11 +277,19 @@ Item selection improvements
 - Added API for selecting an element
 - Measures passed to element template
   
-### Fixed
+#### Fixed
 
 - Fixed the initial state of selectedIds
 
-## [20.7.1] - 2025-09-10
+## [19.7.2] - 2025-09-10
+
+Project description
+
+### Improved 
+
+- README.md updated
+
+## [19.7.1] - 2025-09-10
 
 Item configuration
 
@@ -212,7 +298,7 @@ Item configuration
 - README.md updated
 - Added item config and selectable parameter
 
-## [20.7.0] - 2025-09-09
+## [19.7.0] - 2025-09-09
 
 list item selection modes
 

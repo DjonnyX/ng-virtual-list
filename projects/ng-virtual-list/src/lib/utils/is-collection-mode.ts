@@ -5,8 +5,8 @@ const NORMAL_ALIASES = [CollectionModes.NORMAL, 'normal'],
 
 /**
  * Determines the axis membership of a virtual list
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/is-collection-mode.ts
- * @author Evgenii Grebennikov
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/is-collection-mode.ts
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export const isCollectionMode = (src: CollectionMode, expected: CollectionMode): boolean => {

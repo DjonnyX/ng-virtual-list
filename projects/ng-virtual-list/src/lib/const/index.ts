@@ -1,5 +1,6 @@
-import { CollectionModes, MethodsForSelecting, SnappingMethods } from "../enums";
+import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
+import { GradientColor, ScrollBarTheme } from "../types";
 
 export const DEFAULT_ITEM_SIZE = 24;
 
@@ -8,6 +9,10 @@ export const DEFAULT_BUFFER_SIZE = 2;
 export const DEFAULT_MAX_BUFFER_SIZE = 10;
 
 export const DEFAULT_LIST_SIZE = 400;
+
+export const DEFAULT_CLICK_DISTANCE = 40;
+
+export const DEFAULT_WAIT_FOR_PREPARATION = true;
 
 export const DEFAULT_SNAP = false;
 
@@ -18,6 +23,10 @@ export const DEFAULT_COLLAPSE_BY_CLICK = true;
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
 export const DEFAULT_DYNAMIC_SIZE = false;
+
+export const DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET = 1;
+
+export const DEFAULT_SNAP_SCROLLTO_BOTTOM = false;
 
 export const TRACK_BY_PROPERTY_NAME = 'id';
 
@@ -34,6 +43,21 @@ export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
 export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
 
 export const DEFAULT_SCREEN_READER_MESSAGE = 'Showing items $1 to $2';
+
+export const DEFAULT_LANG_TEXT_DIR = TextDirections.LTR;
+
+const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(126, 219, 255)"];;
+
+export const DEFAULT_SCROLLBAR_THEME: ScrollBarTheme = {
+    fill: ["rgba(198, 172, 248, 1)", "rgba(168, 229, 250, 1)"],
+    strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
+    strokeAnimationDuration: 1000,
+    thickness: 12,
+    roundCorner: [3, 3, 3, 3],
+    rippleColor: 'rgba(0,0,0,0.5)',
+}
+
+export const DEFAULT_SCROLLBAR_MIN_SIZE: number = 80;
 
 // presets
 
@@ -61,8 +85,6 @@ export const SIZE_AUTO = 'auto';
 
 export const POSITION_ABSOLUTE = 'absolute';
 
-export const POSITION_STICKY = 'sticky';
-
 export const TRANSLATE_3D = 'translate3d';
 
 export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
@@ -83,9 +105,55 @@ export const WIDTH_PROP_NAME = 'width';
 
 export const HEIGHT_PROP_NAME = 'height';
 
+export const MARGIN_TOP = 'marginTop';
+
+export const MARGIN_LEFT = 'marginLeft';
+
 export const PX = 'px';
 
+export const INTERACTIVE = 'interactive';
+
+export const WHEEL = 'wheel';
+
+export const SCROLLER_WHEEL = 'wheel';
+
+export const TOUCH_MOVE = 'touchmove';
+
+export const TOUCH_START = 'touchstart';
+
+export const TOUCH_END = 'touchend';
+
+export const TOUCH_LEAVE = 'touchleave';
+
+export const TOUCH_OUT = 'touchout';
+
+export const MOUSE_MOVE = 'mousemove';
+
+export const MOUSE_UP = 'mouseup';
+
+export const MOUSE_DOWN = 'mousedown';
+
+export const MOUSE_LEAVE = 'mouseleave';
+
+export const MOUSE_OUT = 'mouseout';
+
+export const POINTER_MOVE = 'pointermove';
+
+export const POINTER_UP = 'pointerup';
+
+export const POINTER_DOWN = 'pointerdown';
+
+export const POINTER_LEAVE = 'pointerleave';
+
+export const POINTER_OUT = 'pointerout';
+
+export const CLICK = 'click';
+
 export const SCROLL = 'scroll';
+
+export const SCROLLER_SCROLL = 'scroll';
+
+export const SCROLLER_SCROLLBAR_SCROLL = 'scrollbar-scroll';
 
 export const SCROLL_END = 'scrollend';
 

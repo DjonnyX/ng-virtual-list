@@ -1,9 +1,15 @@
 export type TEventHandler = (...args: Array<any>) => void;
 
 /**
+<<<<<<<< HEAD:projects/ng-virtual-list/src/lib/utils/event-emitter.ts
  * Simple event emitter
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/event-emitter.ts
  * @author Evgenii Grebennikov
+========
+ * Event emitter
+ * @link https://github.com/DjonnyX/data-channel-router/blob/main/library/src/utils/event-emitter/event-emitter.ts
+ * @author Evgenii Alexandrovich Grebennikov
+>>>>>>>> 19.x:projects/ng-virtual-list/src/lib/utils/event-emitter/event-emitter.ts
  * @email djonnyx@gmail.com
  */
 export class EventEmitter<E = string, H = TEventHandler> {
@@ -48,7 +54,7 @@ export class EventEmitter<E = string, H = TEventHandler> {
      */
     hasEventListener(eventName: E, handler: H): boolean {
         const event = eventName as string;
-        if (this._listeners.hasOwnProperty(event)) {
+        if (this._listeners[event] !== undefined) {
             const listeners = this._listeners[event];
             const index = listeners.findIndex(v => v === handler);
             if (index > -1) {
