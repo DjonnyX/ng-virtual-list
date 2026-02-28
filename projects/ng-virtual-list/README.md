@@ -733,7 +733,7 @@ Try it out, star ⭐ the repo, and let us know what you’re building.
 
 MIT License
 
-Copyright (c) 2025 djonnyx (Evgenii Alexandrovich Grebennikov)
+Copyright (c) 2026 djonnyx (Evgenii Alexandrovich Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
