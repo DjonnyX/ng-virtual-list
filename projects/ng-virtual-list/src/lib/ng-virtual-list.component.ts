@@ -22,7 +22,7 @@ import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, Trac
 import { DisposableComponent } from './utils/disposable-component';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX } from './utils/browser';
-import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';

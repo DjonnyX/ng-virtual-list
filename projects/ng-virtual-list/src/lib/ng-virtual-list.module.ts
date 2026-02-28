@@ -1,7 +1,7 @@
 import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgVirtualListComponent } from './ng-virtual-list.component';
-import { NgVirtualListItemComponent } from './components/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
 
 @NgModule({
   declarations: [NgVirtualListComponent, NgVirtualListItemComponent],

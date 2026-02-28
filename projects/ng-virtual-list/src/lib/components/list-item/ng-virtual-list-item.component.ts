@@ -1,19 +1,19 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, TemplateRef } from '@angular/core';
-import { IRenderVirtualListItem } from '../models/render-item.model';
-import { FocusAlignment, Id, ISize } from '../types';
+import { IRenderVirtualListItem } from '../../models/render-item.model';
+import { FocusAlignment, Id, ISize } from '../../types';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN, PART_ITEM_NEW,
   PART_ITEM_FOCUSED, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, POSITION_STICKY, PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, ZEROS_TRANSLATE_3D,
-} from '../const';
-import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
-import { NgVirtualListService } from '../ng-virtual-list.service';
+} from '../../const';
+import { BaseVirtualListItemComponent } from '../../models/base-virtual-list-item-component';
+import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { map, takeUntil, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, fromEvent, Subject } from 'rxjs';
-import { MethodsForSelectingTypes } from '../enums/method-for-selecting-types';
-import { validateBoolean } from '../utils/validation';
-import { FocusAlignments } from '../enums';
-import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../models';
+import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
+import { validateBoolean } from '../../utils/validation';
+import { FocusAlignments } from '../../enums';
+import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../models';
 
 const ATTR_AREA_SELECTED = 'area-selected', TABINDEX = 'ng-vl-index', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
   KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
