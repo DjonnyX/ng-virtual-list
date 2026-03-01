@@ -1,7 +1,7 @@
 /**
  * Simple debounce function.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0) => {

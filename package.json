@@ -1,8 +1,8 @@
 {
   "name": "virtual-list",
-  "version": "17.8.0",
+  "version": "17.9.0",
   "author": {
-    "name": "Evgenii Grebennikov",
+    "name": "Evgenii Alexandrovich Grebennikov",
     "email": "djonnyx@gmail.com"
   },
   "license": "MIT",
@@ -10,12 +10,14 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:lib": "ng test --watch=false && ng build ng-virtual-list",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test ng-virtual-list"
   },
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.3.0",
+    "@angular/cdk": "^17.3.10",
     "@angular/common": "^17.3.0",
     "@angular/compiler": "^17.3.0",
     "@angular/core": "^17.3.0",

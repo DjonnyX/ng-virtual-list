@@ -1,39 +1,7 @@
 import { ScrollDirection } from "../models";
 import { debounce } from "./debounce";
 import { EventEmitter } from "./event-emitter";
-
-export class CMap<K = string, V = any> {
-    protected _dict: { [k: string | number]: V } = {};
-
-    constructor(dict?: CMap<K, V>) {
-        if (dict) {
-            this._dict = { ...dict._dict };
-        }
-    }
-
-    get(key: K) {
-        const k = String(key);
-        return this._dict[k];
-    }
-    set(key: K, value: V) {
-        const k = String(key);
-        this._dict[k] = value;
-        return this;
-    }
-    has(key: K) {
-        return this._dict.hasOwnProperty(String(key));
-    }
-    delete(key: K) {
-        const k = String(key);
-        delete this._dict[k];
-    }
-    clear() {
-        this._dict = {};
-    }
-    toObject() {
-        return this._dict;
-    }
-}
+import { CMap } from "./cmap";
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => CMap<I, B>;
@@ -51,14 +19,14 @@ type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 50, CLEAR_SCROLL_DIRECTION_TO = 10,
+const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 10,
     DIR_BACK = '-1', DIR_NONE = '0', DIR_FORWARD = '1';
 
 /**
  * Cache map.
  * Emits a change event on each mutation.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/cache-map.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = CacheMapListeners> extends EventEmitter<E, L> implements ICacheMap {
@@ -70,7 +38,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected _previousVersion = this._version;
 
-    protected _lifeCircleTimeout: any;
+    protected _lifeCircleId: number | undefined;
 
     protected _delta: number = 0;
 
@@ -114,7 +82,9 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
     }
 
     protected stopLifeCircle() {
-        clearTimeout(this._lifeCircleTimeout);
+        if (this._lifeCircleId !== undefined) {
+            cancelAnimationFrame(this._lifeCircleId);
+        }
     }
 
     protected nextTick(cb: () => void) {
@@ -122,10 +92,10 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
             return;
         }
 
-        this._lifeCircleTimeout = setTimeout(() => {
+        this._lifeCircleId = requestAnimationFrame(() => {
             cb();
         });
-        return this._lifeCircleTimeout;
+        return this._lifeCircleId;
     }
 
     protected lifeCircle() {
@@ -142,8 +112,13 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
         });
     }
 
-    clearScrollDirectionCache() {
-        this._clearScrollDirectionDebounce.execute();
+    clearScrollDirectionCache(async = true) {
+        if (async) {
+            this._clearScrollDirectionDebounce.execute();
+            return;
+        }
+
+        this._scrollDirectionCache = [];
     }
 
     private calcScrollDirection(v: ScrollDirection): ScrollDirection {

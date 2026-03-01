@@ -11,30 +11,18 @@
     height: 48px;
 }
 
-:host(.horizontal) .ngvl__list {
-    display: inline-flex;
-}
-
-:host(.horizontal) .ngvl__scroller {
-    overflow: auto hidden;
-}
-
-:host(.vertical) .ngvl__scroller {
-    overflow: hidden auto;
-}
-
 :host(.vertical) {
     /* default */
     height: 320px;
 }
 
-.ngvl__scroller {
-    overflow: auto;
+.ngvl__snapped-container {
+    position: relative;
     width: 100%;
-    height: 100%;
 }
 
 .ngvl__list-snapper {
+    -webkit-tap-highlight-color: transparent;
     pointer-events: none;
     position: absolute;
     list-style: none;
@@ -43,13 +31,14 @@
     z-index: 1;
 }
 
-.ngvl__list {
-    position: relative;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.ngvl__list-scroller {
+    -webkit-tap-highlight-color: transparent;
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
+    z-index: 0;
 }
 
 .ngvl__screen-reader {

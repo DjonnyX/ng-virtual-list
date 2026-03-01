@@ -54,29 +54,42 @@ const generateComponent = (id: number): ComponentRef<BaseVirtualListItemComponen
 
 const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
     return {
-        id,
-        index: 0,
-        measures: { x: 0, y: 0, width: 0, height: 0, delta: 0 },
-        data: {
-            [trackBy]: id,
-        },
-        config: {
-            new: false,
-            odd: false,
-            even: false,
-            collapsable: false,
-            sticky: 0,
-            selectable: false,
-            snap: false,
-            snapped: false,
-            snappedOut: false,
-            isVertical: false,
-            dynamic: false,
-            isSnappingMethodAdvanced: false,
-            tabIndex: 0,
-            zIndex: '0',
-        }
-    };
+    id,
+    index: 0,
+    measures: {
+        x: 0, y: 0, width: 0, height: 0, delta: 0,
+        positionOffset: 0,
+        position: 0,
+        scrollSize: 0,
+        size: 0,
+        boundsSize: 0,
+        absoluteStartPosition: 0,
+        absoluteStartPositionPercent: 0,
+        absoluteEndPosition: 0,
+        absoluteEndPositionPercent: 0
+    },
+    data: {
+        [trackBy]: id,
+    },
+    config: {
+        new: false,
+        odd: false,
+        even: false,
+        collapsable: false,
+        sticky: 0,
+        selectable: false,
+        snap: false,
+        snapped: false,
+        snappedOut: false,
+        isVertical: false,
+        dynamic: false,
+        isSnappingMethodAdvanced: false,
+        tabIndex: 0,
+        zIndex: '0',
+    },
+    previouseData: undefined,
+    nextData: undefined,
+};
 };
 
 class TrackerTested<C extends BaseVirtualListItemComponent = any> extends Tracker<C> { }

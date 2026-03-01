@@ -1,12 +1,12 @@
 {
   "name": "ng-virtual-list",
-  "version": "17.8.0",
+  "version": "17.9.0",
   "author": {
-    "name": "Evgenii Grebennikov",
+    "name": "Evgenii Alexandrovich Grebennikov",
     "email": "djonnyx@gmail.com"
   },
   "license": "MIT",
-  "homepage": "https://github.com/djonnyx/ng-virtual-list/tree/17.x/projects/ng-virtual-list",
+  "homepage": "https://github.com/DjonnyX/ng-virtual-list/tree/17.x/projects/ng-virtual-list",
   "keywords": [
     "ng",
     "angular",
@@ -26,6 +26,7 @@
     "expandable"
   ],
   "peerDependencies": {
+    "@angular/cdk": "^17.2.0",
     "@angular/common": "^17.3.0",
     "@angular/core": "^17.3.0"
   },

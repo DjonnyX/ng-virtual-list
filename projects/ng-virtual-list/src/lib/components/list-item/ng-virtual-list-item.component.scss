@@ -5,6 +5,9 @@
     top: 0;
     box-sizing: border-box;
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
 }
 
 .ngvl-item__container {

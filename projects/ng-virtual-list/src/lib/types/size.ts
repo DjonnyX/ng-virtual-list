@@ -1,7 +1,7 @@
 /**
  * Area area Interface
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/types/size.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export interface ISize {

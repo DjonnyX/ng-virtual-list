@@ -1,0 +1,6 @@
+<div itemClick [maxClickDistance]="maxClickDistance()" [part]="part()" [attr.ngvl-index]="index()" tabindex="0"
+    class="ngvl-item__container" [ngClass]="classes()" (onClick)="onClickHandler()">
+    @if (itemRenderer(); as renderer) {
+        <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />
+    }
+</div>

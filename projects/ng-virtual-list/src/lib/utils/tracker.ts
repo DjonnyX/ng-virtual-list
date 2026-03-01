@@ -3,7 +3,7 @@ import { ScrollDirection } from "../models";
 import { IRenderVirtualListCollection } from "../models/render-collection.model";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 import { Id, ISize } from "../types";
-import { CMap } from "./cache-map";
+import { CMap } from "./cmap";
 
 type TrackingPropertyId = string | number;
 
@@ -18,8 +18,10 @@ export interface IVirtualListItemComponent<I = any> {
 
 /**
  * Tracks display items by property
+ * Maximum performance for extremely large lists.
+ * It is based on algorithms for virtualization of screen objects.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export class Tracker<C extends BaseVirtualListItemComponent = any> {
@@ -69,6 +71,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         }
 
         const untrackedItems = [...components], newTrackItems: Array<any> = [],
+            untrackedComponentsByTypeMap: { [type: string]: Array<{ comp: ComponentRef<C>; index: number }>; } = {},
             isDown = direction === 0 || direction === 1;
         let isRegularSnapped = false;
 
@@ -87,7 +90,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                         });
                         if (indexByUntrackedItems > -1) {
                             if (snapedComponent) {
-                                if (item['config']['snapped'] || item['config']['snappedOut']) {
+                                if (item.config.snapped || item.config.snappedOut) {
                                     isRegularSnapped = true;
                                     snapedComponent.instance.item = item;
                                     snapedComponent.instance.show();
@@ -95,7 +98,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                             }
 
                             if (snapedComponent) {
-                                if (item['config']['snapped'] || item['config']['snappedOut']) {
+                                if (item.config.snapped || item.config.snappedOut) {
                                     comp.instance.item = null;
                                     comp.instance.hide();
                                 } else {
@@ -121,20 +124,46 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             }
         }
 
+        if (untrackedItems.length > 0) {
+            for (let i = 0, l = untrackedItems.length; i < l; i++) {
+                const comp = untrackedItems[i], type = comp?.instance.item?.data?.type;
+                if (!Array.isArray(untrackedComponentsByTypeMap[type])) {
+                    untrackedComponentsByTypeMap[type] = [];
+                }
+                untrackedComponentsByTypeMap[type].push({ comp, index: i });
+            }
+        }
+
         for (let i = 0, l = newTrackItems.length; i < l; i++) {
             if (untrackedItems.length > 0) {
-                const comp = untrackedItems.shift(), item = newTrackItems[i], itemTrackingProperty = item.id;
+                const item = newTrackItems[i], itemTrackingProperty = item.id,
+                    type = item.data?.type;
+                let comp: ComponentRef<C> | undefined;
+                if (type) {
+                    const list = untrackedComponentsByTypeMap[type];
+                    if (Array.isArray(list) && list.length > 0) {
+                        const untrackedItem = list.shift();
+                        if (untrackedItem) {
+                            comp = untrackedItem.comp;
+                            untrackedItems.slice(untrackedItem.index, 1);
+                        }
+                    }
+                }
+
+                if (!comp) {
+                    comp = untrackedItems.shift();
+                }
 
                 if (comp) {
                     if (snapedComponent) {
-                        if (item['config']['snapped'] || item['config']['snappedOut']) {
+                        if (item.config.snapped || item.config.snappedOut) {
                             isRegularSnapped = true;
                             snapedComponent.instance.item = item;
                             snapedComponent.instance.show();
                         }
                     }
                     if (snapedComponent) {
-                        if (item['config']['snapped'] || item['config']['snappedOut']) {
+                        if (item.config.snapped || item.config.snappedOut) {
                             comp.instance.item = null;
                             comp.instance.hide();
                         } else {
@@ -179,6 +208,10 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         if (this._trackMap && (component as any)[propertyIdName] !== undefined) {
             this._trackMap.delete(propertyIdName);
         }
+    }
+
+    clearTrackMap() {
+        this._trackMap.clear();
     }
 
     dispose() {
