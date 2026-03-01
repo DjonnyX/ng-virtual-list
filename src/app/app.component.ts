@@ -1,12 +1,9 @@
 import { Component, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
   ScrollBarTheme, RoundedCorner,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
-import { NgVirtualListModule } from 'ng-virtual-list';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
