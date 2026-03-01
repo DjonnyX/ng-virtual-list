@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.9.2] - 2026-03-01
+
+### Fixed
+- onViewportChange data
+
+## [19.9.1] - 2026-02-28
+
+### Updated
+- README.md
+
 ## [19.9.0] - 2026-02-27
 
 Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.

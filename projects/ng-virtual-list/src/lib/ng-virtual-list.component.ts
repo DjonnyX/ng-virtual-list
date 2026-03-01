@@ -1981,7 +1981,8 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(value => {
-        this.onViewportChange.emit(objectAsReadonly(value));
+        const size: ISize = { width: value.width, height: value.height };
+        this.onViewportChange.emit(objectAsReadonly(size));
       }),
     ).subscribe();
 
