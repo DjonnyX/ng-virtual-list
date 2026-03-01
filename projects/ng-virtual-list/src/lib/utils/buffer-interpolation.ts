@@ -24,8 +24,10 @@ export const bufferInterpolation = (currentBufferValue: number, array: Array<num
         array.push(value);
     }
 
-    while (array.length > bufferSize) {
-        array.shift();
+    if (array.length > bufferSize) {
+        while (array.length > bufferSize) {
+            array.shift();
+        }
     }
 
     const l = array.length;
@@ -35,5 +37,5 @@ export const bufferInterpolation = (currentBufferValue: number, array: Array<num
         buffer += array[i];
     }
 
-    return Math.ceil(buffer / l);
+    return l !== 0 ? Math.ceil(buffer / l) : 0;
 };

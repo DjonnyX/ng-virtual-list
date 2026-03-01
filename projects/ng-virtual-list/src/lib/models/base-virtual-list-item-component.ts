@@ -4,13 +4,12 @@ import { IRenderVirtualListItem } from './render-item.model';
 
 /**
  * Virtual List Item Interface
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
- * @author Evgenii Grebennikov
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export abstract class BaseVirtualListItemComponent {
     abstract get id(): number;
-    abstract data: IRenderVirtualListItem | undefined;
     abstract regular: boolean;
     abstract set regularLength(v: string)
     abstract set item(v: IRenderVirtualListItem | null | undefined);

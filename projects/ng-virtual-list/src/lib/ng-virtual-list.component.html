@@ -1,12 +1,17 @@
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
-  {{ $screenReaderFormattedMessage | async}}
+  {{ $screenReaderFormattedMessage | async }}
 </div>
-<div *ngIf="snap" #snapped part="snapped-item" class="ngvl__list-snapper">
-  <ng-container #snapRendererContainer></ng-container>
-</div>
-<div #container part="scroller" class="ngvl__scroller">
-  <div [attr.aria-orientation]="orientation" [attr.aria-activedescendant]="$focusedElement | async" #list part="list"
-    class="ngvl__list">
-    <ng-container #renderersContainer></ng-container>
+<ng-container *ngIf="$snap | async">
+  <div #snappedContainer class="ngvl__snapped-container">
+    <div #snapped part="snapped-item" class="ngvl__list-snapper">
+      <ng-container #snapRendererContainer></ng-container>
+    </div>
   </div>
-</div>
+</ng-container>
+<ng-scroller class="ngvl__list-scroller" #scroller [classes]="($classes | async)!"
+  [startOffset]="($scrollStartOffset | async)!" [direction]="($direction | async)!"
+  [endOffset]="($scrollEndOffset | async)!" [scrollbarTheme]="($scrollbarTheme | async)!"
+  [focusedElement]="($focusedElement | async)!" [loading]="($loading | async)!"
+  [scrollbarMinSize]="($scrollbarMinSize | async)!">
+  <ng-container #renderersContainer></ng-container>
+</ng-scroller>

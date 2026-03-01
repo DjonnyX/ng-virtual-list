@@ -1,4 +1,4 @@
-export const objectAsReadonly = <T = { [x: string]: any }>(source: T) => {
+export const objectAsReadonly = <T = { [x: string]: any } | null | undefined>(source: T) => {
     if (!source) {
         return source;
     }

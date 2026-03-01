@@ -5,8 +5,8 @@ const HORIZONTAL_ALIASES = [Directions.HORIZONTAL, 'horizontal'],
 
 /**
  * Determines the axis membership of a virtual list
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/utils/is-direction.ts
- * @author Evgenii Grebennikov
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/utils/is-direction.ts
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export const isDirection = (src: Direction, expected: Direction): boolean => {

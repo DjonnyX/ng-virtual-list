@@ -1,0 +1,10 @@
+<ng-container *ngIf="data">
+    <div itemClick [maxClickDistance]="$maxClickDistance | async" [part]="$part | async"
+        [attr.ngvl-index]="data.config.tabIndex || -1" tabindex="0" class="ngvl-item__container"
+        [ngClass]="$classes | async" (onClick)="onClickHandler()">
+        <ng-container *ngIf="itemRenderer">
+            <ng-container [ngTemplateOutlet]="itemRenderer"
+                [ngTemplateOutletContext]="($templateContext | async)||''"></ng-container>
+        </ng-container>
+    </div>
+</ng-container>

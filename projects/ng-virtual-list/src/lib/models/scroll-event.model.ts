@@ -3,7 +3,7 @@ import { ScrollDirection } from "./scroll-direction.model";
 /**
  * Interface IScrollEvent.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export interface IScrollEvent {
@@ -48,4 +48,8 @@ export interface IScrollEvent {
      * Scroll delta
      */
     scrollDelta: number;
+    /**
+     * Display items range
+     */
+    itemsRange: [number, number] | undefined;
 }

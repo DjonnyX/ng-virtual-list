@@ -3,7 +3,7 @@ import { FocusAlignments } from "../enums";
 /**
  * Focus Alignment
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export type FocusAlignment = FocusAlignments | 'none' | 'start' | 'center' | 'end';
