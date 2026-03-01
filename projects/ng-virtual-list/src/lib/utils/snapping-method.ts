@@ -1,6 +1,6 @@
 import { SnappingMethod, SnappingMethods } from "../enums";
 
-const ADVANCED_PATTERNS: Array<SnappingMethod> = [SnappingMethods.ADVANCED, 'advanced'],
+const ADVANCED_PATTERNS: Array<SnappingMethod> = [SnappingMethods.ADVANCED, 'advanced', 'chat'],
     DEFAULT_PATTERN: Array<SnappingMethod> = [SnappingMethods.NORMAL, 'normal'];
 
 export const isSnappingMethodAdvenced = (method: SnappingMethod): boolean => {

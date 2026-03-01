@@ -1,8 +1,7 @@
-
 /**
  * Switch css classes
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/utils/toggle-class-name.ts
- * @author Evgenii Grebennikov
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/utils/toggle-class-name.ts
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export const toggleClassName = (el: HTMLElement, className: string, removeClassName?: string) => {

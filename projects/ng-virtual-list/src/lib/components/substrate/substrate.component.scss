@@ -1,0 +1,51 @@
+@keyframes ripple {
+    0% {
+        opacity: 0;
+        r: 0%;
+    }
+
+    60% {
+        opacity: 1;
+        r: 100%;
+    }
+
+    100% {
+        opacity: 0;
+        r: 140%;
+    }
+}
+
+:host {
+    transition: fill 100ms ease-out;
+
+    svg {
+        display: block;
+    }
+}
+
+.shape {
+    position: relative;
+    z-index: 2;
+}
+
+.hilight {
+    filter: blur(10px);
+    z-index: 2;
+}
+
+.ripple {
+    opacity: 0;
+
+    &.animate {
+        animation: ripple 800ms ease-out;
+    }
+}
+
+.fill {
+    transition: all 200ms ease-out;
+}
+
+.g1,
+.g2 {
+    transition: stop-color 200ms ease-out;
+}

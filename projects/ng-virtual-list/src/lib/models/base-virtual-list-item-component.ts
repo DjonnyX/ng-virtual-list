@@ -4,8 +4,8 @@ import { IRenderVirtualListItem } from './render-item.model';
 
 /**
  * Virtual List Item Interface
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
- * @author Evgenii Grebennikov
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export abstract class BaseVirtualListItemComponent {
