@@ -141,7 +141,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   selector: 'app-root',
   imports: [CommonModule, FormsModule, NgVirtualListComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   readonly logo = LOGO;
