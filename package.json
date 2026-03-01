@@ -1,8 +1,8 @@
 {
   "name": "virtual-list",
-  "version": "20.8.0",
+  "version": "20.9.0",
   "author": {
-    "name": "Evgenii Grebennikov",
+    "name": "Evgenii Alexandrovich Grebennikov",
     "email": "djonnyx@gmail.com"
   },
   "license": "MIT",
@@ -16,6 +16,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/cdk": "^20.2.14",
     "@angular/common": "^20.0.4",
     "@angular/compiler": "^20.0.4",
     "@angular/core": "^20.0.4",

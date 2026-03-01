@@ -1,0 +1,10 @@
+@let grab = grabbing();
+<div #track class="track" [ngStyle]="styles()" [ngClass]="{grabbing: grab}">
+    <div #thumb class="thumb" [class.horizontal]="!isVertical()">
+        <ng-substrate #substrate mode="rounded-rectangle" class="shape" [type]="type()" [width]="thumbWidth()"
+            [height]="thumbHeight()" [roundCorner]="roundCorner()" [strokeWidth]="8" [rippleColor]="rippleColor()"
+            [fillPositions]="thumbGradientPositions()" [fillColors]="thumbGradientFill()"
+            [strokeColors]="strokeGradientColor()" [strokeAnimationDuration]="strokeAnimationDuration()" 
+            (pointerdown)="substrate.ripple($event)"></ng-substrate>
+    </div>
+</div>

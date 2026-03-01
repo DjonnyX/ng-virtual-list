@@ -1,7 +1,7 @@
 /**
  * Methods for selecting list items.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting-types.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export enum MethodsForSelectingTypes {
