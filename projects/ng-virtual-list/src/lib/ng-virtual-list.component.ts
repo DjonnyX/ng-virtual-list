@@ -141,7 +141,7 @@ const formatActualDisplayItems = (items: IRenderVirtualListCollection, startOffs
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -592,7 +592,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * `selectable` determines whether an element can be selected or not. Default value is `true`.
    * `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and
    *  collapse elements in front that do not have a `sticky` property.
-   * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
+   * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
    * @author Evgenii Alexandrovich Grebennikov
    * @email djonnyx@gmail.com
    */

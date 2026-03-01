@@ -2,7 +2,7 @@ import { ScrollDirection } from "./scroll-direction.model";
 
 /**
  * Interface IScrollEvent.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

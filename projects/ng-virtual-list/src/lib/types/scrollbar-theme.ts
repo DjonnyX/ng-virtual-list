@@ -4,7 +4,7 @@ import { RoundedCorner } from "./rounded-corner";
 
 /**
  * ScrollBarTheme
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

@@ -2,7 +2,7 @@ import { IRect } from "../types";
 
 /**
  * Measures for IRenderVirtualListItem
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/render-item-measures.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/render-item-measures.model.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

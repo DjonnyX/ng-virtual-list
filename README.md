@@ -10,7 +10,7 @@ Works correctly in all browsers and platforms.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
-<b>Angular version 20.X.X</b>.
+<b>Angular version 21.X.X</b>.
 
 ![npm](https://img.shields.io/npm/v/ng-virtual-list)
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
@@ -95,6 +95,57 @@ Implemented a virtual scroll handler, ensuring stable scrolling on all platforms
 
 ```bash
 npm i ng-virtual-list
+```
+
+<br/>
+
+### IMPORTANT
+
+`Zone.js` is required for correct rendering.
+
+- `package.json`:
+```json
+{
+ ...
+  "dependencies": {
+    ...
+    "zone.js": "~0.15.0"
+  },
+}
+```
+
+- `angular.json`:
+```json
+{
+  "projects": {
+    "PROJECT_NAME": {
+      ...
+      "architect": {
+        "build": {
+          ...
+          "options": {
+            ...
+            "polyfills": [
+              "zone.js"
+            ],
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+- `app.config.ts`:
+```ts
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    ...
+    provideZoneChangeDetection(),
+  ]
+};
 ```
 
 <br/>
@@ -638,35 +689,35 @@ Selecting even elements:
 
 ## 📚 API
 
-### [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
+### [NgVirtualListComponent](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts)
 
 Inputs
 
 | Property | Type | Description |
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
-| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. The collection of elements must be immutable. |
+| items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. The collection of elements must be immutable. |
 | itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
-| methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
-| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
+| methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
+| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. |
 | collapseByClick | boolean? = true | If `false`, the element is collapsed using the config.collapse method passed to the template; if `true`, the element is collapsed by clicking on it. The default value is `true`. |
-| collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
+| collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
-| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
-| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
+| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
-| selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
-| collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
+| selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
+| collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
-| langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
+| langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
-| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
+| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
 | waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
 | scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
@@ -681,12 +732,12 @@ Outputs
 
 | Event | Type | Description |
 |---|---|---|
-| onItemClick | [IRenderVirtualListItem](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/render-item.model.ts) \| undefined | Fires when an element is clicked. |
-| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
-| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
-| onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
-| onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
-| onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
+| onItemClick | [IRenderVirtualListItem](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/render-item.model.ts) \| undefined | Fires when an element is clicked. |
+| onScroll | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has been scrolled. |
+| onScrollEnd | ([IScrollEvent](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts)) => void | Fires when the list has completed scrolling. |
+| onSelect | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when an elements are selected. |
+| onCollapse | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Fires when elements are collapsed. |
+| onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 | onScrollReachStart | void | Fires when the scroll reaches the start. |
 | onScrollReachEnd | void | Fires when the scroll reaches the end. |
 
@@ -696,10 +747,10 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
-| scrollToEnd | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the last item in the collection. |
-| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
-| focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts), cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
+| scrollToEnd | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the last item in the collection. |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
+| focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
 
 <br/>
 
@@ -715,9 +766,9 @@ Properties
 
 | Property | Type | Description |
 |--|--|--|
-| data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
-| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
-| measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| undefined | Display object metrics. |
+| data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
+| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
+| measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| undefined | Display object metrics. |
 
 <br/>
 
@@ -725,6 +776,7 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
+| 20.x | 20.9.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [20.9.0](https://www.npmjs.com/package/ng-virtual-list/v/20.9.0) |
 | 19.x | 19.9.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.9.2](https://www.npmjs.com/package/ng-virtual-list/v/19.9.2) |
 | 18.x | 18.9.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.9.0](https://www.npmjs.com/package/ng-virtual-list/v/18.9.0) |
 | 17.x | 17.9.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.9.0](https://www.npmjs.com/package/ng-virtual-list/v/17.9.0) |
