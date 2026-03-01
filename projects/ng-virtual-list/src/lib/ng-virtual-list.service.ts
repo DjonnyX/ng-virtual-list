@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Subject, takeUntil, tap } from 'rxjs';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
+import { Subject, takeUntil, tap } from 'rxjs';
 import { TrackBox } from './utils/track-box';
-import { IRenderVirtualListItem } from './models';
+import { IRenderVirtualListItem, IVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { FocusAlignments } from './enums';
+import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
 import { FocusAlignment, Id } from './types';
-import { DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
 
 @Injectable({
   providedIn: 'root'
@@ -33,20 +33,35 @@ export class NgVirtualListService {
     this._$methodOfSelecting.next(v);
   }
 
-  private _trackBox: TrackBox | undefined;
-
   private _$focusedId = new BehaviorSubject<Id | null>(null);
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
+
+  scrollStartOffset: number = 0;
+
+  scrollEndOffset: number = 0;
+
+  scrollBarSize: number = 0;
+
+  overlapScrollBarSize: number = 0;
 
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
 
+  defaultItemValue: IVirtualListItem | null = null;
+
+  isVertical: boolean = true;
+
+  dynamic: boolean = true;
+
+  private _trackBox: TrackBox | undefined;
+
   listElement: HTMLDivElement | null = null;
 
   private _$displayItems = new BehaviorSubject<IRenderVirtualListCollection>([]);
   readonly $displayItems = this._$displayItems.asObservable();
+  get displayItems() { return this._$displayItems.getValue(); }
 
   private _collection: IRenderVirtualListCollection = [];
   set collection(v: IRenderVirtualListCollection) {
@@ -59,6 +74,36 @@ export class NgVirtualListService {
     this._$displayItems.next(v);
   }
   get collection() { return this._collection; }
+
+  private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
+  readonly $langTextDir = this._$langTextDir.asObservable();
+  get langTextDir() { return this._$langTextDir.getValue(); }
+
+  private _langTextDir: TextDirection = TextDirections.LTR;
+  set langTextDir(v: TextDirection) {
+    if (this._langTextDir === v) {
+      return;
+    }
+
+    this._langTextDir = v;
+
+    this._$langTextDir.next(v);
+  }
+
+  private _$clickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
+  readonly $clickDistance = this._$clickDistance.asObservable();
+  get clickDistance() { return this._$clickDistance.getValue(); }
+
+  private _clickDistance: number = DEFAULT_CLICK_DISTANCE;
+  set clickDistance(v: number) {
+    if (this._clickDistance === v) {
+      return;
+    }
+
+    this._clickDistance = v;
+
+    this._$clickDistance.next(v);
+  }
 
   constructor() {
     this._$methodOfSelecting.pipe(
@@ -196,10 +241,6 @@ export class NgVirtualListService {
     }
   }
 
-  initialize(trackBox: TrackBox) {
-    this._trackBox = trackBox;
-  }
-
   itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment) => void) | undefined;
 
   focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER) {
@@ -212,6 +253,10 @@ export class NgVirtualListService {
 
   areaFocus(id: Id | null) {
     this._$focusedId.next(id);
+  }
+
+  initialize(trackBox: TrackBox) {
+    this._trackBox = trackBox;
   }
 
   generateComponentId() {

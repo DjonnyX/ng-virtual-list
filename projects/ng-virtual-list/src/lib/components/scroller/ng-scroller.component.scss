@@ -1,0 +1,73 @@
+:host {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.ngvl__container {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+
+    &.grabbing {
+        cursor: grabbing;
+    }
+
+    &.horizontal {
+        grid-template-rows: 1fr auto;
+
+        .ngvl__list {
+            display: inline-flex;
+        }
+
+        .ngvl__scroller {
+            overflow: hidden;
+        }
+    }
+
+    &.vertical {
+        grid-template-columns: 1fr auto;
+
+        .ngvl__scroller {
+            overflow: hidden;
+        }
+    }
+}
+
+.ngvl__scroller {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.ngvl__list {
+    position: absolute;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+
+    &.prepared {
+        opacity: 1;
+        overflow: hidden;
+
+        &.wait-for-preparation {
+            transition: opacity 150ms ease-out 100ms;
+        }
+    }
+
+    &.ready-to-start {
+        transition: height 150ms ease-out;
+
+        &.wait-for-preparation {
+            transition: height 150ms ease-out, opacity 150ms ease-out 100ms;
+        }
+    }
+}

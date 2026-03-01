@@ -3,7 +3,7 @@ import { IRenderVirtualListItemConfig } from "./render-item-config.model";
 /**
  * Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export interface IDisplayObjectConfig extends IRenderVirtualListItemConfig {

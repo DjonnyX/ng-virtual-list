@@ -1,26 +1,45 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [14.9.0] - 2026-03-01
+
+Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
+
+### Added
+- Added `langToDir` property
+- Added `loading` property
+- Added `scrollbarTheme` property
+- Added `clickDistance` property
+- Added `waitForPreparation` property
+- Added `scrollStartOffset` property
+- Added `scrollEndOffset` property
+- Added `snapScrollToBottom` property
+- Added `snapToEndTransitionInstantOffset` property
+- Added `scrollbarMinSize` property
+
+### Fixed
+- Fixed CBE-2025-9864 security vulnerability
+
 ## [14.8.0] - 2025-09-30
 
 Tests and stabilization
 
-## Fixed
+### Fixed
 - Buffer calculation errors have been fixed
 - Fixed trackBy
 - Some fixes in the lazy mode
 
-## Added
+### Added
 - Tests have been implemented
 
 ## [14.7.18] - 2025-09-28
 
 Scrolling methods
 
-## Improved
+### Improved
 - Scrolling methods have been reworked
 
-## Added
+### Added
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
 
@@ -28,7 +47,7 @@ Scrolling methods
 
 Jerking when scrolling
 
-## Fixed
+### Fixed
 
 - Fixed jerking when scrolling
 
@@ -36,7 +55,7 @@ Jerking when scrolling
 
 Examples
 
-## Added
+### Added
 
 - Added link to examples in README.md
 
@@ -44,7 +63,7 @@ Examples
 
 Screen reader
 
-## Added
+### Added
 
 - Screen reader support has been implemented
 
@@ -52,7 +71,7 @@ Screen reader
 
 Focusing an element
 
-## Improved
+### Improved
 
 - Implemented an API for focusing on an element by a given ID
 
@@ -60,16 +79,16 @@ Focusing an element
 
 Collection Mode
 
-## Added
+### Added
 
 - Added collection mode property
 
-## Fixed
+### Fixed
 
 - Collection reset fixed
 - Fixed positioning in the linear algorithm when adding elements to a collection
 
-## Improved
+### Improved
 
 - Optimized the settings of the buffer for examples of use
 
@@ -77,7 +96,7 @@ Collection Mode
 
 Scroll events
 
-## Fixed
+### Fixed
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been corrected
 
@@ -85,7 +104,7 @@ Scroll events
 
 Scroll events
 
-## Added
+### Added
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
@@ -93,7 +112,7 @@ Scroll events
 
 Vulnerabilities
 
-## Fixed
+### Fixed
 
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
@@ -102,7 +121,7 @@ Vulnerabilities
 
 Navigating elements
 
-## Fixed
+### Fixed
 
 - Fixed navigating elements using the keyboard
 
@@ -110,7 +129,7 @@ Navigating elements
 
 Collapsing groups
 
-## Improved
+### Improved
 
 - Implemented collapsing groups using the keyboard
 
@@ -118,11 +137,11 @@ Collapsing groups
 
 Group collapsibility
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-### Added
+#### Added
 
 - Added the ability to collapse groups
 
@@ -134,11 +153,11 @@ Group collapsibility
 
 iterations of the scrollTo methods
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-### Added
+#### Added
 
 - Added Iteration argument to scrollTo methods
 
@@ -154,7 +173,7 @@ Internal marks
 
 Project description
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
@@ -162,11 +181,11 @@ Project description
 
 Focus management during navigation
   
-### Added 
+#### Added 
 
 - Implemented focus management during navigation and scrolling using the keyboard
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
@@ -174,16 +193,16 @@ Focus management during navigation
 
 Item selection improvements
   
-### Improved 
+#### Improved 
 
 - README.md updated
   
-### Added 
+#### Added 
 
 - Added API for selecting an element
 - Measures passed to element template
   
-### Fixed
+#### Fixed
 
 - Fixed the initial state of selectedIds
 
@@ -191,7 +210,7 @@ Item selection improvements
 
 Item configuration
 
-### Improved 
+#### Improved 
 
 - README.md updated
 - Added item config and selectable parameter
@@ -200,7 +219,7 @@ Item configuration
 
 list item selection modes
 
-### Improved 
+#### Improved 
 
 - README.md updated
 - Implemented select, multiselect and unselectable list modes

@@ -4,6 +4,10 @@
 
 Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
 
+The main advantage of this solution is the elimination of the "empty spaces" effect during fast scrolling, which occurs in the classic implementation of virtualized lists. Visualization is as close as possible to native lists.
+
+Works correctly in all browsers and platforms.
+
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
 <b>Angular version 14.X.X</b>.
@@ -12,8 +16,8 @@ Flexible, and actively maintained Angular library that excels with high-performa
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
 ![npm total downloads](https://img.shields.io/npm/dt/ng-virtual-list)
 
-[Live Demo](https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/)
-[(Code)](https://github.com/DjonnyX/ng-virtual-list-demo)
+[Live Demo](https://chat-demo.eugene-grebennikov.pro/)
+[(Code)](https://github.com/DjonnyX/ng-virtual-list-chat-demo)
 
 [Live Examples (Storybook)](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
 
@@ -83,6 +87,8 @@ Collapsing groups
 
 Support for element animation
 
+Implemented a virtual scroll handler, ensuring stable scrolling on all platforms
+
 <br/>
 
 ## 📦 Installation
@@ -115,7 +121,7 @@ items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` })
 
 Template:
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5" [maxBufferSize]="20"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
     [itemRenderer]="horizontalItemRenderer" [itemSize]="64" methodForSelecting="select"
     [selectedIds]="2" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
@@ -164,7 +170,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="5" [maxBufferSize]="20" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true"
+    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true"
     methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
@@ -231,7 +237,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="items" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="itemRenderer"
+<ng-virtual-list class="list simple" [items]="items" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="itemRenderer"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -270,7 +276,7 @@ export class AppComponent {
 
 Template:
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
     [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -290,7 +296,7 @@ Template:
 
 Template (with snapping):
 ```html
-<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="5" [maxBufferSize]="20" [itemRenderer]="groupItemRenderer"
+<ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
     [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -401,7 +407,7 @@ Virtual list with height-adjustable elements.
 
 Template
 ```html
-<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="5" [maxBufferSize]="20"
+<ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
       [itemConfigMap]="groupDynamicItemConfigMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
@@ -471,6 +477,45 @@ export class AppComponent {
 <br/>
 
 ## 🖼️ Stylization
+
+- Scrollbar theme
+```ts
+import { NgVirtualListComponent, GradientColor, RoundedCorner, ScrollBarTheme } from 'ng-virtual-list';
+
+const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
+  ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
+  SCROLLBAR_GRADIENT: ScrollBarTheme = {
+    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
+    strokeAnimationDuration: 1000,
+    thickness: 6,
+    roundCorner: ROUND_CORNER,
+    rippleColor: 'rgba(255,255,255,0.5)',
+  };
+
+@Component({
+  selector: 'app-root',
+  imports: [FormsModule, NgVirtualListComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  scrollbarTheme = SCROLLBAR_GRADIENT;
+
+  items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` }));
+}
+
+```
+
+```html
+<ng-virtual-list [scrollbarTheme]="scrollbarTheme" [items]="items" [itemRenderer]="itemRenderer"></ng-virtual-list>
+
+<ng-template #horizontalItemRenderer let-data="data" let-config="config">
+  <div *ngIf="data" [ngClass]="{'list__h-container': true, 'selected': config.selected}">
+    <span>{{data.name}}</span>
+  </div>
+</ng-template>
+```
 
 List items are encapsulated in shadowDOM, so to override default styles you need to use ::part access
 
@@ -574,7 +619,7 @@ Inputs
 | collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
-| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered. |
+| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
@@ -582,6 +627,16 @@ Inputs
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
 | collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
+| langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
+| loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
+| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
+| clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
+| waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
+| scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
+| scrollEndOffset | number? = 0 | Sets the scroll end offset value; Default value is "0". |
+| snapScrollToBottom | boolean? = false | Determines whether the scroll will be anchored to the end of the list at startup.. Default value is "false". |
+| snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
+| scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
 
 <br/>
 
@@ -597,7 +652,6 @@ Outputs
 | onViewportChange | [ISize](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/types/size.ts) | Fires when the viewport size is changed. |
 | onScrollReachStart | void | Fires when the scroll reaches the start. |
 | onScrollReachEnd | void | Fires when the scroll reaches the end. |
-
 
 <br/>
 
@@ -642,7 +696,7 @@ Try it out, star ⭐ the repo, and let us know what you’re building.
 
 MIT License
 
-Copyright (c) 2025 djonnyx (Evgenii Grebennikov)
+Copyright (c) 2026 djonnyx (Evgenii Alexandrovich Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
