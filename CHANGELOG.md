@@ -32,7 +32,7 @@ Tests and stabilization
 ### Added
 - Tests have been implemented
 
-## [19.7.30] - 2025-09-27
+## [20.7.20] - 2025-09-28
 
 Scrolling methods
 
@@ -43,7 +43,15 @@ Scrolling methods
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
 
-## [19.7.29] - 2025-09-27
+## [20.7.19] - 2025-09-27
+
+Project description
+  
+### Improved 
+
+- README.md updated (fixed Previous versions)
+
+## [20.7.18] - 2025-09-27
 
 Jerking when scrolling
 
@@ -51,7 +59,7 @@ Jerking when scrolling
 
 - Fixed jerking when scrolling
 
-## [19.7.28] - 2025-09-26
+## [20.7.17] - 2025-09-26
 
 Examples
 
@@ -59,7 +67,15 @@ Examples
 
 - Added link to examples in README.md
 
-## [19.7.27] - 2025-09-26
+## [20.7.16] - 2025-09-26
+
+Project description
+  
+### Improved 
+
+- README.md updated
+
+## [20.7.15] - 2025-09-26
 
 Screen reader
 
@@ -67,7 +83,7 @@ Screen reader
 
 - Screen reader support has been implemented
 
-## [19.7.23] - 2025-09-24
+## [20.7.14] - 2025-09-25
 
 Focusing an element
 
@@ -75,9 +91,9 @@ Focusing an element
 
 - Implemented an API for focusing on an element by a given ID
 
-## [19.7.22] - 2025-09-24
+## [20.7.13] - 2025-09-24
 
-Examples
+Collection Mode
 
 ### Added
 
@@ -92,47 +108,7 @@ Examples
 
 - Optimized the settings of the buffer for examples of use
 
-## [19.7.21] - 2025-09-24
-
-Collection reset
-
-### Fixed
-
-- Collection reset fixed
-
-## [19.7.20] - 2025-09-23
-
-Positioning list items
-
-### Fixed
-
-- Fixed positioning in the linear algorithm when adding elements to a collection
-
-## [19.7.19] - 2025-09-23
-
-Collection Mode
-
-### Added
-
-- Added collection mode property
-
-## [19.7.18] - 2025-09-23
-
-Adding new elements to a collection
-
-### Fixed
-
-- Fixed handling of adding new elements to a collection (for lazy loading)
-
-## [19.7.17] - 2025-09-23
-
-Adding new elements to a collection
-
-### Improved
-
-- Improved handling of adding new elements to a collection (for lazy loading)
-
-## [19.7.16] - 2025-09-22
+## [20.7.12] - 2025-09-23
 
 Scroll events
 
@@ -140,7 +116,7 @@ Scroll events
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
-## [19.7.15] - 2025-09-21
+## [20.7.11] - 2025-09-22
 
 Vulnerabilities
 
@@ -149,23 +125,7 @@ Vulnerabilities
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
 
-## [19.7.14] - 2025-09-19
-
-`aria-activedescendant`
-
-### Added
-
-- `aria-activedescendant` processed
-
-## [19.7.13] - 2025-09-19
-
-Snapped elements
-
-### Fixed
-
-- Fixed display of snapped elements
-
-## [19.7.12] - 2025-09-19
+## [20.7.10] - 2025-09-21
 
 Navigating elements
 
@@ -173,7 +133,15 @@ Navigating elements
 
 - Fixed navigating elements using the keyboard
 
-## [19.7.11] - 2025-09-19
+## [20.7.9] - 2025-09-19
+
+Project description
+  
+### Improved 
+
+- README.md updated
+
+## [20.7.8] - 2025-09-19
 
 Collapsing groups
 
@@ -181,11 +149,7 @@ Collapsing groups
 
 - Implemented collapsing groups using the keyboard
 
-## [19.7.10] - 2025-09-18
-
-Code review
-
-## [19.7.9] - 2025-09-18
+## [20.7.7] - 2025-09-18
 
 Group collapsibility
   
@@ -201,7 +165,7 @@ Group collapsibility
 
 - The deprecated stickyMap property has been removed.
 
-## [19.7.8] - 2025-09-17
+## [20.7.6] - 2025-09-17
 
 iterations of the scrollTo methods
   
@@ -213,7 +177,7 @@ iterations of the scrollTo methods
 
 - Added Iteration argument to scrollTo methods
 
-## [19.7.7] - 2025-09-16
+## [20.7.5] - 2025-09-16
 
 Internal marks
   
@@ -221,7 +185,7 @@ Internal marks
 
 - Internal marks has been removed
 
-## [19.7.6] - 2025-09-16
+## [20.7.4] - 2025-09-16
 
 Project description
   
@@ -229,15 +193,7 @@ Project description
 
 - README.md updated
 
-## [19.7.5] - 2025-09-16
-
-Project description
-  
-### Improved 
-
-- README.md updated
-
-## [19.7.4] - 2025-09-15
+## [20.7.3] - 2025-09-15
 
 Focus management during navigation
   
@@ -249,7 +205,7 @@ Focus management during navigation
 
 - README.md updated
 
-## [19.7.3] - 2025-09-14
+## [20.7.2] - 2025-09-14
 
 Item selection improvements
   
@@ -262,19 +218,11 @@ Item selection improvements
 - Added API for selecting an element
 - Measures passed to element template
   
-#### Fixed
+### Fixed
 
 - Fixed the initial state of selectedIds
 
-## [19.7.2] - 2025-09-10
-
-Project description
-
-### Improved 
-
-- README.md updated
-
-## [19.7.1] - 2025-09-10
+## [20.7.1] - 2025-09-10
 
 Item configuration
 
@@ -283,7 +231,7 @@ Item configuration
 - README.md updated
 - Added item config and selectable parameter
 
-## [19.7.0] - 2025-09-09
+## [20.7.0] - 2025-09-09
 
 list item selection modes
 
