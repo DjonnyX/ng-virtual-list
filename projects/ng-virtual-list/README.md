@@ -99,6 +99,57 @@ npm i ng-virtual-list
 
 <br/>
 
+### IMPORTANT
+
+`Zone.js` is required for correct rendering.
+
+- `package.json`:
+```json
+{
+ ...
+  "dependencies": {
+    ...
+    "zone.js": "~0.15.0"
+  },
+}
+```
+
+- `angular.json`:
+```json
+{
+  "projects": {
+    "PROJECT_NAME": {
+      ...
+      "architect": {
+        "build": {
+          ...
+          "options": {
+            ...
+            "polyfills": [
+              "zone.js"
+            ],
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+- `app.config.ts`:
+```ts
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    ...
+    provideZoneChangeDetection(),
+  ]
+};
+```
+
+<br/>
+
 ## 🚀 Quick Start
 ```html
 <ng-virtual-list [items]="items" [bufferSize]="5" [itemRenderer]="itemRenderer" [itemSize]="64"></ng-virtual-list>
@@ -725,6 +776,7 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
+| 20.x | 20.9.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [20.9.0](https://www.npmjs.com/package/ng-virtual-list/v/20.9.0) |
 | 19.x | 19.9.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.9.2](https://www.npmjs.com/package/ng-virtual-list/v/19.9.2) |
 | 18.x | 18.9.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.9.0](https://www.npmjs.com/package/ng-virtual-list/v/18.9.0) |
 | 17.x | 17.9.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.9.0](https://www.npmjs.com/package/ng-virtual-list/v/17.9.0) |
