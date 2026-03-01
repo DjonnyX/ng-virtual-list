@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [19.9.0] - 2026-02-27
+## [20.9.0] - 2026-03-01
 
 Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
 
@@ -20,7 +20,7 @@ Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. 
 ### Fixed
 - Fixed CBE-2025-9864 security vulnerability
 
-## [19.8.0] - 2025-09-30
+## [20.8.0] - 2025-09-01
 
 Tests and stabilization
 
@@ -63,30 +63,6 @@ Examples
 
 Screen reader
 
-### Improved
-
-- Performance has been optimized
-
-## [19.7.26] - 2025-09-25
-
-Screen reader
-
-### Improved
-
-- The position of the message block for screen reader has been moved to the beginning
-
-## [19.7.25] - 2025-09-25
-
-Screen reader
-
-### Fixed
-
-- Fixed generation of item numbers for screen readers
-
-## [19.7.24] - 2025-09-25
-
-Screen reader
-
 ### Added
 
 - Screen reader support has been implemented
@@ -102,6 +78,15 @@ Focusing an element
 ## [19.7.22] - 2025-09-24
 
 Examples
+
+### Added
+
+- Added collection mode property
+
+### Fixed
+
+- Collection reset fixed
+- Fixed positioning in the linear algorithm when adding elements to a collection
 
 ### Improved
 

@@ -656,17 +656,17 @@ Inputs
 | collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
-| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
-| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
+| snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
+| direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
 | dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
 | collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
-| langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
+| langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
-| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
+| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
 | waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
 | scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
@@ -715,9 +715,22 @@ Properties
 
 | Property | Type | Description |
 |--|--|--|
-| data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
-| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
-| measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| undefined | Display object metrics. |
+| data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
+| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
+| measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| undefined | Display object metrics. |
+
+<br/>
+
+## 📦 Previous versions
+
+| Angular version | ng-virtual-list version | git | npm |
+|--|--|--|--|
+| 19.x | 19.9.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.9.2](https://www.npmjs.com/package/ng-virtual-list/v/19.9.2) |
+| 18.x | 18.9.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.9.0](https://www.npmjs.com/package/ng-virtual-list/v/18.9.0) |
+| 17.x | 17.9.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.9.0](https://www.npmjs.com/package/ng-virtual-list/v/17.9.0) |
+| 16.x | 16.9.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.9.0](https://www.npmjs.com/package/ng-virtual-list/v/16.9.0) |
+| 15.x | 15.9.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.9.0](https://www.npmjs.com/package/ng-virtual-list/v/15.9.0) |
+| 14.x | 14.9.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.9.0](https://www.npmjs.com/package/ng-virtual-list/v/14.9.0) |
 
 <br/>
 
@@ -733,7 +746,7 @@ Try it out, star ⭐ the repo, and let us know what you’re building.
 
 MIT License
 
-Copyright (c) 2025 djonnyx (Evgenii Alexandrovich Grebennikov)
+Copyright (c) 2026 djonnyx (Evgenii Alexandrovich Grebennikov)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
