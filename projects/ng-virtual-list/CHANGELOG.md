@@ -1,33 +1,52 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [16.9.0] - 2026-03-01
+
+Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
+
+### Added
+- Added `langToDir` property
+- Added `loading` property
+- Added `scrollbarTheme` property
+- Added `clickDistance` property
+- Added `waitForPreparation` property
+- Added `scrollStartOffset` property
+- Added `scrollEndOffset` property
+- Added `snapScrollToBottom` property
+- Added `snapToEndTransitionInstantOffset` property
+- Added `scrollbarMinSize` property
+
+### Fixed
+- Fixed CBE-2025-9864 security vulnerability
+
 ## [16.8.0] - 2025-10-01
 
 Tests and stabilization
 
-## Fixed
+### Fixed
 - Buffer calculation errors have been fixed
 - Fixed trackBy
 - Some fixes in the lazy mode
 
-## Added
+### Added
 - Tests have been implemented
 
 ## [16.7.17] - 2025-09-28
 
 Scrolling methods
 
-## Improved
+### Improved
 - Scrolling methods have been reworked
 
-## Added
+### Added
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
 ## [16.7.16] - 2025-09-27
 
 Jerking when scrolling
 
-## Fixed
+### Fixed
 
 - Fixed jerking when scrolling
 
@@ -35,7 +54,7 @@ Jerking when scrolling
 
 Examples
 
-## Added
+### Added
 
 - Added link to examples in README.md
 
@@ -43,7 +62,7 @@ Examples
 
 Screen reader
 
-## Added
+### Added
 
 - Screen reader support has been implemented
 
@@ -51,7 +70,7 @@ Screen reader
 
 Focusing an element
 
-## Improved
+### Improved
 
 - Implemented an API for focusing on an element by a given ID
 
@@ -59,16 +78,16 @@ Focusing an element
 
 Collection Mode
 
-## Added
+### Added
 
 - Added collection mode property
 
-## Fixed
+### Fixed
 
 - Collection reset fixed
 - Fixed positioning in the linear algorithm when adding elements to a collection
 
-## Improved
+### Improved
 
 - Optimized the settings of the buffer for examples of use
 
@@ -76,7 +95,7 @@ Collection Mode
 
 Scroll events
 
-## Added
+### Added
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
@@ -84,7 +103,7 @@ Scroll events
 
 Vulnerabilities
 
-## Fixed
+### Fixed
 
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
@@ -93,7 +112,7 @@ Vulnerabilities
 
 Navigating elements
 
-## Fixed
+### Fixed
 
 - Fixed navigating elements using the keyboard
 
@@ -101,7 +120,7 @@ Navigating elements
 
 Collapsing groups
 
-## Improved
+### Improved
 
 - Implemented collapsing groups using the keyboard
 

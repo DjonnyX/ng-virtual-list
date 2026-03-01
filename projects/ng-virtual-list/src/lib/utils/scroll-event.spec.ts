@@ -9,6 +9,8 @@ describe('ScrollEvent', () => {
             delta: 0,
             scrollDelta: 0,
             isVertical: true,
+            scrollSize: 100,
+            itemsRange: [0, 1],
         });
         expect(instance).toBeDefined();
     });

@@ -1,4 +1,5 @@
-import { CacheMap, CMap } from './cache-map';
+import { CacheMap } from './cache-map';
+import { CMap } from './cmap';
 import { ISize } from '../types';
 
 class CMapTested<K = string, V = any> extends CMap<K, V> {
@@ -50,7 +51,7 @@ describe('CMap', () => {
 
 type OnChangeEventListener = (version: number) => void;
 
-class CacheMapTested<I = string | number, B = any, E extends string = "change", L = OnChangeEventListener> extends CacheMap<I, B, E, L> {
+class CacheMapTested<I = string | number, B = any, E = "change", L = OnChangeEventListener> extends CacheMap<I, B, E, L> {
     get snapshotObject() {
         return this._snapshot;
     }

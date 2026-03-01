@@ -1,9 +1,8 @@
 /**
  * Object with configuration parameters for IRenderVirtualListItem
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/models/render-item-config.model.ts
- * @author Evgenii Grebennikov
+ * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
- * 
  */
 export interface IRenderVirtualListItemConfig {
     /**

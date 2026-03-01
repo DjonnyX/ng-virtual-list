@@ -1,0 +1,15 @@
+<div localeSensitive [langTextDir]="($langTextDir | async)!" [listDir]="($direction | async)!" class="ngvl__container"
+    [ngClass]="($containerClasses | async)!">
+    <div #scrollViewport cdkScrollable part="scroller" class="ngvl__scroller">
+        <div #scrollContent [attr.aria-orientation]="($direction | async)!"
+            [attr.aria-activedescendant]="$focusedElement | async" tabindex="0" part="list" class="ngvl__list"
+            [ngClass]="($actualClasses | async)!">
+            <ng-content></ng-content>
+        </div>
+    </div>
+    <ng-scroll-bar #scrollBar [isVertical]="($isVertical | async)!" [size]="($thumbSize | async)!"
+        [theme]="($scrollbarTheme | async)!" [position]="($thumbPosition | async)!"
+        [thumbGradientPositions]="($thumbGradientPositions | async)!" [loading]="($loading | async)!"
+        [prepared]="($preparedSignal | async)!" [show]="($thumbShow | async)!"
+        (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+</div>

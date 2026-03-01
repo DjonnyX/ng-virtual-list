@@ -2,17 +2,19 @@
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
     <p class="l">Maximum performance for extremely large lists</p>
+    <p class="l">Works correctly in all browsers and platforms</p>
     <p class="l">Animation of elements is supported.</p>
-    <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
+    <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
+    <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 16.8.0</span></div>
+    <div class="version"><span>v 16.9.0</span></div>
   </div>
 
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal list (Single select)</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5" [maxBufferSize]="20"
-        methodForSelecting="select" [itemRenderer]="horizontalItemRenderer" [itemSize]="54"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
+        methodForSelecting="select" [itemRenderer]="horizontalItemRenderer" [itemSize]="54" [scrollbarTheme]="scrollbarTheme"
         (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="2" [selectByClick]="true"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
@@ -27,8 +29,8 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list (Multi select)</h2>
-      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="5" [maxBufferSize]="20"
-        methodForSelecting="multi-select" [itemRenderer]="horizontalGroupItemRenderer"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [bufferSize]="1" [maxBufferSize]="5"
+        methodForSelecting="multi-select" [itemRenderer]="horizontalGroupItemRenderer" [scrollbarTheme]="scrollbarTheme"
         [itemConfigMap]="horizontalGroupItemsStickyMap" [itemSize]="54" [snap]="true" (onItemClick)="onItemClick($event)"
         (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"(onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
@@ -49,7 +51,16 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Vertical virtual list</h2>
-      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="5" [maxBufferSize]="20" [itemSize]="40"
+      <ng-virtual-list class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [scrollbarTheme]="scrollbarTheme"
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [methodForSelecting]="'multi-select'" [selectedIds]="[3,2]"
+        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Vertical virtual list (rigth-to-left direction)</h2>
+      <ng-virtual-list class="list" langTextDir="rtl" [items]="itemsRtl" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [scrollbarTheme]="scrollbarTheme"
         (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [methodForSelecting]="'multi-select'" [selectedIds]="[3,2]"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
@@ -69,8 +80,8 @@
           [max]="maxId">
         <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="5" [maxBufferSize]="20"
-        [itemSize]="40" (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
+      <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
+        [itemSize]="40" [scrollbarTheme]="scrollbarTheme" (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -78,8 +89,8 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="5" [maxBufferSize]="20"
-        [itemConfigMap]="groupItemsStickyMap" [itemSize]="40" (onItemClick)="onItemClick($event)"
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
+        [itemConfigMap]="groupItemsStickyMap" [itemSize]="40" [scrollbarTheme]="scrollbarTheme" (onItemClick)="onItemClick($event)"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -87,8 +98,8 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list (with snapping)</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="5" [maxBufferSize]="20"
-        [maxBufferSize]="200" [itemConfigMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true"
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
+        [maxBufferSize]="200" [itemConfigMap]="groupItemsStickyMap" [itemSize]="40" [snap]="true" [scrollbarTheme]="scrollbarTheme"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
@@ -102,8 +113,8 @@
           [max]="maxDlId">
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="5" [maxBufferSize]="20" [maxBufferSize]="200" [itemConfigMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
+      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [scrollbarTheme]="scrollbarTheme"
+        [bufferSize]="1" [maxBufferSize]="5" [maxBufferSize]="200" [itemConfigMap]="groupDynamicItemsStickyMap" [dynamicSize]="true"
         [snap]="true" (onItemClick)="onItemClick($event)" (onViewportChange)="onViewportChangeHandler($event)"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>

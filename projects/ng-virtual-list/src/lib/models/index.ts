@@ -1,7 +1,7 @@
 import { ScrollDirection } from './scroll-direction.model';
 import { IScrollEvent } from './scroll-event.model';
 import { IVirtualListItem } from './item.model';
-import { IVirtualListItemConfigMap } from './item-config-map.model';
+import { IVirtualListItemConfigMap, IVirtualListItemConfig } from './item-config-map.model';
 import { IVirtualListCollection } from './collection.model';
 import { IRenderVirtualListItem } from './render-item.model';
 import { IDisplayObjectConfig } from './display-object-config.model';
@@ -14,6 +14,7 @@ export type {
     IScrollEvent,
     IVirtualListItem,
     IVirtualListItemConfigMap,
+    IVirtualListItemConfig,
     IVirtualListCollection,
     IRenderVirtualListItem,
     ScrollDirection,
