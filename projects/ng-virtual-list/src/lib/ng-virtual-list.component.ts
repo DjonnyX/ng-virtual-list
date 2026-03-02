@@ -1526,7 +1526,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
                 behavior: (animated ?
                   BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT) as ScrollBehavior,
-                blending: false,
+                blending: true,
               };
             scroller?.scrollTo?.(params);
           }
@@ -1853,7 +1853,7 @@ export class NgVirtualListComponent implements OnDestroy {
       switchMap(({ scroller, trackBy, event }) => {
         const scrollerComponent = this._scrollerComponent(),
           {
-            id, behavior = BEHAVIOR_INSTANT, iteration = 0,
+            id, iteration = 0,
             isLastIteration = false, scrollCalled = false, cb,
           } = event;
         if (scrollerComponent) {
