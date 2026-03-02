@@ -48,12 +48,6 @@ const calculateDirection = (buffer: Array<[number, number]>) => {
   return 1;
 }
 
-interface IAnimation {
-  finished: () => boolean;
-  to: (value: number) => void;
-  cancel: () => void;
-}
-
 export interface IScrollToParams {
   x?: number;
   y?: number;
@@ -249,8 +243,6 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
   }
   get y() { return this._y; }
 
-  private _currentAnimation: IAnimation | undefined;
-
   private _totalSize: number = 0;
   set totalSize(v: number) {
     this._totalSize = v;
@@ -331,6 +323,10 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
   }
 
   private _updateScrollBarId: number | undefined;
+
+  private _animationId: number = -1;
+
+  private _animationId1: number = -1;
 
   constructor(private _service: NgVirtualListService) {
     super();
@@ -667,10 +663,8 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
   }
 
   stopScrolling() {
-    if (this._currentAnimation !== undefined) {
-      this._currentAnimation.cancel();
-      this._currentAnimation = undefined;
-    }
+    cancelAnimationFrame(this._animationId);
+    cancelAnimationFrame(this._animationId1);
   }
 
   private move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false) {
@@ -712,7 +706,7 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
     }
 
     let finishedValue = endValue,
-      isFinished = false, animationId: number;
+      isFinished = false;
 
     const step = (currentTime: number) => {
       if (!!isCanceled) {
@@ -748,6 +742,7 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
 
       const scrollContent = this.scrollContent?.nativeElement as HTMLDivElement;
       if (!!scrollContent) {
+        cancelAnimationFrame(this._animationId1);
         if (isVertical) {
           this.y = currentValue;
           scrollContent.style.transform = `translate3d(0, ${-currentValue}px, 0)`;
@@ -768,22 +763,11 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
         this.stopScrolling();
         this._$scrollEnd.next(userAction);
       } else {
-        animationId = requestAnimationFrame(step);
+        this._animationId = requestAnimationFrame(step);
       }
-    }, cancel = () => {
-      cancelAnimationFrame(animationId);
-      isCanceled = true;
-    }, to = (value: number) => {
-      finishedValue = value;
-    }, finished = () => { return isFinished; };
-
-    animationId = requestAnimationFrame(step);
-
-    this._currentAnimation = {
-      cancel,
-      to,
-      finished,
     };
+
+    this._animationId = requestAnimationFrame(step);
   }
 
   private updateScrollBar() {
@@ -839,7 +823,8 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
           if (this.cdkScrollable) {
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
-          this._$scroll.next(userAction);
+
+          this.fireScrollEvent(userAction);
         }
       } else {
         if (prevX !== xx) {
@@ -850,10 +835,18 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
           if (this.cdkScrollable) {
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
-          this._$scroll.next(userAction);
+
+          this.fireScrollEvent(userAction);
         }
       }
     }
+  }
+
+  protected fireScrollEvent(userAction: boolean) {
+    cancelAnimationFrame(this._animationId1);
+    this._animationId1 = requestAnimationFrame(() => {
+      this._$scroll.next(userAction);
+    });
   }
 
   reset() {
