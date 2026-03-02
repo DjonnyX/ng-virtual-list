@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.9.3] - 2026-03-02
+
+### Fixed
+- Fixed list freezing during animations
+
 ## [19.9.2] - 2026-03-01
 
 ### Fixed
