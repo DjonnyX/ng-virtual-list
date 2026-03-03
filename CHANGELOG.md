@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [14.9.3] - 2026-03-03
+
+### Fixed
+- Scrolling optimization has been implemented
+
 ## [14.9.2] - 2026-03-03
 
 ### Fixed
