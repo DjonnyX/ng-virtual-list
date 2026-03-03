@@ -57,6 +57,7 @@ export interface IScrollToParams {
   top?: number;
   blending?: boolean;
   behavior?: ScrollBehavior;
+  fireUpdate?: boolean;
   userAction?: boolean;
 }
 
@@ -581,7 +582,6 @@ export class NgScrollerComponent implements OnDestroy {
 
   stopScrolling() {
     cancelAnimationFrame(this._animationId);
-    cancelAnimationFrame(this._animationId1);
   }
 
   private move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false) {
@@ -659,7 +659,6 @@ export class NgScrollerComponent implements OnDestroy {
 
       const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
       if (scrollContent) {
-        cancelAnimationFrame(this._animationId1);
         if (isVertical) {
           this.y = currentValue;
           scrollContent.style.transform = `translate3d(0, ${-currentValue}px, 0)`;
@@ -697,6 +696,7 @@ export class NgScrollerComponent implements OnDestroy {
       userAction = params.userAction ?? false,
       x = posX,
       y = posY,
+      fireUpdate = params.fireUpdate ?? true,
       behavior = params.behavior ?? INSTANT,
       blending = params.blending ?? true,
       scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement,
@@ -741,7 +741,9 @@ export class NgScrollerComponent implements OnDestroy {
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
 
-          this.fireScrollEvent(userAction);
+          if (fireUpdate) {
+            this.fireScrollEvent(userAction);
+          }
         }
       } else {
         if (prevX !== xx) {
@@ -753,17 +755,16 @@ export class NgScrollerComponent implements OnDestroy {
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
 
-          this.fireScrollEvent(userAction);
+          if (fireUpdate) {
+            this.fireScrollEvent(userAction);
+          }
         }
       }
     }
   }
 
   protected fireScrollEvent(userAction: boolean) {
-    cancelAnimationFrame(this._animationId1);
-    this._animationId1 = requestAnimationFrame(() => {
-      this._$scroll.next(userAction);
-    });
+    this._$scroll.next(userAction);
   }
 
   reset() {
