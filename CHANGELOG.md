@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.9.2] - 2026-03-03
+
+### Fixed
+- Artifacts when scrolling has been fixed
+
 ## [17.9.1] - 2026-03-02
 
 ### Fixed
