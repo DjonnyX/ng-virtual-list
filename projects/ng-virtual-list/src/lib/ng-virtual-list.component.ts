@@ -24,7 +24,8 @@ import { FocusAlignment, Id, IRect, ISize, ScrollBarTheme } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting, SnappingMethod, SnappingMethods,
-  TextDirection, TextDirections,
+  TextDirection,
+  TextDirections,
 } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/track-box';
@@ -1526,13 +1527,14 @@ export class NgVirtualListComponent implements OnDestroy {
                 behavior: (animated ?
                   BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT) as ScrollBehavior,
                 blending: true,
+                fireUpdate: false,
               };
             scroller?.scrollTo?.(params);
           }
         } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
           const params: IScrollToParams = {
-            [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate,
-            behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+            [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true,
+            fireUpdate: false, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
           };
           scroller.scrollTo(params);
         }
@@ -1548,24 +1550,10 @@ export class NgVirtualListComponent implements OnDestroy {
         snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
-        const updateId = this._updateId;
-        if (updateId !== undefined) {
-          cancelAnimationFrame(updateId);
-          this._updateId = undefined;
-        }
-        if (!prepared || !isResetedReachStart) {
-          update({
-            snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-            bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-          });
-        } else {
-          this._updateId = requestAnimationFrame((time: DOMHighResTimeStamp) => {
-            update({
-              snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-              bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-            });
-          });
-        }
+        update({
+          snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+          bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+        });
       }),
     ).subscribe();
 
@@ -1873,6 +1861,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, opts),
                 params: IScrollToParams = {
                   [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+                  fireUpdate: false,
                   blending: true,
                 };
 
@@ -1911,7 +1900,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) || iteration < MAX_SCROLL_TO_ITERATIONS) {
                 this._$scrollTo.next(params as IScrollParams);
                 return of([false, {
-                  id, behavior: BEHAVIOR_INSTANT as ScrollBehavior, scroller: scrollerComponent, iteration: iteration + 1, blending: true,
+                  id, scroller: scrollerComponent, iteration: iteration + 1,
                   isLastIteration: notChanged, scrollCalled: true, cb
                 }]).pipe(
                   delay(1),
@@ -1979,7 +1968,6 @@ export class NgVirtualListComponent implements OnDestroy {
     $bounds.pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
-      filter(v => !!v),
       tap(value => {
         const size: ISize = { width: value!.width, height: value!.height };
         this.onViewportChange.emit(objectAsReadonly(size));
