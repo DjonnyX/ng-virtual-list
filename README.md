@@ -101,7 +101,7 @@ npm i ng-virtual-list
 
 ## 🚀 Quick Start
 ```html
-<ng-virtual-list [items]="items" [bufferSize]="5" [itemRenderer]="itemRenderer" [itemSize]="64"></ng-virtual-list>
+<ng-virtual-list [items]="items" [bufferSize]="1" [itemRenderer]="itemRenderer" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
     <span *ngIf="data">{{data.name}}</span>
@@ -355,7 +355,7 @@ Template
   <button class="scroll-to__button" (click)="onButtonScrollToIdClickHandler($event)">Scroll</button>
 </div>
 
-<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="50"
+<ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="1"
   [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
@@ -579,7 +579,7 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 Selecting even elements:
 
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="5"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1"
   [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
