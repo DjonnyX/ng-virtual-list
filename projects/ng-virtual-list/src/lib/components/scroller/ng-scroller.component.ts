@@ -56,6 +56,7 @@ export interface IScrollToParams {
   blending?: boolean;
   behavior?: "auto" | "instant" | "smooth" | string;
   userAction?: boolean;
+  fireUpdate?: boolean;
 }
 
 export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
@@ -664,7 +665,6 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
 
   stopScrolling() {
     cancelAnimationFrame(this._animationId);
-    cancelAnimationFrame(this._animationId1);
   }
 
   private move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false) {
@@ -742,7 +742,6 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
 
       const scrollContent = this.scrollContent?.nativeElement as HTMLDivElement;
       if (!!scrollContent) {
-        cancelAnimationFrame(this._animationId1);
         if (isVertical) {
           this.y = currentValue;
           scrollContent.style.transform = `translate3d(0, ${-currentValue}px, 0)`;
@@ -782,6 +781,7 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
       y = posY,
       behavior = params.behavior ?? INSTANT,
       blending = params.blending ?? true,
+      fireUpdate = params.fireUpdate ?? true,
       scrollContent = this.scrollContent?.nativeElement as HTMLDivElement,
       isVertical = this._$direction.getValue() === ScrollerDirection.VERTICAL;
 
@@ -824,7 +824,9 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
 
-          this.fireScrollEvent(userAction);
+          if (fireUpdate) {
+            this.fireScrollEvent(userAction);
+          }
         }
       } else {
         if (prevX !== xx) {
@@ -836,17 +838,16 @@ export class NgScrollerComponent extends DisposableComponent implements OnDestro
             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
           }
 
-          this.fireScrollEvent(userAction);
+          if (fireUpdate) {
+            this.fireScrollEvent(userAction);
+          }
         }
       }
     }
   }
 
   protected fireScrollEvent(userAction: boolean) {
-    cancelAnimationFrame(this._animationId1);
-    this._animationId1 = requestAnimationFrame(() => {
-      this._$scroll.next(userAction);
-    });
+    this._$scroll.next(userAction);
   }
 
   reset() {
