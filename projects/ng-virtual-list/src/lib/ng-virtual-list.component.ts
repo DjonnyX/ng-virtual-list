@@ -1918,13 +1918,15 @@ export class NgVirtualListComponent implements OnDestroy {
                 behavior: (animated ?
                   BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT) as ScrollBehavior,
                 blending: true,
+                fireUpdate: false,
               };
             scroller?.scrollTo?.(params);
           }
         } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
           const params: IScrollToParams = {
             [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate,
-            behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+            behavior: BEHAVIOR_INSTANT as ScrollBehavior, blending: true,
+            fireUpdate: false,
           };
           scroller.scrollTo(params);
         }
@@ -1940,24 +1942,10 @@ export class NgVirtualListComponent implements OnDestroy {
         snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
       ]) => {
-        const updateId = this._updateId;
-        if (updateId !== undefined) {
-          cancelAnimationFrame(updateId);
-          this._updateId = undefined;
-        }
-        if (!prepared || !isResetedReachStart) {
-          update({
-            snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-            bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-          });
-        } else {
-          this._updateId = requestAnimationFrame((time: DOMHighResTimeStamp) => {
-            update({
-              snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-              bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-            });
-          });
-        }
+        update({
+          snapScrollToBottom, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+          bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+        });
       }),
     ).subscribe();
 
@@ -2269,7 +2257,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, opts),
                 params: IScrollToParams = {
                   [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
-                  blending: true,
+                  blending: true, fireUpdate: false,
                 };
 
               if (scrollSize === -1) {
@@ -2307,7 +2295,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) || iteration < MAX_SCROLL_TO_ITERATIONS) {
                 this._$scrollTo.next(params as IScrollParams);
                 return of([false, {
-                  id, behavior: BEHAVIOR_INSTANT as ScrollBehavior, scroller: scrollerComponent, iteration: iteration + 1, blending: true,
+                  id, scroller: scrollerComponent, iteration: iteration + 1,
                   isLastIteration: notChanged, scrollCalled: true, cb
                 }]).pipe(
                   delay(1),
