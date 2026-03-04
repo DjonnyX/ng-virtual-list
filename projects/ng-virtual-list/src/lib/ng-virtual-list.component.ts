@@ -1476,28 +1476,28 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(v => {
-        const waitForPreparation = this._$waitForPreparation.getValue();
-        if (waitForPreparation) {
-          if (!v) {
-            prepared = readyToStart = v;
+        if (!v) {
+          this.cacheClean();
+          readyToStart = isUserScrolling = false;
+          prepared = readyToStart = v;
+          const waitForPreparation = this._$waitForPreparation.getValue();
+          if (waitForPreparation) {
             const scrollerComponent = this._scrollerComponent;
             if (scrollerComponent) {
               scrollerComponent.prepared = v;
             }
             this._$classes.next({ prepared: v, [WAIT_FOR_PREPARATION]: waitForPreparation });
-            this.cacheClean();
+          } else {
+            const scrollerComponent = this._scrollerComponent;
+            if (scrollerComponent) {
+              scrollerComponent.prepared = true;
+            }
+            this._$classes.next({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
           }
-        } else {
-          prepared = readyToStart = true;
-          const scrollerComponent = this._scrollerComponent;
-          if (scrollerComponent) {
-            scrollerComponent.prepared = true;
-          }
-          this._$classes.next({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
         }
       }),
       filter(v => !!v),
-      debounceTime(0),
+      delay(0),
       takeUntil(this._$unsubscribe),
       tap(v => {
         prepared = v;
@@ -1841,16 +1841,13 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
           scrollPosition = Math.round(actualScrollSize);
 
         const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-          bounds: { width, height, x, y }, dynamicSize, isVertical, itemSize, reversed: false,
+          bounds: { width, height, x, y }, dynamicSize, isVertical, itemSize,
           bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
         };
 
-        if (snapScrollToBottom && scrollLength > viewportSize && !prepared) {
-          const { totalSize: calculatedTotalSize } = this._trackBox.getMetrics(items, itemConfigMap, { ...opts, reversed: true });
-          totalSize = calculatedTotalSize;
-          actualScrollSize = (totalSize > viewportSize ? totalSize - viewportSize : 0);
+        if (snapScrollToBottom && !prepared) {
           const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1 } =
-            this._trackBox.updateCollection(items, itemConfigMap, { ...opts, reversed: true, scrollSize: actualScrollSize });
+            this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
           displayItems = calculatedDisplayItems;
           totalSize = calculatedTotalSize1;
           scrollLength = Math.round(totalSize) ?? 0;
@@ -2249,7 +2246,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 currentScollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), delta = this._trackBox.delta,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
                   bounds: { width, height, x, y }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
-                  bufferSize: this._$bufferSize.getValue(), maxBufferSize: this._$maxBufferSize.getValue(), reversed: false,
+                  bufferSize: this._$bufferSize.getValue(), maxBufferSize: this._$maxBufferSize.getValue(),
                   scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft) + delta,
                   snap: this._$snap.getValue(), fromItemId: id, enabledBufferOptimization: this._$enabledBufferOptimization.getValue(),
                 },
@@ -2445,6 +2442,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       scrollDelta: 0,
       itemsRange: undefined,
     });
+
+    this._$prepared.next(false);
   }
 
   private listenCacheChangesIfNeed(value: boolean) {
