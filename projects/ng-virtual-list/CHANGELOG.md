@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.9.6] - 2026-03-04
+
+### Improved
+- Manual list update has been implemented
+
 ## [20.9.5] - 2026-03-04
 
 ### Improved
