@@ -106,9 +106,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   private _$focused = new BehaviorSubject<boolean>(false);
   $focused = this._$focused.asObservable();
 
-  private _$reseted = new BehaviorSubject<boolean>(false);
-  $reseted = this._$reseted.asObservable();
-
   private _$part = new BehaviorSubject<string>(PART_DEFAULT_ITEM);
   $part = this._$part.asObservable();
 
@@ -235,8 +232,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     const $data = this.$data,
       $config = this.$config,
       $measures = this.$measures,
-      $focused = this.$focused,
-      $reseted = this.$reseted;
+      $focused = this.$focused;
 
     this._service.$clickDistance.pipe(
       takeUntil(this._$unsubscribe),
@@ -259,12 +255,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       }),
     ).subscribe();
 
-    combineLatest([$data, $config, $measures, $reseted]).pipe(
+    combineLatest([$data, $config, $measures]).pipe(
       takeUntil(this._$unsubscribe),
-      tap(([data, config, measures, reseted]) => {
+      tap(([data, config, measures]) => {
         this._$templateContext.next({
           data: data?.data, prevData: data?.previouseData, nextData: data?.nextData, measures,
-          config, reseted, index: data?.index ?? - 1
+          config, reseted: false, index: data?.index ?? - 1
         });
       }),
     ).subscribe();
@@ -486,8 +482,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   }
 
   show() {
-    this._$reseted.next(false);
-
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.zIndex = this.data?.config?.zIndex ?? DEFAULT_ZINDEX;
@@ -507,8 +501,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   }
 
   hide() {
-    this._$reseted.next(true);
-
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.position = POSITION_ABSOLUTE;
