@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.9.4] - 2026-03-04
+
+### Fixed
+- Improved rendering synchronization
+
 ## [20.9.3] - 2026-03-04
 
 ### Fixed
