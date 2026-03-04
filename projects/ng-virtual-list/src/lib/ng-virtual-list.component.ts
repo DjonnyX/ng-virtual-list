@@ -1103,6 +1103,7 @@ export class NgVirtualListComponent implements OnDestroy {
               scrollerComponent.prepared = true;
             }
             this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+            this.updateImmediately();
           }
         }
       }),
@@ -1111,6 +1112,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(this._destroyRef),
       tap(v => {
         prepared = v;
+        this.updateImmediately();
       }),
       delay(0),
       takeUntilDestroyed(this._destroyRef),
@@ -1120,6 +1122,7 @@ export class NgVirtualListComponent implements OnDestroy {
           scrollerComponent.prepared = val;
         }
         this.classes.set({ prepared: val, [WAIT_FOR_PREPARATION]: waitForPreparation });
+        this.updateImmediately();
       }),
       delay(1000),
       takeUntilDestroyed(this._destroyRef),
@@ -1127,6 +1130,7 @@ export class NgVirtualListComponent implements OnDestroy {
         const waitForPreparation = this.waitForPreparation();
         readyToStart = v;
         this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+        this.updateImmediately();
       }),
     ).subscribe();
 
@@ -2230,6 +2234,9 @@ export class NgVirtualListComponent implements OnDestroy {
     }
   }
 
+  /**
+   * Force clearing the cache.
+   */
   cacheClean() {
     this._trackBox.cacheClean();
     this._collapsedItemIds.set([]);
@@ -2244,6 +2251,9 @@ export class NgVirtualListComponent implements OnDestroy {
     this._$prepared.next(false);
   }
 
+  /**
+   * Stops the list from snapping to the bottom edge.
+   */
   stopSnappingScrollToEnd() {
     const scroller = this._scrollerComponent();
     this._isScrollFinished.set(false);
@@ -2251,6 +2261,20 @@ export class NgVirtualListComponent implements OnDestroy {
     if (scroller) {
       scroller.stopScrolling();
     }
+  }
+
+  /**
+   * Instantly refreshes the list.
+   */
+  updateImmediately() {
+    this._service.update(true);
+  }
+
+  /**
+   * Marks the list for an update that will trigger on the next tick.
+   */
+  markForUpdate() {
+    this._service.update();
   }
 
   ngOnDestroy(): void {
