@@ -75,8 +75,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
   focused = signal<boolean>(false);
 
-  reseted = signal<boolean>(false);
-
   part = signal<string>(PART_DEFAULT_ITEM);
 
   maxClickDistance = signal<number>(DEFAULT_CLICK_DISTANCE);
@@ -205,7 +203,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       const data = this.data(), measures = this.measures(), config = this.config();
       return {
         data: data?.data, prevData: data?.previouseData, nextData: data?.nextData, measures,
-        config, reseted: this.reseted(), index: data?.index ?? - 1
+        config, reseted: false, index: data?.index ?? - 1
       };
     });
 
@@ -429,8 +427,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   show() {
-    this.reseted.set(false);
-
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.zIndex = this._data?.config?.zIndex ?? DEFAULT_ZINDEX;
@@ -450,8 +446,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
   }
 
   hide() {
-    this.reseted.set(true);
-
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.position = POSITION_ABSOLUTE;
