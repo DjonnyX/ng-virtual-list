@@ -7,6 +7,8 @@ import { IRenderVirtualListItem } from './render-item.model';
 import { IDisplayObjectConfig } from './display-object-config.model';
 import { IDisplayObjectMeasures } from './display-object-measures.model';
 import { IScrollOptions } from './scroll-options.model';
+import { IRenderVirtualListItemConfig } from './render-item-config.model';
+import { IRenderVirtualListItemMeasures } from './render-item-measures.model';
 
 export type {
     IDisplayObjectConfig,
@@ -17,6 +19,8 @@ export type {
     IVirtualListItemConfig,
     IVirtualListCollection,
     IRenderVirtualListItem,
+    IRenderVirtualListItemConfig,
+    IRenderVirtualListItemMeasures,
     ScrollDirection,
     IScrollOptions,
 }

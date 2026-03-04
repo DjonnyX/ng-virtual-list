@@ -53,7 +53,6 @@ export interface IMetrics {
     totalSize: number;
     typicalItemSize: number;
     isFromItemIdFound: boolean;
-    reversed: boolean;
     isUpdating: boolean;
 }
 
@@ -72,7 +71,6 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     previousTotalSize: number;
     crudDetected: boolean;
     deletedItemsMap: { [index: number]: ISize; };
-    reversed: boolean;
 }
 
 export interface IGetItemPositionOptions<I extends IItem, C extends Array<I>>
@@ -611,9 +609,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      * Calculates list metrics
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
-        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, reversed,
-            bufferSize: minBufferSize, scrollSize, snap, itemConfigMap, enabledBufferOptimization,
-            previousTotalSize, crudDetected, deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
+        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, bufferSize: minBufferSize,
+            scrollSize, snap, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
+            deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
 
@@ -938,7 +936,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalSize,
             typicalItemSize,
             isFromItemIdFound,
-            reversed: options.reversed,
             isUpdating,
         };
 
@@ -983,7 +980,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalLength,
             startIndex,
             typicalItemSize,
-            reversed,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
@@ -1135,7 +1131,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 if (iterations > totalLength || i >= totalLength) {
                     break;
                 }
-                const collectionItem = items[reversed ? (items.length - i + 1) : i];
+                const collectionItem = items[i];
                 if (!collectionItem) {
                     continue;
                 }
