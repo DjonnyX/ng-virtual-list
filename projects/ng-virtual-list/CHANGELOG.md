@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [16.9.6] - 2026-03-05
+
+### Improved
+- Improvements to list updating
+
 ## [16.9.5] - 2026-03-05
 
 ### Fixed

@@ -1851,6 +1851,7 @@ export class NgVirtualListComponent implements OnDestroy {
         };
 
         if (snapScrollToBottom && !prepared) {
+          actualScrollSize = (totalSize > viewportSize ? totalSize - viewportSize : 0);
           const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1 } =
             this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
           displayItems = calculatedDisplayItems;
