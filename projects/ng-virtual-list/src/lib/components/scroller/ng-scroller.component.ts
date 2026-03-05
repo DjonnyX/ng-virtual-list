@@ -7,8 +7,7 @@ import { ScrollerDirection } from './enums';
 import { ScrollBox } from './utils';
 import { ScrollerDirections } from './enums';
 import { Id, ISize, ScrollBarTheme } from '../../types';
-import { Easing } from './types';
-import { easeLinear, easeOutQuad } from './utils/ease';
+import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeLinear, easeOutQuad } from '../../utils/animator';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
@@ -32,9 +31,7 @@ const TOP = 'top',
   ANIMATION_DURATION = 200,
   MASS = .005,
   MAX_DIST = 12500,
-  MIN_TIMESTAMP = 20,
   MAX_VELOCITY_TIMESTAMP = 100,
-  MIN_ANIMATED_VALUE = 10,
   SPEED_SCALE = 5;
 
 const getStartTime = () => { return performance.now(); }
@@ -260,9 +257,7 @@ export class NgScrollerComponent implements OnDestroy {
 
   private _updateScrollBarId: number | undefined;
 
-  private _animationId: number = -1;
-
-  private _animationId1: number = -1;
+  private _animator = new Animator();
 
   constructor() {
     this._service.$langTextDir.pipe(
@@ -540,7 +535,7 @@ export class NgScrollerComponent implements OnDestroy {
   }
 
   private calculateVelocity(offsets: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
-    offsets.push([delta, timestamp < MIN_TIMESTAMP ? MIN_TIMESTAMP : timestamp]);
+    offsets.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
 
     const len = offsets.length, startIndex = len > indexOffset ? len - indexOffset : 0, lastVSign = calculateDirection(offsets);
     let vSum = 0;
@@ -559,7 +554,7 @@ export class NgScrollerComponent implements OnDestroy {
   }
 
   private calculateAcceleration(velocities: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
-    velocities.push([delta, timestamp < MIN_TIMESTAMP ? MIN_TIMESTAMP : timestamp]);
+    velocities.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
     const len = velocities.length, startIndex = len > indexOffset ? len - indexOffset : 0;
     let aSum = 0, prevV0: [number, number] | undefined, iteration = 0, lastVSign = calculateDirection(velocities);
     for (let i = startIndex, l = velocities.length; i < l; i++) {
@@ -581,7 +576,7 @@ export class NgScrollerComponent implements OnDestroy {
   }
 
   stopScrolling() {
-    cancelAnimationFrame(this._animationId);
+    this._animator.stop();
   }
 
   private move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false) {
@@ -603,87 +598,52 @@ export class NgScrollerComponent implements OnDestroy {
   }
 
   animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeLinear, userAction: boolean = false) {
-    this.stopScrolling();
-    const startTime = getStartTime(), isVertical = this.direction() === ScrollerDirection.VERTICAL;
-    let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = Math.abs(Math.abs(endValue) - Math.abs(start));
-
-    if (diff < MIN_ANIMATED_VALUE) {
-      if (isVertical) {
-        this.y = prevPos = start = endValue;
-      } else {
-        this.x = prevPos = start = endValue;
-      }
-    } else {
-      if (isVertical) {
-        this.y = start;
-      } else {
-        this.x = start;
-      }
-    }
-
-    let finishedValue = endValue,
-      isFinished = false;
-
-    const step = (currentTime: number) => {
-      if (!!isCanceled) {
-        return;
-      }
-
-      const cPos = isVertical ? this.y : this.x;
-      let scrollDelta = 0;
-      if (cPos !== prevPos) {
-        scrollDelta = cPos - prevPos;
-        startPosDelta += scrollDelta;
-      }
-
-      const elapsed = currentTime - startTime,
-        progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
-        easedProgress = easingFunction(progress),
-        val = startPosDelta + start + (finishedValue - start) * easedProgress,
-        scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-        actualScrollSize = isVertical ? this.actualScrollHeight : this.actualScrollWidth,
-        currentValue = val < 0 ? 0 : val > scrollSize ? scrollSize : val,
-        t = Date.now();
-
-      isFinished = (currentValue === scrollSize && Math.round(scrollSize) >= Math.round(actualScrollSize)) ||
-        currentValue === 0 || progress === 1;
-
-      delta = currentValue - scrollDelta - prevPos;
-
-      const ts = t - prevTime, timestamp = ts < MIN_TIMESTAMP ? MIN_TIMESTAMP : ts;
-      this._velocity = timestamp > 0 ? delta / timestamp : 0;
-
-      prevTime = t;
-      prevPos = currentValue;
-
-      const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-      if (scrollContent) {
+    const isVertical = this.direction() === ScrollerDirection.VERTICAL;
+    this._animator.animate({
+      startValue, endValue, duration,
+      getPropValue: () => {
+        return isVertical ? this.y : this.x;
+      },
+      easingFunction,
+      transform: (value: number) => {
+        const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+          currentValue = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
+        return currentValue;
+      }, transformIsFinished: (value: number) => {
+        const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+          actualScrollSize = isVertical ? this.actualScrollHeight : this.actualScrollWidth;
+        return (value === scrollSize && Math.round(scrollSize) >= Math.round(actualScrollSize)) || value === 0;
+      }, onStart: ({ value }) => {
+        const isVertical = this.direction() === ScrollerDirection.VERTICAL;
         if (isVertical) {
-          this.y = currentValue;
-          scrollContent.style.transform = `translate3d(0, ${-currentValue}px, 0)`;
-          if (this.cdkScrollable) {
-            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-          }
-          this._$scroll.next(userAction);
+          this.y = value;
         } else {
-          this.x = currentValue;
-          scrollContent.style.transform = `translate3d(${-currentValue}px, 0, 0)`;
-          if (this.cdkScrollable) {
-            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-          }
-          this._$scroll.next(userAction);
+          this.x = value;
         }
-      }
-      if (isFinished) {
+      }, onUpdate: ({ value }) => {
+        const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
+        if (scrollContent) {
+          if (isVertical) {
+            this.y = value;
+            scrollContent.style.transform = `translate3d(0, ${-value}px, 0)`;
+            if (this.cdkScrollable) {
+              this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
+            }
+            this._$scroll.next(userAction);
+          } else {
+            this.x = value;
+            scrollContent.style.transform = `translate3d(${-value}px, 0, 0)`;
+            if (this.cdkScrollable) {
+              this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
+            }
+            this._$scroll.next(userAction);
+          }
+        }
+      }, onComplete: () => {
         this.stopScrolling();
         this._$scrollEnd.next(userAction);
-      } else {
-        this._animationId = requestAnimationFrame(step);
-      }
-    };
-
-    this._animationId = requestAnimationFrame(step);
+      },
+    });
   }
 
   private updateScrollBar() {
@@ -796,8 +756,9 @@ export class NgScrollerComponent implements OnDestroy {
       cancelAnimationFrame(updateScrollBarId);
       this._updateScrollBarId = undefined;
     }
-
-    this.stopScrolling();
+    if (this._animator) {
+      this._animator.dispose();
+    }
     if (this._viewportResizeObserver) {
       this._viewportResizeObserver.disconnect();
     }
