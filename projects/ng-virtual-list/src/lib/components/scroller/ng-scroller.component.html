@@ -5,7 +5,7 @@
             <ng-content></ng-content>
         </div>
     </div>
-    <ng-scroll-bar #scrollBar [isVertical]="isVertical()" [size]="thumbSize()" [theme]="scrollbarTheme()" [position]="thumbPosition()"
-        [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="preparedSignal()" [show]="thumbShow()"
+    <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()" [position]="thumbPosition()"
+        [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="preparedSignal()" [show]="scrollbarShow()"
         (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
 </div>

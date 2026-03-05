@@ -10,6 +10,14 @@ import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
 import { FocusAlignment, Id } from './types';
 
+/**
+ * NgVirtualListService
+ * Maximum performance for extremely large lists.
+ * It is based on algorithms for virtualization of screen objects.
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list.service.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
 @Injectable({
   providedIn: 'root'
 })

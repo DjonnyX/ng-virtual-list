@@ -41,7 +41,8 @@ import { CMap } from './utils/cmap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/is-collection-mode';
-import { IScrollToParams, NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { IScrollToParams } from './components/ng-scroll-view';
 
 interface IScrollParams {
   id: Id;
