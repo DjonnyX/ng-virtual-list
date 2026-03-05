@@ -38,7 +38,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected _previousVersion = this._version;
 
-    protected _lifeCircleId: number | undefined;
+    protected _lifeCircleId: any;
 
     protected _delta: number = 0;
 
@@ -83,7 +83,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
 
     protected stopLifeCircle() {
         if (this._lifeCircleId !== undefined) {
-            cancelAnimationFrame(this._lifeCircleId);
+            clearTimeout(this._lifeCircleId);
         }
     }
 
@@ -92,7 +92,7 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
             return;
         }
 
-        this._lifeCircleId = requestAnimationFrame(() => {
+        this._lifeCircleId = setTimeout(() => {
             cb();
         });
         return this._lifeCircleId;
