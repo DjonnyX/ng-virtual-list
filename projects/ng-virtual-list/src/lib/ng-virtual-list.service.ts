@@ -154,8 +154,8 @@ export class NgVirtualListService {
     }
   }
 
-  update() {
-    this._trackBox?.changes();
+  update(immediately: boolean = false) {
+    this._trackBox?.changes(immediately);
   }
 
   /**

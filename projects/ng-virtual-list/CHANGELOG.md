@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.9.6] - 2026-03-05
+
+### Fixed
+- Improved rendering synchronization
+- Manual list update has been implemented
+
+### Improved
+- Implemented stop scrolling after calling scrollTo
+
 ## [19.9.5] - 2026-03-04
 
 ### Fixed
