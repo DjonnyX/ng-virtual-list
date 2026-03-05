@@ -3,7 +3,7 @@ import { IRenderVirtualListCollection, } from "../models/render-collection.model
 import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CMap } from './cmap';
-import { CacheMap } from "./cache-map";
+import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../types";
 import {
@@ -954,8 +954,17 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    changes(): void {
+    changes(immediately: boolean = false): void {
+        if (this.changesDetected()) {
+            return;
+        }
+
         this.bumpVersion();
+
+        if (immediately) {
+            this._previousVersion = this._version;
+            this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as CacheMapEvents, this.version);
+        }
     }
 
     protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
