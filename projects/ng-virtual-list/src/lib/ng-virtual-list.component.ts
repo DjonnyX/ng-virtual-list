@@ -24,13 +24,11 @@ import { FocusAlignment, Id, IRect, ISize, ScrollBarTheme } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting, SnappingMethod, SnappingMethods,
-  TextDirection,
-  TextDirections,
+  TextDirection, TextDirections,
 } from './enums';
 import { ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
-import { FIREFOX_SCROLLBAR_OVERLAP_SIZE, IS_FIREFOX, } from './utils/browser';
 import { BaseVirtualListItemComponent } from './models/base-virtual-list-item-component';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';
@@ -855,27 +853,15 @@ export class NgVirtualListComponent implements OnDestroy {
         { width, height } = bounds ?? { width: 0, height: 0 },
         isScrollable = isVertical ? scroller.nativeElement.scrollHeight > 0 : scroller.nativeElement.scrollWidth > 0;
 
-      let scrollBarSize = isVertical ? width - lWidth : height - lHeight, isScrollBarOverlap = true, overlapScrollBarSize = 0;
-      if (scrollBarSize === 0 && isScrollable) {
-        isScrollBarOverlap = true;
-      }
+      let scrollBarSize = isVertical ? width - lWidth : height - lHeight;
 
       this._service.scrollBarSize = scrollBarSize;
-      this._service.overlapScrollBarSize = overlapScrollBarSize;
 
       const langTextDir = this.langTextDir();
 
-      if (isScrollBarOverlap && IS_FIREFOX) {
-        scrollBarSize = overlapScrollBarSize = FIREFOX_SCROLLBAR_OVERLAP_SIZE;
-      }
-
       const snappingMethod = this.snappingMethod();
       if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-        if (langTextDir === TextDirections.RTL) {
-          snappedComponent.element.style.clipPath = `path("M ${overlapScrollBarSize} 0 L ${overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
-        } else {
-          snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth - overlapScrollBarSize} 0 Z")`;
-        }
+        snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} 0 Z")`;
       }
 
       snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
@@ -901,7 +887,7 @@ export class NgVirtualListComponent implements OnDestroy {
         top = 0;
         bottom = height - scrollBarSize;
         if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-          scrollerElement.style.clipPath = `path("M ${left + delta} 0 L ${left + delta} ${bottom} L 0 ${bottom} L 0 ${height} L ${width} ${height} L ${width} 0 Z")`;
+          scrollerElement.style.clipPath = `path("M ${width} 0 L ${width} ${bottom} L 0 ${bottom} L 0 0 L ${width} 0 Z")`;
         }
       }
     }
@@ -1491,10 +1477,9 @@ export class NgVirtualListComponent implements OnDestroy {
         if (actualScrollLength > 0) {
           const isScrollStart = isUserScrolling && scrollPosition < MIN_SCROLL_TO_START_PIXELS;
           this._isScrollStart.set(isScrollStart);
-          if (snapScrollToBottom && isScrollStart) {
+          if (isScrollStart) {
             this._isScrollFinished.set(false);
-          }
-          if (snapScrollToBottom && !isScrollStart) {
+          } else {
             this._isScrollFinished.set(scrollPosition >= roundedMaxPosition);
           }
         }

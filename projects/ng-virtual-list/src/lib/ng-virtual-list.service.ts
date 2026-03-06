@@ -50,8 +50,6 @@ export class NgVirtualListService {
 
   scrollBarSize: number = 0;
 
-  overlapScrollBarSize: number = 0;
-
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
