@@ -1,3 +1,5 @@
+import { Easing } from "../../../utils/animator";
+
 /**
  * IScrollToParams
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/ng-scroll-view/interfaces/scroll-to-params.ts
@@ -11,6 +13,7 @@ export interface IScrollToParams {
     top?: number;
     blending?: boolean;
     behavior?: ScrollBehavior;
+    ease?: Easing;
     fireUpdate?: boolean;
     userAction?: boolean;
 }

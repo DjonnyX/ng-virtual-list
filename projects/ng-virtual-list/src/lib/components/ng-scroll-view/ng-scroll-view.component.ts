@@ -5,7 +5,7 @@ import { filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } 
 import { ScrollerDirection } from './enums';
 import { ScrollerDirections } from './enums';
 import { ISize } from '../../types';
-import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeLinear, easeOutQuad } from '../../utils/animator';
+import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
     INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE,
     TOUCH_START, WHEEL,
@@ -464,12 +464,12 @@ export class NgScrollView implements OnDestroy {
         }
     }
 
-    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeLinear, userAction: boolean = false) {
+    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad, userAction: boolean = false) {
         const isVertical = this.direction() === ScrollerDirection.VERTICAL;
         this._animator.animate({
             startValue, endValue, duration,
             getPropValue: () => {
-                return isVertical ? this.y : this.x;
+                return isVertical ? this._y : this._x;
             },
             easingFunction,
             transform: (value: number) => {
@@ -519,6 +519,7 @@ export class NgScrollView implements OnDestroy {
             userAction = params.userAction ?? false,
             x = posX,
             y = posY,
+            ease = params.ease || easeOutQuad,
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
@@ -546,11 +547,11 @@ export class NgScrollView implements OnDestroy {
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== yy) {
-                    this.animate(prevY, yy, ANIMATION_DURATION, easeLinear, userAction);
+                    this.animate(prevY, yy, ANIMATION_DURATION, ease, userAction);
                 }
             } else {
                 if (prevX !== xx) {
-                    this.animate(prevX, xx, ANIMATION_DURATION, easeLinear, userAction);
+                    this.animate(prevX, xx, ANIMATION_DURATION, ease, userAction);
                 }
             }
         } else {

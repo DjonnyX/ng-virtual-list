@@ -7,7 +7,9 @@ import { IRenderVirtualListItem, IVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
-import { DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
+import {
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
+} from './const';
 import { FocusAlignment, Id } from './types';
 import { getListElements, NGVL_INDEX } from './components/list-item/utils';
 
@@ -247,13 +249,13 @@ export class NgVirtualListService {
     }
   }
 
-  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment) => void) | undefined;
+  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment, behavior: ScrollBehavior) => void) | undefined;
 
-  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER) {
+  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
     element.focus({ preventScroll: true });
     if (element.parentElement) {
       const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
-      this.itemToFocus?.(element, pos, align);
+      this.itemToFocus?.(element, pos, align, behavior);
     }
   }
 
@@ -274,7 +276,7 @@ export class NgVirtualListService {
       }
     }
     if (!!element) {
-      this.focus(element);
+      this.focus(element, FocusAlignments.CENTER, BEHAVIOR_INSTANT);
     }
   }
 

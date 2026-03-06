@@ -17,7 +17,7 @@ import {
   DEFAULT_SCREEN_READER_MESSAGE, BEHAVIOR_SMOOTH, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_BOTTOM,
   MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL,
   SCROLLER_SCROLLBAR_SCROLL, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE,
-  DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN,
+  DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -852,8 +852,8 @@ export class NgVirtualListComponent implements OnDestroy {
     if (list && scroller && snappedComponent) {
       const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect(), listElement = list?.nativeElement,
         { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
-        { width, height } = bounds ?? { width: 0, height: 0 },
-        isScrollable = isVertical ? scroller.nativeElement.scrollHeight > 0 : scroller.nativeElement.scrollWidth > 0;
+        { width, height } = bounds ?? { width: 0, height: 0 }/*,
+        isScrollable = isVertical ? scroller.nativeElement.scrollHeight > 0 : scroller.nativeElement.scrollWidth > 0*/;
 
       let scrollBarSize = isVertical ? width - lWidth : height - lHeight;
 
@@ -923,23 +923,26 @@ export class NgVirtualListComponent implements OnDestroy {
     }
   }
 
-  private itemToFocus = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER) => {
+  private itemToFocus = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER,
+    behavior: ScrollBehavior = BEHAVIOR_AUTO) => {
     const scroller = this._scrollerComponent();
     if (scroller) {
       const { width, height } = this._bounds()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
-        isVertical = this._isVertical;
+        isVertical = this._isVertical,
+        viewportSize = isVertical ? height : width,
+        elementSize = isVertical ? elementHeight : elementWidth;
       let pos: number = Number.NaN;
       switch (align) {
         case FocusAlignments.START: {
-          pos = isVertical ? position : position;
+          pos = position;
           break;
         }
         case FocusAlignments.CENTER: {
-          pos = isVertical ? position - (height - elementHeight) * .5 : position - (width - elementWidth) * .5;
+          pos = position - (viewportSize - elementSize) * .5;
           break;
         }
         case FocusAlignments.END: {
-          pos = isVertical ? position - (height - elementHeight) : position - (width - elementWidth);
+          pos = position - (viewportSize - elementSize);
           break;
         }
         case FocusAlignments.NONE:
@@ -966,7 +969,10 @@ export class NgVirtualListComponent implements OnDestroy {
         }
 
         this._trackBox.cancelScrollSnappingToEnd(true);
-        const params: IScrollToParams = { [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior: BEHAVIOR_INSTANT as ScrollBehavior };
+        const params: IScrollToParams = {
+          [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior,
+          fireUpdate: true, blending: true, userAction: true,
+        };
         scroller.scrollTo(params);
       }
     }
@@ -1051,7 +1057,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._trackBox.displayComponents = this._displayComponents;
 
-    const $mouseDown = fromEvent(this._elementRef.nativeElement, MOUSE_DOWN).pipe(takeUntilDestroyed()),
+    const $scrollToItem = this.$scrollTo.pipe(takeUntilDestroyed()),
+      $mouseDown = fromEvent(this._elementRef.nativeElement, MOUSE_DOWN).pipe(takeUntilDestroyed()),
       $touchStart = fromEvent(this._elementRef.nativeElement, TOUCH_START).pipe(takeUntilDestroyed());
 
     fromEvent(document, KEY_DOWN).pipe(
@@ -1059,6 +1066,7 @@ export class NgVirtualListComponent implements OnDestroy {
       switchMap(e => {
         return fromEvent(this._elementRef.nativeElement, FOCUS).pipe(
           takeUntilDestroyed(this._destroyRef),
+          takeUntil($scrollToItem),
           takeUntil($mouseDown),
           takeUntil($touchStart),
           tap(e => {
@@ -1532,8 +1540,8 @@ export class NgVirtualListComponent implements OnDestroy {
               params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
                 fireUpdate: false,
-                behavior: (animated ?
-                  BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT) as ScrollBehavior,
+                behavior: animated ?
+                  BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT,
                 blending: true,
               };
             scroller?.scrollTo?.(params);
@@ -1541,7 +1549,7 @@ export class NgVirtualListComponent implements OnDestroy {
         } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
           const params: IScrollToParams = {
             [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true,
-            fireUpdate: false, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+            fireUpdate: false, behavior: BEHAVIOR_INSTANT,
           };
           scroller.scrollTo(params);
         }
@@ -1867,7 +1875,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 },
                 scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, opts),
                 params: IScrollToParams = {
-                  [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
+                  [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior: BEHAVIOR_INSTANT,
                   fireUpdate: false, blending: false,
                 };
 
@@ -1924,7 +1932,7 @@ export class NgVirtualListComponent implements OnDestroy {
                   _$scrollToEndDuringUpdateCanceller.next(1);
                   const params: IScrollToParams = {
                     [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize,
-                    behavior: BEHAVIOR_INSTANT as ScrollBehavior, blending: false,
+                    behavior: BEHAVIOR_INSTANT, blending: false,
                   };
                   scrollerComponent?.scrollTo?.(params);
                   return of([true, { id, scroller: scrollerComponent, cb }]).pipe(delay(1));
@@ -2182,6 +2190,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * Focus an list item by a given id.
    */
   focus(id: Id, align: FocusAlignment = FocusAlignments.NONE) {
+    this._elementRef.nativeElement.focus();
     validateId(id);
     validateFocusAlignment(align);
     const el = this._list()?.nativeElement.querySelector<HTMLDivElement>(`[${ITEM_ID}="${id}"]`);
@@ -2197,6 +2206,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * The method scrolls the list to the element with the given `id` and returns the value of the scrolled area.
    */
   scrollTo(id: Id, cb?: () => void, options?: IScrollOptions) {
+    this._elementRef.nativeElement.focus();
     const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
       iteration = options?.iteration ?? 0;
     validateId(id);

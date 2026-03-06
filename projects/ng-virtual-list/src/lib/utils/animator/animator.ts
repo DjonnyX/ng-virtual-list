@@ -37,9 +37,10 @@ export class Animator {
 
     const startTime = performance.now();
     let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = Math.abs(Math.abs(endValue) - Math.abs(start)), cPos = 0;
+      diff = transformIsFinished !== undefined ? (endValue - start) : (endValue - start),
+      diffAbs = Math.abs(Math.abs(endValue) - Math.abs(start)), cPos = 0;
 
-    if (diff < MIN_ANIMATED_VALUE) {
+    if (diffAbs < MIN_ANIMATED_VALUE) {
       cPos = prevPos = start = endValue;
     } else {
       cPos = start;
@@ -54,8 +55,7 @@ export class Animator {
       onStart(data);
     }
 
-    let finishedValue = endValue,
-      isFinished = false;
+    let isFinished = false;
 
     const step = (currentTime: number) => {
       if (!!isCanceled) {
@@ -72,7 +72,7 @@ export class Animator {
       const elapsed = currentTime - startTime,
         progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
-        val = startPosDelta + start + (finishedValue - start) * easedProgress,
+        val = startPosDelta + start + diff * easedProgress,
         currentValue = transform !== undefined ? transform(val) : val,
         t = Date.now();
 
