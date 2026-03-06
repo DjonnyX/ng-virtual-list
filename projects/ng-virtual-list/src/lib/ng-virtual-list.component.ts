@@ -1016,7 +1016,7 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$scroll = new Subject<IScrollEvent>();
   readonly $scroll = this._$scroll.asObservable();
 
-  private _$userScroll = new Subject<IScrollEvent>();
+  private _$userScroll = new Subject<IScrollEvent | void>();
   readonly $userScroll = this._$userScroll.asObservable();
 
   private _onTrackBoxResetHandler = (v: boolean) => {
@@ -1978,14 +1978,14 @@ export class NgVirtualListComponent implements OnDestroy {
         const p = params as Pick<IScrollParams, 'cb' | 'scrollCalled' | 'scroller'>;
         if (p.scrollCalled && p.scroller) {
           p.cb?.();
-          this.scrollSizeFinalize();
+          this._$userScroll.next();
           return;
         }
 
         if (p) {
           const { cb } = p;
           cb?.();
-          this.scrollSizeFinalize();
+          this._$userScroll.next();
         }
       }),
     ).subscribe();
@@ -2085,10 +2085,6 @@ export class NgVirtualListComponent implements OnDestroy {
       scrollDelta: 0,
       itemsRange: undefined,
     });
-  }
-
-  private scrollSizeFinalize() {
-    this._scrollSize.update(v => v + .00000001);
   }
 
   private listenCacheChangesIfNeed(value: boolean) {
