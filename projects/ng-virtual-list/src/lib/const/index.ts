@@ -113,6 +113,8 @@ export const PX = 'px';
 
 export const INTERACTIVE = 'interactive';
 
+export const FOCUS = 'focus';
+
 export const WHEEL = 'wheel';
 
 export const SCROLLER_WHEEL = 'wheel';
@@ -148,6 +150,8 @@ export const POINTER_LEAVE = 'pointerleave';
 export const POINTER_OUT = 'pointerout';
 
 export const CLICK = 'click';
+
+export const KEY_DOWN = 'keydown';
 
 export const SCROLL = 'scroll';
 

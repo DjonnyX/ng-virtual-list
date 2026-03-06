@@ -9,6 +9,7 @@ import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import { DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
 import { FocusAlignment, Id } from './types';
+import { getListElements, NGVL_INDEX } from './components/list-item/utils';
 
 /**
  * NgVirtualListService
@@ -253,6 +254,27 @@ export class NgVirtualListService {
     if (element.parentElement) {
       const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
       this.itemToFocus?.(element, pos, align);
+    }
+  }
+
+  focusFirstElement() {
+    const elements = this.listElement?.querySelectorAll<HTMLDivElement>(getListElements()),
+      elList = (elements ? Array.from(elements) : []).sort((a, b) => {
+        const indexA = Number(a.getAttribute(NGVL_INDEX)), indexB = Number(b.getAttribute(NGVL_INDEX));
+        if (indexA > indexB) return 1;
+        if (indexA < indexB) return -1;
+        return 0;
+      });
+    let element: HTMLElement | undefined = undefined;
+    for (let i = 0, l = elList.length; i < l; i++) {
+      const el = elList[i], index = Number(el.getAttribute(NGVL_INDEX));
+      if (!!el && index > 0) {
+        element = el;
+        break;
+      }
+    }
+    if (!!element) {
+      this.focus(element);
     }
   }
 

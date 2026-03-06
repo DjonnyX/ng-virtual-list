@@ -16,6 +16,7 @@ import { validateBoolean } from '../../utils/validation';
 import { FocusAlignments, TextDirections } from '../../enums';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../models';
 import { ItemClickDirective } from '../../directives/item-click';
+import { getListElementByIndex } from './utils';
 
 interface ITemplateContext<D = any> {
   data: D;
@@ -28,14 +29,10 @@ interface ITemplateContext<D = any> {
 }
 
 const ZEROS_POSITION = -1000,
-  ATTR_AREA_SELECTED = 'area-selected', NGVL_INDEX = 'ngvl-index', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
-  KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
+  ATTR_AREA_SELECTED = 'area-selected', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
+  KEY_SPACE = ' ', KEY_ARR_LEFT = 'ArrowLeft', KEY_ARR_UP = 'ArrowUp', KEY_ARR_RIGHT = 'ArrowRight', KEY_ARR_DOWN = 'ArrowDown',
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown',
   CLASS_NAME_SNAPPED = 'snapped', CLASS_NAME_SNAPPED_OUT = 'snapped-out', CLASS_NAME_FOCUS = 'focus';
-
-const getElementByIndex = (index: number) => {
-  return `[${NGVL_INDEX}="${index}"]`;
-};
 
 /**
  * Virtual list component.
@@ -171,7 +168,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     (align: FocusAlignment = FocusAlignments.CENTER) => {
       this.focus(align);
     };
-  
+
   constructor() {
     super();
     this._id = this._service.generateComponentId();
@@ -323,7 +320,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       let index = tabIndex;
       while (index <= length) {
         index++;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
         if (el) {
           this._service.focus(el);
           break;
@@ -338,7 +335,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       let index = tabIndex;
       while (index >= 0) {
         index--;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
         if (el) {
           this._service.focus(el);
           break;
@@ -351,7 +348,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     if (this._service.listElement) {
       const tabIndex = this._data?.config?.tabIndex ?? 0;
       let index = tabIndex;
-      const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+      const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
       if (el) {
         this._service.focus(el, align);
       }
