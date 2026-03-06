@@ -47,6 +47,12 @@ export class NgVirtualListService {
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
 
+  private _$scrollToStart = new Subject<void>();
+  readonly $scrollToStart = this._$scrollToStart.asObservable();
+
+  private _$scrollToEnd = new Subject<void>();
+  readonly $scrollToEnd = this._$scrollToEnd.asObservable();
+
   scrollStartOffset: number = 0;
 
   scrollEndOffset: number = 0;
@@ -291,5 +297,13 @@ export class NgVirtualListService {
   generateComponentId() {
     return this._nextComponentId = this._nextComponentId === Number.MAX_SAFE_INTEGER
       ? 0 : this._nextComponentId + 1;
+  }
+
+  scrollToStart() {
+    this._$scrollToStart.next();
+  }
+
+  scrollToEnd() {
+    this._$scrollToEnd.next();
   }
 }

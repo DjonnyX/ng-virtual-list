@@ -227,8 +227,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   scrollTo(params: IScrollToParams) {
     const userAction = params.userAction ?? true,
-    blending = params.blending ?? true,
-    fireUpdate = params.fireUpdate ?? false;
+      blending = params.blending ?? true,
+      fireUpdate = params.fireUpdate ?? false;
 
     if (userAction && !blending && !fireUpdate) {
       this._scrollbarAnimation = false;
@@ -240,7 +240,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this.scroll(params);
   }
 
-  onScrollBarDragHandler({ animation, position, userAction }: IScrollBarDragEvent) {
+  onScrollBarDragHandler(event: IScrollBarDragEvent) {
+    const { animation, position, userAction } = event;
     this._scrollbarAnimation = animation;
     this.stopScrolling();
     this._isMoving = true;
@@ -248,7 +249,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       {
         position: absolutePosition,
       } = this._scrollBox.getScrollPositionByScrollBar({
-        scrollSize: isVertical ? this.actualScrollHeight : this.actualScrollWidth,
+        scrollSize: isVertical ? this.scrollHeight : this.scrollWidth,
         position,
       });
     this.scrollTo({
@@ -259,6 +260,12 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
     }
     this._isMoving = false;
+
+    if (position === 0) {
+      this._service.scrollToStart();
+    } else if (position === 1) {
+      this._service.scrollToEnd();
+    }
   }
 
   override ngOnDestroy(): void {
