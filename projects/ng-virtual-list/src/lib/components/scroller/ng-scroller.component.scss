@@ -21,7 +21,7 @@
         transition: grid-template-rows 100ms ease-out;
 
         &.scrollable {
-            grid-template-rows: 1fr auto !important;
+            grid-template-rows: 1fr auto;
         }
 
         .ngvl__list {
@@ -38,7 +38,7 @@
         transition: grid-template-columns 100ms ease-out;
 
         &.scrollable {
-            grid-template-columns: 1fr auto !important;
+            grid-template-columns: 1fr auto;
         }
 
         .ngvl__scroller {
