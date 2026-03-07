@@ -137,6 +137,15 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   };
 }
 
+const generateItems = (len: number) => {
+  const result: IVirtualListCollection<ICollectionItem> = [];
+  for (let i = 0, l = len; i < l; i++) {
+    const id = i + 1;
+    result.push({ id, name: `Item: ${id}` });
+  }
+  return result;
+}
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule, FormsModule, NgVirtualListComponent],
@@ -153,6 +162,8 @@ export class AppComponent {
   scrollbarTheme = SCROLLBAR_GRADIENT;
 
   items = ITEMS;
+
+  items1 = generateItems(1000);
 
   itemsRtl = ITEMS_RTL;
 
@@ -186,6 +197,8 @@ export class AppComponent {
 
   dlItemId: Id = this._minDlId;
 
+  itemsLength: number = 0;
+
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef(), id = this.itemId;
     if (list && id !== undefined) {
@@ -214,6 +227,11 @@ export class AppComponent {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
+  }
+
+  onButtonChangeItemsLengthHandler() {
+    const len = this.itemsLength;
+    this.items1 = generateItems(len);
   }
 
   onSelectHandler(data: Array<Id> | Id | undefined) {

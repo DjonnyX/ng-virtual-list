@@ -188,7 +188,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     });
 
     this.containerClasses = computed(() => {
-      return { [this.direction()]: true, grabbing: this.grabbing() };
+      return { [this.direction()]: true, grabbing: this.grabbing(), scrollable: this.scrollable };
     });
 
     effect(() => {

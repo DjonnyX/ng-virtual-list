@@ -17,7 +17,12 @@
     }
 
     &.horizontal {
-        grid-template-rows: 1fr auto;
+        grid-template-rows: 1fr 0;
+        transition: grid-template-rows 100ms ease-out;
+
+        &.scrollable {
+            grid-template-rows: 1fr auto !important;
+        }
 
         .ngvl__list {
             display: inline-flex;
@@ -29,7 +34,12 @@
     }
 
     &.vertical {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 1fr 0;
+        transition: grid-template-columns 100ms ease-out;
+
+        &.scrollable {
+            grid-template-columns: 1fr auto !important;
+        }
 
         .ngvl__scroller {
             overflow: hidden;
