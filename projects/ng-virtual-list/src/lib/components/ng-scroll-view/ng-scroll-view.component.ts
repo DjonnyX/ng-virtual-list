@@ -29,11 +29,10 @@ const TOP = 'top',
     INSTANT = 'instant',
     AUTO = 'auto',
     SMOOTH = 'smooth',
-    VERTICAL = 'vertical',
     DURATION = 2000,
     FRICTION_FORCE = .035,
     MAX_DURATION = 4000,
-    ANIMATION_DURATION = 200,
+    ANIMATION_DURATION = 100,
     MASS = .005,
     MAX_DIST = 12500,
     MAX_VELOCITY_TIMESTAMP = 100,
@@ -283,7 +282,7 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevPos = startPos, prevClientPosition = 0, startPosDelta = 0;
+                        let prevPos = startPos, prevClientPosition = 0;
                         const startClientPos = isVertical ? e.clientY : e.clientX,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
                         let startTime = Date.now();
@@ -294,13 +293,9 @@ export class NgScrollView implements OnDestroy {
                                 e.preventDefault();
                             }),
                             switchMap(e => {
-                                const cPos = isVertical ? this.y : this.x;
-                                if (cPos !== prevPos) {
-                                    startPosDelta += cPos - prevPos;
-                                }
                                 const currentPos = isVertical ? e.clientY : e.clientX,
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
-                                    dp = startPos + startPosDelta + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
+                                    dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
                                     timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
                                     { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
                                 this.calculateAcceleration(velocities, v0, timestamp);
@@ -355,7 +350,7 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevPos = startPos, prevClientPosition = 0, startPosDelta = 0;
+                        let prevPos = startPos, prevClientPosition = 0;
                         const startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
                         let startTime = Date.now();
@@ -366,13 +361,9 @@ export class NgScrollView implements OnDestroy {
                                 e.preventDefault();
                             }),
                             switchMap(e => {
-                                const cPos = isVertical ? this.y : this.x;
-                                if (cPos !== prevPos) {
-                                    startPosDelta += cPos - prevPos;
-                                }
                                 const currentPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
-                                    dp = startPos + startPosDelta + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
+                                    dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
                                     timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
                                     { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
                                 this.calculateAcceleration(velocities, v0, timestamp);
@@ -468,10 +459,10 @@ export class NgScrollView implements OnDestroy {
         const isVertical = this.direction() === ScrollerDirection.VERTICAL;
         this._animator.animate({
             startValue, endValue, duration,
+            easingFunction,
             getPropValue: () => {
                 return isVertical ? this._y : this._x;
             },
-            easingFunction,
             transform: (value: number) => {
                 const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                     currentValue = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
@@ -488,29 +479,39 @@ export class NgScrollView implements OnDestroy {
                     this.x = value;
                 }
             }, onUpdate: ({ value }) => {
-                const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-                if (scrollContent) {
-                    if (isVertical) {
-                        this.y = value;
-                        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * this._y}px, 0)`;
-                        if (this.cdkScrollable) {
-                            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                        }
-                        this._$scroll.next(userAction);
-                    } else {
-                        this.x = value;
-                        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * this._x}px, 0, 0)`;
-                        if (this.cdkScrollable) {
-                            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                        }
-                        this._$scroll.next(userAction);
-                    }
-                }
-            }, onComplete: () => {
-                this.stopScrolling();
+                this.move(isVertical, value, false, userAction);
+            }, onComplete: ({ value }) => {
+                this.move(isVertical, value, false, userAction);
                 this._$scrollEnd.next(userAction);
             },
         });
+    }
+
+    fireScroll(userAction: boolean = false) {
+        this.stopScrolling();
+        this._$updateScrollBar.next();
+        if (this.cdkScrollable) {
+            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
+        }
+        this.fireScrollEvent(userAction);
+    }
+
+    scrollLimits(value?: number | undefined): boolean {
+        const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
+        if (isVertical) {
+            const scrollHeight = this.scrollHeight, yy = y < 0 ? 0 : y > scrollHeight ? scrollHeight : y;
+            if (y !== yy) {
+                this.y = yy;
+                return true;
+            }
+        } else {
+            const scrollWidth = this.scrollWidth, xx = x < 0 ? 0 : x > scrollWidth ? scrollWidth : x;
+            if (x !== xx) {
+                this.x = xx;
+                return true;
+            }
+        }
+        return false;
     }
 
     scroll(params: IScrollToParams) {
@@ -523,20 +524,9 @@ export class NgScrollView implements OnDestroy {
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
-            scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
-        if (this._isMoving) {
-            if (isVertical) {
-                if (y < 0 || y > this.scrollHeight) {
-                    return;
-                }
-            } else {
-                if (x < 0 || x > this.scrollWidth) {
-                    return;
-                }
-            }
-        }
+        this.scrollLimits();
 
         const xx = x,
             yy = y,
@@ -560,7 +550,7 @@ export class NgScrollView implements OnDestroy {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * yy}px, 0)`;
+                    this.refreshY(yy);
                     if (this.cdkScrollable) {
                         this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
                     }
@@ -574,7 +564,7 @@ export class NgScrollView implements OnDestroy {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * xx}px, 0, 0)`;
+                    this.refreshX(xx);
                     if (this.cdkScrollable) {
                         this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
                     }
@@ -585,6 +575,16 @@ export class NgScrollView implements OnDestroy {
                 }
             }
         }
+    }
+
+    refreshX(value: number) {
+        const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
+        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * value}px, 0, 0)`;
+    }
+
+    refreshY(value: number) {
+        const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
+        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * value}px, 0)`;
     }
 
     protected fireScrollEvent(userAction: boolean) {

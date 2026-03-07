@@ -50,10 +50,6 @@ const DEFAULT_THICKNESS = 6,
 export class NgScrollBarComponent extends NgScrollView {
   loading = input<boolean>(false);
 
-  position = input<number>(0);
-
-  actualPosition = signal<number>(0);
-
   onDrag = output<IScrollBarDragEvent>();
 
   thumbGradientPositions = input<GradientColorPositions>([0, 0]);
@@ -126,16 +122,6 @@ export class NgScrollBarComponent extends NgScrollView {
         });
       }),
     ).subscribe();
-
-    effect(() => {
-      const position = this.position();
-      this.actualPosition.set(position);
-    });
-
-    effect(() => {
-      const position = this.actualPosition(), isVertical = this.isVertical();
-      this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending: true, userAction: false, fireUpdate: false });
-    });
 
     effect(() => {
       const theme = this.theme();

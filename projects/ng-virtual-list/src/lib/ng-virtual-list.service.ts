@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
 import { TrackBox } from './utils/track-box';
-import { IRenderVirtualListItem, IVirtualListItem } from './models';
+import { IRenderVirtualListItem, IScrollOptions, IVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
@@ -47,10 +47,10 @@ export class NgVirtualListService {
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
 
-  private _$scrollToStart = new Subject<void>();
+  private _$scrollToStart = new Subject<IScrollOptions | undefined>();
   readonly $scrollToStart = this._$scrollToStart.asObservable();
 
-  private _$scrollToEnd = new Subject<void>();
+  private _$scrollToEnd = new Subject<IScrollOptions | undefined>();
   readonly $scrollToEnd = this._$scrollToEnd.asObservable();
 
   scrollStartOffset: number = 0;
@@ -299,11 +299,11 @@ export class NgVirtualListService {
       ? 0 : this._nextComponentId + 1;
   }
 
-  scrollToStart() {
-    this._$scrollToStart.next();
+  scrollToStart(options?: IScrollOptions) {
+    this._$scrollToStart.next(options);
   }
 
-  scrollToEnd() {
-    this._$scrollToEnd.next();
+  scrollToEnd(options?: IScrollOptions) {
+    this._$scrollToEnd.next(options);
   }
 }

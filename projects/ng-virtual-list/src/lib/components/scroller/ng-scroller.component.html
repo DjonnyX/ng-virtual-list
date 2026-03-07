@@ -8,7 +8,7 @@
     </div>
     @if (this.scrollbarEnabled()) {
         <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
-            [position]="thumbPosition()" [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()"
+            [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()"
             [prepared]="preparedSignal()" [show]="scrollbarShow()"
             (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
     }
