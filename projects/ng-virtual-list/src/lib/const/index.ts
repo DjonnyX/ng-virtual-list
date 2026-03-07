@@ -14,6 +14,8 @@ export const DEFAULT_CLICK_DISTANCE = 40;
 
 export const DEFAULT_WAIT_FOR_PREPARATION = true;
 
+export const DEFAULT_SCROLLBAR_ENABLED = true;
+
 export const DEFAULT_SNAP = false;
 
 export const DEFAULT_SELECT_BY_CLICK = true;

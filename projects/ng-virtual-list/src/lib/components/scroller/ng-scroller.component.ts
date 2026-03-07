@@ -7,7 +7,7 @@ import { Id, ScrollBarTheme } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  DEFAULT_SCROLLBAR_MIN_SIZE, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL,
+  DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_MIN_SIZE, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL,
 } from '../../const';
 import { LocaleSensitiveDirective } from '../../directives';
 import { TextDirection, TextDirections } from '../../enums';
@@ -46,6 +46,8 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
 export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   @ViewChild('scrollBar', { read: NgScrollBarComponent })
   scrollBar: NgScrollBarComponent | undefined;
+
+  scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
 
   focusedElement = input<Id | undefined>(undefined);
 

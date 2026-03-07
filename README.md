@@ -674,6 +674,7 @@ Inputs
 | snapScrollToBottom | boolean? = false | Determines whether the scroll will be anchored to the end of the list at startup.. Default value is "false". |
 | snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
 | scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
+| scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
 
 <br/>
 

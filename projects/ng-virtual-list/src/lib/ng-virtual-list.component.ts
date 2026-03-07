@@ -18,6 +18,7 @@ import {
   MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL,
   SCROLLER_SCROLLBAR_SCROLL, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE,
   DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO,
+  DEFAULT_SCROLLBAR_ENABLED,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -518,6 +519,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Determines whether the scroll will be anchored to the end of the list at startup.. Default value is "false".
    */
   snapScrollToBottom = input<boolean>(DEFAULT_SNAP_SCROLLTO_BOTTOM, { ...this._snapScrollToBottomOptions });
+
+  private _snapScrollbarEnabledOptions = {
+    transform: (v: boolean) => {
+      const valid = validateBoolean(v, true);
+
+      if (!valid) {
+        console.error('The "scrollbarEnabled" parameter must be of type `boolean`.');
+        return DEFAULT_SCROLLBAR_ENABLED;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Determines whether the scrollbar is shown or not. The default value is "true".
+   */
+  scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED, { ...this._snapScrollbarEnabledOptions })
 
   private _enabledBufferOptimizationOptions = {
     transform: (v: boolean) => {

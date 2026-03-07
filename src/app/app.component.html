@@ -15,7 +15,7 @@
       <h2>Horizontal list (Single select)</h2>
       <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
         methodForSelecting="select" [itemRenderer]="horizontalItemRenderer" [itemSize]="54" [scrollbarTheme]="scrollbarTheme"
-        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="2" [selectByClick]="true"
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="2" [selectByClick]="true" [scrollbarEnabled]="false"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
