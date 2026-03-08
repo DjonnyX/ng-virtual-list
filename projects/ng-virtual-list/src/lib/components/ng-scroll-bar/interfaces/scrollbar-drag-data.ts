@@ -6,6 +6,8 @@
  */
 export interface IScrollBarDragEvent {
     position: number;
+    min: number;
+    max: number;
     userAction: boolean;
     animation: boolean;
 }

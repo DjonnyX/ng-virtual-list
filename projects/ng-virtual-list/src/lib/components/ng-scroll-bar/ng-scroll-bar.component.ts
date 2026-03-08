@@ -24,9 +24,6 @@ const DEFAULT_THICKNESS = 6,
   OPACITY_1 = '1',
   TRANSITION = 'transition',
   NONE = 'none',
-  TOP = 'top',
-  LEFT = 'left',
-  INSTANT = 'instant',
   TRANSITION_FADE_IN = `${OPACITY} 500ms ease-out`;
 
 /**
@@ -57,6 +54,12 @@ export class NgScrollBarComponent extends NgScrollView {
   size = input<number>(DEFAULT_SIZE);
 
   theme = input<ScrollBarTheme | undefined>(undefined);
+
+  startOffset = input<number>(0);
+
+  endOffset = input<number>(0);
+
+  scrollbarMinSize = input<number>(0);
 
   prepared = input<boolean>(false);
 
@@ -115,11 +118,20 @@ export class NgScrollBarComponent extends NgScrollView {
     this.$scroll.pipe(
       takeUntilDestroyed(),
       tap(v => {
-        const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth;
-        this.onDrag.emit({
-          position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0, animation: !this._isMoving,
-          userAction: v,
-        });
+        const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+          scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
+          scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+        if (!!scrollViewport && !!scrollContent) {
+          const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
+            viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
+          this.onDrag.emit({
+            position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
+            min: scrollSize !== 0 ? (this.startOffset() / scrollSize) : 0,
+            max: scrollSize !== 0 ? ((viewportSize - this.endOffset() - contentSize) / scrollSize) : 0,
+            animation: !this._isMoving,
+            userAction: v,
+          });
+        }
       }),
     ).subscribe();
 
@@ -136,5 +148,21 @@ export class NgScrollBarComponent extends NgScrollView {
         }
       }
     });
+  }
+
+  protected override normalizeAnimatedValue(value: number) {
+    const isVertical = this.isVertical(), scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
+      scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+    if (!!scrollContent && !!scrollViewport) {
+      const startOffset = this.startOffset(), endOffset = this.endOffset();
+      if (isVertical) {
+        const maxY = scrollViewport.offsetHeight - endOffset - scrollContent.offsetHeight;
+        return value < startOffset ? startOffset : value > maxY ? maxY : value;
+      } else {
+        const maxX = scrollViewport.offsetWidth - endOffset - scrollContent.offsetWidth;
+        return value < startOffset ? startOffset : value > maxX ? maxX : value;
+      }
+    }
+    return value;
   }
 }

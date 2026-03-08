@@ -437,8 +437,8 @@ export class NgScrollView implements OnDestroy {
         this._animator.stop();
     }
 
-    protected move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false) {
-        this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending, userAction });
+    protected move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false, fireUpdate: boolean = true) {
+        this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending, userAction, fireUpdate });
     }
 
     protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number) {
@@ -455,29 +455,21 @@ export class NgScrollView implements OnDestroy {
         }
     }
 
-    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad, userAction: boolean = false) {
+    protected normalizeAnimatedValue(value: number) {
+        const isVertical = this.direction() === ScrollerDirection.VERTICAL,
+            scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+            result = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
+        return result;
+    }
+
+    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad,
+        userAction: boolean = false) {
         const isVertical = this.direction() === ScrollerDirection.VERTICAL;
         this._animator.animate({
             startValue, endValue, duration,
             easingFunction,
             getPropValue: () => {
                 return isVertical ? this._y : this._x;
-            },
-            transform: (value: number) => {
-                const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                    currentValue = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
-                return currentValue;
-            }, transformIsFinished: (value: number) => {
-                const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                    actualScrollSize = isVertical ? this.actualScrollHeight : this.actualScrollWidth;
-                return (value === scrollSize && Math.round(scrollSize) >= Math.round(actualScrollSize)) || value === 0;
-            }, onStart: ({ value }) => {
-                const isVertical = this.direction() === ScrollerDirection.VERTICAL;
-                if (isVertical) {
-                    this.y = value;
-                } else {
-                    this.x = value;
-                }
             }, onUpdate: ({ value }) => {
                 this.move(isVertical, value, false, userAction);
             }, onComplete: ({ value }) => {
@@ -499,13 +491,13 @@ export class NgScrollView implements OnDestroy {
     scrollLimits(value?: number | undefined): boolean {
         const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
         if (isVertical) {
-            const scrollHeight = this.scrollHeight, yy = y < 0 ? 0 : y > scrollHeight ? scrollHeight : y;
+            const yy = this.normalizeAnimatedValue(y);
             if (y !== yy) {
                 this.y = yy;
                 return true;
             }
         } else {
-            const scrollWidth = this.scrollWidth, xx = x < 0 ? 0 : x > scrollWidth ? scrollWidth : x;
+            const xx = this.normalizeAnimatedValue(x);
             if (x !== xx) {
                 this.x = xx;
                 return true;
@@ -518,22 +510,19 @@ export class NgScrollView implements OnDestroy {
         const posX = params.x || params.left || 0,
             posY = params.y || params.top || 0,
             userAction = params.userAction ?? false,
-            x = posX,
-            y = posY,
             ease = params.ease || easeOutQuad,
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
-        this.scrollLimits();
-
-        const xx = x,
+        const limits = this.scrollLimits(),
+            x = this.normalizeAnimatedValue(limits ? this._x : posX),
+            y = this.normalizeAnimatedValue(limits ? this._y : posY),
+            xx = x,
             yy = y,
-            prevX = this.x,
-            prevY = this.y;
-        this.x = xx;
-        this.y = yy;
+            prevX = this._x,
+            prevY = this._y;
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== yy) {
@@ -545,6 +534,10 @@ export class NgScrollView implements OnDestroy {
                 }
             }
         } else {
+            if (!limits) {
+                this.x = xx;
+                this.y = yy;
+            }
             if (isVertical) {
                 if (prevY !== yy) {
                     if (!blending) {

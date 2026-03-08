@@ -6,10 +6,7 @@ interface IAnimatorParams {
   endValue: number;
   duration?: number;
   getPropValue?: () => number;
-  transform?: (value: number) => number;
-  transformIsFinished?: (value: number) => boolean;
   easingFunction?: Easing;
-  onStart?: (data: IAnimatorUpdateData) => void;
   onUpdate?: (data: IAnimatorUpdateData) => void;
   onComplete?: (data: IAnimatorUpdateData) => void;
 }
@@ -29,31 +26,14 @@ export class Animator {
 
   animate(params: IAnimatorParams) {
     const {
-      startValue, endValue, duration = DEFAULT_ANIMATION_DURATION, getPropValue, easingFunction = easeLinear, transform, transformIsFinished,
-      onStart, onUpdate, onComplete,
+      startValue, endValue, duration = DEFAULT_ANIMATION_DURATION, getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
     } = params;
 
     this.stop();
 
     const startTime = performance.now();
     let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = transformIsFinished !== undefined ? (endValue - start) : (endValue - start),
-      diffAbs = Math.abs(Math.abs(endValue) - Math.abs(start)), cPos = 0;
-
-    if (diffAbs < MIN_ANIMATED_VALUE) {
-      cPos = prevPos = start = endValue;
-    } else {
-      cPos = start;
-    }
-
-    if (onStart !== undefined) {
-      const data: IAnimatorUpdateData = {
-        delta,
-        value: cPos,
-        timestamp: 0,
-      };
-      onStart(data);
-    }
+      diff = endValue - start;
 
     let isFinished = false;
 
@@ -73,10 +53,10 @@ export class Animator {
         progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
         val = startPosDelta + start + diff * easedProgress,
-        currentValue = transform !== undefined ? transform(val) : val,
+        currentValue = val,
         t = Date.now();
 
-      isFinished = transformIsFinished ? (transformIsFinished(currentValue) || progress === 1) : progress === 1;
+      isFinished = progress === 1;
 
       delta = currentValue - startDelta - prevPos;
 

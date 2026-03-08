@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input, NO_ERRORS_SCHEMA, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, tap } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, from, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, ScrollBarTheme } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
@@ -143,6 +143,25 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       })
     ).subscribe();
 
+
+    const $startOffset = toObservable(this.startOffset),
+      $endOffset = toObservable(this.endOffset),
+      $scrollbarMinSize = toObservable(this.scrollbarMinSize),
+      $isVertical = toObservable(this.isVertical),
+      $thumbSize = toObservable(this.thumbSize);
+
+    from([$endOffset, $startOffset, $thumbSize, $scrollbarMinSize, $isVertical]).pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.updateScrollBar();
+      }),
+    ).subscribe();
+
+    effect(() => {
+      this.startOffset(); this.endOffset();
+      this.updateScrollBar();
+    });
+
     const $updateScrollBar = this.$updateScrollBar;
 
     $updateScrollBar.pipe(
@@ -272,7 +291,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   onScrollBarDragHandler(event: IScrollBarDragEvent) {
-    const { animation, position, userAction } = event;
+    const { animation, position, min, max, userAction } = event;
     this._isScrollbarUserAction = userAction;
     this.stopScrolling();
     this._isMoving = true;
@@ -285,7 +304,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       });
     this.scrollTo({
       [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? AUTO : INSTANT,
-      blending: false, userAction, fireUpdate: true,
+      blending: false, userAction, fireUpdate: userAction,
     });
     if (this.cdkScrollable) {
       this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
@@ -293,12 +312,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this._isMoving = false;
 
     if (userAction && animation && this._service.dynamic) {
-      if (position === 0) {
+      if (position <= min) {
         this._service.scrollToStart();
-      } else if (position === 1) {
-        if (!this._service.snapScrollToBottom) {
-          this._service.scrollToEnd();
-        }
+      } else if (position >= max) {
+        this._service.scrollToEnd();
       }
     }
   }

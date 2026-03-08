@@ -65,8 +65,8 @@
     opacity: 0;
 
     &.prepared {
-        overflow: hidden;
         opacity: 1;
+        overflow: hidden;
 
         &.wait-for-preparation {
             &.first-start {
