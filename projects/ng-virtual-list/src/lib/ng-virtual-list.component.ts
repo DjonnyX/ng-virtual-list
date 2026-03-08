@@ -1153,7 +1153,7 @@ export class NgVirtualListComponent implements OnDestroy {
               scrollerComponent.prepared = true;
             }
             this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-            this.updateImmediately();
+            this.refresh();
           }
         }
       }),
@@ -1162,7 +1162,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(this._destroyRef),
       tap(v => {
         prepared = v;
-        this.updateImmediately();
+        this.refresh();
       }),
       delay(0),
       takeUntilDestroyed(this._destroyRef),
@@ -1172,7 +1172,7 @@ export class NgVirtualListComponent implements OnDestroy {
           scrollerComponent.prepared = val;
         }
         this.classes.set({ prepared: val, [WAIT_FOR_PREPARATION]: waitForPreparation });
-        this.updateImmediately();
+        this.refresh();
       }),
       delay(1000),
       takeUntilDestroyed(this._destroyRef),
@@ -1180,7 +1180,7 @@ export class NgVirtualListComponent implements OnDestroy {
         const waitForPreparation = this.waitForPreparation();
         readyToStart = v;
         this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-        this.updateImmediately();
+        this.refresh();
       }),
     ).subscribe();
 
@@ -1212,6 +1212,13 @@ export class NgVirtualListComponent implements OnDestroy {
       $isVertical = toObservable(this.direction).pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
       );
+
+    $snapScrollToBottom.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.snapScrollToBottom = v;
+      }),
+    ).subscribe();
 
     $isVertical.pipe(
       takeUntilDestroyed(),
@@ -2357,18 +2364,8 @@ export class NgVirtualListComponent implements OnDestroy {
     }
   }
 
-  /**
-   * Instantly refreshes the list.
-   */
-  updateImmediately() {
-    this._service.update(true);
-  }
-
-  /**
-   * Marks the list for an update that will trigger on the next tick.
-   */
-  markForUpdate() {
-    this._service.update();
+  private refresh() {
+    this._scrollerComponent()?.refresh(false, false);
   }
 
   ngOnDestroy(): void {

@@ -235,17 +235,21 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this.move(this.isVertical(), 0);
   }
 
-  refresh(fireUpdate: boolean = false) {
+  refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
     this.scrollLimits();
-    this.stopScrolling();
+    if (updateScrollbar) {
+      this.stopScrolling();
+    }
     if (this.isVertical()) {
       this.refreshY(this._y);
     } else {
       this.refreshX(this._x);
     }
-    this.updateScrollBarHandler(true);
-    if (this.cdkScrollable) {
-      this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
+    if (updateScrollbar) {
+      this.updateScrollBarHandler(true);
+      if (this.cdkScrollable) {
+        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
+      }
     }
     if (fireUpdate) {
       this.fireScrollEvent(false);
@@ -292,7 +296,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       if (position === 0) {
         this._service.scrollToStart();
       } else if (position === 1) {
-        this._service.scrollToEnd();
+        if (!this._service.snapScrollToBottom) {
+          this._service.scrollToEnd();
+        }
       }
     }
   }
