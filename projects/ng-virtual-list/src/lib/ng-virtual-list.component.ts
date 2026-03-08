@@ -63,7 +63,8 @@ const MIN_SCROLL_TO_START_PIXELS = 10,
   ITEM_ID = 'item-id',
   ITEM_CONTAINER = 'ngvl-item__container',
   READY_TO_START = 'ready-to-start',
-  WAIT_FOR_PREPARATION = 'wait-for-preparation';
+  WAIT_FOR_PREPARATION = 'wait-for-preparation',
+  FIRST_START = 'first-start';
 
 const validateScrollIteration = (value: number) => {
   return Number.isNaN(value) || (value < 0) ? 0 : value > MAX_SCROLL_TO_ITERATIONS ? MAX_SCROLL_TO_ITERATIONS : value
@@ -1026,6 +1027,9 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$prepared = new BehaviorSubject<boolean>(false);
   readonly $prepared = this._$prepared.asObservable();
 
+  private _$update = new Subject<void>();
+  readonly $update = this._$update.asObservable();
+
   private _$isResetedReachStart = new BehaviorSubject<boolean>(true);
   readonly $isResetedReachStart = this._$isResetedReachStart.asObservable();
 
@@ -1132,6 +1136,34 @@ export class NgVirtualListComponent implements OnDestroy {
 
     let prepared = false, readyToStart = false, isUserScrolling = false;
 
+    const $updateComplete = this.$update.pipe(
+      takeUntilDestroyed(),
+      debounceTime(0),
+    ),
+      $items = toObservable(this.items).pipe(
+        map(i => !i ? [] : i),
+      ),
+      $isFirstStart = $items.pipe(
+        takeUntilDestroyed(),
+        take(1),
+      );
+
+    let isFirstStart = false;
+    $isFirstStart.pipe(
+      takeUntilDestroyed(),
+      switchMap(() => {
+        return $updateComplete.pipe(
+          take(1),
+          takeUntilDestroyed(this._destroyRef),
+        );
+      }),
+      takeUntilDestroyed(this._destroyRef),
+      tap(() => {
+        isFirstStart = true;
+      }),
+    ).subscribe();
+
+    let isNextStart = false;
     this.$prepared.pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
@@ -1146,13 +1178,13 @@ export class NgVirtualListComponent implements OnDestroy {
             if (scrollerComponent) {
               scrollerComponent.prepared = v;
             }
-            this.classes.set({ prepared: v, [WAIT_FOR_PREPARATION]: waitForPreparation });
+            this.classes.set({ prepared: v, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: !isNextStart });
           } else {
             const scrollerComponent = this._scrollerComponent();
             if (scrollerComponent) {
               scrollerComponent.prepared = true;
             }
-            this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+            this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: false });
             this.refresh();
           }
         }
@@ -1160,6 +1192,16 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(v => !!v),
       delay(0),
       takeUntilDestroyed(this._destroyRef),
+      switchMap(v => {
+        if (!isFirstStart) {
+          return $updateComplete.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            take(1),
+            switchMap(() => of(v)),
+          );
+        }
+        return of(v);
+      }),
       tap(v => {
         prepared = v;
         this.refresh();
@@ -1171,15 +1213,8 @@ export class NgVirtualListComponent implements OnDestroy {
         if (scrollerComponent) {
           scrollerComponent.prepared = val;
         }
-        this.classes.set({ prepared: val, [WAIT_FOR_PREPARATION]: waitForPreparation });
-        this.refresh();
-      }),
-      delay(1000),
-      takeUntilDestroyed(this._destroyRef),
-      tap(v => {
-        const waitForPreparation = this.waitForPreparation();
-        readyToStart = v;
-        this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+        this.classes.set({ prepared: val, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: !isNextStart });
+        isNextStart = true;
         this.refresh();
       }),
     ).subscribe();
@@ -1324,9 +1359,6 @@ export class NgVirtualListComponent implements OnDestroy {
     ),
       $listBounds = toObservable(this._listBounds).pipe(
         filter(b => !!b),
-      ),
-      $items = toObservable(this.items).pipe(
-        map(i => !i ? [] : i),
       ), $scrollSize = toObservable(this._scrollSize),
       $itemSize = toObservable(this.itemSize).pipe(
         map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
@@ -1495,6 +1527,7 @@ export class NgVirtualListComponent implements OnDestroy {
       itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number; bufferSize: number; maxBufferSize: number;
       snap: boolean; isVertical: boolean; dynamicSize: boolean; enabledBufferOptimization: boolean; cacheVersion: number;
     }) => {
+      this._$update.next();
       const {
         snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,

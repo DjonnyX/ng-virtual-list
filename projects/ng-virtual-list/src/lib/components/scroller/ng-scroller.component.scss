@@ -62,8 +62,16 @@
     margin: 0;
     width: 100%;
     height: 100%;
+    opacity: 0;
 
     &.prepared {
         overflow: hidden;
+        opacity: 1;
+
+        &.wait-for-preparation {
+            &.first-start {
+                transition: opacity 250ms ease-out 100ms;
+            }
+        }
     }
 }
