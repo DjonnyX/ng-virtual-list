@@ -1170,8 +1170,7 @@ export class NgVirtualListComponent implements OnDestroy {
       tap(v => {
         if (!v) {
           this.cacheClean();
-          readyToStart = isUserScrolling = false;
-          prepared = readyToStart = v;
+          readyToStart = isUserScrolling = prepared = false;
           const waitForPreparation = this.waitForPreparation();
           if (waitForPreparation) {
             const scrollerComponent = this._scrollerComponent();
@@ -1203,7 +1202,7 @@ export class NgVirtualListComponent implements OnDestroy {
         return of(v);
       }),
       tap(v => {
-        prepared = v;
+        readyToStart = prepared = v;
         this.refresh();
       }),
       delay(0),
