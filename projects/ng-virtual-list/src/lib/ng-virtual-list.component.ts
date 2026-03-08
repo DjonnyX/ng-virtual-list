@@ -1549,7 +1549,7 @@ export class NgVirtualListComponent implements OnDestroy {
           }
         }
 
-        actualScrollSize = (isVertical ? scroller.actualScrollTop ?? 0 : scroller.actualScrollLeft ?? 0);
+        actualScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
         const delta = this._trackBox.delta,
           roundedActualScrollSize = Math.round(actualScrollSize),
           scrollPositionAfterUpdate = actualScrollSize + delta,
@@ -1562,7 +1562,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
         this._trackBox.clearDelta();
 
-        if (this._trackBox.isSnappedToEnd || (!!snapScrollToBottom && !prepared) ||
+        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) || (!!snapScrollToBottom && !prepared) ||
           (snapScrollToBottom && actualScrollSize > 0 &&
             ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
               (scrollPosition >= roundedMaxPosition) &&
