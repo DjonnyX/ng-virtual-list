@@ -7,8 +7,8 @@ import { ScrollerDirections } from './enums';
 import { ISize } from '../../types';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    DEFAULT_OVERSCROLL_ENABLED, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL,
-    SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
+    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL,
+    SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import { SCROLL_VIEW_INVERSION } from './const';
@@ -64,6 +64,8 @@ export class NgScrollView implements OnDestroy {
     scrollViewport = viewChild<ElementRef<HTMLDivElement>>('scrollViewport');
 
     direction = input<ScrollerDirections>(ScrollerDirection.VERTICAL);
+
+    scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
 
     overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
 
@@ -311,6 +313,11 @@ export class NgScrollView implements OnDestroy {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
+
+                                        if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+
                                         this.moveWithAcceleration(isVertical, position, 0, v0, a0);
                                     }),
                                 );
@@ -370,6 +377,7 @@ export class NgScrollView implements OnDestroy {
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, false, true);
                                 startTime = endTime;
+
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
                                     tap(e => {
@@ -380,6 +388,11 @@ export class NgScrollView implements OnDestroy {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
+
+                                        if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+
                                         this.moveWithAcceleration(isVertical, position, this._velocity, v0, a0);
                                     }),
                                 );

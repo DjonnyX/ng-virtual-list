@@ -11,5 +11,6 @@
         [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="prepared"
         [interactive]="scrollbarInteractive()" [show]="scrollbarShow() && scrollbarEnabled() && prepared"
         [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
-        [scrollbarMinSize]="scrollbarMinSize()" (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+        [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
+        (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
 </div>

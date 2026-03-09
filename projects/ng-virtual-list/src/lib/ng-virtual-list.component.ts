@@ -18,6 +18,7 @@ import {
   MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL, SCROLLER_SCROLLBAR_SCROLL,
   DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE,
   KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_ANIMATION_PARAMS,
+  DEFAULT_SCROLL_BEHAVIOR,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -554,6 +555,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Determines whether scrolling using the scrollbar will be possible. The default value is "true".
    */
   scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE, { ...this._scrollbarInteractiveOptions });
+
+  private _scrollBehaviorOptions = {
+    transform: (v: ScrollBehavior) => {
+      const valid = validateString(v, true);
+
+      if (!valid) {
+        console.error('The "scrollBehavior" parameter must be of type `boolean`.');
+        return DEFAULT_SCROLL_BEHAVIOR;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Defines the scrolling behavior for any element on the page. The default value is "smooth".
+   */
+  scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR, { ...this._scrollBehaviorOptions });
 
   private _animationParamsOptions = {
     transform: (v: IAnimationParams) => {
@@ -1659,7 +1677,7 @@ export class NgVirtualListComponent implements OnDestroy {
               animated = prepared && readyToStart && diff >= 0 && diff <= snapToEndTransitionInstantOffset,
               params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-                fireUpdate: false, behavior: animated ? BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT,
+                fireUpdate: false, behavior: animated ? this.scrollBehavior() : BEHAVIOR_INSTANT,
                 blending: false, duration: this.animationParams().scrollToItem,
               };
             scroller?.scrollTo?.(params);
@@ -2332,7 +2350,7 @@ export class NgVirtualListComponent implements OnDestroy {
     if (el) {
       const focusedEl = el.querySelector<HTMLDivElement>(`.${ITEM_CONTAINER}`);
       if (focusedEl) {
-        this._service.focus(focusedEl, align);
+        this._service.focus(focusedEl, align, this.scrollBehavior());
       }
     }
   }

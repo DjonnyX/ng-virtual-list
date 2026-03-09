@@ -18,6 +18,8 @@ export const DEFAULT_SCROLLBAR_ENABLED = true;
 
 export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
 
+export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
+
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,
     navigateToItem: 150,

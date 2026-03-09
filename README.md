@@ -681,6 +681,7 @@ Inputs
 | scrollbarInteractive | boolean? = true | Determines whether scrolling using the scrollbar will be possible. The default value is "true". |
 | overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
 | animationParams | [IAnimationParams](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/animation-params.ts)? = { scrollToItem: 50, navigateToItem: 150 } | Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150 }". |
+| scrollBehavior | ScrollBehavior? = 'smooth' | Defines the scrolling behavior for any element on the page. The default value is "smooth". |
 
 <br/>
 

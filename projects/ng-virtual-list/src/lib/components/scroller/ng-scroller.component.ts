@@ -221,7 +221,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this.thumbSize.set(thumbSize);
     if (update) {
       this.scrollBar?.scroll({
-        [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: thumbPosition, fireUpdate: false, behavior: BEHAVIOR_INSTANT, userAction: false, blending: false,
+        [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: thumbPosition, fireUpdate: false, behavior: BEHAVIOR_INSTANT,
+        userAction: false, blending: false,
       });
     }
     this.scrollbarShow.set(isVertical ? this.scrollHeight > 0 : this.scrollWidth > 0);
@@ -304,7 +305,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         position,
       });
     this.scrollTo({
-      [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? AUTO : INSTANT,
+      [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? this.scrollBehavior() : INSTANT,
       blending: false, userAction, fireUpdate: userAction,
     });
     if (this.cdkScrollable) {
