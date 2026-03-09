@@ -1138,96 +1138,79 @@ export class NgVirtualListComponent implements OnDestroy {
 
     const $updateComplete = this.$update.pipe(
       takeUntilDestroyed(),
-      debounceTime(0),
+      debounceTime(250),
     ),
       $items = toObservable(this.items).pipe(
         map(i => !i ? [] : i),
-      ),
-      $isFirstStart = $items.pipe(
-        takeUntilDestroyed(),
-        take(1),
-      );
+      ), $dynamicSize = toObservable(this.dynamicSize);
 
-    let isFirstStart = false;
-    $isFirstStart.pipe(
+    $dynamicSize.pipe(
       takeUntilDestroyed(),
-      switchMap(() => {
-        return $updateComplete.pipe(
-          take(1),
-          takeUntilDestroyed(this._destroyRef),
-        );
-      }),
-      takeUntilDestroyed(this._destroyRef),
-      tap(() => {
-        isFirstStart = true;
-      }),
-    ).subscribe();
-
-    let isNextStart = false;
-    this.$prepared.pipe(
-      takeUntilDestroyed(),
-      distinctUntilChanged(),
       tap(v => {
         if (!v) {
-          readyToStart = isUserScrolling = prepared = false;
-          this.cacheClean();
-          const waitForPreparation = this.waitForPreparation();
-          if (waitForPreparation) {
-            const scrollerComponent = this._scrollerComponent();
-            if (scrollerComponent) {
-              scrollerComponent.prepared = v;
-            }
-            this.classes.set({ prepared: v, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: !isNextStart });
-          } else {
-            const scrollerComponent = this._scrollerComponent();
-            if (scrollerComponent) {
-              scrollerComponent.prepared = true;
-            }
-            this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: false });
+          prepared = readyToStart = true;
+          const scrollerComponent = this._scrollerComponent();
+          if (scrollerComponent) {
+            scrollerComponent.prepared = true;
           }
-          if (!this.dynamicSize()) {
-            this.refresh();
-          } else {
-            this._service.update(true);
-          }
+          this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: false });
+          this._service.update(true);
         }
       }),
       filter(v => !!v),
-      delay(0),
-      takeUntilDestroyed(this._destroyRef),
-      switchMap(v => {
-        if (!isFirstStart) {
-          return $updateComplete.pipe(
-            takeUntilDestroyed(this._destroyRef),
-            take(1),
-            switchMap(() => of(v)),
-          );
-        }
-        return of(v);
-      }),
-      delay(0),
-      takeUntilDestroyed(this._destroyRef),
-      tap(v => {
-        prepared = v;
-        this._service.update();
-      }),
-      delay(0),
-      takeUntilDestroyed(this._destroyRef),
-      tap(v => {
-        const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent(), val = v || !waitForPreparation;
-        if (scrollerComponent) {
-          scrollerComponent.prepared = val;
-        }
-        this.classes.set({ prepared: val, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: !isNextStart });
-        this._service.update();
-      }),
-      delay(1000),
-      takeUntilDestroyed(this._destroyRef),
-      tap(v => {
-        const waitForPreparation = this.waitForPreparation(), val = v || !waitForPreparation;
-        this.classes.set({ prepared: val, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation, [FIRST_START]: !isNextStart });
-        readyToStart = isNextStart = true;
-        this._service.update();
+      switchMap(() => {
+        return this.$prepared.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          distinctUntilChanged(),
+          tap(v => {
+            if (!v) {
+              readyToStart = isUserScrolling = prepared = false;
+              this.cacheClean();
+              const waitForPreparation = this.waitForPreparation();
+              if (waitForPreparation) {
+                const scrollerComponent = this._scrollerComponent();
+                if (scrollerComponent) {
+                  scrollerComponent.prepared = v;
+                }
+                this.classes.set({ prepared: v, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: waitForPreparation });
+              }
+              this._service.update(true);
+            }
+          }),
+          filter(v => !!v),
+          delay(0),
+          takeUntilDestroyed(this._destroyRef),
+          switchMap(v => {
+            return $updateComplete.pipe(
+              takeUntilDestroyed(this._destroyRef),
+              take(1),
+              switchMap(() => of(v)),
+            );
+          }),
+          delay(0),
+          tap(v => {
+            prepared = v;
+            this._service.update(true);
+          }),
+          delay(0),
+          takeUntilDestroyed(this._destroyRef),
+          tap(v => {
+            const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent(), val = v || !waitForPreparation;
+            if (scrollerComponent) {
+              scrollerComponent.prepared = val;
+            }
+            this.classes.set({ prepared: val, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+            this._service.update(true);
+          }),
+          delay(0),
+          takeUntilDestroyed(this._destroyRef),
+          tap(v => {
+            const waitForPreparation = this.waitForPreparation(), val = v || !waitForPreparation;
+            this.classes.set({ prepared: val, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+            readyToStart = true;
+            this._service.update(true);
+          }),
+        )
       }),
     ).subscribe();
 
@@ -1247,7 +1230,6 @@ export class NgVirtualListComponent implements OnDestroy {
     ).subscribe();
 
     const $defaultItemValue = toObservable(this.defaultItemValue),
-      $dynamicSize = toObservable(this.dynamicSize),
       $snapScrollToBottom = toObservable(this.snapScrollToBottom),
       $trackBy = toObservable(this.trackBy),
       $selectByClick = toObservable(this.selectByClick),
@@ -1325,7 +1307,7 @@ export class NgVirtualListComponent implements OnDestroy {
       distinctUntilChanged(),
       debounceTime(0),
       tap(v => {
-        if (isNextStart && readyToStart && v && !isResetedReachStart && this._scrollerComponent()?.scrollable) {
+        if (readyToStart && v && !isResetedReachStart && this._scrollerComponent()?.scrollable) {
           this._trackBox.isScrollStart = true;
           this.onScrollReachStart.emit();
         }
@@ -1339,7 +1321,7 @@ export class NgVirtualListComponent implements OnDestroy {
       debounceTime(0),
       tap(v => {
         this._trackBox.isScrollEnd = v;
-        if (isNextStart && readyToStart && v && this._scrollerComponent()?.scrollable) {
+        if (readyToStart && v && this._scrollerComponent()?.scrollable) {
           this.onScrollReachEnd.emit();
         }
       }),
@@ -2406,10 +2388,6 @@ export class NgVirtualListComponent implements OnDestroy {
     if (scroller) {
       scroller.stopScrolling();
     }
-  }
-
-  private refresh() {
-    this._scrollerComponent()?.refresh(false, false);
   }
 
   ngOnDestroy(): void {

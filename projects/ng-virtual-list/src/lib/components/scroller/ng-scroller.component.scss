@@ -69,7 +69,7 @@
         overflow: hidden;
 
         &.wait-for-preparation {
-            &.first-start {
+            &.ready-to-start {
                 transition: opacity 250ms ease-out 100ms;
             }
         }
