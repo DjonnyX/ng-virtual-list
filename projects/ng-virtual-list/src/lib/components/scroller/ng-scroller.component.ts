@@ -7,7 +7,7 @@ import { Id, ScrollBarTheme } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME, SCROLLER_SCROLL,
+  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME, SCROLLER_SCROLL,
   SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOP_PROP_NAME,
 } from '../../const';
 import { LocaleSensitiveDirective } from '../../directives';
@@ -49,6 +49,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   scrollBar: NgScrollBarComponent | undefined;
 
   scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
+
+  scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
 
   focusedElement = input<Id | undefined>(undefined);
 
@@ -142,7 +144,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         this.langTextDir.set(v);
       })
     ).subscribe();
-
 
     const $startOffset = toObservable(this.startOffset),
       $endOffset = toObservable(this.endOffset),

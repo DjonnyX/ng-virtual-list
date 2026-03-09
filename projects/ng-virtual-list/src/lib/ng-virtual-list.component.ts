@@ -18,7 +18,7 @@ import {
   MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL,
   SCROLLER_SCROLLBAR_SCROLL, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE,
   DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO,
-  DEFAULT_SCROLLBAR_ENABLED,
+  DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -522,7 +522,7 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   snapScrollToBottom = input<boolean>(DEFAULT_SNAP_SCROLLTO_BOTTOM, { ...this._snapScrollToBottomOptions });
 
-  private _snapScrollbarEnabledOptions = {
+  private _scrollbarEnabledOptions = {
     transform: (v: boolean) => {
       const valid = validateBoolean(v, true);
 
@@ -537,7 +537,24 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * Determines whether the scrollbar is shown or not. The default value is "true".
    */
-  scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED, { ...this._snapScrollbarEnabledOptions })
+  scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED, { ...this._scrollbarEnabledOptions });
+
+  private _scrollbarInteractiveOptions = {
+    transform: (v: boolean) => {
+      const valid = validateBoolean(v, true);
+
+      if (!valid) {
+        console.error('The "scrollbarInteractive" parameter must be of type `boolean`.');
+        return DEFAULT_SCROLLBAR_INTERACTIVE;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Determines whether scrolling using the scrollbar will be possible. The default value is "true".
+   */
+  scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE, { ...this._scrollbarInteractiveOptions });
 
   private _enabledBufferOptimizationOptions = {
     transform: (v: boolean) => {

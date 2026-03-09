@@ -188,6 +188,8 @@ export class NgScrollView implements OnDestroy {
 
     protected _animator = new Animator();
 
+    protected _interactive = true;
+
     private _inversion = inject(SCROLL_VIEW_INVERSION);
 
     constructor() {
@@ -228,6 +230,7 @@ export class NgScrollView implements OnDestroy {
             takeUntilDestroyed(this._destroyRef),
             switchMap(content => {
                 return fromEvent<WheelEvent>(content, WHEEL, { passive: false }).pipe(
+                    filter(v => this._interactive),
                     takeUntilDestroyed(this._destroyRef),
                     tap(e => {
                         const isVertical = this.isVertical();
@@ -271,6 +274,7 @@ export class NgScrollView implements OnDestroy {
             switchMap(content => {
                 return fromEvent<MouseEvent>(content, MOUSE_DOWN, { passive: false }).pipe(
                     takeUntilDestroyed(this._destroyRef),
+                    filter(v => this._interactive),
                     switchMap(e => {
                         this.onDragStart();
                         this.stopScrolling();
@@ -339,6 +343,7 @@ export class NgScrollView implements OnDestroy {
             switchMap(content => {
                 return fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
                     takeUntilDestroyed(this._destroyRef),
+                    filter(v => this._interactive),
                     switchMap(e => {
                         this.onDragStart();
                         this.stopScrolling();

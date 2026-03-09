@@ -675,6 +675,7 @@ Inputs
 | snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
 | scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
 | scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
+| scrollbarInteractive | boolean? = true | Determines whether scrolling using the scrollbar will be possible. The default value is "true". |
 
 <br/>
 

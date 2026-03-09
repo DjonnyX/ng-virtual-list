@@ -10,6 +10,7 @@ import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IScrollBarDragEvent } from './interfaces';
+import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 
 const DEFAULT_THICKNESS = 6,
   DEFAULT_SIZE = 6,
@@ -63,6 +64,8 @@ export class NgScrollBarComponent extends NgScrollView {
 
   prepared = input<boolean>(false);
 
+  interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+
   show = input<boolean>(false);
 
   thickness = signal<number>(DEFAULT_THICKNESS);
@@ -101,6 +104,10 @@ export class NgScrollBarComponent extends NgScrollView {
 
     effect(() => {
       this.totalSize = this.size();
+    });
+
+    effect(() => {
+      this._interactive = this.interactive();
     });
 
     this.type = computed(() => {
