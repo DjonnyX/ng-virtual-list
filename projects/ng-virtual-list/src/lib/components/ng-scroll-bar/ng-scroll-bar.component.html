@@ -1,10 +1,9 @@
 @let grab = grabbing();
 <div #scrollViewport class="track" [ngStyle]="styles()" [ngClass]="{grabbing: grab}">
-    <div #scrollContent class="thumb" [class.horizontal]="!isVertical()">
+    <div #scrollContent class="thumb" [class.horizontal]="!isVertical()" (pointerdown)="ripple(substrate, $event)">
         <ng-substrate #substrate mode="rounded-rectangle" class="shape" [type]="type()" [width]="thumbWidth()"
             [height]="thumbHeight()" [roundCorner]="roundCorner()" [strokeWidth]="8" [rippleColor]="rippleColor()"
-            [fillPositions]="thumbGradientPositions()" [fillColors]="thumbGradientFill()"
-            [strokeColors]="strokeGradientColor()" [strokeAnimationDuration]="strokeAnimationDuration()" 
-            (pointerdown)="substrate.ripple($event)"></ng-substrate>
+            [fillPositions]="thumbGradientPositions()" [fillColors]="fill()"
+            [strokeColors]="strokeGradientColor()" [strokeAnimationDuration]="strokeAnimationDuration()"></ng-substrate>
     </div>
 </div>

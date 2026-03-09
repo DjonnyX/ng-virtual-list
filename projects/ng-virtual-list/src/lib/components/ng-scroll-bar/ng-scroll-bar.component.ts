@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, input, NO_ERRORS_SCHEMA, output, Signal, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, NO_ERRORS_SCHEMA, output, Signal, signal } from '@angular/core';
 import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { RoundedCorner } from '../../types/rounded-corner';
-import { Subject, tap } from 'rxjs';
+import { combineLatest, fromEvent, Subject, tap } from 'rxjs';
 import { ScrollBarTheme } from '../../types';
 import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -16,6 +16,7 @@ const DEFAULT_THICKNESS = 6,
   DEFAULT_SIZE = 6,
   DEFAULT_ROUNDED_CORNER: RoundedCorner = [3, 3, 3, 3],
   DEFAULT_STROKE_ANIMATION_DURATION = 500,
+  DEFAULT_RIPPLE_ENABLED = true,
   DEFAULT_RIPPLE_COLOR = 'rgba(0,0,0,0.5)',
   PX = 'px',
   WIDTH = 'width',
@@ -70,7 +71,13 @@ export class NgScrollBarComponent extends NgScrollView {
 
   thickness = signal<number>(DEFAULT_THICKNESS);
 
+  fill: Signal<string | GradientColor | undefined>;
+
   thumbGradientFill = signal<string | GradientColor | undefined>(undefined);
+
+  thumbHoverGradientFill = signal<string | GradientColor | undefined>(undefined);
+
+  thumbPressedGradientFill = signal<string | GradientColor | undefined>(undefined);
 
   strokeGradientColor = signal<string | GradientColor | undefined>(undefined);
 
@@ -79,6 +86,12 @@ export class NgScrollBarComponent extends NgScrollView {
   roundCorner = signal<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
 
   rippleColor = signal<Color | undefined>(DEFAULT_RIPPLE_COLOR);
+
+  rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
+
+  hoverState = signal<boolean>(false);
+
+  pressedState = signal<boolean>(false);
 
   type: Signal<SubstarateStyle>;
 
@@ -91,6 +104,8 @@ export class NgScrollBarComponent extends NgScrollView {
   private _$scrollingCancel = new Subject<void>();
   readonly $scrollingCancel = this._$scrollingCancel.asObservable();
 
+  private _elementRef = inject(ElementRef);
+
   constructor() {
     super();
 
@@ -100,6 +115,56 @@ export class NgScrollBarComponent extends NgScrollView {
 
     this.thumbHeight = computed(() => {
       return this.isVertical() ? this.size() : this.thickness();
+    });
+
+    const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
+      takeUntilDestroyed(),
+    ), $pointerUp = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerup').pipe(
+      takeUntilDestroyed(),
+    ), $docPointerUp = fromEvent<PointerEvent>(document, 'pointerup').pipe(
+      takeUntilDestroyed()
+    ), $pointerEnter = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerenter').pipe(
+      takeUntilDestroyed(),
+    ), $pointerLeave = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerleave').pipe(
+      takeUntilDestroyed(),
+    );
+
+    $pointerDown.pipe(
+      takeUntilDestroyed(),
+      tap(e => {
+        this.pressedState.set(this.thumbHit(e.clientX, e.clientY));
+      }),
+    ).subscribe();
+
+    combineLatest([$docPointerUp, $pointerUp]).pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.pressedState.set(false);
+      }),
+    ).subscribe();
+
+    $pointerEnter.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.hoverState.set(true);
+      }),
+    ).subscribe();
+
+    $pointerLeave.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.hoverState.set(false);
+      }),
+    ).subscribe();
+
+    this.fill = computed(() => {
+      const pressed = this.pressedState(), hover = this.hoverState();
+      if (pressed) {
+        return this.thumbPressedGradientFill();
+      } else if (hover) {
+        return this.thumbHoverGradientFill();
+      }
+      return this.thumbGradientFill();
     });
 
     effect(() => {
@@ -147,14 +212,28 @@ export class NgScrollBarComponent extends NgScrollView {
       if (theme) {
         if (theme) {
           this.thumbGradientFill.set(theme.fill);
+          this.thumbHoverGradientFill.set(theme.hoverFill);
+          this.thumbPressedGradientFill.set(theme.pressedFill);
           this.strokeGradientColor.set(theme.strokeGradientColor);
           this.strokeAnimationDuration.set(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
           this.roundCorner.set(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
           this.thickness.set(theme.thickness ?? DEFAULT_THICKNESS);
           this.rippleColor.set(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
+          this.rippleEnabled.set(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
         }
       }
     });
+  }
+
+  private thumbHit(x: number, y: number): boolean {
+    const thumb = this.scrollContent()?.nativeElement;
+    if (!!thumb) {
+      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect()
+      if ((x >= tX && x <= tX + tWidth) && (y >= tY && y <= tY + tHeight)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected override normalizeAnimatedValue(value: number) {
@@ -171,5 +250,11 @@ export class NgScrollBarComponent extends NgScrollView {
       }
     }
     return value;
+  }
+
+  ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {
+    if (this.rippleEnabled() && !!substrate) {
+      substrate.ripple(event);
+    }
   }
 }
