@@ -1178,8 +1178,6 @@ export class NgVirtualListComponent implements OnDestroy {
             }
           }),
           filter(v => !!v),
-          delay(0),
-          takeUntilDestroyed(this._destroyRef),
           switchMap(v => {
             return $updateComplete.pipe(
               takeUntilDestroyed(this._destroyRef),

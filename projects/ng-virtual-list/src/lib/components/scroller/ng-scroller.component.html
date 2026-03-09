@@ -6,11 +6,9 @@
             <ng-content></ng-content>
         </div>
     </div>
-    @if (this.scrollbarEnabled()) {
-        @let prepared = preparedSignal();
-        <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
-            [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="prepared"
-            [show]="scrollbarShow() && prepared" [startOffset]="startOffset()" [endOffset]="endOffset()"
-            [scrollbarMinSize]="scrollbarMinSize()" (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
-    }
+    @let prepared = preparedSignal();
+    <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
+        [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="prepared"
+        [show]="scrollbarShow() && scrollbarEnabled() && prepared" [startOffset]="startOffset()" [endOffset]="endOffset()"
+        [scrollbarMinSize]="scrollbarMinSize()" (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
 </div>
