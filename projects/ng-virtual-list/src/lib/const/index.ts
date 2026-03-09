@@ -18,6 +18,8 @@ export const DEFAULT_SCROLLBAR_ENABLED = true;
 
 export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
 
+export const DEFAULT_OVERSCROLL_ENABLED = true;
+
 export const DEFAULT_SNAP = false;
 
 export const DEFAULT_SELECT_BY_CLICK = true;

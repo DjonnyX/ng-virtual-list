@@ -676,6 +676,7 @@ Inputs
 | scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
 | scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
 | scrollbarInteractive | boolean? = true | Determines whether scrolling using the scrollbar will be possible. The default value is "true". |
+| overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
 
 <br/>
 

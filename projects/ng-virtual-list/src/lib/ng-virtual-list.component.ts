@@ -18,7 +18,7 @@ import {
   MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL,
   SCROLLER_SCROLLBAR_SCROLL, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE,
   DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO,
-  DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE,
+  DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -555,6 +555,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Determines whether scrolling using the scrollbar will be possible. The default value is "true".
    */
   scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE, { ...this._scrollbarInteractiveOptions });
+
+  private _overscrollEnabledOptions = {
+    transform: (v: boolean) => {
+      const valid = validateBoolean(v, true);
+
+      if (!valid) {
+        console.error('The "overscrollEnabled" parameter must be of type `boolean`.');
+        return DEFAULT_OVERSCROLL_ENABLED;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Determines whether the overscroll (re-scroll) feature will work. The default value is "true".
+   */
+  overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED, { ...this._overscrollEnabledOptions });
 
   private _enabledBufferOptimizationOptions = {
     transform: (v: boolean) => {

@@ -7,8 +7,8 @@ import { ScrollerDirections } from './enums';
 import { ISize } from '../../types';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE,
-    TOUCH_START, WHEEL,
+    DEFAULT_OVERSCROLL_ENABLED, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL,
+    SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import { SCROLL_VIEW_INVERSION } from './const';
@@ -36,7 +36,8 @@ const TOP = 'top',
     MASS = .005,
     MAX_DIST = 12500,
     MAX_VELOCITY_TIMESTAMP = 100,
-    SPEED_SCALE = 5;
+    SPEED_SCALE = 5,
+    OVERSCROLL_START_ITERATION = 2;
 
 export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
     WHEEL_EVENT = new Event(SCROLLER_WHEEL),
@@ -63,6 +64,8 @@ export class NgScrollView implements OnDestroy {
     scrollViewport = viewChild<ElementRef<HTMLDivElement>>('scrollViewport');
 
     direction = input<ScrollerDirections>(ScrollerDirection.VERTICAL);
+
+    overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
 
     isVertical: Signal<boolean>;
 
@@ -192,6 +195,8 @@ export class NgScrollView implements OnDestroy {
 
     private _inversion = inject(SCROLL_VIEW_INVERSION);
 
+    private _overscrollIteration: number = 0;
+
     constructor() {
         this._viewportResizeObserver = new ResizeObserver(this._onResizeViewportHandler);
         this._contentResizeObserver = new ResizeObserver(this._onResizeContentHandler);
@@ -225,7 +230,6 @@ export class NgScrollView implements OnDestroy {
                 this._onResizeContentHandler();
             }),
         ).subscribe();
-
         $wheelEmitter.pipe(
             takeUntilDestroyed(this._destroyRef),
             switchMap(content => {
@@ -237,17 +241,7 @@ export class NgScrollView implements OnDestroy {
                         if (this.cdkScrollable) {
                             this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(WHEEL_EVENT);
                         }
-                        if (isVertical) {
-                            if (this._y >= 0 && this._y <= this.scrollHeight) {
-                                e.stopImmediatePropagation();
-                                e.preventDefault();
-                            }
-                        } else {
-                            if (this._x >= 0 && this._x <= this.scrollWidth) {
-                                e.stopImmediatePropagation();
-                                e.preventDefault();
-                            }
-                        }
+                        this.checkOverscroll(e);
                         this.stopScrolling();
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this.y : this.x,
@@ -276,6 +270,7 @@ export class NgScrollView implements OnDestroy {
                     takeUntilDestroyed(this._destroyRef),
                     filter(v => this._interactive),
                     switchMap(e => {
+                        this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
                         const target = e.target as HTMLElement;
@@ -286,7 +281,7 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevPos = startPos, prevClientPosition = 0;
+                        let prevClientPosition = 0;
                         const startClientPos = isVertical ? e.clientY : e.clientX,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
                         let startTime = Date.now();
@@ -294,7 +289,7 @@ export class NgScrollView implements OnDestroy {
                             takeUntilDestroyed(this._destroyRef),
                             takeUntil($mouseDragCancel),
                             tap(e => {
-                                e.preventDefault();
+                                this.checkOverscroll(e);
                             }),
                             switchMap(e => {
                                 const currentPos = isVertical ? e.clientY : e.clientX,
@@ -304,13 +299,12 @@ export class NgScrollView implements OnDestroy {
                                     { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
                                 this.calculateAcceleration(velocities, v0, timestamp);
                                 prevClientPosition = currentPos;
-                                prevPos = position;
                                 this.move(isVertical, position, false, true);
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
                                     tap(e => {
-                                        e.preventDefault();
+                                        this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
                                             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
@@ -345,6 +339,7 @@ export class NgScrollView implements OnDestroy {
                     takeUntilDestroyed(this._destroyRef),
                     filter(v => this._interactive),
                     switchMap(e => {
+                        this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
                         const target = e.target as HTMLElement;
@@ -355,7 +350,7 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevPos = startPos, prevClientPosition = 0;
+                        let prevClientPosition = 0;
                         const startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
                         let startTime = Date.now();
@@ -363,7 +358,7 @@ export class NgScrollView implements OnDestroy {
                             takeUntilDestroyed(this._destroyRef),
                             takeUntil($touchCanceler),
                             tap(e => {
-                                e.preventDefault();
+                                this.checkOverscroll(e);
                             }),
                             switchMap(e => {
                                 const currentPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
@@ -373,13 +368,12 @@ export class NgScrollView implements OnDestroy {
                                     { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
                                 this.calculateAcceleration(velocities, v0, timestamp);
                                 prevClientPosition = currentPos;
-                                prevPos = position;
                                 this.move(isVertical, position, false, true);
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
                                     tap(e => {
-                                        e.preventDefault();
+                                        this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
                                             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
@@ -395,6 +389,50 @@ export class NgScrollView implements OnDestroy {
                 );
             }),
         ).subscribe();
+    }
+
+    private cancelOverscroll() {
+        if (!this.overscrollEnabled()) {
+            return;
+        }
+        this._overscrollIteration = 0;
+    }
+
+    private checkOverscrollByAxis(e: Event, pos: number, limit: number) {
+        const p = Math.abs(pos);
+        if (p > 0 && p < limit) {
+            if (e.cancelable) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+            if (this._overscrollIteration > 0) {
+                this.scrollContent()?.nativeElement?.click();
+            }
+            this._overscrollIteration = 0;
+        } else {
+            if (this._overscrollIteration < OVERSCROLL_START_ITERATION) {
+                this._overscrollIteration++;
+                if (e.cancelable) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }
+        }
+    }
+
+    private checkOverscroll(e: Event) {
+        if (!this.overscrollEnabled()) {
+            if (e.cancelable) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            }
+            return;
+        }
+        if (this.isVertical()) {
+            this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
+        } else {
+            this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+        }
     }
 
     private calculateVelocity(offsets: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
