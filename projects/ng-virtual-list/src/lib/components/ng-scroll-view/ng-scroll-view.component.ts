@@ -557,6 +557,7 @@ export class NgScrollView implements OnDestroy {
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
+            duration = params.duration ?? ANIMATION_DURATION,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
         const limits = this.scrollLimits(),
@@ -569,11 +570,11 @@ export class NgScrollView implements OnDestroy {
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== yy) {
-                    this.animate(prevY, yy, ANIMATION_DURATION, ease, userAction);
+                    this.animate(prevY, yy, duration, ease, userAction);
                 }
             } else {
                 if (prevX !== xx) {
-                    this.animate(prevX, xx, ANIMATION_DURATION, ease, userAction);
+                    this.animate(prevX, xx, duration, ease, userAction);
                 }
             }
         } else {

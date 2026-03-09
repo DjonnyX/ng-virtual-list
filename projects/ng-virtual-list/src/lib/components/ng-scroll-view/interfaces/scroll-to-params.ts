@@ -16,4 +16,5 @@ export interface IScrollToParams {
     ease?: Easing;
     fireUpdate?: boolean;
     userAction?: boolean;
+    duration?: number;
 }

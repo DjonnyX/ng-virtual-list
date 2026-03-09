@@ -15,15 +15,14 @@ import {
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, FOCUS, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
   DEFAULT_SCREEN_READER_MESSAGE, BEHAVIOR_SMOOTH, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_BOTTOM,
-  MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL,
-  SCROLLER_SCROLLBAR_SCROLL, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE,
-  DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO,
-  DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
+  MOUSE_DOWN, MOUSE_UP, MOUSE_LEAVE, MOUSE_OUT, TOUCH_END, TOUCH_LEAVE, TOUCH_OUT, TOUCH_START, SCROLLER_WHEEL, SCROLLER_SCROLLBAR_SCROLL,
+  DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_MIN_SIZE,
+  KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_ANIMATION_PARAMS,
 } from './const';
 import {
   IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
 } from './models';
-import { FocusAlignment, Id, IRect, ISize, ScrollBarTheme } from './types';
+import { FocusAlignment, IAnimationParams, Id, IRect, ISize, ScrollBarTheme } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting, SnappingMethod,
@@ -556,6 +555,23 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE, { ...this._scrollbarInteractiveOptions });
 
+  private _animationParamsOptions = {
+    transform: (v: IAnimationParams) => {
+      const valid = validateObject(v, true);
+
+      if (!valid) {
+        console.error('The "animationParams" parameter must be of type `object`.');
+        return DEFAULT_ANIMATION_PARAMS;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150 }".
+   */
+  animationParams = input<IAnimationParams>(DEFAULT_ANIMATION_PARAMS, { ...this._animationParamsOptions });
+
   private _overscrollEnabledOptions = {
     transform: (v: boolean) => {
       const valid = validateBoolean(v, true);
@@ -1025,7 +1041,7 @@ export class NgVirtualListComponent implements OnDestroy {
         this._trackBox.cancelScrollSnappingToEnd(true);
         const params: IScrollToParams = {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior,
-          fireUpdate: true, blending: true, userAction: true,
+          fireUpdate: true, blending: true, userAction: true, duration: this.animationParams().navigateToItem,
         };
         scroller.scrollTo(params);
       }
@@ -1088,6 +1104,7 @@ export class NgVirtualListComponent implements OnDestroy {
           blending: false,
           fireUpdate: false,
           userAction: false,
+          duration: this.animationParams().scrollToItem,
         };
 
         scroller.scrollTo(params);
@@ -1642,10 +1659,8 @@ export class NgVirtualListComponent implements OnDestroy {
               animated = prepared && readyToStart && diff >= 0 && diff <= snapToEndTransitionInstantOffset,
               params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-                fireUpdate: false,
-                behavior: animated ?
-                  BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT,
-                blending: false,
+                fireUpdate: false, behavior: animated ? BEHAVIOR_SMOOTH : BEHAVIOR_INSTANT,
+                blending: false, duration: this.animationParams().scrollToItem,
               };
             scroller?.scrollTo?.(params);
           }
@@ -1657,7 +1672,7 @@ export class NgVirtualListComponent implements OnDestroy {
           }
           const params: IScrollToParams = {
             [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true,
-            fireUpdate: false, behavior: BEHAVIOR_INSTANT,
+            fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
           };
           scroller.scrollTo(params);
         }

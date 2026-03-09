@@ -184,7 +184,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         isVertical = this.isVertical(),
         viewportSize = isVertical ? height : width,
         contentSize = isVertical ? contentHeight : contentWidth;
-      return { [this.direction()]: true, grabbing: this.grabbing(), enabled: this.scrollbarEnabled(), scrollable: contentSize > viewportSize};
+      return { [this.direction()]: true, grabbing: this.grabbing(), enabled: this.scrollbarEnabled(), scrollable: contentSize > viewportSize };
     });
 
     effect(() => {

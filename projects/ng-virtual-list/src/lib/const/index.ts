@@ -1,6 +1,6 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
-import { GradientColor, ScrollBarTheme } from "../types";
+import { GradientColor, IAnimationParams, ScrollBarTheme } from "../types";
 
 export const DEFAULT_ITEM_SIZE = 24;
 
@@ -17,6 +17,11 @@ export const DEFAULT_WAIT_FOR_PREPARATION = true;
 export const DEFAULT_SCROLLBAR_ENABLED = true;
 
 export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
+
+export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
+    scrollToItem: 50,
+    navigateToItem: 150,
+};
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;
 
