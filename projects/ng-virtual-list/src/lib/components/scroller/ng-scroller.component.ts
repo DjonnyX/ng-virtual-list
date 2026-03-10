@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, NO_ERRORS_SCHEMA, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, inject, input, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, from, tap } from 'rxjs';
@@ -245,11 +245,13 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   override reset() {
-    super.reset();
+    super.reset(this.startOffset());
+    this.totalSize = 0;
     if (this.scrollBar) {
       this.scrollBar.stopScrolling();
     }
-    this.move(this.isVertical(), 0);
+    this.refresh(true, true);
+    this.prepared = false;
   }
 
   refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
