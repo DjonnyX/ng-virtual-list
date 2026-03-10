@@ -1,17 +1,33 @@
 :host {
-    display: block;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
     width: 100%;
     height: 100%;
 }
 
 .track {
     position: relative;
+    overflow: hidden;
     width: 100%;
     height: 100%;
+    cursor: grab;
+
+    &.grabbing {
+        cursor: grabbing;
+    }
 
     .thumb {
+        display: block;
         position: absolute;
-        cursor: grab;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    
+        &.prepared {
+            overflow: hidden;
+        }
 
         &.horizontal {
             top: 0;
@@ -19,6 +35,7 @@
 
         .shape {
             box-sizing: border-box;
+            pointer-events: none;
         }
     }
 

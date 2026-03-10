@@ -1,6 +1,6 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
-import { GradientColor, ScrollBarTheme } from "../types";
+import { GradientColor, IAnimationParams, ScrollBarTheme } from "../types";
 
 export const DEFAULT_ITEM_SIZE = 24;
 
@@ -13,6 +13,19 @@ export const DEFAULT_LIST_SIZE = 400;
 export const DEFAULT_CLICK_DISTANCE = 40;
 
 export const DEFAULT_WAIT_FOR_PREPARATION = true;
+
+export const DEFAULT_SCROLLBAR_ENABLED = true;
+
+export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
+
+export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
+
+export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
+    scrollToItem: 50,
+    navigateToItem: 150,
+};
+
+export const DEFAULT_OVERSCROLL_ENABLED = true;
 
 export const DEFAULT_SNAP = false;
 
@@ -50,22 +63,25 @@ const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "r
 
 export const DEFAULT_SCROLLBAR_THEME: ScrollBarTheme = {
     fill: ["rgba(198, 172, 248, 1)", "rgba(168, 229, 250, 1)"],
+    hoverFill: ["rgba(165, 136, 220, 1)", "rgba(132, 195, 217, 1)"],
+    pressedFill: ["rgba(132, 104, 185, 1)", "rgba(107, 171, 193, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
     thickness: 12,
     roundCorner: [3, 3, 3, 3],
     rippleColor: 'rgba(0,0,0,0.5)',
+    rippleEnabled: true,
 }
 
 export const DEFAULT_SCROLLBAR_MIN_SIZE: number = 80;
 
 // presets
 
-export const BEHAVIOR_AUTO = 'auto';
+export const BEHAVIOR_AUTO: ScrollBehavior = 'auto';
 
-export const BEHAVIOR_INSTANT = 'instant';
+export const BEHAVIOR_INSTANT: ScrollBehavior = 'instant';
 
-export const BEHAVIOR_SMOOTH = 'smooth';
+export const BEHAVIOR_SMOOTH: ScrollBehavior = 'smooth';
 
 export const DISPLAY_BLOCK = 'block';
 
@@ -113,6 +129,8 @@ export const PX = 'px';
 
 export const INTERACTIVE = 'interactive';
 
+export const FOCUS = 'focus';
+
 export const WHEEL = 'wheel';
 
 export const SCROLLER_WHEEL = 'wheel';
@@ -148,6 +166,8 @@ export const POINTER_LEAVE = 'pointerleave';
 export const POINTER_OUT = 'pointerout';
 
 export const CLICK = 'click';
+
+export const KEY_DOWN = 'keydown';
 
 export const SCROLL = 'scroll';
 

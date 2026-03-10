@@ -20,7 +20,7 @@ const RIGHT = 'right',
   selector: '[localeSensitive]'
 })
 export class LocaleSensitiveDirective {
-  langTextDir = input<TextDirection | undefined>(TextDirections.LTR);
+  langTextDir = input<TextDirection>(TextDirections.LTR);
 
   listDir = input<ScrollerDirections>(ScrollerDirection.VERTICAL);
 
@@ -35,7 +35,7 @@ export class LocaleSensitiveDirective {
       tap(([dir, listDir]) => {
         const element = this._elementRef.nativeElement as HTMLElement,
           isVertical = isDirection(listDir, ScrollerDirection.VERTICAL);
-        element.setAttribute(DIR, isVertical ? dir ?? TextDirections.LTR : TextDirections.LTR);
+        element.setAttribute(DIR, isVertical ? dir : TextDirections.LTR);
         if (dir === TextDirections.RTL && isVertical) {
           element.style.textAlign = RIGHT;
           element.classList.add(TextDirections.RTL);
