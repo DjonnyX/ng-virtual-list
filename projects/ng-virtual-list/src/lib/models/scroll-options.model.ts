@@ -13,4 +13,8 @@ export interface IScrollOptions {
      * Scroll behavior. Default value is `instant`.
      */
     behavior?: ScrollBehavior | 'auto' | 'instant' | 'smooth';
+    /**
+     * Specifies whether scrolling will smoothly transition to the previous animation. Default value is false.
+     */
+    blending?: boolean;
 }
