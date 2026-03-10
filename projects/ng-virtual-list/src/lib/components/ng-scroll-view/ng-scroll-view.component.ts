@@ -643,8 +643,9 @@ export class NgScrollView implements OnDestroy {
 
     protected onDragStart() { }
 
-    reset() {
-        this.move(this.isVertical(), 0);
+    reset(offset: number = 0) {
+        this.stopScrolling();
+        this.move(this.isVertical(), offset);
     }
 
     ngOnDestroy(): void {
