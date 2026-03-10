@@ -519,11 +519,14 @@ const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "r
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   SCROLLBAR_GRADIENT: ScrollBarTheme = {
     fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
+    pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
     thickness: 6,
     roundCorner: ROUND_CORNER,
     rippleColor: 'rgba(255,255,255,0.5)',
+    rippleEnabled: true,
   };
 
 @Component({
@@ -674,6 +677,11 @@ Inputs
 | snapScrollToBottom | boolean? = false | Determines whether the scroll will be anchored to the end of the list at startup.. Default value is "false". |
 | snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
 | scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
+| scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
+| scrollbarInteractive | boolean? = true | Determines whether scrolling using the scrollbar will be possible. The default value is "true". |
+| overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
+| animationParams | [IAnimationParams](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/animation-params.ts)? = { scrollToItem: 50, navigateToItem: 150 } | Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150 }". |
+| scrollBehavior | ScrollBehavior? = 'smooth' | Defines the scrolling behavior for any element on the page. The default value is "smooth". |
 
 <br/>
 
@@ -697,13 +705,13 @@ Methods
 | Method | Type | Description |
 |--|--|--|
 | scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
-| scrollToEnd | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the last item in the collection. |
+| scrollToStart | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the first item in the collection. |
+| scrollToEndItem | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the last item in the collection. |
+| scrollToEnd | | Scrolls the list to the end of the content height. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
 | cacheClean |  | Force clearing the cache. |
 | stopSnappingScrollToEnd |  | Stops the list from snapping to the bottom edge. |
-| updateImmediately |  | Instantly refreshes the list. |
-| markForUpdate |  | Marks the list for an update that will trigger on the next tick. |
 
 <br/>
 
