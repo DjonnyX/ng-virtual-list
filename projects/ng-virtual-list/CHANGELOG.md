@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.10.1] - 2026-03-10
+
+### Fixed
+- List initialization has been improved and a number of bugs have been fixed
+
 ## [19.10.0] - 2026-03-09
 
 ### Fixed
