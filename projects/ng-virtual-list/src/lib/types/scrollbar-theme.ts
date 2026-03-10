@@ -10,9 +10,12 @@ import { RoundedCorner } from "./rounded-corner";
  */
 export type ScrollBarTheme = {
     fill: GradientColor;
+    hoverFill: GradientColor;
+    pressedFill: GradientColor;
     strokeGradientColor: GradientColor;
     strokeAnimationDuration: number;
     thickness: number;
     roundCorner: RoundedCorner;
     rippleColor: Color;
+    rippleEnabled: boolean;
 }
