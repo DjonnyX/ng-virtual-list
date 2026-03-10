@@ -249,11 +249,13 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   override reset() {
-    super.reset();
+    super.reset(this.startOffset());
+    this.totalSize = 0;
     if (this.scrollBar) {
       this.scrollBar.stopScrolling();
     }
-    this.move(this.isVertical(), 0);
+    this.refresh(true, true);
+    this.prepared = false;
   }
 
   refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
