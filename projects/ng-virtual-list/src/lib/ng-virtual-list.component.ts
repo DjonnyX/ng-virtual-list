@@ -1704,7 +1704,9 @@ export class NgVirtualListComponent implements OnDestroy {
             scroller.scrollTo(params);
           }
         }
-        this._$update.next();
+        if (!prepared || !readyToStart) {
+          this._$update.next();
+        }
       }
     };
 
