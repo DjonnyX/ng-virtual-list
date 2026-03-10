@@ -1201,7 +1201,7 @@ export class NgVirtualListComponent implements OnDestroy {
     effect(() => {
       const dir = this.langTextDir() as TextDirection;
       this._service.langTextDir = dir;
-    });
+    }, { allowSignalWrites: true });
 
     effect(() => {
       const dist = this.clickDistance();
