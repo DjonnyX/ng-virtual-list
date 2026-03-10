@@ -13,5 +13,3 @@ export const IS_ANDROID = /android/.test(userAgent);
 export const IS_EDGE = /edge/.test(userAgent);
 
 export const IS_XIAOMI = /xiaomi/.test(userAgent);
-
-export const FIREFOX_SCROLLBAR_OVERLAP_SIZE = 12;
