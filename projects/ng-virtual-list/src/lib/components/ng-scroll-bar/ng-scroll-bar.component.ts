@@ -1,21 +1,22 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, effect, ElementRef, inject, input, OnDestroy, output, Signal, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { SubstarateStyle, SubstarateStyles } from '../substrate';
+import { Component, computed, effect, ElementRef, inject, input, NO_ERRORS_SCHEMA, output, Signal, signal } from '@angular/core';
+import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { RoundedCorner } from '../../types/rounded-corner';
-import { filter, fromEvent, map, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END, TOUCH_MOVE, TOUCH_START } from '../../const';
-import { ISize, ScrollBarTheme } from '../../types';
+import { combineLatest, fromEvent, Subject, tap } from 'rxjs';
+import { ScrollBarTheme } from '../../types';
 import { Color } from '../../types/color';
+import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { IScrollBarDragEvent } from './interfaces';
+import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 
 const DEFAULT_THICKNESS = 6,
   DEFAULT_SIZE = 6,
   DEFAULT_ROUNDED_CORNER: RoundedCorner = [3, 3, 3, 3],
   DEFAULT_STROKE_ANIMATION_DURATION = 500,
+  DEFAULT_RIPPLE_ENABLED = true,
   DEFAULT_RIPPLE_COLOR = 'rgba(0,0,0,0.5)',
-  TRANSLATE_3D = 'translate3d',
   PX = 'px',
   WIDTH = 'width',
   HEIGHT = 'height',
@@ -37,23 +38,16 @@ const DEFAULT_THICKNESS = 6,
 @Component({
   selector: 'ng-scroll-bar',
   standalone: false,
+  providers: [
+    { provide: SCROLL_VIEW_INVERSION, useValue: true },
+  ],
   templateUrl: './ng-scroll-bar.component.html',
   styleUrl: './ng-scroll-bar.component.scss'
 })
-export class NgScrollBarComponent implements OnDestroy {
-  thumb = viewChild<ElementRef<HTMLDivElement>>('thumb');
-
-  track = viewChild<ElementRef<HTMLDivElement>>('track');
-
+export class NgScrollBarComponent extends NgScrollView {
   loading = input<boolean>(false);
 
-  isVertical = input<boolean>(true);
-
-  position = input<number>(0);
-
-  actualPosition = signal<number>(0);
-
-  onDrag = output<number>();
+  onDrag = output<IScrollBarDragEvent>();
 
   thumbGradientPositions = input<GradientColorPositions>([0, 0]);
 
@@ -61,13 +55,27 @@ export class NgScrollBarComponent implements OnDestroy {
 
   theme = input<ScrollBarTheme | undefined>(undefined);
 
+  startOffset = input<number>(0);
+
+  endOffset = input<number>(0);
+
+  scrollbarMinSize = input<number>(0);
+
   prepared = input<boolean>(false);
+
+  interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
 
   show = input<boolean>(false);
 
   thickness = signal<number>(DEFAULT_THICKNESS);
 
+  fill: Signal<string | GradientColor | undefined>;
+
   thumbGradientFill = signal<string | GradientColor | undefined>(undefined);
+
+  thumbHoverGradientFill = signal<string | GradientColor | undefined>(undefined);
+
+  thumbPressedGradientFill = signal<string | GradientColor | undefined>(undefined);
 
   strokeGradientColor = signal<string | GradientColor | undefined>(undefined);
 
@@ -77,6 +85,12 @@ export class NgScrollBarComponent implements OnDestroy {
 
   rippleColor = signal<Color | undefined>(DEFAULT_RIPPLE_COLOR);
 
+  rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
+
+  hoverState = signal<boolean>(false);
+
+  pressedState = signal<boolean>(false);
+
   type: Signal<SubstarateStyle>;
 
   styles: Signal<{ [sName: string]: any }>;
@@ -85,45 +99,13 @@ export class NgScrollBarComponent implements OnDestroy {
 
   thumbHeight: Signal<number>;
 
-  private _destroyRef = inject(DestroyRef);
-
-  private _resizeObserver: ResizeObserver;
-
-  readonly bounds = signal<ISize>({ width: 0, height: 0 });
-
-  private _onResizeHandler = () => {
-    const content = this.track()?.nativeElement;
-    if (content) {
-      this.bounds.set({ width: content.offsetWidth, height: content.offsetHeight });
-    }
-  }
-
-  grabbing = signal<boolean>(false);
-
-  get scrollSize() {
-    const bounds = this.bounds(), size = this.size(), isVertical = this.isVertical();
-    return isVertical ? size < bounds.height ? bounds.height - size : 0 : size < bounds.width ? bounds.width - size : 0;
-  }
-
   private _$scrollingCancel = new Subject<void>();
   readonly $scrollingCancel = this._$scrollingCancel.asObservable();
 
+  private _elementRef = inject(ElementRef);
+
   constructor() {
-    this._resizeObserver = new ResizeObserver(this._onResizeHandler);
-
-    const $track = toObservable(this.track).pipe(
-      takeUntilDestroyed(),
-      filter(v => !!v),
-      map(v => v!.nativeElement),
-    );
-
-    $track.pipe(
-      takeUntilDestroyed(),
-      tap(track => {
-        this._resizeObserver.observe(track);
-        this._onResizeHandler();
-      }),
-    ).subscribe();
+    super();
 
     this.thumbWidth = computed(() => {
       return this.isVertical() ? this.thickness() : this.size();
@@ -131,6 +113,64 @@ export class NgScrollBarComponent implements OnDestroy {
 
     this.thumbHeight = computed(() => {
       return this.isVertical() ? this.size() : this.thickness();
+    });
+
+    const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
+      takeUntilDestroyed(),
+    ), $pointerUp = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerup').pipe(
+      takeUntilDestroyed(),
+    ), $docPointerUp = fromEvent<PointerEvent>(document, 'pointerup').pipe(
+      takeUntilDestroyed()
+    ), $pointerEnter = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerenter').pipe(
+      takeUntilDestroyed(),
+    ), $pointerLeave = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerleave').pipe(
+      takeUntilDestroyed(),
+    );
+
+    $pointerDown.pipe(
+      takeUntilDestroyed(),
+      tap(e => {
+        this.pressedState.set(this.thumbHit(e.clientX, e.clientY));
+      }),
+    ).subscribe();
+
+    combineLatest([$docPointerUp, $pointerUp]).pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.pressedState.set(false);
+      }),
+    ).subscribe();
+
+    $pointerEnter.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.hoverState.set(true);
+      }),
+    ).subscribe();
+
+    $pointerLeave.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.hoverState.set(false);
+      }),
+    ).subscribe();
+
+    this.fill = computed(() => {
+      const pressed = this.pressedState(), hover = this.hoverState();
+      if (pressed) {
+        return this.thumbPressedGradientFill();
+      } else if (hover) {
+        return this.thumbHoverGradientFill();
+      }
+      return this.thumbGradientFill();
+    });
+
+    effect(() => {
+      this.totalSize = this.size();
+    });
+
+    effect(() => {
+      this._interactive = this.interactive();
     });
 
     this.type = computed(() => {
@@ -145,157 +185,74 @@ export class NgScrollBarComponent implements OnDestroy {
       };
     });
 
-    effect(() => {
-      const position = this.position();
-      this.actualPosition.set(position);
-    }, { allowSignalWrites: true });
-
-    effect(() => {
-      const position = this.actualPosition(), isVertical = this.isVertical(), thumb = this.thumb()?.nativeElement;
-      if (thumb) {
-        if (isVertical) {
-          thumb.style.transform = `${TRANSLATE_3D}(0, ${position}${PX}, 0)`;
-        } else {
-          thumb.style.transform = `${TRANSLATE_3D}(${position}${PX}, 0, 0)`;
+    this.$scroll.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+          scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
+          scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+        if (!!scrollViewport && !!scrollContent) {
+          const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
+            viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
+          this.onDrag.emit({
+            position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
+            min: scrollSize !== 0 ? (this.startOffset() / scrollSize) : 0,
+            max: scrollSize !== 0 ? ((viewportSize - this.endOffset() - contentSize) / scrollSize) : 0,
+            animation: !this._isMoving,
+            userAction: v,
+          });
         }
-      }
-    });
+      }),
+    ).subscribe();
 
     effect(() => {
       const theme = this.theme();
       if (theme) {
         if (theme) {
           this.thumbGradientFill.set(theme.fill);
+          this.thumbHoverGradientFill.set(theme.hoverFill);
+          this.thumbPressedGradientFill.set(theme.pressedFill);
           this.strokeGradientColor.set(theme.strokeGradientColor);
           this.strokeAnimationDuration.set(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
           this.roundCorner.set(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
           this.thickness.set(theme.thickness ?? DEFAULT_THICKNESS);
           this.rippleColor.set(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
+          this.rippleEnabled.set(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
         }
       }
     }, { allowSignalWrites: true });
-
-    const $thumb = toObservable(this.thumb).pipe(
-      takeUntilDestroyed(),
-      filter(v => !!v),
-      map(v => v!.nativeElement),
-    );
-
-    const $mouseUp = fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }).pipe(
-      takeUntilDestroyed(),
-    ),
-      $mouseDragCancel = race([
-        $mouseUp.pipe(
-          takeUntilDestroyed(),
-          tap(() => {
-            this.grabbing.set(false);
-          }),
-        ), this.$scrollingCancel
-      ]);
-
-    $thumb.pipe(
-      takeUntilDestroyed(),
-      switchMap(thumb => {
-        return fromEvent<MouseEvent>(thumb, MOUSE_DOWN, { passive: false }).pipe(
-          takeUntilDestroyed(this._destroyRef),
-          switchMap(e => {
-            const isVertical = this.isVertical();
-            this.grabbing.set(true);
-            const startPos = this.position();
-            const startClientPos = isVertical ? e.clientY : e.clientX;
-            return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
-              takeUntilDestroyed(this._destroyRef),
-              takeUntil($mouseDragCancel),
-              tap(e => {
-                e.preventDefault();
-              }),
-              switchMap(e => {
-                const currentPos = isVertical ? e.clientY : e.clientX,
-                  scrollSize = this.scrollSize, delta = startClientPos - currentPos,
-                  dp = startPos - delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp);
-                this.scrollTo(position);
-                return race([this.$scrollingCancel, fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(thumb, MOUSE_UP, { passive: false })]).pipe(
-                  takeUntilDestroyed(this._destroyRef),
-                  takeUntil($mouseDragCancel),
-                  tap(e => {
-                    if (e) {
-                      e.preventDefault();
-                    }
-                    this.scrollTo(position);
-                    this.grabbing.set(false);
-                  }),
-                );
-              }),
-            );
-          })
-        );
-      }),
-    ).subscribe();
-
-    const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
-      takeUntilDestroyed(),
-    ),
-      $touchCanceler = race([
-        $touchUp.pipe(
-          takeUntilDestroyed(this._destroyRef),
-          tap(() => {
-            this.grabbing.set(false);
-          }),
-        ), this.$scrollingCancel,
-      ]);
-
-    $thumb.pipe(
-      takeUntilDestroyed(),
-      switchMap(thumb => {
-        return fromEvent<TouchEvent>(thumb, TOUCH_START, { passive: false }).pipe(
-          takeUntilDestroyed(this._destroyRef),
-          switchMap(e => {
-            const isVertical = this.isVertical();
-            this.grabbing.set(true);
-            const startPos = this.position();
-            const startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX;
-            return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
-              takeUntilDestroyed(this._destroyRef),
-              takeUntil($touchCanceler),
-              tap(e => {
-                e.preventDefault();
-              }),
-              switchMap(e => {
-                const currentPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
-                  scrollSize = this.scrollSize, delta = startClientPos - currentPos,
-                  dp = startPos - delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp);
-                this.scrollTo(position);
-                return race([this.$scrollingCancel, fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(thumb, TOUCH_END, { passive: false })]).pipe(
-                  takeUntilDestroyed(this._destroyRef),
-                  takeUntil(this.$scrollingCancel),
-                  tap(e => {
-                    if (e) {
-                      e.preventDefault();
-                    }
-                    this.scrollTo(position);
-                    this.grabbing.set(false);
-                  }),
-                );
-              }),
-            );
-          })
-        );
-      }),
-    ).subscribe();
   }
 
-  scrollTo(position: number) {
-    const scrollSize = this.scrollSize;
-    this.onDrag.emit(scrollSize !== 0 ? position / scrollSize : 0);
+  private thumbHit(x: number, y: number): boolean {
+    const thumb = this.scrollContent()?.nativeElement;
+    if (!!thumb) {
+      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect()
+      if ((x >= tX && x <= tX + tWidth) && (y >= tY && y <= tY + tHeight)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  stopScrolling() {
-    this._$scrollingCancel.next();
+  protected override normalizeAnimatedValue(value: number) {
+    const isVertical = this.isVertical(), scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
+      scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+    if (!!scrollContent && !!scrollViewport) {
+      const startOffset = this.startOffset(), endOffset = this.endOffset();
+      if (isVertical) {
+        const maxY = scrollViewport.offsetHeight - endOffset - scrollContent.offsetHeight;
+        return value < startOffset ? startOffset : value > maxY ? maxY : value;
+      } else {
+        const maxX = scrollViewport.offsetWidth - endOffset - scrollContent.offsetWidth;
+        return value < startOffset ? startOffset : value > maxX ? maxX : value;
+      }
+    }
+    return value;
   }
 
-  ngOnDestroy(): void {
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
+  ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {
+    if (this.rippleEnabled() && !!substrate) {
+      substrate.ripple(event);
     }
   }
 }
