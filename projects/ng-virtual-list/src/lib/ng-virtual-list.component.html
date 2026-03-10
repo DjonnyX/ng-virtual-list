@@ -9,8 +9,10 @@
     </div>
   </div>
 }
-<ng-scroller class="ngvl__list-scroller" #scroller [classes]="classes()" [startOffset]="scrollStartOffset()" [direction]="direction()"
-  [endOffset]="scrollEndOffset()" [scrollbarTheme]="scrollbarTheme()" [focusedElement]="focusedElement()" [loading]="loading()"
-  [scrollbarMinSize]="scrollbarMinSize()">
+<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
+  [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarTheme]="scrollbarTheme()"
+  [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()"
+  [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()"
+  [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>
