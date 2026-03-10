@@ -737,10 +737,10 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 20.x | 20.10.0 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.0](https://www.npmjs.com/package/ng-virtual-list/v/20.10.0) |
-| 19.x | 19.10.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.10.0](https://www.npmjs.com/package/ng-virtual-list/v/19.10.0) |
-| 18.x | 18.10.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.0](https://www.npmjs.com/package/ng-virtual-list/v/18.10.0) |
-| 17.x | 17.10.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.0](https://www.npmjs.com/package/ng-virtual-list/v/17.10.0) |
+| 20.x | 20.10.3 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.3](https://www.npmjs.com/package/ng-virtual-list/v/20.10.3) |
+| 19.x | 19.10.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.10.1](https://www.npmjs.com/package/ng-virtual-list/v/19.10.1) |
+| 18.x | 18.10.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.1](https://www.npmjs.com/package/ng-virtual-list/v/18.10.1) |
+| 17.x | 17.10.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.1](https://www.npmjs.com/package/ng-virtual-list/v/17.10.1) |
 | 16.x | 16.9.6 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.9.6](https://www.npmjs.com/package/ng-virtual-list/v/16.9.6) |
 | 15.x | 15.9.6 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.9.6](https://www.npmjs.com/package/ng-virtual-list/v/15.9.6) |
 | 14.x | 14.9.6 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.9.6](https://www.npmjs.com/package/ng-virtual-list/v/14.9.6) |
