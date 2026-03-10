@@ -1,6 +1,6 @@
-import { Component, computed, effect, inject, input, NO_ERRORS_SCHEMA, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, inject, input, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { debounceTime, from, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, ScrollBarTheme } from '../../types';
@@ -78,7 +78,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   private _service = inject(NgVirtualListService);
 
-  langTextDir = signal<TextDirection>(TextDirections.LTR);
+  langTextDir: Signal<TextDirection | undefined>;
 
   private _scrollBox = new ScrollBox();
 
@@ -135,11 +135,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   constructor() {
     super();
 
-    this._service.$langTextDir.pipe(
-      tap(v => {
-        this.langTextDir.set(v);
-      })
-    ).subscribe();
+    this.langTextDir = toSignal(this._service.$langTextDir ?? TextDirections.LTR);
 
     const $startOffset = toObservable(this.startOffset),
       $endOffset = toObservable(this.endOffset),
@@ -245,11 +241,13 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   override reset() {
-    super.reset();
+    super.reset(this.startOffset());
+    this.totalSize = 0;
     if (this.scrollBar) {
       this.scrollBar.stopScrolling();
     }
-    this.move(this.isVertical(), 0);
+    this.refresh(true, true);
+    this.prepared = false;
   }
 
   refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
