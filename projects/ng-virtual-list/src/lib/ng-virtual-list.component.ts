@@ -1064,6 +1064,7 @@ export class NgVirtualListComponent implements OnDestroy {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior,
           fireUpdate: true, blending: true, userAction: true, duration: this.animationParams().navigateToItem,
         };
+        scroller.refresh(false);
         scroller.scrollTo(params);
       }
     }
