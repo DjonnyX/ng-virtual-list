@@ -2,13 +2,24 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, takeUntil, tap } from 'rxjs';
 import { TrackBox } from './utils/track-box';
-import { IRenderVirtualListItem, IVirtualListItem } from './models';
+import { IRenderVirtualListItem, IScrollOptions, IVirtualListItem } from './models';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
-import { DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK } from './const';
+import {
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
+} from './const';
 import { FocusAlignment, Id } from './types';
+import { getListElements, NGVL_INDEX } from './components/list-item/utils';
 
+/**
+ * NgVirtualListService
+ * Maximum performance for extremely large lists.
+ * It is based on algorithms for virtualization of screen objects.
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-virtual-list.service.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -37,13 +48,17 @@ export class NgVirtualListService {
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
 
+  private _$scrollToStart = new Subject<IScrollOptions | undefined>();
+  readonly $scrollToStart = this._$scrollToStart.asObservable();
+
+  private _$scrollToEnd = new Subject<IScrollOptions | undefined>();
+  readonly $scrollToEnd = this._$scrollToEnd.asObservable();
+
   scrollStartOffset: number = 0;
 
   scrollEndOffset: number = 0;
 
   scrollBarSize: number = 0;
-
-  overlapScrollBarSize: number = 0;
 
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
@@ -54,6 +69,8 @@ export class NgVirtualListService {
   isVertical: boolean = true;
 
   dynamic: boolean = true;
+
+  snapScrollToBottom: boolean = false;
 
   private _trackBox: TrackBox | undefined;
 
@@ -241,13 +258,34 @@ export class NgVirtualListService {
     }
   }
 
-  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment) => void) | undefined;
+  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment, behavior: ScrollBehavior) => void) | undefined;
 
-  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER) {
+  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
     element.focus({ preventScroll: true });
     if (element.parentElement) {
       const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
-      this.itemToFocus?.(element, pos, align);
+      this.itemToFocus?.(element, pos, align, behavior);
+    }
+  }
+
+  focusFirstElement() {
+    const elements = this.listElement?.querySelectorAll<HTMLDivElement>(getListElements()),
+      elList = (elements ? Array.from(elements) : []).sort((a, b) => {
+        const indexA = Number(a.getAttribute(NGVL_INDEX)), indexB = Number(b.getAttribute(NGVL_INDEX));
+        if (indexA > indexB) return 1;
+        if (indexA < indexB) return -1;
+        return 0;
+      });
+    let element: HTMLElement | undefined = undefined;
+    for (let i = 0, l = elList.length; i < l; i++) {
+      const el = elList[i], index = Number(el.getAttribute(NGVL_INDEX));
+      if (!!el && index > 0) {
+        element = el;
+        break;
+      }
+    }
+    if (!!element) {
+      this.focus(element, FocusAlignments.CENTER, BEHAVIOR_INSTANT as ScrollBehavior);
     }
   }
 
@@ -264,7 +302,15 @@ export class NgVirtualListService {
       ? 0 : this._nextComponentId + 1;
   }
 
-  destroy(): void {
+  scrollToStart(options?: IScrollOptions) {
+    this._$scrollToStart.next(options);
+  }
+
+  scrollToEnd(options?: IScrollOptions) {
+    this._$scrollToEnd.next(options);
+  }
+
+  dispose(): void {
     if (this._$unsubscribe) {
       this._$unsubscribe.next();
       this._$unsubscribe.complete();

@@ -20,7 +20,7 @@ export class EventEmitter<E = string, H = TEventHandler> {
      */
     dispatch(event: E, ...args: Array<any>): void {
         const ctx = this;
-        const listeners = this._listeners[event as string];
+        const listeners = this._listeners[event as unknown as string];
         if (Array.isArray(listeners)) {
             for (let i = 0, l = listeners.length; i < l; i++) {
                 const listener = listeners[i];
@@ -47,10 +47,10 @@ export class EventEmitter<E = string, H = TEventHandler> {
      * Returns true if the event listener is already subscribed.
      */
     hasEventListener(eventName: E, handler: H): boolean {
-        const event = eventName as string;
+        const event = eventName as unknown as string;
         if (this._listeners[event] !== undefined) {
             const listeners = this._listeners[event];
-            const index = listeners.findIndex(v => v === handler);
+            const index = listeners.findIndex(v => v === (handler as any));
             if (index > -1) {
                 return true;
             }
@@ -62,22 +62,22 @@ export class EventEmitter<E = string, H = TEventHandler> {
      * Add event listener
      */
     addEventListener(eventName: E, handler: H): void {
-        const event = eventName as string;
+        const event = eventName as unknown as string;
         if (!this._listeners.hasOwnProperty(event)) {
             this._listeners[event] = [];
         }
-        this._listeners[event].push(handler as TEventHandler);
+        this._listeners[event].push(handler as unknown as TEventHandler);
     }
 
     /**
      * Remove event listener
      */
     removeEventListener(eventName: E, handler: H): void {
-        const event = eventName as string;
+        const event = eventName as unknown as string;
         if (!this._listeners.hasOwnProperty(event)) {
             return;
         }
-        const listeners = this._listeners[event], index = listeners.findIndex(v => v === handler);
+        const listeners = this._listeners[event], index = listeners.findIndex(v => v === handler as any);
         if (index > -1) {
             listeners.splice(index, 1);
 
@@ -100,7 +100,7 @@ export class EventEmitter<E = string, H = TEventHandler> {
                     while (listeners.length > 0) {
                         const listener = listeners.pop();
                         if (listener) {
-                            this.removeEventListener(event as E, listener as H);
+                            this.removeEventListener(event as unknown as E, listener as unknown as H);
                         }
                     }
                 }
