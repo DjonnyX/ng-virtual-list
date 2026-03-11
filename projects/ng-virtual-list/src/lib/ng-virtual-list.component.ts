@@ -703,7 +703,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
   /**
    * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
-   * Ignored if the dynamicSize property is true.
+   * If the dynamicSize property is true, the items in the list can have different sizes, and you must specify the itemSize property 
+   * to adjust the sizes of the items in the unallocated area.
    */
   itemSize = input<number>(DEFAULT_ITEM_SIZE, { ...this._itemSizeOptions });
 
@@ -719,8 +720,9 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * If true then the items in the list can have different sizes and the itemSize property is ignored.
-   * If false then the items in the list have a fixed size specified by the itemSize property. The default value is false.
+   * If true, items in the list may have different sizes, and the itemSize property must be specified to adjust
+   * the sizes of items in the unallocated area.
+   * If false then the items in the list have a fixed size specified by the itemSize property. The default value is true.
    */
   dynamicSize = input(DEFAULT_DYNAMIC_SIZE, { ...this._dynamicSizeOptions });
 
