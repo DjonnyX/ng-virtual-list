@@ -7,9 +7,11 @@
             <ng-content></ng-content>
         </div>
     </div>
-    <ng-scroll-bar #scrollBar [isVertical]="($isVertical | async)!" [size]="($thumbSize | async)!"
-        [theme]="($scrollbarTheme | async)!" [position]="($thumbPosition | async)!"
-        [thumbGradientPositions]="($thumbGradientPositions | async)!" [loading]="($loading | async)!"
-        [prepared]="($preparedSignal | async)!" [show]="($thumbShow | async)!"
-        (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+    <ng-scroll-bar #scrollBar [direction]="($direction | async)!" [size]="($thumbSize | async)!"
+        [theme]="($scrollbarTheme | async)!" [thumbGradientPositions]="($thumbGradientPositions | async)!"
+        [loading]="($loading | async)!" [prepared]="($prepared | async)!"
+        [interactive]="($scrollbarInteractive | async)!" [show]="($show | async)!"
+        [startOffset]="($startOffset | async)!" [endOffset]="($endOffset | async)!"
+        [overscrollEnabled]="($overscrollEnabled | async)!" [scrollBehavior]="($scrollBehavior | async)!"
+        [scrollbarMinSize]="($scrollbarMinSize | async)!" (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
 </div>

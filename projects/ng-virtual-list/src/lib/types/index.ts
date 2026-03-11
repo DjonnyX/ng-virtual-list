@@ -5,6 +5,7 @@ import { FocusAlignment } from './focus-alignment';
 import { GradientColor } from './gradient-color';
 import { RoundedCorner } from './rounded-corner';
 import { ScrollBarTheme } from './scrollbar-theme';
+import { IAnimationParams } from './animation-params';
 
 export type {
     Id,
@@ -14,4 +15,5 @@ export type {
     GradientColor,
     RoundedCorner,
     ScrollBarTheme,
+    IAnimationParams,
 }

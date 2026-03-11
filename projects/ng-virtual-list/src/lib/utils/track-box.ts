@@ -542,10 +542,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this.snapshot();
         }
 
-        if (this.isScrollStart || this.isScrollEnd) {
-            this.bumpVersion();
-        }
-
         const displayItems = this.generateDisplayCollection(items, itemConfigMap, { ...metrics, });
         return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected };
     }
@@ -830,52 +826,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         } else
         // Buffer optimization does not work on fast linear algorithm
         {
-            if (crudDetected) {
-                let y = 0;
-                for (let i = 0, l = collection.length; i < l; i++) {
-                    const collectionItem = collection[i], id = collectionItem[trackBy];
-                    let componentSize = typicalItemSize, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
-                    if (map.has(id)) {
-                        const cache = map.get(id)!;
-                        itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
-                        const isItemNew = (cache as Cache)?.[IS_NEW] ?? (this._isLazy && this._isReseted);
-                        if (!isItemNew && (!this._isLazy || !itemConfigMap[collection[0][trackBy]]?.sticky) || !isStart) {
-                            isNew = false;
-                        }
-                        if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
-                            if (isNew) {
-                                deltaFromStartCreation += componentSize;
-                            }
-                            map.set(id, { ...cache, method: ItemDisplayMethods.NOT_CHANGED, isNew });
-                        }
-                    }
-
-                    if (deletedItemsMap.hasOwnProperty(i)) {
-                        const cache = deletedItemsMap[i], size = cache?.[sizeProperty] ?? typicalItemSize;
-                        if (y < scrollSize - size) {
-                            leftSizeOfDeletedItems += size;
-                        }
-                    }
-
-                    if (y < scrollSize - componentSize) {
-                        switch (itemDisplayMethod) {
-                            case ItemDisplayMethods.CREATE: {
-                                leftSizeOfUpdatedItems += componentSize;
-                                break;
-                            }
-                            case ItemDisplayMethods.UPDATE: {
-                                leftSizeOfUpdatedItems += componentSize;
-                                break;
-                            }
-                            case ItemDisplayMethods.DELETE: {
-                                leftSizeOfDeletedItems += componentSize;
-                                break;
-                            }
-                        }
-                    }
-                    y += componentSize;
-                }
-            }
             itemsFromStartToScrollEnd = Math.floor(typicalItemSize !== 0 ? scrollSize / typicalItemSize : 0);
             itemsFromStartToDisplayEnd = Math.ceil(typicalItemSize !== 0 ? (scrollSize + size) / typicalItemSize : 0);
             leftItemLength = Math.min(itemsFromStartToScrollEnd, bufferSize);
