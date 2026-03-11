@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [14.10.0] - 2026-03-09
+## [14.10.0] - 2026-03-11
 
 ### Fixed
 - Correcting the position of the scroll bar in a dynamic list
@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Update position when collection changes (bug)
 - The scroll bar position has been adjusted to account for offsets.
 - Keyboard navigation has been fixed
+- List initialization has been improved and a number of bugs have been fixed
 
 ### Feature
 - Implemented stop scrolling after calling scrollTo
