@@ -243,6 +243,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this._service.$langTextDir.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
+      debounceTime(0),
       tap(v => {
         this._$langTextDir.next(v);
       })
