@@ -74,7 +74,7 @@
 
         &.wait-for-preparation {
             &.ready-to-start {
-                transition: opacity 250ms ease-out 100ms;
+                // transition: opacity 100ms ease-out;
             }
         }
     }

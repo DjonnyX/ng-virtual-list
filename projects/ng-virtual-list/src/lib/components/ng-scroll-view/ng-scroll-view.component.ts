@@ -694,8 +694,9 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
 
     protected onDragStart() { }
 
-    reset() {
-        this.move(this._$isVertical.getValue(), 0);
+    reset(offset: number = 0) {
+        this.stopScrolling();
+        this.move(this._$isVertical.getValue(), offset);
     }
 
     ngAfterViewInit(): void {
