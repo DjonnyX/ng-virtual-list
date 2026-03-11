@@ -1,17 +1,22 @@
 import { Component, ViewChild } from '@angular/core';
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize } from '../../projects/ng-virtual-list/src/public-api';
-import { GradientColor, Id, RoundedCorner, ScrollBarTheme } from '../../projects/ng-virtual-list/src/lib/types';
+import {
+  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
+  ScrollBarTheme, RoundedCorner,
+} from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   SCROLLBAR_GRADIENT: ScrollBarTheme = {
     fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
+    pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
     thickness: 6,
     roundCorner: ROUND_CORNER,
     rippleColor: 'rgba(255,255,255,0.5)',
+    rippleEnabled: true,
   };
 
 const MAX_ITEMS = 10000;
@@ -133,6 +138,15 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   };
 }
 
+const generateItems = (len: number) => {
+  const result: IVirtualListCollection<ICollectionItem> = [];
+  for (let i = 0, l = len; i < l; i++) {
+    const id = i + 1;
+    result.push({ id, name: `Item: ${id}` });
+  }
+  return result;
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -151,6 +165,8 @@ export class AppComponent {
   scrollbarTheme = SCROLLBAR_GRADIENT;
 
   items = ITEMS;
+
+  items1 = generateItems(1000);
 
   itemsRtl = ITEMS_RTL;
 
@@ -184,6 +200,8 @@ export class AppComponent {
 
   dlItemId: Id = this._minDlId;
 
+  itemsLength: number = 0;
+
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef, id = this.itemId;
     if (list && id !== undefined) {
@@ -212,6 +230,11 @@ export class AppComponent {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
+  }
+
+  onButtonChangeItemsLengthHandler() {
+    const len = this.itemsLength;
+    this.items1 = generateItems(len);
   }
 
   onSelectHandler(data: Array<Id> | Id | undefined) {
