@@ -12,6 +12,8 @@
   [startOffset]="($scrollStartOffset | async)!" [direction]="($direction | async)!"
   [endOffset]="($scrollEndOffset | async)!" [scrollbarTheme]="($scrollbarTheme | async)!"
   [focusedElement]="($focusedElement | async)!" [loading]="($loading | async)!"
-  [scrollbarMinSize]="($scrollbarMinSize | async)!">
+  [overscrollEnabled]="($overscrollEnabled | async)!" [scrollbarEnabled]="($scrollbarEnabled | async)!"
+  [scrollbarInteractive]="($scrollbarInteractive | async)!" [scrollbarMinSize]="($scrollbarMinSize | async)!"
+  [scrollBehavior]="($scrollBehavior | async)!">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>

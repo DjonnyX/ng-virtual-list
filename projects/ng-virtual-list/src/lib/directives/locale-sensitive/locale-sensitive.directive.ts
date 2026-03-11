@@ -1,6 +1,5 @@
-import { Directive, ElementRef, Input } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, combineLatest, tap } from 'rxjs';
+import { Directive, ElementRef, Input, OnDestroy } from '@angular/core';
+import { BehaviorSubject, combineLatest, Subject, takeUntil, tap } from 'rxjs';
 import { TextDirection, TextDirections } from '../../enums';
 import { ScrollerDirection, ScrollerDirections } from '../../components/scroller/enums';
 import { isDirection } from '../../utils/is-direction';
@@ -19,7 +18,9 @@ const RIGHT = 'right',
 @Directive({
   selector: '[localeSensitive]',
 })
-export class LocaleSensitiveDirective {
+export class LocaleSensitiveDirective implements OnDestroy {
+  protected _$unsubscribe = new Subject<void>();
+
   private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
   readonly $langTextDir = this._$langTextDir.asObservable();
 
@@ -44,7 +45,7 @@ export class LocaleSensitiveDirective {
       $listDir = this.$listDir;
 
     combineLatest([$langTextDir, $listDir]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(([dir, listDir]) => {
         const element = this._elementRef.nativeElement as HTMLElement,
           isVertical = isDirection(listDir!, ScrollerDirection.VERTICAL);
@@ -59,5 +60,12 @@ export class LocaleSensitiveDirective {
         }
       }),
     ).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
   }
 }

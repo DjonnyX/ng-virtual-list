@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, OnInit, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { map, tap, combineLatest, fromEvent, Subject, takeUntil, BehaviorSubject } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, BehaviorSubject } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { FocusAlignment, Id, ISize } from '../../types';
 import {
@@ -14,7 +14,7 @@ import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types
 import { validateBoolean } from '../../utils/validation';
 import { FocusAlignments, TextDirections } from '../../enums';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../models';
-import { inject } from '@angular/core';
+import { getListElementByIndex } from './utils';
 import { DestroyRef } from '@angular/core';
 
 interface ITemplateContext<D = any> {
@@ -62,10 +62,6 @@ const ZEROS_POSITION = -1000,
   KEY_SPACE = " ", KEY_ARR_LEFT = "ArrowLeft", KEY_ARR_UP = "ArrowUp", KEY_ARR_RIGHT = "ArrowRight", KEY_ARR_DOWN = "ArrowDown",
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown',
   CLASS_NAME_SNAPPED = 'snapped', CLASS_NAME_SNAPPED_OUT = 'snapped-out', CLASS_NAME_FOCUS = 'focus';
-
-const getElementByIndex = (index: number) => {
-  return `[${NGVL_INDEX}="${index}"]`;
-};
 
 /**
  * Virtual list component.
@@ -222,7 +218,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       this.focus(align);
     };
   
-  private _destroyRef = inject(DestroyRef);
+    private _destroyRef = inject(DestroyRef);
 
   constructor(private _cdr: ChangeDetectorRef, private _elementRef: ElementRef<HTMLElement>, private _service: NgVirtualListService) {
     super();
@@ -383,7 +379,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       let index = tabIndex;
       while (index <= length) {
         index++;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
         if (el) {
           this._service.focus(el);
           break;
@@ -398,7 +394,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       let index = tabIndex;
       while (index >= 0) {
         index--;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
         if (el) {
           this._service.focus(el);
           break;
@@ -411,7 +407,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     if (this._service.listElement) {
       const tabIndex = this.data?.config?.tabIndex ?? 0;
       let index = tabIndex;
-      const el = this._service.listElement.querySelector<HTMLDivElement>(getElementByIndex(index));
+      const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
       if (el) {
         this._service.focus(el, align);
       }

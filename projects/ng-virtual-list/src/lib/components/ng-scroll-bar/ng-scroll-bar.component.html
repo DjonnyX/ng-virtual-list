@@ -1,10 +1,10 @@
-<div #track class="track" [ngStyle]="$styles | async" [ngClass]="$classes | async">
-    <div #thumb class="thumb" [class.horizontal]="($isVertical | async)!">
+<div #scrollViewport class="track" [ngStyle]="$styles | async" [ngClass]="($classes | async)!">
+    <div #scrollContent class="thumb" [class.horizontal]="($isVertical | async)! == false">
         <ng-substrate #substrate mode="rounded-rectangle" class="shape" [type]="($type | async)!"
             [width]="($thumbWidth | async)!" [height]="($thumbHeight | async)!" [roundCorner]="($roundCorner | async)!"
-            [strokeWidth]="8" [rippleColor]="($rippleColor | async)!" [fillPositions]="($thumbGradientPositions | async)!"
-            [fillColors]="($thumbGradientFill | async)!" [strokeColors]="($strokeGradientColor | async)!"
-            [strokeAnimationDuration]="($strokeAnimationDuration | async)!"
-            (pointerdown)="substrate.ripple($event)"></ng-substrate>
+            [strokeWidth]="8" [rippleColor]="($rippleColor | async)!"
+            [fillPositions]="($thumbGradientPositions | async)!" [fillColors]="($thumbGradientFill | async)!"
+            [strokeColors]="($strokeGradientColor | async)!"
+            [strokeAnimationDuration]="($strokeAnimationDuration | async)!"></ng-substrate>
     </div>
 </div>
