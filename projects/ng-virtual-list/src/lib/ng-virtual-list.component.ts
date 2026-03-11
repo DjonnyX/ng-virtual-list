@@ -1608,7 +1608,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     this._service.itemToFocus = this.itemToFocus;
 
     this._trackBox.displayComponents = this._displayComponents;
+  }
 
+  ngAfterViewInit() {
     const $scrollToItem = this.$scrollTo.pipe(takeUntil(this._$unsubscribe)),
       $mouseDown = fromEvent(this._elementRef.nativeElement, MOUSE_DOWN).pipe(takeUntil(this._$unsubscribe)),
       $touchStart = fromEvent(this._elementRef.nativeElement, TOUCH_START).pipe(takeUntil(this._$unsubscribe));
@@ -2740,25 +2742,21 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       }),
     ).subscribe();
 
-    this.$viewInitialized.pipe(
-      takeUntil(this._$unsubscribe),
-      filter(v => !!v),
-      tap(() => {
-        this._$userScroll.next({
-          scrollSize: 0,
-          scrollWeight: 0,
-          size: 0,
-          listSize: 0,
-          isVertical: false,
-          direction: 0,
-          isStart: false,
-          isEnd: false,
-          delta: 0,
-          scrollDelta: 0,
-          itemsRange: undefined,
-        });
-      }),
-    ).subscribe();
+    this._$userScroll.next({
+      scrollSize: 0,
+      scrollWeight: 0,
+      size: 0,
+      listSize: 0,
+      isVertical: false,
+      direction: 0,
+      isStart: false,
+      isEnd: false,
+      delta: 0,
+      scrollDelta: 0,
+      itemsRange: undefined,
+    });
+
+    this._$viewInitialized.next(true);
   }
 
   private listenCacheChangesIfNeed(value: boolean) {
@@ -2996,14 +2994,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     if (scroller) {
       scroller.stopScrolling();
     }
-  }
-
-  ngAfterViewInit(): void {
-    this.afterViewInit();
-  }
-
-  private afterViewInit() {
-    this._$viewInitialized.next(true);
   }
 
   override ngOnDestroy(): void {
