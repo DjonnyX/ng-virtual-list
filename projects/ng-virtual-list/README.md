@@ -101,7 +101,7 @@ npm i ng-virtual-list
 
 ## 🚀 Quick Start
 ```html
-<ng-virtual-list [items]="items" [bufferSize]="5" [itemRenderer]="itemRenderer" [itemSize]="64"></ng-virtual-list>
+<ng-virtual-list [items]="items" [bufferSize]="5" [itemRenderer]="itemRenderer" [dynamicSize]="false" [itemSize]="64"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
@@ -124,7 +124,7 @@ items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` })
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
-    [itemRenderer]="horizontalItemRenderer" [itemSize]="64" [methodForSelecting]="'select'"
+    [itemRenderer]="horizontalItemRenderer" [dynamicSize]="false" [itemSize]="64" [methodForSelecting]="'select'"
     [selectedIds]="2" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
@@ -174,7 +174,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [itemSize]="54" [snap]="true"
+    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [dynamicSize]="false" [itemSize]="54" [snap]="true"
     methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
@@ -248,7 +248,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="items" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="itemRenderer"
-  [itemSize]="40"></ng-virtual-list>
+  [dynamicSize]="false" [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
   @if (data) {
@@ -289,7 +289,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
-    [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="false"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [snap]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -316,7 +316,7 @@ Template:
 Template (with snapping):
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
-    [itemConfigMap]="groupItemConfigMap" [itemSize]="40" [snap]="true"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -381,7 +381,7 @@ Template
 </div>
 
 <ng-virtual-list #virtualList class="list" [items]="items" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-  [itemSize]="40"></ng-virtual-list>
+  [dynamicSize]="false" [itemSize]="40"></ng-virtual-list>
 
 <ng-template #itemRenderer let-data="data">
 @if (data) {
@@ -435,7 +435,7 @@ Virtual list with height-adjustable elements.
 Template
 ```html
 <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-      [itemConfigMap]="groupDynamicItemConfigMap" [dynamicSize]="true" [snap]="true"></ng-virtual-list>
+      [itemConfigMap]="groupDynamicItemConfigMap" [snap]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -649,7 +649,7 @@ Inputs
 |---|---|---|
 | id | number | Readonly. Returns the unique identifier of the component. | 
 | items | [IVirtualListCollection](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/collection.model.ts) | Collection of list items. The collection of elements must be immutable. |
-| itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. Ignored if the dynamicSize property is true. |
+| itemSize | number? = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. If the dynamicSize property is true, the items in the list can have different sizes, and you must specify the itemSize property to adjust the sizes of the items in the unallocated area. |
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | itemRenderer | TemplateRef | Rendering element template. |
@@ -661,7 +661,7 @@ Inputs
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | snappingMethod | [SnappingMethod? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts) | Snapping method. 'normal' - Normal group rendering. 'advanced' - The group is rendered on a transparent background. 'chat' - The group is rendered on a background. List items below the group are not rendered. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
-| dynamicSize | boolean? = false | If true then the items in the list can have different sizes and the itemSize property is ignored. If false then the items in the list have a fixed size specified by the itemSize property. The default value is false. |
+| dynamicSize | boolean? = true | If true, items in the list may have different sizes, and the itemSize property must be specified to adjust the sizes of items in the unallocated area. If false then the items in the list have a fixed size specified by the itemSize property. The default value is true. |
 | enabledBufferOptimization | boolean? = true | Experimental! Enables buffer optimization. Can only be used if items in the collection are not added or updated. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts) \| undefined | Sets the selected items. |
@@ -737,13 +737,13 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 20.x | 20.10.3 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.3](https://www.npmjs.com/package/ng-virtual-list/v/20.10.3) |
-| 19.x | 19.10.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.10.1](https://www.npmjs.com/package/ng-virtual-list/v/19.10.1) |
-| 18.x | 18.10.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.1](https://www.npmjs.com/package/ng-virtual-list/v/18.10.1) |
-| 17.x | 17.10.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.1](https://www.npmjs.com/package/ng-virtual-list/v/17.10.1) |
-| 16.x | 16.10.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.10.0](https://www.npmjs.com/package/ng-virtual-list/v/16.10.0) |
-| 15.x | 15.10.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.10.0](https://www.npmjs.com/package/ng-virtual-list/v/15.10.0) |
-| 14.x | 14.10.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.10.1](https://www.npmjs.com/package/ng-virtual-list/v/14.10.1) |
+| 20.x | 20.10.4 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.4](https://www.npmjs.com/package/ng-virtual-list/v/20.10.4) |
+| 21.x | 19.10.2 | [21.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [19.10.2](https://www.npmjs.com/package/ng-virtual-list/v/19.10.2) |
+| 18.x | 18.10.2 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.2](https://www.npmjs.com/package/ng-virtual-list/v/18.10.2) |
+| 17.x | 17.10.2 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.2](https://www.npmjs.com/package/ng-virtual-list/v/17.10.2) |
+| 16.x | 16.10.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.10.1](https://www.npmjs.com/package/ng-virtual-list/v/16.10.1) |
+| 15.x | 15.10.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.10.1](https://www.npmjs.com/package/ng-virtual-list/v/15.10.1) |
+| 14.x | 14.10.2 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.10.2](https://www.npmjs.com/package/ng-virtual-list/v/14.10.2) |
 <br/>
 
 ## 🤝 Contributing
