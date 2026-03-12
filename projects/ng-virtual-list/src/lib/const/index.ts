@@ -35,7 +35,7 @@ export const DEFAULT_COLLAPSE_BY_CLICK = true;
 
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;
 
-export const DEFAULT_DYNAMIC_SIZE = false;
+export const DEFAULT_DYNAMIC_SIZE = true;
 
 export const DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET = 1;
 
