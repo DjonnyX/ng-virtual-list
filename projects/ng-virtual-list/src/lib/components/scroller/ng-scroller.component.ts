@@ -404,17 +404,18 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
-    this.scrollLimits();
     if (updateScrollbar) {
       this.stopScrolling();
     }
+
+    this.scrollLimits();
     if (this._$isVertical.getValue()) {
       this.refreshY(this._y);
     } else {
       this.refreshX(this._x);
     }
     if (updateScrollbar) {
-      this._$updateScrollbarWithUpdate.next(true);
+      this.updateScrollBarHandler(false);
       if (this.cdkScrollable) {
         this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
       }
