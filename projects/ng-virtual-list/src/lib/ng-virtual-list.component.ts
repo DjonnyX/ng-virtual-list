@@ -894,10 +894,6 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   langTextDir = input<TextDirection>(DEFAULT_LANG_TEXT_DIR, { ...this._langTextDir });
 
-  get displayItems() {
-    return this._service.displayItems;
-  }
-
   private _isNotSelecting = this.getIsNotSelecting();
   get isNotSelecting() { return this._isNotSelecting; }
 
@@ -916,9 +912,9 @@ export class NgVirtualListComponent implements OnDestroy {
     return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
   }
 
-  readonly focusedElement = signal<Id | undefined>(undefined);
+  protected readonly focusedElement = signal<Id | undefined>(undefined);
 
-  readonly classes = signal<{ [cName: string]: boolean }>({});
+  protected readonly classes = signal<{ [cName: string]: boolean }>({});
 
   private _actualItems = signal<IVirtualListCollection>([]);
 
@@ -1077,9 +1073,6 @@ export class NgVirtualListComponent implements OnDestroy {
   }
 
   private _elementRef = inject(ElementRef<HTMLDivElement>);
-  get host() {
-    return this._elementRef;
-  }
 
   /**
    * Base class of the element component
@@ -2506,7 +2499,7 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * Force clearing the cache.
    */
-  cacheClean() {
+  protected cacheClean() {
     this._trackBox.cacheClean();
     this._collapsedItemIds.set([]);
     this._isScrollStart.set(true);
