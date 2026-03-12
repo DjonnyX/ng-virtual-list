@@ -905,15 +905,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     }
 
     changes(immediately: boolean = false): void {
-        if (this.changesDetected()) {
-            return;
-        }
-
-        this.bumpVersion();
-
         if (immediately) {
             this._previousVersion = this._version;
             this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as CacheMapEvents, this.version);
+        } else {
+            if (this.changesDetected()) {
+                return;
+            }
+            this.bumpVersion();
         }
     }
 
