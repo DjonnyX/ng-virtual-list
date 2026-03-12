@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.10.2] - 2026-03-12
+
+### Fixed
+- Fixed an issue with scrollbar updating when navigating with the keyboard after updating a collection.
+- Fixed an issue when navigating to a dynamic list item with the keyboard during long scrolling and a small buffer.
+- Implemented a stable solution for initializing the list with the snapScrollToBottom property set.
+
+### Improved
+- Optimized the API for the dynamicSize property. Improved the description of the itemSize property.
+
 ## [17.10.1] - 2026-03-10
 
 ### Fixed

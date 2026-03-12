@@ -1,5 +1,4 @@
 import { Component, computed, effect, inject, input, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
-import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { debounceTime, from, tap } from 'rxjs';
 import { ScrollBox } from './utils';
@@ -10,7 +9,7 @@ import {
   BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME, SCROLLER_SCROLL,
   SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOP_PROP_NAME,
 } from '../../const';
-import { TextDirection, TextDirections } from '../../enums';
+import { TextDirection } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
@@ -135,7 +134,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   constructor() {
     super();
 
-    this.langTextDir = toSignal(this._service.$langTextDir ?? TextDirections.LTR);
+    this.langTextDir = toSignal(this._service.$langTextDir);
 
     const $startOffset = toObservable(this.startOffset),
       $endOffset = toObservable(this.endOffset),
@@ -251,17 +250,18 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   refresh(fireUpdate: boolean = false, updateScrollbar: boolean = true) {
-    this.scrollLimits();
     if (updateScrollbar) {
       this.stopScrolling();
     }
+
+    this.scrollLimits();
     if (this.isVertical()) {
       this.refreshY(this._y);
     } else {
       this.refreshX(this._x);
     }
     if (updateScrollbar) {
-      this.updateScrollBarHandler(true);
+      this.updateScrollBarHandler(false);
       if (this.cdkScrollable) {
         this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
       }
