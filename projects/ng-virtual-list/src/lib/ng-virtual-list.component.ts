@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy, Component, ComponentRef, computed, DestroyRef, effect, ElementRef, inject, input,
   OnDestroy, output, Signal, signal, TemplateRef, ViewChild, viewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
@@ -156,12 +155,12 @@ const formatActualDisplayItems = (items: IRenderVirtualListCollection, startOffs
  */
 @Component({
   selector: 'ng-virtual-list',
-  imports: [CommonModule, NgScrollerComponent],
   templateUrl: './ng-virtual-list.component.html',
   styleUrl: './ng-virtual-list.component.scss',
   host: {
     'style': 'position: relative;'
   },
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
   providers: [NgVirtualListService],

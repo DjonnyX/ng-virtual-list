@@ -240,9 +240,7 @@ export class NgScrollView implements OnDestroy {
                     takeUntilDestroyed(this._destroyRef),
                     tap(e => {
                         const isVertical = this.isVertical();
-                        if (this.cdkScrollable) {
-                            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(WHEEL_EVENT);
-                        }
+                        this.emitScrollableEvent();
                         this.checkOverscroll(e);
                         this.stopScrolling();
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
@@ -538,9 +536,7 @@ export class NgScrollView implements OnDestroy {
     fireScroll(userAction: boolean = false) {
         this.stopScrolling();
         this._$updateScrollBar.next();
-        if (this.cdkScrollable) {
-            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-        }
+        this.emitScrollableEvent();
         this.fireScrollEvent(userAction);
     }
 
@@ -601,10 +597,7 @@ export class NgScrollView implements OnDestroy {
                         this.stopScrolling();
                     }
                     this.refreshY(yy);
-                    if (this.cdkScrollable) {
-                        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                    }
-
+                    this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
@@ -615,15 +608,18 @@ export class NgScrollView implements OnDestroy {
                         this.stopScrolling();
                     }
                     this.refreshX(xx);
-                    if (this.cdkScrollable) {
-                        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                    }
-
+                    this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
                 }
             }
+        }
+    }
+
+    protected emitScrollableEvent() {
+        if (!!this.cdkScrollable) {
+            this.cdkScrollable.getElementRef()?.nativeElement?.dispatchEvent(SCROLL_EVENT);
         }
     }
 
