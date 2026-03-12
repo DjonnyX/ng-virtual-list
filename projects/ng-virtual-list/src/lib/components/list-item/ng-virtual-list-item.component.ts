@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { map, tap, combineLatest, fromEvent } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, switchMap, of } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { FocusAlignment, Id, ISize } from '../../types';
 import {
@@ -14,7 +14,6 @@ import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types
 import { validateBoolean } from '../../utils/validation';
 import { FocusAlignments, TextDirections } from '../../enums';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../models';
-import { ItemClickDirective } from '../../directives/item-click';
 import { getListElementByIndex } from './utils';
 
 interface ITemplateContext<D = any> {
@@ -27,7 +26,7 @@ interface ITemplateContext<D = any> {
   index: number;
 }
 
-const ZEROS_POSITION = -1000,
+const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMT = 5,
   ATTR_AREA_SELECTED = 'area-selected', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
   KEY_SPACE = ' ', KEY_ARR_LEFT = 'ArrowLeft', KEY_ARR_UP = 'ArrowUp', KEY_ARR_RIGHT = 'ArrowRight', KEY_ARR_DOWN = 'ArrowDown',
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown',
@@ -174,6 +173,8 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
       this.focus(align);
     };
 
+  private _destroyRef = inject(DestroyRef);
+
   constructor() {
     super();
     this._id = this._service.generateComponentId();
@@ -237,50 +238,50 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
 
           this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
         }),
-      ).subscribe(),
-
-      fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
-        takeUntilDestroyed(),
-        tap(e => {
-          switch (e.key) {
-            case KEY_SPACE: {
-              e.stopImmediatePropagation();
-              e.preventDefault();
-              this._service.select(this._data);
-              this._service.collapse(this._data);
-              break;
-            }
-            case KEY_ARR_LEFT:
-              if (!this.config().isVertical) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                this.focusPrev();
-              }
-              break;
-            case KEY_ARR_UP:
-              if (this.config().isVertical) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                this.focusPrev();
-              }
-              break;
-            case KEY_ARR_RIGHT:
-              if (!this.config().isVertical) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                this.focusNext();
-              }
-              break;
-            case KEY_ARR_DOWN:
-              if (this.config().isVertical) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                this.focusNext();
-              }
-              break;
-          }
-        }),
       ).subscribe();
+
+    $focused.pipe(
+      takeUntilDestroyed(),
+      switchMap(v => {
+        if (v) {
+          return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
+            takeUntilDestroyed(this._destroyRef),
+            tap(e => {
+              switch (e.key) {
+                case KEY_SPACE: {
+                  e.stopImmediatePropagation();
+                  e.preventDefault();
+                  this._service.select(this._data);
+                  this._service.collapse(this._data);
+                  break;
+                }
+                case KEY_ARR_LEFT:
+                  if (!this.config().isVertical) {
+                    this.toPrevItem(e);
+                  }
+                  break;
+                case KEY_ARR_UP:
+                  if (this.config().isVertical) {
+                    this.toPrevItem(e);
+                  }
+                  break;
+                case KEY_ARR_RIGHT:
+                  if (!this.config().isVertical) {
+                    this.toNextItem(e);
+                  }
+                  break;
+                case KEY_ARR_DOWN:
+                  if (this.config().isVertical) {
+                    this.toNextItem(e);
+                  }
+                  break;
+              }
+            }),
+          );
+        }
+        return of(false);
+      }),
+    ).subscribe();
 
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
       takeUntilDestroyed(),
@@ -319,43 +320,85 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     ).subscribe();
   }
 
-  private focusNext() {
+  private toNextItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+    const index = this.focusNext();
+    if (index > -1) {
+      this._service.lastFocusedItemId = index;
+      if (!!e && e.cancelable) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (this._service.lastFocusedItemId > -1) {
+      this.focus(FocusAlignments.CENTER, this._service.lastFocusedItemId);
+    }
+
+    if (attempt > 0) {
+      this.toNextItem(e, attempt - 1);
+    }
+  }
+
+  private toPrevItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+    const index = this.focusPrev();
+    if (index > -1) {
+      this._service.lastFocusedItemId = index;
+      if (!!e && e.cancelable) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (this._service.lastFocusedItemId > -1) {
+      this.focus(FocusAlignments.CENTER, this._service.lastFocusedItemId);
+    }
+
+    if (attempt > 0) {
+      this.toPrevItem(e, attempt - 1);
+    }
+  }
+
+  private focusNext(): number {
     if (this._service.listElement) {
       const tabIndex = this._data?.config?.tabIndex ?? 0, length = this._service.collection?.length ?? 0;
       let index = tabIndex;
       while (index <= length) {
         index++;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-        if (el) {
-          this._service.focus(el);
-          break;
+        const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
+        if (!!element && element.style.visibility !== VISIBILITY_HIDDEN) {
+          this._service.focus(element);
+          return index;
         }
       }
     }
+    return -1;
   }
 
-  private focusPrev() {
+  private focusPrev(): number {
     if (this._service.listElement) {
       const tabIndex = this._data?.config?.tabIndex ?? 0;
       let index = tabIndex;
       while (index >= 0) {
         index--;
-        const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-        if (el) {
-          this._service.focus(el);
-          break;
+        const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
+        if (!!element) {
+          this._service.focus(element);
+          return index;
         }
       }
     }
+    return -1;
   }
 
-  private focus(align: FocusAlignment = FocusAlignments.CENTER) {
+  private focus(align: FocusAlignment = FocusAlignments.CENTER, index: number = -1) {
     if (this._service.listElement) {
-      const tabIndex = this._data?.config?.tabIndex ?? 0;
-      let index = tabIndex;
-      const el = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-      if (el) {
-        this._service.focus(el, align);
+      const tabIndex = index > -1 ? index : this._data?.config?.tabIndex ?? 0;
+      let i = tabIndex;
+      const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(i));
+      if (!!element) {
+        this._service.focus(element, align);
       }
     }
   }
