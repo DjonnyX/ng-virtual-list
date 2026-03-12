@@ -54,6 +54,8 @@ export class NgVirtualListService {
   private _$scrollToEnd = new Subject<IScrollOptions | undefined>();
   readonly $scrollToEnd = this._$scrollToEnd.asObservable();
 
+  lastFocusedItemId: number = -1;
+
   scrollStartOffset: number = 0;
 
   scrollEndOffset: number = 0;
