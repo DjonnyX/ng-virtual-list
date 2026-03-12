@@ -1732,6 +1732,9 @@ export class NgVirtualListComponent implements OnDestroy {
             this._isScrollFinished.set(true);
           }
           this._trackBox.isScrollEnd = true;
+          if (prepared && readyToStart) {
+            this.emitScrollEvent(true, false);
+          }
           if (roundedMaxPositionAfterUpdate > 0) {
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
@@ -1948,23 +1951,7 @@ export class NgVirtualListComponent implements OnDestroy {
         isUserScrolling = userAction;
         const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
         if (scrollerEl && scrollerComponent) {
-          const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-            bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-            currentScollSize = this._scrollSize();
-          this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
-          const itemsRange = formatActualDisplayItems(this._service.displayItems, this.scrollStartOffset(), this.scrollEndOffset(),
-            scrollSize, isVertical, bounds),
-            event = new ScrollEvent({
-              direction: this._trackBox.scrollDirection, container: scrollerEl,
-              list: this._list()!.nativeElement, delta: this._trackBox.delta,
-              scrollDelta: this._trackBox.scrollDelta, isVertical,
-              scrollSize,
-              itemsRange,
-            });
-
-          this.onScroll.emit(event);
-          this._$scroll.next(event);
-
+          const event = this.emitScrollEvent(false);
           if (userAction && !this.dynamicSize()) {
             this._$fireUpdate.next(event);
           }
@@ -1984,23 +1971,7 @@ export class NgVirtualListComponent implements OnDestroy {
         isUserScrolling = userAction;
         const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
         if (scrollerEl && scrollerComponent) {
-          const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-            bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-            currentScollSize = this._scrollSize();
-          this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
-          const itemsRange = formatActualDisplayItems(this._service.displayItems, this.scrollStartOffset(), this.scrollEndOffset(),
-            scrollSize, isVertical, bounds),
-            event = new ScrollEvent({
-              direction: this._trackBox.scrollDirection, container: scrollerEl,
-              list: this._list()!.nativeElement, delta: this._trackBox.delta,
-              scrollDelta: this._trackBox.scrollDelta, isVertical,
-              scrollSize,
-              itemsRange,
-            });
-
-          this.onScrollEnd.emit(event);
-          this._$scroll.next(event);
-
+          const event = this.emitScrollEvent(true);
           if (userAction && !this.dynamicSize()) {
             this._$fireUpdate.next(event);
           }
@@ -2180,15 +2151,20 @@ export class NgVirtualListComponent implements OnDestroy {
         const p = params as Pick<IScrollParams, 'cb' | 'scrollCalled' | 'scroller'>;
         if (p.scrollCalled && p.scroller) {
           this._scrollerComponent()?.refresh();
+          this.emitScrollEvent(true, false);
           p.cb?.();
           return;
         }
 
         if (p) {
           this._scrollerComponent()?.refresh();
-          const { cb } = p;
-          cb?.();
+          this.emitScrollEvent(true, false);
+          p.cb?.();
+          return;
         }
+
+        this._scrollerComponent()?.refresh();
+        this.emitScrollEvent(true, false);
       }),
     ).subscribe();
 
@@ -2287,6 +2263,36 @@ export class NgVirtualListComponent implements OnDestroy {
       scrollDelta: 0,
       itemsRange: undefined,
     });
+  }
+
+  private emitScrollEvent(isScrollEnd: boolean = false, update: boolean = true) {
+    const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
+    if (scrollerEl && scrollerComponent) {
+      const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+        bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
+        currentScollSize = this._scrollSize();
+      this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
+      const itemsRange = formatActualDisplayItems(this._service.displayItems, this.scrollStartOffset(), this.scrollEndOffset(),
+        scrollSize, isVertical, bounds),
+        event = new ScrollEvent({
+          direction: this._trackBox.scrollDirection, container: scrollerEl,
+          list: this._list()!.nativeElement, delta: this._trackBox.delta,
+          scrollDelta: this._trackBox.scrollDelta, isVertical,
+          scrollSize,
+          itemsRange,
+          isEnd: this._trackBox.isSnappedToEnd,
+        });
+
+      if (update) {
+        this._$scroll.next(event);
+      }
+
+      if (isScrollEnd) {
+        this.onScrollEnd.emit(event);
+      } else {
+        this.onScroll.emit(event);
+      }
+    }
   }
 
   private listenCacheChangesIfNeed(value: boolean) {
