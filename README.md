@@ -673,7 +673,6 @@ Methods
 | scrollToEnd | | Scrolls the list to the end of the content height. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
-| cacheClean |  | Force clearing the cache. |
 | stopSnappingScrollToEnd |  | Stops the list from snapping to the bottom edge. |
 
 <br/>

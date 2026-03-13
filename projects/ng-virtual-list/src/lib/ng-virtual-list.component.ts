@@ -55,8 +55,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  DEFAULT_INIT_ITERATIONS = 30,
-  MIN_PREPARE_ITERATIONS = 20,
+  MIN_PREPARE_ITERATIONS = 15,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -64,10 +63,6 @@ const MIN_SCROLL_TO_START_PIXELS = 10,
   ITEM_CONTAINER = 'ngvl-item__container',
   READY_TO_START: string = 'ready-to-start',
   WAIT_FOR_PREPARATION: string = 'wait-for-preparation';
-
-const getScrollStateVersion = (scrollSize: number, cacheVersion: number) => {
-  return `${scrollSize}_${cacheVersion}`;
-}
 
 const validateScrollIteration = (value: number) => {
   return Number.isNaN(value) || (value < 0) ? 0 : value > MAX_SCROLL_TO_ITERATIONS ? MAX_SCROLL_TO_ITERATIONS : value
@@ -182,10 +177,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   private _scrollerComponent: NgScrollerComponent | undefined;
 
   private _$scroller = new BehaviorSubject<ElementRef<HTMLDivElement> | undefined>(undefined);
-  readonly $scroller = this._$scroller.asObservable();
+  protected readonly $scroller = this._$scroller.asObservable();
 
   private _$list = new BehaviorSubject<ElementRef<HTMLDivElement> | undefined>(undefined);
-  readonly $list = this._$list.asObservable();
+  protected readonly $list = this._$list.asObservable();
 
   /**
    * Fires when the list has been scrolled.
@@ -239,7 +234,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   readonly $show = this._$show.asObservable();
 
   private _$scrollbarTheme = new BehaviorSubject<ScrollBarTheme | undefined>(DEFAULT_SCROLLBAR_THEME);
-  readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
+  protected readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
 
   private _scrollbarThemeTransform = (v: ScrollBarTheme) => {
     const valid = validateObject(v);
@@ -269,7 +264,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollbarTheme() { return this._$scrollbarTheme.getValue() as ScrollBarTheme; }
 
   private _$scrollbarMinSize = new BehaviorSubject<number>(DEFAULT_SCROLLBAR_MIN_SIZE);
-  readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
+  protected readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
 
   private _scrollbarMinSizeTransform = (v: number) => {
     const valid = validateObject(v);
@@ -299,7 +294,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollbarMinSize() { return this._$scrollbarMinSize.getValue() as number; }
 
   private _$loading = new BehaviorSubject<boolean>(false);
-  readonly $loading = this._$loading.asObservable();
+  protected readonly $loading = this._$loading.asObservable();
 
   private _loadingTransform = (v: boolean) => {
     const valid = validateObject(v);
@@ -329,7 +324,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get loading() { return this._$loading.getValue() as boolean; }
 
   private _$waitForPreparation = new BehaviorSubject<boolean>(DEFAULT_WAIT_FOR_PREPARATION);
-  readonly $waitForPreparation = this._$waitForPreparation.asObservable();
+  protected readonly $waitForPreparation = this._$waitForPreparation.asObservable();
 
   private _waitForPreparationTransform = (v: boolean) => {
     const valid = validateObject(v);
@@ -359,7 +354,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get waitForPreparation() { return this._$waitForPreparation.getValue() as boolean; }
 
   private _$clickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
-  readonly $clickDistance = this._$clickDistance.asObservable();
+  protected readonly $clickDistance = this._$clickDistance.asObservable();
 
   private _clickDistanceTransform = (v: number) => {
     const valid = validateObject(v);
@@ -389,7 +384,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get clickDistance() { return this._$clickDistance.getValue() as number; }
 
   private _$snapToEndTransitionInstantOffset = new BehaviorSubject<number>(DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET);
-  readonly $snapToEndTransitionInstantOffset = this._$snapToEndTransitionInstantOffset.asObservable();
+  protected readonly $snapToEndTransitionInstantOffset = this._$snapToEndTransitionInstantOffset.asObservable();
 
   private _snapToEndTransitionInstantOffsetTransform = (v: number) => {
     const valid = validateInt(v);
@@ -419,7 +414,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get snapToEndTransitionInstantOffset() { return this._$snapToEndTransitionInstantOffset.getValue(); }
 
   private _$scrollStartOffset = new BehaviorSubject<number>(0);
-  readonly $scrollStartOffset = this._$scrollStartOffset.asObservable();
+  protected readonly $scrollStartOffset = this._$scrollStartOffset.asObservable();
 
   private _scrollStartOffsetTransform = (v: number) => {
     const valid = validateInt(v);
@@ -449,7 +444,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollStartOffset() { return this._$scrollStartOffset.getValue(); }
 
   private _$scrollEndOffset = new BehaviorSubject<number>(0);
-  readonly $scrollEndOffset = this._$scrollEndOffset.asObservable();
+  protected readonly $scrollEndOffset = this._$scrollEndOffset.asObservable();
 
   private _scrollEndOffsetTransform = (v: number) => {
     const valid = validateInt(v);
@@ -479,7 +474,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollEndOffset() { return this._$scrollEndOffset.getValue(); }
 
   private _$snapScrollToBottom = new BehaviorSubject<boolean>(DEFAULT_SNAP_SCROLLTO_BOTTOM);
-  readonly $snapScrollToBottom = this._$snapScrollToBottom.asObservable();
+  protected readonly $snapScrollToBottom = this._$snapScrollToBottom.asObservable();
 
   private _snapScrollToBottomTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -509,7 +504,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get snapScrollToBottom() { return this._$snapScrollToBottom.getValue(); }
 
   private _$langTextDir = new BehaviorSubject<TextDirection>(DEFAULT_LANG_TEXT_DIR);
-  readonly $langTextDir = this._$langTextDir.asObservable();
+  protected readonly $langTextDir = this._$langTextDir.asObservable();
 
   private _langTextDirTransform = (v: TextDirection) => {
     const valid = validateString(v);
@@ -540,7 +535,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get langTextDir() { return this._$langTextDir.getValue(); }
 
   private _$defaultItemValue = new BehaviorSubject<IVirtualListItem | null>(null);
-  readonly $defaultItemValue = this._$defaultItemValue.asObservable();
+  protected readonly $defaultItemValue = this._$defaultItemValue.asObservable();
 
   @Input()
   set defaultItemValue(v: IVirtualListItem | null) {
@@ -555,7 +550,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get defaultItemValue() { return this._$defaultItemValue.getValue(); }
 
   private _$items = new BehaviorSubject<IVirtualListCollection | undefined>(undefined);
-  readonly $items = this._$items.asObservable();
+  protected readonly $items = this._$items.asObservable();
 
   private _itemsTransform = (v: IVirtualListCollection | undefined) => {
     let valid = validateArray(v, true);
@@ -599,7 +594,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get items() { return this._$items.getValue() as IVirtualListCollection; }
 
   private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
-  readonly $selectedIds = this._$selectedIds.asObservable();
+  protected readonly $selectedIds = this._$selectedIds.asObservable();
 
   private _selectedIdsTransform = (v: Array<Id> | Id | undefined) => {
     let valid = validateArray(v as any, true) || validateString(v as any, true) || validateFloat(v as any, true);
@@ -640,7 +635,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get selectedIds() { return this._$selectedIds.getValue(); }
 
   private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
-  readonly $collapsedIds = this._$collapsedIds.asObservable();
+  protected readonly $collapsedIds = this._$collapsedIds.asObservable();
 
   private _collapsedIdsTransform = (v: Array<Id>) => {
     let valid = validateArray(v as any);
@@ -681,7 +676,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   private _$selectByClick = new BehaviorSubject<boolean>(DEFAULT_SELECT_BY_CLICK);
-  readonly $selectByClick = this._$selectByClick.asObservable();
+  protected readonly $selectByClick = this._$selectByClick.asObservable();
 
   private _selectByClickTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -712,7 +707,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get selectByClick() { return this._$selectByClick.getValue(); }
 
   private _$collapseByClick = new BehaviorSubject<boolean>(DEFAULT_COLLAPSE_BY_CLICK);
-  readonly $collapseByClick = this._$collapseByClick.asObservable();
+  protected readonly $collapseByClick = this._$collapseByClick.asObservable();
 
   private _collapseByClickTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -743,7 +738,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get collapseByClick() { return this._$collapseByClick.getValue(); }
 
   private _$snap = new BehaviorSubject<boolean>(DEFAULT_SNAP);
-  readonly $snap = this._$snap.asObservable();
+  protected readonly $snap = this._$snap.asObservable();
 
   private _snapTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -773,7 +768,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get snap() { return this._$snap.getValue(); }
 
   private _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
-  readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
+  protected readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
 
   private _scrollbarEnabledTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -803,7 +798,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
   private _$scrollbarInteractive = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
-  readonly $scrollbarInteractive = this._$scrollbarInteractive.asObservable();
+  protected readonly $scrollbarInteractive = this._$scrollbarInteractive.asObservable();
 
   private _scrollbarInteractiveTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -833,7 +828,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollbarInteractive() { return this._$scrollbarInteractive.getValue(); }
 
   private _$scrollBehavior = new BehaviorSubject<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
-  readonly $scrollBehavior = this._$scrollBehavior.asObservable();
+  protected readonly $scrollBehavior = this._$scrollBehavior.asObservable();
 
   private _scrollBehaviorTransform = (v: ScrollBehavior) => {
     const valid = validateString(v);
@@ -863,7 +858,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get scrollBehavior() { return this._$scrollBehavior.getValue(); }
 
   private _$animationParams = new BehaviorSubject<IAnimationParams>(DEFAULT_ANIMATION_PARAMS);
-  readonly $animationParams = this._$animationParams.asObservable();
+  protected readonly $animationParams = this._$animationParams.asObservable();
 
   private _animationParamsTransform = (v: IAnimationParams) => {
     const valid = validateObject(v, true);
@@ -893,7 +888,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get animationParams() { return this._$animationParams.getValue(); }
 
   private _$overscrollEnabled = new BehaviorSubject<boolean>(DEFAULT_OVERSCROLL_ENABLED);
-  readonly $overscrollEnabled = this._$overscrollEnabled.asObservable();
+  protected readonly $overscrollEnabled = this._$overscrollEnabled.asObservable();
 
   private _overscrollEnabledTransform = (v: boolean) => {
     const valid = validateBoolean(v, true);
@@ -923,7 +918,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get overscrollEnabled() { return this._$overscrollEnabled.getValue(); }
 
   private _$enabledBufferOptimization = new BehaviorSubject<boolean>(DEFAULT_ENABLED_BUFFER_OPTIMIZATION);
-  readonly $enabledBufferOptimization = this._$enabledBufferOptimization.asObservable();
+  protected readonly $enabledBufferOptimization = this._$enabledBufferOptimization.asObservable();
 
   private _enabledBufferOptimizationTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -956,7 +951,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
 
   private _$itemRenderer = new BehaviorSubject<TemplateRef<any> | undefined>(undefined);
-  readonly $itemRenderer = this._$itemRenderer.asObservable();
+  protected readonly $itemRenderer = this._$itemRenderer.asObservable();
 
   private _itemRendererTransform = (v: TemplateRef<any>) => {
     let valid = validateObject(v);
@@ -989,7 +984,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get itemRenderer() { return this._$itemRenderer.getValue() as TemplateRef<any>; }
 
   private _$itemConfigMap = new BehaviorSubject<IVirtualListItemConfigMap>({});
-  readonly $itemConfigMap = this._$itemConfigMap.asObservable();
+  protected readonly $itemConfigMap = this._$itemConfigMap.asObservable();
 
   private _itemConfigMapTransform = (v: IVirtualListItemConfigMap) => {
     let valid = validateObject(v);
@@ -1039,7 +1034,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get itemConfigMap() { return this._$itemConfigMap.getValue(); }
 
   private _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
-  readonly $itemSize = this._$itemSize.asObservable();
+  protected readonly $itemSize = this._$itemSize.asObservable();
 
   private _itemSizeTransform = (v: number) => {
     const valid = validateFloat(v);
@@ -1072,7 +1067,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get itemSize() { return this._$itemSize.getValue(); }
 
   private _$dynamicSize = new BehaviorSubject<boolean>(DEFAULT_DYNAMIC_SIZE);
-  readonly $dynamicSize = this._$dynamicSize.asObservable();
+  protected readonly $dynamicSize = this._$dynamicSize.asObservable();
 
   private _dynamicSizeTransform = (v: boolean) => {
     const valid = validateBoolean(v);
@@ -1103,7 +1098,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get dynamicSize() { return this._$dynamicSize.getValue(); }
 
   private _$direction = new BehaviorSubject<Direction>(DEFAULT_DIRECTION);
-  readonly $direction = this._$direction.asObservable();
+  protected readonly $direction = this._$direction.asObservable();
 
   private _directionTransform = (v: Direction) => {
     const valid = validateString(v) && (v === 'horizontal' || v === 'vertical');
@@ -1132,7 +1127,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get direction() { return this._$direction.getValue(); }
 
   private _$collectionMode = new BehaviorSubject<CollectionMode>(DEFAULT_COLLECTION_MODE);
-  readonly $collectionMode = this._$collectionMode.asObservable();
+  protected readonly $collectionMode = this._$collectionMode.asObservable();
 
   private _collectionModeTransform = (v: CollectionMode) => {
     const valid = validateString(v) && (v === 'normal' || v === 'lazy');
@@ -1161,7 +1156,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get collectionMode() { return this._$collectionMode.getValue(); }
 
   private _$bufferSize = new BehaviorSubject<number>(DEFAULT_BUFFER_SIZE);
-  readonly $bufferSize = this._$bufferSize.asObservable();
+  protected readonly $bufferSize = this._$bufferSize.asObservable();
 
   private _bufferSizeTransform = (v: number) => {
     const valid = validateInt(v);
@@ -1188,7 +1183,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get bufferSize() { return this._$bufferSize.getValue(); }
 
   private _$maxBufferSize = new BehaviorSubject<number>(DEFAULT_MAX_BUFFER_SIZE);
-  readonly $maxBufferSize = this._$maxBufferSize.asObservable();
+  protected readonly $maxBufferSize = this._$maxBufferSize.asObservable();
 
   private _maxBufferSizeTransform = (v: number) => {
     let val = v;
@@ -1222,7 +1217,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get maxBufferSize() { return this._$maxBufferSize.getValue(); }
 
   private _$snappingMethod = new BehaviorSubject<SnappingMethod>(DEFAULT_SNAPPING_METHOD);
-  readonly $snappingMethod = this._$snappingMethod.asObservable();
+  protected readonly $snappingMethod = this._$snappingMethod.asObservable();
 
   private _snappingMethodTransform = (v: SnappingMethod) => {
     const valid = validateString(v) && (v === 'normal' || v === 'advanced');
@@ -1251,7 +1246,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get snappingMethod() { return this._$snappingMethod.getValue(); }
 
   private _$methodForSelecting = new BehaviorSubject<MethodForSelecting>(DEFAULT_SELECT_METHOD);
-  readonly $methodForSelecting = this._$methodForSelecting.asObservable();
+  protected readonly $methodForSelecting = this._$methodForSelecting.asObservable();
 
   private _methodForSelectingTransform = (v: MethodForSelecting) => {
     const valid = validateString(v) && (v === 'none' || v === 'select' || 'multi-select');
@@ -1281,7 +1276,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get methodForSelecting() { return this._$methodForSelecting.getValue(); }
 
   private _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
-  readonly $trackBy = this._$trackBy.asObservable();
+  protected readonly $trackBy = this._$trackBy.asObservable();
 
   private _trackByTransform = (v: string) => {
     const valid = validateString(v);
@@ -1308,7 +1303,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   get trackBy() { return this._$trackBy.getValue(); }
 
   private _$screenReaderMessage = new BehaviorSubject<string>(DEFAULT_SCREEN_READER_MESSAGE);
-  readonly $screenReaderMessage = this._$screenReaderMessage.asObservable();
+  protected readonly $screenReaderMessage = this._$screenReaderMessage.asObservable();
 
   private _screenReaderMessageTransform = (v: string) => {
     const valid = validateString(v);
@@ -1326,7 +1321,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
    * $2 is the number of the last element of the screen collection.
    */
   @Input()
-  set screenReaderMessage(v: string) {
+  protected set screenReaderMessage(v: string) {
     if (this._$screenReaderMessage.getValue() === v) {
       return;
     }
@@ -1335,38 +1330,26 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
     this._$screenReaderMessage.next(transformedValue);
   };
-  get screenReaderMessage() { return this._$screenReaderMessage.getValue(); }
+  protected get screenReaderMessage() { return this._$screenReaderMessage.getValue(); }
 
   private _$screenReaderFormattedMessage = new BehaviorSubject<string>(DEFAULT_SCREEN_READER_MESSAGE);
-  readonly $screenReaderFormattedMessage = this._$screenReaderFormattedMessage.asObservable();
+  protected $screenReaderFormattedMessage = this._$screenReaderFormattedMessage.asObservable();
 
   private _isVertical = this.getIsVertical();
 
-  get orientation() {
-    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
-  }
-
   private _$focusedElement = new BehaviorSubject<Id | undefined>(undefined);
-  readonly $focusedElement = this._$focusedElement.asObservable();
+  protected $focusedElement = this._$focusedElement.asObservable();
 
   private _$classes = new BehaviorSubject<{ [cName: string]: boolean }>({});
-  readonly $classes = this._$classes.asObservable();
+  protected $classes = this._$classes.asObservable();
 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
-  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
-
-  get displayItems() {
-    return this._service.displayItems;
-  }
 
   private _isNotSelecting = this.getIsNotSelecting();
-  get isNotSelecting() { return this._isNotSelecting; }
 
   private _isSingleSelecting = this.getIsSingleSelecting();
-  get isSingleSelecting() { return this._isSingleSelecting; }
 
   private _isMultiSelecting = this.getIsMultiSelecting();
-  get isMultiSelecting() { return this._isMultiSelecting; }
 
   private _$actualItems = new BehaviorSubject<IVirtualListCollection>([]);
 
@@ -1457,6 +1440,11 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     if (this._isSnappingMethodAdvanced) {
       this.updateRegularRenderer();
     }
+
+    const scroller = this._scrollerComponent;
+    if (!!scroller) {
+      scroller.refresh(true, true);
+    }
   }
 
   private _onListResizeHandler = () => {
@@ -1524,12 +1512,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     }
   }
 
-  get host() {
-    return this._elementRef;
-  }
-
   private _$viewInitialized = new BehaviorSubject<boolean>(false);
-  readonly $viewInitialized = this._$viewInitialized.asObservable();
+  protected readonly $viewInitialized = this._$viewInitialized.asObservable();
 
   /**
    * Base class of the element component
@@ -1551,7 +1535,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
 
   private _$cacheVersion = new BehaviorSubject<number>(-1);
-  get $cacheVersion() { return this._$cacheVersion.asObservable(); }
+  protected get $cacheVersion() { return this._$cacheVersion.asObservable(); }
 
   private _$prepared = new BehaviorSubject<boolean>(false);
   protected $prepared = this._$prepared.asObservable();
@@ -1573,6 +1557,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
   private _$fireUpdateNextFrame = new Subject<IScrollEvent | void>();
   protected $fireUpdateNextFrame = this._$fireUpdateNextFrame.asObservable();
+
+  private _$snapScrollToEndCanceller = new BehaviorSubject<boolean>(false);
+  readonly $snapScrollToEndCanceller = this._$snapScrollToEndCanceller.asObservable();
 
   private _onTrackBoxResetHandler = (v: boolean) => {
     if (v && this._scrollerComponent?.scrollable) {
@@ -1599,6 +1586,15 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
 
   private _updateId: number | undefined;
+
+  private _scrollStateUpdateIndex: number = 0;
+
+  getScrollStateVersion(totalSize: number, scrollSize: number, cacheVersion: number): string {
+    if (totalSize < scrollSize) {
+      this._scrollStateUpdateIndex = this._scrollStateUpdateIndex === Number.MAX_SAFE_INTEGER ? 0 : this._scrollStateUpdateIndex + 1;
+    }
+    return `${this._scrollStateUpdateIndex}_${totalSize}_${scrollSize}_${cacheVersion}`;
+  };
 
   constructor(
     private _cdr: ChangeDetectorRef,
@@ -1700,13 +1696,14 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             prevScrollStateVersion = v;
           }
           this._trackBox.isScrollEnd = true;
-          this._$fireUpdateNextFrame.next();
+          this.updateToEnd();
           return of(false);
         }
         if (prevScrollStateVersion === v) {
           this._trackBox.isScrollEnd = true;
           if (updateIterations < MIN_PREPARE_ITERATIONS) {
             updateIterations++;
+            this.updateToEnd();
             this._$fireUpdateNextFrame.next();
             return of(false);
           }
@@ -1716,8 +1713,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       }),
       debounceTime(0),
       filter(v => !!v),
+      distinctUntilChanged(),
     ),
       $items = this.$items.pipe(
+        takeUntil(this._$unsubscribe),
         map(i => !i ? [] : i),
       ), $dynamicSize = this.$dynamicSize;
 
@@ -2102,16 +2101,11 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       })
     ).subscribe();
 
-    /**
-     * 0 - none; 1 - instant;
-     */
-    const _$scrollToEndDuringUpdateCanceller = new BehaviorSubject<0 | 1>(0),
-      $scrollToEndDuringUpdateCanceller = _$scrollToEndDuringUpdateCanceller.asObservable();
+    const $snapScrollToEndCanceller = this.$snapScrollToEndCanceller;
 
-    $scrollToEndDuringUpdateCanceller.pipe(
+    $snapScrollToEndCanceller.pipe(
       takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      filter(v => v > 0),
+      filter(v => !!v),
       tap((v) => {
         const scroller = this._scrollerComponent;
         if (scroller) {
@@ -2119,7 +2113,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         }
       }),
       tap(() => {
-        _$scrollToEndDuringUpdateCanceller.next(0);
+        this._$snapScrollToEndCanceller.next(false);
       }),
     ).subscribe();
 
@@ -2177,7 +2171,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
         this.tracking();
 
-        if (actualScrollLength > 0) {
+        if (prepared && readyToStart && actualScrollLength > 0) {
           const isScrollStart = isUserScrolling && scrollPosition < MIN_SCROLL_TO_START_PIXELS;
           this._$isScrollStart.next(isScrollStart);
           if (isScrollStart) {
@@ -2201,7 +2195,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
         this._trackBox.clearDelta();
 
-        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) || (!!snapScrollToBottom && !prepared) ||
+        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) ||
           (snapScrollToBottom && actualScrollSize > 0 &&
             ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
               (scrollPosition >= roundedMaxPosition) &&
@@ -2216,8 +2210,11 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
               fireUpdate: false, behavior: BEHAVIOR_INSTANT,
               blending: false, duration: this._$animationParams.getValue().scrollToItem,
             };
+            if (prepared && readyToStart) {
+              this.emitScrollEvent(true, false);
+            }
             scroller?.scrollTo?.(params);
-            this._$update.next(getScrollStateVersion(this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             return;
           }
         } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
@@ -2232,12 +2229,12 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
               fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this._$animationParams.getValue().scrollToItem,
             };
             scroller.scrollTo(params);
-            this._$update.next(getScrollStateVersion(this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             return;
           }
         }
         if (!prepared && !readyToStart) {
-          this._$update.next(getScrollStateVersion(this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+          this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
         }
       }
     };
@@ -2311,7 +2308,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             return !!this._trackBox.isSnappedToEnd;
           }),
           tap(() => {
-            _$scrollToEndDuringUpdateCanceller.next(1);
+            this._$snapScrollToEndCanceller.next(true);
           }),
         );
       }),
@@ -2327,7 +2324,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             return !!this._trackBox.isSnappedToEnd;
           }),
           tap(() => {
-            _$scrollToEndDuringUpdateCanceller.next(1);
+            this._$snapScrollToEndCanceller.next(true);
           }),
         );
       }),
@@ -2371,7 +2368,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             return 0;
           }),
           tap(() => {
-            _$scrollToEndDuringUpdateCanceller.next(1);
+            this._$snapScrollToEndCanceller.next(true);
           }),
         );
       }),
@@ -2415,7 +2412,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             return 0;
           }),
           tap(() => {
-            _$scrollToEndDuringUpdateCanceller.next(1);
+            this._$snapScrollToEndCanceller.next(true);
           }),
         );
       }),
@@ -2433,25 +2430,12 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         isUserScrolling = userAction;
         const scrollerEl = this._$scroller.getValue()?.nativeElement, scrollerComponent = this._scrollerComponent;
         if (scrollerEl && scrollerComponent) {
-          const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-            bounds = this._$bounds.getValue() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-            currentScollSize = this._$scrollSize.getValue();
-          this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
-          const itemsRange = formatActualDisplayItems(this._service.displayItems, this._$scrollStartOffset.getValue(), this._$scrollEndOffset.getValue(),
-            scrollSize, isVertical, bounds),
-            event = new ScrollEvent({
-              direction: this._trackBox.scrollDirection, container: scrollerEl,
-              list: this._$list.getValue()!.nativeElement, delta: this._trackBox.delta,
-              scrollDelta: this._trackBox.scrollDelta, isVertical,
-              scrollSize,
-              itemsRange,
-            });
-
-          this.onScroll.emit(event);
-          this._$scroll.next(event);
-
-          if (userAction && !this._$dynamicSize.getValue()) {
-            this._$fireUpdate.next(event);
+          const event = this.emitScrollEvent(false);
+          if (userAction) {
+            this._$snapScrollToEndCanceller.next(true);
+            if (!this._$dynamicSize.getValue()) {
+              this._$fireUpdate.next(event);
+            }
           }
         }
       }),
@@ -2469,25 +2453,12 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         isUserScrolling = userAction;
         const scrollerEl = this._$scroller.getValue()?.nativeElement, scrollerComponent = this._scrollerComponent;
         if (scrollerEl && scrollerComponent) {
-          const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-            bounds = this._$bounds.getValue() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-            currentScollSize = this._$scrollSize.getValue();
-          this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
-          const itemsRange = formatActualDisplayItems(this._service.displayItems, this._$scrollStartOffset.getValue(), this._$scrollEndOffset.getValue(),
-            scrollSize, isVertical, bounds),
-            event = new ScrollEvent({
-              direction: this._trackBox.scrollDirection, container: scrollerEl,
-              list: this._$list.getValue()!.nativeElement, delta: this._trackBox.delta,
-              scrollDelta: this._trackBox.scrollDelta, isVertical,
-              scrollSize,
-              itemsRange,
-            });
-
-          this.onScrollEnd.emit(event);
-          this._$scroll.next(event);
-
-          if (userAction && !this._$dynamicSize.getValue()) {
-            this._$fireUpdate.next(event);
+          const event = this.emitScrollEvent(true);
+          if (userAction) {
+            this._$snapScrollToEndCanceller.next(true);
+            if (!this._$dynamicSize.getValue()) {
+              this._$fireUpdate.next(event);
+            }
           }
         }
       }),
@@ -2615,7 +2586,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
               if (_scrollSize === -1) {
                 return of([true, { id, blending, scroller: scrollerComponent, scrollCalled, cb }]);
               }
-              _$scrollToEndDuringUpdateCanceller.next(1);
+              this._$snapScrollToEndCanceller.next(true);
               const notChanged = actualScrollSize === currentScollSize;
               scrollerComponent?.scrollTo?.(params);
               if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) || iteration < MAX_SCROLL_TO_ITERATIONS) {
@@ -2636,7 +2607,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 const isVertical = this._isVertical,
                   currentScollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), scrollSize = index * this._$itemSize.getValue();
                 if (currentScollSize !== scrollSize) {
-                  _$scrollToEndDuringUpdateCanceller.next(1);
+                  this._$snapScrollToEndCanceller.next(true);
                   const params: IScrollToParams = {
                     [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize,
                     behavior: BEHAVIOR_INSTANT as ScrollBehavior, blending,
@@ -2665,15 +2636,19 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         const p = params as Pick<IScrollParams, 'cb' | 'scrollCalled' | 'scroller'>;
         if (p.scrollCalled && p.scroller) {
           this._scrollerComponent?.refresh();
+          this.emitScrollEvent(true, false);
           p.cb?.();
           return;
         }
 
         if (p) {
           this._scrollerComponent?.refresh();
-          const { cb } = p;
-          cb?.();
+          this.emitScrollEvent(true, false);
+          p.cb?.();
         }
+
+        this._scrollerComponent?.refresh();
+        this.emitScrollEvent(true, false);
       }),
     ).subscribe();
 
@@ -2713,9 +2688,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(v => {
-        if (this.isSingleSelecting || (this.isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
+        if (this._isSingleSelecting || (this._isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
           const curr = this._$selectedIds.getValue();
-          if ((this.isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) ||
+          if ((this._isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) ||
             (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
             this.onSelect.emit(copyValueAsReadonly(v));
           }
@@ -2777,6 +2752,35 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     });
 
     this._$viewInitialized.next(true);
+  }
+
+  private emitScrollEvent(isScrollEnd: boolean = false, update: boolean = true) {
+    const scrollerEl = this._$scroller.getValue()?.nativeElement, scrollerComponent = this._scrollerComponent;
+    if (scrollerEl && scrollerComponent) {
+      const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+        bounds = this._$bounds.getValue() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
+        currentScollSize = this._$scrollSize.getValue();
+      this._trackBox.deltaDirection = currentScollSize > scrollSize ? -1 : currentScollSize < scrollSize ? 1 : 0;
+      const itemsRange = formatActualDisplayItems(this._service.displayItems, this._$scrollStartOffset.getValue(), this._$scrollEndOffset.getValue(),
+        scrollSize, isVertical, bounds),
+        event = new ScrollEvent({
+          direction: this._trackBox.scrollDirection, container: scrollerEl,
+          list: this._$list.getValue()!.nativeElement, delta: this._trackBox.delta,
+          scrollDelta: this._trackBox.scrollDelta, isVertical,
+          scrollSize,
+          itemsRange,
+          isEnd: this._trackBox.isSnappedToEnd,
+        });
+      if (update) {
+        this._$scroll.next(event);
+      }
+
+      if (isScrollEnd) {
+        this.onScrollEnd.emit(event);
+      } else {
+        this.onScroll.emit(event);
+      }
+    }
   }
 
   private listenCacheChangesIfNeed(value: boolean) {
@@ -2892,6 +2896,20 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     }
   }
 
+  private updateToEnd() {
+    const scroller = this._scrollerComponent;
+    if (!!scroller) {
+      const isVerrtical = this._isVertical,
+        actualScrollSize = isVerrtical ? (scroller?.scrollHeight ?? 0) : (scroller?.scrollWidth ?? 0),
+        params: IScrollToParams = {
+          [isVerrtical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
+          blending: false, fireUpdate: true, userAction: false, behavior: BEHAVIOR_INSTANT,
+        }
+      scroller.scrollTo(params);
+      scroller.refresh();
+    }
+  }
+
   /**
    * Returns the bounds of an element with a given id
    */
@@ -2990,7 +3008,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   /**
    * Force clearing the cache.
    */
-  cacheClean() {
+  protected cacheClean() {
     this._trackBox.cacheClean();
     this._$collapsedItemIds.next([]);
     this._$isScrollStart.next(true);
