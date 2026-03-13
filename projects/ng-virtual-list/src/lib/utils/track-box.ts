@@ -269,10 +269,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     override set(id: Id, cache: Cache): CMap<Id, ISize> {
         if (this._map.has(id)) {
             const b = this._map.get(id);
-            if ((b?.width === cache.width && b?.height === cache.height) ||
-                // protection against cache version cycling
-                (this._isVertical && (cache?.height || 0) < this._typicalItemSize) ||
-                (!this._isVertical && (cache?.width || 0) < this._typicalItemSize)) {
+            if (b?.width === cache.width && b?.height === cache.height) {
                 return this._map;
             }
         }
@@ -1282,7 +1279,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const bounds = component.instance.getBounds();
 
             if (bounds.width && bounds.height) {
-                this.set(itemId, { ...this.get(itemId), ...bounds });
+                const width = !this._isVertical && bounds.width < this._typicalItemSize ? this._typicalItemSize : bounds.width,
+                    height = this._isVertical && bounds.height < this._typicalItemSize ? this._typicalItemSize : bounds.height;
+                this.set(itemId, { ...this.get(itemId), ...bounds, width, height });
                 if (this._isLazy && (this._isScrollStart)) {
                     this._debouncedIsScrollStartOff.execute();
                 }
