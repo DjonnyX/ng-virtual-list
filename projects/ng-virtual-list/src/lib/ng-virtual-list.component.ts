@@ -57,7 +57,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 50,
+  MIN_PREPARE_ITERATIONS = 35,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -1106,6 +1106,9 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$fireUpdate = new Subject<IScrollEvent | void>();
   protected $fireUpdate = this._$fireUpdate.asObservable();
 
+  private _$fireUpdateNextFrame = new Subject<IScrollEvent | void>();
+  protected $fireUpdateNextFrame = this._$fireUpdateNextFrame.asObservable();
+
   private _$snapScrollToEndCanceller = new BehaviorSubject<boolean>(false);
   readonly $snapScrollToEndCanceller = this._$snapScrollToEndCanceller.asObservable();
 
@@ -1158,6 +1161,14 @@ export class NgVirtualListComponent implements OnDestroy {
     this._service.itemToFocus = this.itemToFocus;
 
     this._trackBox.displayComponents = this._displayComponents;
+
+    this.$fireUpdateNextFrame.pipe(
+      takeUntilDestroyed(),
+      debounceTime(0),
+      tap(e => {
+        this._$fireUpdate.next(e);
+      }),
+    ).subscribe();
 
     const $scrollToItem = this.$scrollTo.pipe(takeUntilDestroyed()),
       $mouseDown = fromEvent(this._elementRef.nativeElement, MOUSE_DOWN).pipe(takeUntilDestroyed()),
@@ -1231,7 +1242,7 @@ export class NgVirtualListComponent implements OnDestroy {
           this._trackBox.isScrollEnd = true;
           if (updateIterations < MIN_PREPARE_ITERATIONS) {
             updateIterations++;
-            this._$fireUpdate.next();
+            this._$fireUpdateNextFrame.next();
             return of(false);
           }
         }
