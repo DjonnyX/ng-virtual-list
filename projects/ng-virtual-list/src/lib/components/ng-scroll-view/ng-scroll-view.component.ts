@@ -140,6 +140,8 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
     }
     get totalSize() { return this._totalSize; }
 
+    private _prevTotalSize = this._totalSize;
+
     get actualScrollHeight() {
         const { height: viewportHeight } = this._$viewportBounds.getValue(),
             totalSize = this._totalSize;
@@ -291,9 +293,7 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                     takeUntil(this._$unsubscribe),
                     tap(e => {
                         const isVertical = this._$isVertical.getValue();
-                        if (this.cdkScrollable) {
-                            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(WHEEL_EVENT);
-                        }
+                        this.emitScrollableEvent();
                         this.checkOverscroll(e);
                         this.stopScrolling();
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
@@ -330,14 +330,16 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                         if (target.classList.contains(INTERACTIVE)) {
                             return of(undefined);
                         }
+                        this._prevTotalSize = this._totalSize;
                         const inversion = this._inversion, isVertical = this._$isVertical.getValue();
                         this._isMoving = true;
                         this._$grabbing.next(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevClientPosition = 0;
-                        const startClientPos = isVertical ? e.clientY : e.clientX,
-                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
-                        let startTime = Date.now();
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.clientY : e.clientX,
+                            offsets = new Array<[number, number]>(),
+                            velocities = new Array<[number, number]>(),
+                            startTime = Date.now();
                         return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
                             takeUntil(this._$unsubscribe),
                             takeUntil($mouseDragCancel),
@@ -345,6 +347,8 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
+                                startClientPos += (this._totalSize - this._prevTotalSize);
+                                this._prevTotalSize = this._totalSize;
                                 const currentPos = isVertical ? e.clientY : e.clientX,
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
                                     dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
@@ -404,14 +408,15 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                         if (target.classList.contains(INTERACTIVE)) {
                             return of(undefined);
                         }
+                        this._prevTotalSize = this._totalSize;
                         const inversion = this._inversion, isVertical = this._$isVertical.getValue();
                         this._isMoving = true;
                         this._$grabbing.next(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevClientPosition = 0;
-                        const startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
-                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
-                        let startTime = Date.now();
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
+                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
+                            startTime = Date.now(), prevTotalSize = this._totalSize;
                         return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
                             takeUntil(this._$unsubscribe),
                             takeUntil($touchCanceler),
@@ -419,6 +424,8 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
+                                startClientPos += (this._totalSize - prevTotalSize);
+                                prevTotalSize = this._totalSize;
                                 const currentPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
                                     dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
@@ -546,6 +553,7 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
 
     protected move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false, fireUpdate: boolean = true) {
         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending, userAction, fireUpdate });
+        this._prevTotalSize = this._totalSize;
     }
 
     protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number) {
@@ -589,9 +597,7 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
     fireScroll(userAction: boolean = false) {
         this.stopScrolling();
         this._$updateScrollBar.next();
-        if (this.cdkScrollable) {
-            this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-        }
+        this.emitScrollableEvent();
         this.fireScrollEvent(userAction);
     }
 
@@ -652,10 +658,7 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                         this.stopScrolling();
                     }
                     this.refreshY(yy);
-                    if (this.cdkScrollable) {
-                        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                    }
-
+                    this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
@@ -666,15 +669,18 @@ export class NgScrollView extends DisposableComponent implements OnDestroy {
                         this.stopScrolling();
                     }
                     this.refreshX(xx);
-                    if (this.cdkScrollable) {
-                        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLL_EVENT);
-                    }
-
+                    this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
                 }
             }
+        }
+    }
+
+    protected emitScrollableEvent() {
+        if (!!this.cdkScrollable) {
+            this.cdkScrollable.getElementRef()?.nativeElement?.dispatchEvent(SCROLL_EVENT);
         }
     }
 
