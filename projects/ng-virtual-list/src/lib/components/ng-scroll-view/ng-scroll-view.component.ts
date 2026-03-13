@@ -111,6 +111,8 @@ export class NgScrollView implements OnDestroy {
         this._totalSize = v;
     }
 
+    private _prevTotalSize = this._totalSize;
+
     get actualScrollHeight() {
         const { height: viewportHeight } = this.viewportBounds(),
             totalSize = this._totalSize;
@@ -281,10 +283,11 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevClientPosition = 0;
-                        const startClientPos = isVertical ? e.clientY : e.clientX,
-                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
-                        let startTime = Date.now();
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.clientY : e.clientX,
+                            offsets = new Array<[number, number]>(),
+                            velocities = new Array<[number, number]>(),
+                            startTime = Date.now();
                         return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
                             takeUntil($mouseDragCancel),
@@ -292,7 +295,9 @@ export class NgScrollView implements OnDestroy {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
-                                const currentPos = isVertical ? e.clientY : e.clientX,
+                                startClientPos += (this._totalSize - this._prevTotalSize);
+                                this._prevTotalSize = this._totalSize;
+                                const currentPos = (isVertical ? e.clientY : e.clientX),
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
                                     dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
                                     timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
@@ -355,10 +360,10 @@ export class NgScrollView implements OnDestroy {
                         this._isMoving = true;
                         this.grabbing.set(true);
                         const startPos = isVertical ? this.y : this.x;
-                        let prevClientPosition = 0;
-                        const startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
-                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>();
-                        let startTime = Date.now();
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
+                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
+                            startTime = Date.now(), prevTotalSize = this._totalSize;
                         return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
                             takeUntil($touchCanceler),
@@ -366,6 +371,8 @@ export class NgScrollView implements OnDestroy {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
+                                startClientPos += (this._totalSize - prevTotalSize);
+                                prevTotalSize = this._totalSize;
                                 const currentPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
                                     dp = startPos + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
@@ -493,6 +500,7 @@ export class NgScrollView implements OnDestroy {
 
     protected move(isVertical: boolean, position: number, blending: boolean = false, userAction: boolean = false, fireUpdate: boolean = true) {
         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending, userAction, fireUpdate });
+        this._prevTotalSize = this._totalSize;
     }
 
     protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number) {

@@ -279,7 +279,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       blending = params.blending ?? true,
       fireUpdate = params.fireUpdate ?? false;
 
-    if (userAction && !blending && !fireUpdate) {
+    if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
       if (this.scrollBar) {
         this.scrollBar.stopScrolling();
       }
