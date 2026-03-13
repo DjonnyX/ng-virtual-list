@@ -993,6 +993,11 @@ export class NgVirtualListComponent implements OnDestroy {
     if (this._isSnappingMethodAdvanced) {
       this.updateRegularRenderer();
     }
+
+    const scroller = this._scrollerComponent();
+    if (!!scroller) {
+      scroller.refresh(true, true);
+    }
   }
 
   private _onListResizeHandler = () => {
