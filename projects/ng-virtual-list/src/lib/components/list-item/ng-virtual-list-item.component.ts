@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnInit, TemplateRef } from '@angular/core';
-import { map, tap, combineLatest, fromEvent, BehaviorSubject, switchMap, of } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, Subject, takeUntil, BehaviorSubject, switchMap, of } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { FocusAlignment, Id, ISize } from '../../types';
 import {
