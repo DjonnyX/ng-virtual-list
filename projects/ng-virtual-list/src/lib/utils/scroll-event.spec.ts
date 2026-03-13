@@ -11,6 +11,7 @@ describe('ScrollEvent', () => {
             isVertical: true,
             scrollSize: 100,
             itemsRange: [0, 1],
+            isEnd: false,
         });
         expect(instance).toBeDefined();
     });

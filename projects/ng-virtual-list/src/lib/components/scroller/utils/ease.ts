@@ -3,5 +3,5 @@ export const easeOutQuad = (t: number) => {
 };
 
 export const easeLinear = (t: number) => {
-    return t + t;
+    return t + 1;
 };

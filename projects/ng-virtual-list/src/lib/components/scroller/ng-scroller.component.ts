@@ -36,6 +36,7 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: false },
   ],
+  standalone: false,
   templateUrl: './ng-scroller.component.html',
   styleUrl: './ng-scroller.component.scss'
 })
@@ -262,9 +263,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     }
     if (updateScrollbar) {
       this.updateScrollBarHandler(false);
-      if (this.cdkScrollable) {
-        this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
-      }
+      this.emitScrollableEvent();
     }
     if (fireUpdate) {
       this.fireScrollEvent(false);
@@ -276,7 +275,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       blending = params.blending ?? true,
       fireUpdate = params.fireUpdate ?? false;
 
-    if (userAction && !blending && !fireUpdate) {
+    if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
       if (this.scrollBar) {
         this.scrollBar.stopScrolling();
       }
@@ -302,9 +301,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? this.scrollBehavior() : INSTANT,
       blending: false, userAction, fireUpdate: userAction,
     });
-    if (this.cdkScrollable) {
-      this.cdkScrollable.getElementRef().nativeElement.dispatchEvent(SCROLLBAR_SCROLL_EVENT);
-    }
+    this.emitScrollableEvent();
     this._isMoving = false;
 
     if (userAction && animation && this._service.dynamic) {

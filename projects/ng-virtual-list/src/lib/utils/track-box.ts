@@ -253,7 +253,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     override set(id: Id, cache: Cache): CMap<Id, ISize> {
         if (this._map.has(id)) {
             const b = this._map.get(id);
-            if (b?.width === cache.width && b.height === cache.height) {
+            if (b?.width === cache.width && b?.height === cache.height) {
                 return this._map;
             }
         }
