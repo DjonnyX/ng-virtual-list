@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, inject, input, NO_ERRORS_SCHEMA, output, Signal, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal } from '@angular/core';
 import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';

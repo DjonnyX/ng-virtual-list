@@ -41,8 +41,8 @@ const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMT = 5,
  * @email djonnyx@gmail.com
  */
 @Component({
-  selector: 'ng-virtual-list-item',
   standalone: false,
+  selector: 'ng-virtual-list-item',
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrl: './ng-virtual-list-item.component.scss',
   host: {

@@ -17,7 +17,8 @@ const RIGHT = 'right',
  * @email djonnyx@gmail.com
  */
 @Directive({
-  selector: '[localeSensitive]'
+  selector: '[localeSensitive]',
+  standalone: false,
 })
 export class LocaleSensitiveDirective {
   langTextDir = input<TextDirection>(TextDirections.LTR);

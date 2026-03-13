@@ -15,6 +15,7 @@ const DEFAULT_MAX_DISTANCE = 40;
  */
 @Directive({
     selector: '[itemClick]',
+    standalone: false,
 })
 export class ItemClickDirective {
     private _maxDistance = DEFAULT_MAX_DISTANCE;
