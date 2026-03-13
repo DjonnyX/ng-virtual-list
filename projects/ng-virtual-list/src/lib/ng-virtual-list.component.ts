@@ -57,7 +57,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 35,
+  MIN_PREPARE_ITERATIONS = 15,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -1235,13 +1235,14 @@ export class NgVirtualListComponent implements OnDestroy {
             prevScrollStateVersion = v;
           }
           this._trackBox.isScrollEnd = true;
-          this._$fireUpdate.next();
+          this.updateToEnd();
           return of(false);
         }
         if (prevScrollStateVersion === v) {
           this._trackBox.isScrollEnd = true;
           if (updateIterations < MIN_PREPARE_ITERATIONS) {
             updateIterations++;
+            this.updateToEnd();
             this._$fireUpdateNextFrame.next();
             return of(false);
           }
@@ -1532,6 +1533,20 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       tap(v => {
         this._trackBox.isLazy = v;
+      }),
+    ).subscribe();
+
+    $itemSize.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.typicalItemSize = v;
+      }),
+    ).subscribe();
+
+    $isVertical.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.isVertical = v;
       }),
     ).subscribe();
 
@@ -2406,6 +2421,20 @@ export class NgVirtualListComponent implements OnDestroy {
       size = totalSize;
     if (l && parseInt(l.nativeElement.style[prop]) !== size) {
       l.nativeElement.style[prop] = `${size}${PX}`;
+    }
+  }
+
+  private updateToEnd() {
+    const scroller = this._scrollerComponent();
+    if (!!scroller) {
+      const isVerrtical = this._isVertical,
+        actualScrollSize = isVerrtical ? (scroller?.scrollHeight ?? 0) : (scroller?.scrollWidth ?? 0),
+        params: IScrollToParams = {
+          [isVerrtical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
+          blending: false, fireUpdate: true, userAction: false, behavior: BEHAVIOR_INSTANT,
+        }
+      scroller.scrollTo(params);
+      scroller.refresh();
     }
   }
 
