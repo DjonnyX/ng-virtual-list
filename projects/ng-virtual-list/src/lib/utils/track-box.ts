@@ -7,7 +7,7 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../types";
 import {
-    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    DEFAULT_ITEM_SIZE, HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
@@ -238,6 +238,22 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return this._scrollEndOffset;
     }
 
+    protected _typicalItemSize: number = DEFAULT_ITEM_SIZE;
+    set typicalItemSize(v: number) {
+        this._typicalItemSize = v;
+    }
+    get typicalItemSize() {
+        return this._typicalItemSize;
+    }
+
+    protected _isVertical: boolean = true;
+    set isVertical(v: boolean) {
+        this._isVertical = v;
+    }
+    get isVertical() {
+        return this._isVertical;
+    }
+
     constructor(trackingPropertyName: string) {
         super();
 
@@ -253,7 +269,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     override set(id: Id, cache: Cache): CMap<Id, ISize> {
         if (this._map.has(id)) {
             const b = this._map.get(id);
-            if (b?.width === cache.width && b.height === cache.height) {
+            if ((b?.width === cache.width && b?.height === cache.height) ||
+                // protection against cache version cycling
+                (this._isVertical && (cache?.height || 0) < this._typicalItemSize) ||
+                (!this._isVertical && (cache?.width || 0) < this._typicalItemSize)) {
                 return this._map;
             }
         }
