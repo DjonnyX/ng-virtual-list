@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, input, NO_ERRORS_SCHEMA, output, Signal, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal } from '@angular/core';
 import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
@@ -38,11 +37,10 @@ const DEFAULT_THICKNESS = 6,
  */
 @Component({
   selector: 'ng-scroll-bar',
-  imports: [CommonModule, SubstrateComponent],
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
   ],
-  schemas: [NO_ERRORS_SCHEMA],
+  standalone: false,
   templateUrl: './ng-scroll-bar.component.html',
   styleUrl: './ng-scroll-bar.component.scss'
 })
