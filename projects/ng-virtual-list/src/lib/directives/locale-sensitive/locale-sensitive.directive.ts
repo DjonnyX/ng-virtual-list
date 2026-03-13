@@ -12,12 +12,13 @@ const RIGHT = 'right',
  * LocaleSensitiveDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Directive({
-  selector: '[localeSensitive]'
+  selector: '[localeSensitive]',
+  standalone: false,
 })
 export class LocaleSensitiveDirective {
   langTextDir = input<TextDirection>(TextDirections.LTR);

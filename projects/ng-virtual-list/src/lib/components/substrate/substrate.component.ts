@@ -75,9 +75,9 @@ const roundedRectPath = (width: number, height: number, tl: number, tr: number, 
  */
 @Component({
   selector: 'ng-substrate',
-  imports: [],
   templateUrl: './substrate.component.html',
   styleUrl: './substrate.component.scss',
+  standalone: false,
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class SubstrateComponent {

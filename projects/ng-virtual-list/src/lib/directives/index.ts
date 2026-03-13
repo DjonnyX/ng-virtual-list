@@ -1,5 +1,7 @@
-import { LocaleSensitiveDirective } from './locale-sensitive/locale-sensitive.directive';
+import { LocaleSensitiveModule } from './locale-sensitive/locale-sensitive.module';
+import { ItemClickModule } from './item-click/item-click.module';
 
 export {
-    LocaleSensitiveDirective,
+    LocaleSensitiveModule,
+    ItemClickModule,
 }
