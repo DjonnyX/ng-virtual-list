@@ -26,7 +26,7 @@ interface ITemplateContext<D = any> {
   index: number;
 }
 
-const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMT = 5,
+const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMPT = 5,
   ATTR_AREA_SELECTED = 'area-selected', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
   KEY_SPACE = ' ', KEY_ARR_LEFT = 'ArrowLeft', KEY_ARR_UP = 'ArrowUp', KEY_ARR_RIGHT = 'ArrowRight', KEY_ARR_DOWN = 'ArrowDown',
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown',
@@ -314,7 +314,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     ).subscribe();
   }
 
-  private toNextItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+  private toNextItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMPT) {
     const index = this.focusNext();
     if (index > -1) {
       this._service.lastFocusedItemId = index;
@@ -334,7 +334,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     }
   }
 
-  private toPrevItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+  private toPrevItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMPT) {
     const index = this.focusPrev();
     if (index > -1) {
       this._service.lastFocusedItemId = index;
