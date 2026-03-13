@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BehaviorSubject, combineLatest, delay, filter, tap } from 'rxjs';
 import { Color } from '../../types/color';
 import { GradientColor } from '../../types/gradient-color';
@@ -10,8 +9,7 @@ import { SubstarateModes } from './enums/substrate-modes';
 import { SubstarateStyle } from './types';
 import { SubstarateStyles } from './enums';
 import { getShapeMinSize } from '../../utils/get-shape-min-size';
-import { inject } from '@angular/core';
-import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 const DEFAULT_STROKE_ANIMATION_DURATION = 1000,
   DEFAULT_FILL_COLORS: GradientColor = ["rgba(0, 0, 0, .1)", "rgba(0, 0, 0, .1)"],
