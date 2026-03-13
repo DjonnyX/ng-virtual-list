@@ -7,7 +7,7 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../types";
 import {
-    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    DEFAULT_ITEM_SIZE, HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
@@ -253,7 +253,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     override set(id: Id, cache: Cache): CMap<Id, ISize> {
         if (this._map.has(id)) {
             const b = this._map.get(id);
-            if (b?.width === cache.width && b.height === cache.height) {
+            if (b?.width === cache.width && b?.height === cache.height) {
                 return this._map;
             }
         }
