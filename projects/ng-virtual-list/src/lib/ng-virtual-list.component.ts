@@ -891,22 +891,14 @@ export class NgVirtualListComponent implements OnDestroy {
   langTextDir = input<TextDirection>(DEFAULT_LANG_TEXT_DIR, { ...this._langTextDir });
 
   private _isNotSelecting = this.getIsNotSelecting();
-  get isNotSelecting() { return this._isNotSelecting; }
 
   private _isSingleSelecting = this.getIsSingleSelecting();
-  get isSingleSelecting() { return this._isSingleSelecting; }
 
   private _isMultiSelecting = this.getIsMultiSelecting();
-  get isMultiSelecting() { return this._isMultiSelecting; }
 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
-  get isSnappingMethodAdvanced() { return this._isSnappingMethodAdvanced; }
 
   private _isVertical = this.getIsVertical();
-
-  get orientation() {
-    return this._isVertical ? Directions.VERTICAL : Directions.HORIZONTAL;
-  }
 
   protected readonly focusedElement = signal<Id | undefined>(undefined);
 
@@ -2190,9 +2182,9 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(v => {
-        if (this.isSingleSelecting || (this.isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
+        if (this._isSingleSelecting || (this._isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
           const curr = this.selectedIds();
-          if ((this.isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) ||
+          if ((this._isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) ||
             (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
             this.onSelect.emit(copyValueAsReadonly(v));
           }
