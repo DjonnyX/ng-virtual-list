@@ -2,7 +2,7 @@ import { Component, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
+  NgVirtualListModule, NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
   ScrollBarTheme, RoundedCorner,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
@@ -151,7 +151,7 @@ const generateItems = (len: number) => {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, NgVirtualListComponent],
+  imports: [CommonModule, FormsModule, NgVirtualListModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -710,7 +710,6 @@ Methods
 | scrollToEnd | | Scrolls the list to the end of the content height. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
-| cacheClean |  | Force clearing the cache. |
 | stopSnappingScrollToEnd |  | Stops the list from snapping to the bottom edge. |
 
 <br/>
@@ -737,13 +736,13 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 20.x | 20.10.4 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.4](https://www.npmjs.com/package/ng-virtual-list/v/20.10.4) |
-| 21.x | 19.10.2 | [21.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [19.10.2](https://www.npmjs.com/package/ng-virtual-list/v/19.10.2) |
-| 18.x | 18.10.2 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.2](https://www.npmjs.com/package/ng-virtual-list/v/18.10.2) |
-| 17.x | 17.10.2 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.2](https://www.npmjs.com/package/ng-virtual-list/v/17.10.2) |
-| 16.x | 16.10.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.10.1](https://www.npmjs.com/package/ng-virtual-list/v/16.10.1) |
-| 15.x | 15.10.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.10.1](https://www.npmjs.com/package/ng-virtual-list/v/15.10.1) |
-| 14.x | 14.10.2 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.10.2](https://www.npmjs.com/package/ng-virtual-list/v/14.10.2) |
+| 20.x | 20.10.6 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.10.6](https://www.npmjs.com/package/ng-virtual-list/v/20.10.6) |
+| 21.x | 19.10.3 | [21.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [19.10.3](https://www.npmjs.com/package/ng-virtual-list/v/19.10.3) |
+| 18.x | 18.10.3 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.10.3](https://www.npmjs.com/package/ng-virtual-list/v/18.10.3) |
+| 17.x | 17.10.3 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.10.3](https://www.npmjs.com/package/ng-virtual-list/v/17.10.3) |
+| 16.x | 16.10.2 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.10.2](https://www.npmjs.com/package/ng-virtual-list/v/16.10.2) |
+| 15.x | 15.10.2 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.10.2](https://www.npmjs.com/package/ng-virtual-list/v/15.10.2) |
+| 14.x | 14.10.3 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.10.3](https://www.npmjs.com/package/ng-virtual-list/v/14.10.3) |
 <br/>
 
 ## 🤝 Contributing

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest, fromEvent, switchMap, of } from 'rxjs';
@@ -15,7 +14,6 @@ import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types
 import { validateBoolean } from '../../utils/validation';
 import { FocusAlignments, TextDirections } from '../../enums';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../models';
-import { ItemClickDirective } from '../../directives/item-click';
 import { getListElementByIndex } from './utils';
 
 interface ITemplateContext<D = any> {
@@ -44,13 +42,13 @@ const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMT = 5,
  */
 @Component({
   selector: 'ng-virtual-list-item',
-  imports: [CommonModule, ItemClickDirective],
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrl: './ng-virtual-list-item.component.scss',
   host: {
     'class': 'ngvl__item',
     'role': 'listitem',
   },
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
