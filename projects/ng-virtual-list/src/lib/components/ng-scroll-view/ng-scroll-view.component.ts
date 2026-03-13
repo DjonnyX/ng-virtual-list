@@ -279,6 +279,7 @@ export class NgScrollView implements OnDestroy {
                         if (target.classList.contains(INTERACTIVE)) {
                             return of(undefined);
                         }
+                        this._prevTotalSize = this._totalSize;
                         const inversion = this._inversion, isVertical = this.isVertical();
                         this._isMoving = true;
                         this.grabbing.set(true);
@@ -356,6 +357,7 @@ export class NgScrollView implements OnDestroy {
                         if (target.classList.contains(INTERACTIVE)) {
                             return of(undefined);
                         }
+                        this._prevTotalSize = this._totalSize;
                         const inversion = this._inversion, isVertical = this.isVertical();
                         this._isMoving = true;
                         this.grabbing.set(true);
