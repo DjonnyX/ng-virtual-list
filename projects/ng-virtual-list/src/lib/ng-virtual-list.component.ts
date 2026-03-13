@@ -1536,20 +1536,6 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    $itemSize.pipe(
-      takeUntilDestroyed(),
-      tap(v => {
-        this._trackBox.typicalItemSize = v;
-      }),
-    ).subscribe();
-
-    $isVertical.pipe(
-      takeUntilDestroyed(),
-      tap(v => {
-        this._trackBox.isVertical = v;
-      }),
-    ).subscribe();
-
     combineLatest([$items, $itemSize]).pipe(
       takeUntilDestroyed(),
       map(([items, itemSize]) => ({ items, itemSize })),

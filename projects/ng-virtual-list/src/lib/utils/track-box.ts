@@ -238,22 +238,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return this._scrollEndOffset;
     }
 
-    protected _typicalItemSize: number = DEFAULT_ITEM_SIZE;
-    set typicalItemSize(v: number) {
-        this._typicalItemSize = v;
-    }
-    get typicalItemSize() {
-        return this._typicalItemSize;
-    }
-
-    protected _isVertical: boolean = true;
-    set isVertical(v: boolean) {
-        this._isVertical = v;
-    }
-    get isVertical() {
-        return this._isVertical;
-    }
-
     constructor(trackingPropertyName: string) {
         super();
 
@@ -1279,9 +1263,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const bounds = component.instance.getBounds();
 
             if (bounds.width && bounds.height) {
-                const width = !this._isVertical && bounds.width < this._typicalItemSize ? this._typicalItemSize : bounds.width,
-                    height = this._isVertical && bounds.height < this._typicalItemSize ? this._typicalItemSize : bounds.height;
-                this.set(itemId, { ...this.get(itemId), ...bounds, width, height });
+                this.set(itemId, { ...this.get(itemId), ...bounds });
                 if (this._isLazy && (this._isScrollStart)) {
                     this._debouncedIsScrollStartOff.execute();
                 }
