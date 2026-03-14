@@ -36,7 +36,7 @@ const TOP = 'top',
     MASS = .005,
     MAX_DIST = 12500,
     MAX_VELOCITY_TIMESTAMP = 100,
-    SPEED_SCALE = 5,
+    SPEED_SCALE = 15,
     OVERSCROLL_START_ITERATION = 2;
 
 export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
@@ -320,7 +320,7 @@ export class NgScrollView implements OnDestroy {
                                         if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
                                             return;
                                         }
-                                        this.moveWithAcceleration(isVertical, position, 0, v0, a0);
+                                        this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                     }),
                                 );
                             }),
@@ -388,7 +388,7 @@ export class NgScrollView implements OnDestroy {
                                         if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
                                             return;
                                         }
-                                        this.moveWithAcceleration(isVertical, position, this._velocity, v0, a0);
+                                        this.moveWithAcceleration(isVertical, position, this._velocity, v0, a0, timestamp);
                                     }),
                                 );
                             }),
@@ -408,9 +408,6 @@ export class NgScrollView implements OnDestroy {
             timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
         this.calculateAcceleration(velocities, v0, timestamp);
-        prevClientPosition = currentPos;
-        this.move(isVertical, position, true, true, true);
-        startTime = endTime;
         return { position, currentPos, endTime, scrollDelta };
     }
 
@@ -487,8 +484,8 @@ export class NgScrollView implements OnDestroy {
                 continue;
             }
             if (v00) {
-                const a0 = timestamp < MAX_VELOCITY_TIMESTAMP ? (v00[1] !== 0 ? (lastVSign * Math.abs(Math.abs(v01[0]) - Math.abs(v00[0]))) / Math.abs(v00[1]) : 0) : 0;
-                aSum += a0;
+                const a0 = timestamp < MAX_VELOCITY_TIMESTAMP ? (v00[1] !== 0 ? (lastVSign * Math.abs(Math.abs(v01[0]) - Math.abs(v00[0]))) / Math.abs(v00[1]) : 0) : 0.1;
+                aSum = (aSum * MASS) + a0;
                 prevV0 = v01;
             }
             prevV0 = v01;
@@ -507,8 +504,8 @@ export class NgScrollView implements OnDestroy {
         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, blending, userAction, fireUpdate });
     }
 
-    protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number) {
-        if (a0 !== 0) {
+    protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number, timestamp: number) {
+        if (a0 !== 0 && timestamp < MAX_VELOCITY_TIMESTAMP) {
             const dvSign = Math.sign(v),
                 duration = DURATION, maxDuration = MAX_DURATION,
                 maxDistance = dvSign * MAX_DIST, s = (dvSign * Math.abs((a0 * Math.pow(duration, 2)) * .5) / 1000) / MASS,

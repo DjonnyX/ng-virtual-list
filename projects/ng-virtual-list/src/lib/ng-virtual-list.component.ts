@@ -1281,6 +1281,18 @@ export class NgVirtualListComponent implements OnDestroy {
             takeUntilDestroyed(this._destroyRef),
             distinctUntilChanged(),
             switchMap(v => {
+              if (this.items().length === 0) {
+                prepared = readyToStart = true;
+                const scrollerComponent = this._scrollerComponent();
+                if (scrollerComponent) {
+                  scrollerComponent.prepared = true;
+                  scrollerComponent.stopScrolling();
+                }
+                this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                this._service.update(true);
+                this._$show.next(true);
+                return of(true);
+              }
               if (!v) {
                 this._$show.next(false);
                 readyToStart = isUserScrolling = prepared = false;
@@ -1722,44 +1734,44 @@ export class NgVirtualListComponent implements OnDestroy {
 
         this._trackBox.clearDelta();
 
-          if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) ||
-            (snapScrollToBottom && actualScrollSize > 0 &&
-              ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
-                (scrollPosition >= roundedMaxPosition) &&
-                (roundedMaxPositionAfterUpdate >= roundedMaxPosition)))) {
+        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) ||
+          (snapScrollToBottom && actualScrollSize > 0 &&
+            ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
+              (scrollPosition >= roundedMaxPosition) &&
+              (roundedMaxPositionAfterUpdate >= roundedMaxPosition)))) {
+          if (!this._trackBox.isSnappedToEnd) {
+            this._isScrollFinished.set(true);
+          }
+          this._trackBox.isScrollEnd = true;
+          if (prepared && readyToStart) {
+            this.emitScrollEvent(true, false);
+          }
+          if (roundedMaxPositionAfterUpdate > 0) {
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
+              fireUpdate: false, behavior: BEHAVIOR_INSTANT,
+              blending: scroller.isMoving, duration: this.animationParams().scrollToItem,
+            };
+            scroller?.scrollTo?.(params);
+            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            return;
+          }
+        } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
+          if (!snapScrollToBottom && scrollPositionAfterUpdate >= roundedMaxPosition) {
             if (!this._trackBox.isSnappedToEnd) {
               this._isScrollFinished.set(true);
             }
-            this._trackBox.isScrollEnd = true;
-            if (prepared && readyToStart) {
-              this.emitScrollEvent(true, false);
-            }
-            if (roundedMaxPositionAfterUpdate > 0) {
-              const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-                fireUpdate: false, behavior: BEHAVIOR_INSTANT,
-                blending: scroller.isMoving, duration: this.animationParams().scrollToItem,
-              };
-              scroller?.scrollTo?.(params);
-              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-              return;
-            }
-          } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
-            if (!snapScrollToBottom && scrollPositionAfterUpdate >= roundedMaxPosition) {
-              if (!this._trackBox.isSnappedToEnd) {
-                this._isScrollFinished.set(true);
-              }
-            }
-            if (this._scrollSize() !== scrollPositionAfterUpdate) {
-              const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: prepared && readyToStart,
-                fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
-              };
-              scroller.scrollTo(params);
-              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-              return;
-            }
           }
+          if (this._scrollSize() !== scrollPositionAfterUpdate) {
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: prepared && readyToStart,
+              fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+            };
+            scroller.scrollTo(params);
+            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            return;
+          }
+        }
 
         if (!prepared && !readyToStart) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
