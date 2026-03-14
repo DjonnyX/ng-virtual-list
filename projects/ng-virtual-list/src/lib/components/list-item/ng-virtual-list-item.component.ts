@@ -26,7 +26,7 @@ interface ITemplateContext<D = any> {
   index: number;
 }
 
-const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMT = 5,
+const TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)', NAVIGATE_TO_ATTEMT = 5,
   ATTR_AREA_SELECTED = 'area-selected', POSITION = 'position', POSITION_ZERO = '0', ID = 'item-id',
   KEY_SPACE = ' ', KEY_ARR_LEFT = 'ArrowLeft', KEY_ARR_UP = 'ArrowUp', KEY_ARR_RIGHT = 'ArrowRight', KEY_ARR_DOWN = 'ArrowDown',
   EVENT_FOCUS_IN = 'focusin', EVENT_FOCUS_OUT = 'focusout', EVENT_KEY_DOWN = 'keydown',
@@ -484,7 +484,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent {
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.position = POSITION_ABSOLUTE;
-    styles.transform = `${TRANSLATE_3D}(${this._data?.config?.isVertical ? 0 : ZEROS_POSITION},${this._data?.config?.isVertical ? 0 : ZEROS_POSITION},0)`;
+    styles.transform = TRANSLATE_3D_HIDDEN;
     styles.zIndex = HIDDEN_ZINDEX;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {

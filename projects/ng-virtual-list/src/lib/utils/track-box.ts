@@ -305,10 +305,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _prepared: boolean = false;
 
-    protected _preparedToStart: boolean = false;
-
-    protected _preparedToStartIterations: number = 2;
-
     get prepared() { return this._prepared; }
 
     protected override lifeCircle() {
@@ -487,7 +483,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const opt = { itemConfigMap, ...options }, dynamicSize = opt.dynamicSize, crudDetected = this._crudDetected,
             deletedItemsMap = this._deletedItemsMap;
         if (dynamicSize) {
-            this.cacheElements();
+            this.cacheElements(opt.isVertical, opt.itemSize);
         }
         this._defaultBufferSize = opt.bufferSize;
         this._maxBufferSize = opt.maxBufferSize;
@@ -516,17 +512,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         this.updateAdaptiveBufferParams(metrics, items.length);
 
-        if (!opt.dynamicSize || (this._preparedToStart && !this._prepared && this._previousTotalSize === metrics.totalSize)) {
+        if (!opt.dynamicSize || (!this._prepared && metrics.totalSize >= 0)) {
             this._prepared = true;
             this.dispatch(TrackBoxEvents.PREPARE, true);
-        }
-
-        if (this._preparedToStartIterations > 0 && this._previousTotalSize !== metrics.totalSize) {
-            this._preparedToStartIterations--;
-        }
-
-        if (this._preparedToStartIterations === 0) {
-            this._preparedToStart = true;
         }
 
         this._previousTotalSize = metrics.totalSize;
@@ -892,6 +880,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return metrics;
     }
 
+    resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number) {
+        const map = this._map;
+        for (let i = 0, l = collection.length; i < l; i++) {
+            const collectionItem = collection[i], id = collectionItem[trackBy];
+            if (map.has(id)) {
+                const cache = map.get(id);
+                if (cache[IS_NEW] === false || cache.method !== ItemDisplayMethods.NOT_CHANGED) {
+                    map.set(id, { ...cache, width: isVertical ? cache.width : itemSize, height: isVertical ? itemSize : cache.height });
+                }
+            }
+        }
+    }
+
     clearDeltaDirection() {
         this.clearScrollDirectionCache();
     }
@@ -1250,7 +1251,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._isScrollStart = false;
     });
 
-    protected cacheElements(): void {
+    protected cacheElements(isVertical: boolean, itemSize: number): void {
         if (!this._displayComponents) {
             return;
         }
@@ -1261,12 +1262,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 continue;
             }
             const bounds = component.instance.getBounds();
-
-            if (bounds.width && bounds.height) {
-                this.set(itemId, { ...this.get(itemId), ...bounds });
-                if (this._isLazy && (this._isScrollStart)) {
-                    this._debouncedIsScrollStartOff.execute();
-                }
+            this.set(itemId, {
+                ...this.get(itemId), ...bounds,
+                width: bounds.width || (isVertical ? 0 : itemSize),
+                height: bounds.height || (isVertical ? itemSize : 0),
+            });
+            if (this._isLazy && (this._isScrollStart)) {
+                this._debouncedIsScrollStartOff.execute();
             }
         }
     }
