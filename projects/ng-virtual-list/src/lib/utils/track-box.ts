@@ -880,6 +880,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return metrics;
     }
 
+    resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number) {
+        const map = this._map;
+        for (let i = 0, l = collection.length; i < l; i++) {
+            const collectionItem = collection[i], id = collectionItem[trackBy];
+            if (map.has(id)) {
+                const cache = map.get(id);
+                if (cache[IS_NEW] === false || cache.method !== ItemDisplayMethods.NOT_CHANGED) {
+                    map.set(id, { ...cache, width: isVertical ? cache.width : itemSize, height: isVertical ? itemSize : cache.height });
+                }
+            }
+        }
+    }
+
     clearDeltaDirection() {
         this.clearScrollDirectionCache();
     }
