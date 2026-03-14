@@ -2100,7 +2100,6 @@ export class NgVirtualListComponent implements OnDestroy {
         if (!prepared || !this._readyToShow) {
           return of([false]);
         }
-        this.refreshActualItemSize(false);
         const scrollerComponent = this._scrollerComponent(),
           {
             id, iteration = 0, blending = false,
@@ -2158,8 +2157,9 @@ export class NgVirtualListComponent implements OnDestroy {
               }
               this._$snapScrollToEndCanceller.next(true);
               const notChanged = actualScrollSize === currentScrollSize;
-              scrollerComponent?.scrollTo?.(params);
-              if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) || iteration < MAX_SCROLL_TO_ITERATIONS) {
+              if ((totalSize !== this._totalSize() && !notChanged && iteration < MAX_SCROLL_TO_ITERATIONS)) {
+                scrollerComponent?.scrollTo?.(params);
+                this.refreshActualItemSize(false);
                 this._$scrollTo.next(params as IScrollParams);
                 return of([false, {
                   id, scroller: scrollerComponent, iteration: iteration + 1, blending,
