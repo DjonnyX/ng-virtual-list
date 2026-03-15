@@ -4,9 +4,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
-  BehaviorSubject, combineLatest, debounce, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
+  BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
   of, race, Subject, switchMap, take, takeUntil, tap,
-  timer,
 } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
 import {
@@ -58,7 +57,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 5,
+  MIN_PREPARE_ITERATIONS = 20,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -1242,14 +1241,13 @@ export class NgVirtualListComponent implements OnDestroy {
             prevScrollStateVersion = v;
           }
           this._trackBox.isScrollEnd = true;
-          this.updateToEnd();
+          this._$fireUpdate.next();
           return of(false);
         }
         if (prevScrollStateVersion === v) {
           this._trackBox.isScrollEnd = true;
           if (updateIterations < MIN_PREPARE_ITERATIONS) {
             updateIterations++;
-            this.updateToEnd();
             this._$fireUpdateNextFrame.next();
             return of(false);
           }
@@ -1264,16 +1262,6 @@ export class NgVirtualListComponent implements OnDestroy {
         takeUntilDestroyed(),
         map(i => !i ? [] : i),
       ), $dynamicSize = toObservable(this.dynamicSize);
-
-    $items.pipe(
-      takeUntilDestroyed(),
-      map(items => !!items && items.length > 0),
-      distinctUntilChanged(),
-      tap(v => {
-        this._readyToShow = false;
-        this.refreshActualItemSize();
-      }),
-    ).subscribe();
 
     const $viewInit = this.$viewInit,
       $snapScrollToBottom = toObservable(this.snapScrollToBottom),
@@ -1306,7 +1294,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 takeUntilDestroyed(this._destroyRef),
                 distinctUntilChanged(),
                 switchMap(v => {
-                  if (this.items().length === 0) {
+                  if (this.items().length <= 1) {
                     prepared = this._readyToShow = true;
                     this.refreshActualItemSize();
                     const scrollerComponent = this._scrollerComponent();
@@ -1335,16 +1323,21 @@ export class NgVirtualListComponent implements OnDestroy {
                   }
                   return of(true).pipe(
                     takeUntilDestroyed(this._destroyRef),
-                    switchMap(v => {
+                    tap(() => {
                       const waitForPreparation = this.waitForPreparation();
                       if (waitForPreparation) {
                         prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
                         updateIterations = 0;
                         this._readyToShow = isUserScrolling = prepared = false;
                         this.refreshActualItemSize();
+                      }
+                    }),
+                    delay(0),
+                    switchMap(v => {
+                      const waitForPreparation = this.waitForPreparation();
+                      if (waitForPreparation) {
                         return $updateComplete.pipe(
                           takeUntilDestroyed(this._destroyRef),
-                          delay(0),
                           take(1),
                           tap(() => {
                             prepared = this._readyToShow = true;
@@ -1375,7 +1368,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 delay(0),
                 tap(() => {
                   this.refreshActualItemSize();
-                  this._$fireUpdateNextFrame.next();
+                  this._$fireUpdate.next();
                 }),
               );
             }
@@ -2158,7 +2151,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._$snapScrollToEndCanceller.next(true);
               const notChanged = actualScrollSize === currentScrollSize;
               if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) ||
-                (scrollerComponent.scrollHeight !== (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft) && iteration < MAX_SCROLL_TO_ITERATIONS)) {
+                (!this.snapScrollToBottom() && iteration < MAX_SCROLL_TO_ITERATIONS)) {
                 scrollerComponent?.scrollTo?.(params);
                 this._$scrollTo.next(params as IScrollParams);
                 return of([false, {
@@ -2324,20 +2317,6 @@ export class NgVirtualListComponent implements OnDestroy {
     this._$viewInit.next(true);
   }
 
-  private updateToEnd() {
-    const scroller = this._scrollerComponent();
-    if (!!scroller) {
-      const isVerrtical = this._isVertical,
-        actualScrollSize = isVerrtical ? (scroller?.scrollHeight ?? 0) : (scroller?.scrollWidth ?? 0),
-        params: IScrollToParams = {
-          [isVerrtical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-          blending: false, fireUpdate: true, userAction: false, behavior: BEHAVIOR_INSTANT,
-        }
-      scroller.scrollTo(params);
-      scroller.refresh();
-    }
-  }
-
   private emitScrollEvent(isScrollEnd: boolean = false, update: boolean = true) {
     const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
     if (scrollerEl && scrollerComponent) {
@@ -2380,12 +2359,15 @@ export class NgVirtualListComponent implements OnDestroy {
   }
 
   private refreshActualItemSize(value: boolean | undefined = undefined) {
+    if (!this.waitForPreparation()) {
+      return;
+    }
     let size: number;
     if (value === false || !this._readyToShow) {
       const bounds = this._bounds();
       size = (this._isVertical ?
         bounds?.height || DEFAULT_LIST_SIZE :
-        bounds?.width || DEFAULT_LIST_SIZE) * .5;
+        bounds?.width || DEFAULT_LIST_SIZE);
       this.actualItemSize.set(size);
     } else {
       size = this.itemSize()
