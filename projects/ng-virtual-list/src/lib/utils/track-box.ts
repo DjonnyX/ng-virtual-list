@@ -7,7 +7,7 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../types";
 import {
-    DEFAULT_ITEM_SIZE, HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
@@ -16,8 +16,6 @@ import { debounce } from "./debounce";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
-    PREPARE = 'prepare',
-    RESET = 'reset',
 }
 
 export interface IMetrics {
@@ -83,11 +81,7 @@ export type CacheMapEvents = TrackBoxEvents;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type OnResetEventListener = (reseted: boolean) => void;
-
-export type OnPrepareEventListener = (prepared: boolean) => void;
-
-export type CacheMapListeners = OnChangeEventListener | OnResetEventListener | OnPrepareEventListener;
+export type CacheMapListeners = OnChangeEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -303,10 +297,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _isReseted: boolean = true;
 
-    protected _prepared: boolean = false;
-
-    get prepared() { return this._prepared; }
-
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
@@ -326,14 +316,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         const reseted = ((!this._previousCollection || this._previousCollection.length === 0) &&
             (!!currentCollection && currentCollection.length > 0));
-        if (this._isReseted !== reseted && reseted && this._prepared) {
-            this._prepared = false;
-            this.dispatch(TrackBoxEvents.PREPARE, false);
-        }
 
         this._isReseted = reseted;
-
-        this.dispatch(TrackBoxEvents.RESET, reseted);
 
         this.updateCache(this._previousCollection, currentCollection, itemSize);
 
@@ -511,11 +495,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._delta += metrics.delta;
 
         this.updateAdaptiveBufferParams(metrics, items.length);
-
-        if (!opt.dynamicSize || (!this._prepared && metrics.totalSize >= 0)) {
-            this._prepared = true;
-            this.dispatch(TrackBoxEvents.PREPARE, true);
-        }
 
         this._previousTotalSize = metrics.totalSize;
 
@@ -880,15 +859,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return metrics;
     }
 
-    resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number) {
+    resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number,
+        bounds: ISize) {
         const map = this._map;
         for (let i = 0, l = collection.length; i < l; i++) {
             const collectionItem = collection[i], id = collectionItem[trackBy];
             if (map.has(id)) {
-                const cache = map.get(id);
-                if (cache[IS_NEW] === false || cache.method !== ItemDisplayMethods.NOT_CHANGED) {
-                    map.set(id, { ...cache, width: isVertical ? cache.width : itemSize, height: isVertical ? itemSize : cache.height });
-                }
+                const cache = map.get(id), bSize = isVertical ? bounds.height : bounds.width;
+                map.set(id, {
+                    ...cache,
+                    width: isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
+                    height: isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height
+                });
             }
         }
     }

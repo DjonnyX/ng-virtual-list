@@ -4,9 +4,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
-  BehaviorSubject, combineLatest, debounce, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
+  BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
   of, race, Subject, switchMap, take, takeUntil, tap,
-  timer,
 } from 'rxjs';
 import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
 import {
@@ -58,7 +57,9 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 5,
+  MIN_PREPARE_ITERATIONS = 10,
+  PREPARATION_REUPDATE_LENGTH = 15,
+  RESET_CACHE_FRAME_NUMBER = 3,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -999,7 +1000,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
     const scroller = this._scrollerComponent();
     if (!!scroller) {
-      scroller.refresh(true, true);
+      const updatebale = this._readyToShow;
+      scroller.refresh(updatebale, updatebale);
     }
   }
 
@@ -1014,6 +1016,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private itemToFocus = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER,
     behavior: ScrollBehavior = BEHAVIOR_AUTO) => {
+    if (!this._readyToShow) {
+      return;
+    }
     const scroller = this._scrollerComponent();
     if (scroller) {
       const { width, height } = this._bounds()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
@@ -1091,9 +1096,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _cacheVersion = signal<number>(-1);
 
-  private _$prepared = new BehaviorSubject<boolean>(false);
-  protected $prepared = this._$prepared.asObservable();
-
   private _$update = new Subject<string>();
   protected $update = this._$update.asObservable();
 
@@ -1115,30 +1117,6 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$snapScrollToEndCanceller = new BehaviorSubject<boolean>(false);
   readonly $snapScrollToEndCanceller = this._$snapScrollToEndCanceller.asObservable();
 
-  private _onTrackBoxResetHandler = (v: boolean) => {
-    if (v && this._scrollerComponent()?.scrollable) {
-      this._$isResetedReachStart.next(true);
-
-      const scroller = this._scroller()?.nativeElement;
-      if (scroller) {
-        const params: IScrollToParams = {
-          [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0,
-          behavior: BEHAVIOR_INSTANT,
-          blending: false,
-          fireUpdate: false,
-          userAction: false,
-          duration: this.animationParams().scrollToItem,
-        };
-
-        scroller.scrollTo(params);
-      }
-    }
-  };
-
-  private _onPreparedHandler = (v: boolean) => {
-    this._$prepared.next(v);
-  };
-
   private _destroyRef = inject(DestroyRef);
 
   private _updateId: number | undefined;
@@ -1146,6 +1124,12 @@ export class NgVirtualListComponent implements OnDestroy {
   private _scrollStateUpdateIndex: number = 0;
 
   private _readyToShow = false;
+
+  private _isUserScrolling = false;
+
+  private _prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
+
+  private _updateIterations = 0;
 
   private _$viewInit = new BehaviorSubject<boolean>(false);
   private readonly $viewInit = this._$viewInit.asObservable();
@@ -1161,9 +1145,6 @@ export class NgVirtualListComponent implements OnDestroy {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
-
-    this._trackBox.addEventListener(TrackBoxEvents.RESET, this._onTrackBoxResetHandler);
-    this._trackBox.addEventListener(TrackBoxEvents.PREPARE, this._onPreparedHandler);
 
     this._service.initialize(this._trackBox);
     this._service.itemToFocus = this.itemToFocus;
@@ -1230,167 +1211,270 @@ export class NgVirtualListComponent implements OnDestroy {
       this._service.clickDistance = dist;
     });
 
-    let prepared = false, isUserScrolling = false;
+    const update = (params: {
+      snapScrollToBottom: boolean; bounds: IRect; listBounds: IRect; scrollEndOffset: number; items: IVirtualListCollection<Object>;
+      itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number; bufferSize: number; maxBufferSize: number;
+      snap: boolean; isVertical: boolean; dynamicSize: boolean; enabledBufferOptimization: boolean; cacheVersion: number;
+    }, emitable: boolean = true) => {
+      const {
+        snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+        bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+      } = params;
+      const scroller = this._scrollerComponent();
+      if (scroller) {
+        let actualScrollSize = !this._readyToShow && snapScrollToBottom ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
+          (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
+          totalSize = 0, displayItems: IRenderVirtualListCollection;
 
-    let prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION, updateIterations = 0;
+        const { width, height, x, y } = bounds, viewportSize = (isVertical ? height : width);
+
+        let scrollLength = Math.round(this._totalSize()) ?? 0,
+          actualScrollLength = Math.round(scrollLength === 0 ? 0 : scrollLength > viewportSize ? scrollLength - viewportSize : scrollLength),
+          roundedMaxPosition = Math.round(actualScrollLength),
+          scrollPosition = Math.round(actualScrollSize);
+
+        const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
+          bounds: { width, height, x, y }, dynamicSize, isVertical, itemSize,
+          bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+        };
+
+        if (snapScrollToBottom && !this._readyToShow) {
+          const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1 } =
+            this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
+          displayItems = calculatedDisplayItems;
+          totalSize = calculatedTotalSize1;
+          scrollLength = Math.round(totalSize) ?? 0;
+          actualScrollLength = Math.round(scrollLength === 0 ? 0 : scrollLength > viewportSize ? scrollLength - viewportSize : scrollLength);
+          roundedMaxPosition = Math.round(actualScrollLength);
+          scrollPosition = Math.round(actualScrollSize);
+        } else {
+          const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize } = this._trackBox.updateCollection(items, itemConfigMap, opts);
+          displayItems = calculatedDisplayItems;
+          totalSize = calculatedTotalSize;
+        }
+
+        scroller.totalSize = totalSize;
+
+        this._totalSize.set(totalSize);
+
+        this._service.collection = displayItems;
+
+        this.resetBoundsSize(isVertical, totalSize);
+
+        this.createDisplayComponentsIfNeed(displayItems);
+
+        this.tracking();
+
+        if (emitable && this._readyToShow && actualScrollLength > 0) {
+          const isScrollStart = this._isUserScrolling && scrollPosition < MIN_SCROLL_TO_START_PIXELS;
+          this._isScrollStart.set(isScrollStart);
+          if (isScrollStart) {
+            this._isScrollFinished.set(false);
+          } else {
+            this._isScrollFinished.set(scrollPosition >= roundedMaxPosition);
+          }
+        }
+
+        actualScrollSize = !this._readyToShow && snapScrollToBottom ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
+          (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
+        const delta = this._trackBox.delta,
+          roundedActualScrollSize = Math.round(actualScrollSize),
+          scrollPositionAfterUpdate = actualScrollSize + delta,
+          roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
+          roundedMaxPositionAfterUpdate = Math.round(totalSize - viewportSize);
+
+        if (this._isSnappingMethodAdvanced) {
+          this.updateRegularRenderer();
+        }
+
+        scroller.delta = delta;
+
+        this._trackBox.clearDelta();
+
+        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) ||
+          (snapScrollToBottom && actualScrollSize > 0 &&
+            ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
+              (scrollPosition >= roundedMaxPosition) &&
+              (roundedMaxPositionAfterUpdate >= roundedMaxPosition)))) {
+          if (!this._trackBox.isSnappedToEnd) {
+            this._isScrollFinished.set(true);
+          }
+          this._trackBox.isScrollEnd = true;
+          if (emitable && this._readyToShow) {
+            this.emitScrollEvent(true, false);
+          }
+          if (!this._readyToShow || roundedMaxPositionAfterUpdate > 0) {
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
+              fireUpdate: false, behavior: BEHAVIOR_INSTANT,
+              blending: false, duration: this.animationParams().scrollToItem,
+            };
+            scroller?.scrollTo?.(params);
+            if (emitable && !this._readyToShow) {
+              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            }
+            return;
+          }
+        } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
+          if (!snapScrollToBottom && scrollPositionAfterUpdate >= roundedMaxPosition) {
+            if (!this._trackBox.isSnappedToEnd) {
+              this._isScrollFinished.set(true);
+            }
+          }
+          if (this._scrollSize() !== scrollPositionAfterUpdate) {
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true,
+              fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+            };
+            scroller.scrollTo(params);
+            if (emitable && !this._readyToShow) {
+              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            }
+            return;
+          }
+        }
+
+        if (emitable && !this._readyToShow) {
+          this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+        }
+      }
+    };
+
     const $updateComplete = this.$update.pipe(
       takeUntilDestroyed(),
       switchMap((v) => {
-        if (((prevScrollStateVersion === EMPTY_SCROLL_STATE_VERSION) || (prevScrollStateVersion !== v)) &&
-          (updateIterations < MIN_PREPARE_ITERATIONS)) {
+        if (((this._prevScrollStateVersion === EMPTY_SCROLL_STATE_VERSION) || (this._prevScrollStateVersion !== v)) &&
+          (this._updateIterations < MIN_PREPARE_ITERATIONS)) {
           if (v !== EMPTY_SCROLL_STATE_VERSION) {
-            prevScrollStateVersion = v;
+            this._prevScrollStateVersion = v;
           }
           this._trackBox.isScrollEnd = true;
-          this.updateToEnd();
+          this._$fireUpdateNextFrame.next();
           return of(false);
         }
-        if (prevScrollStateVersion === v) {
+        if (this._prevScrollStateVersion === v) {
           this._trackBox.isScrollEnd = true;
-          if (updateIterations < MIN_PREPARE_ITERATIONS) {
-            updateIterations++;
-            this.updateToEnd();
+          if (this._updateIterations === RESET_CACHE_FRAME_NUMBER) {
+            this.refreshActualItemSize(true);
+          }
+          if (this._updateIterations < PREPARATION_REUPDATE_LENGTH) {
+            this._updateIterations++;
             this._$fireUpdateNextFrame.next();
             return of(false);
           }
         }
-        prevScrollStateVersion = v;
+        this._prevScrollStateVersion = v;
         return of(true);
       }),
       filter(v => !!v),
       distinctUntilChanged(),
     ),
-      $items = toObservable(this.items).pipe(
-        takeUntilDestroyed(),
-        map(i => !i ? [] : i),
-      ), $dynamicSize = toObservable(this.dynamicSize);
-
-    $items.pipe(
-      takeUntilDestroyed(),
-      map(items => !!items && items.length > 0),
-      distinctUntilChanged(),
-      tap(v => {
-        this._readyToShow = false;
-        this.refreshActualItemSize();
-      }),
-    ).subscribe();
+      $items = toObservable(this.items),
+      $dynamicSize = toObservable(this.dynamicSize);
 
     const $viewInit = this.$viewInit,
       $snapScrollToBottom = toObservable(this.snapScrollToBottom),
       $waitForPreparation = toObservable(this.waitForPreparation);
 
-    $viewInit.pipe(
-      takeUntilDestroyed(),
-      filter(v => !!v),
-      switchMap(() => {
-        return combineLatest([$dynamicSize, $snapScrollToBottom, $waitForPreparation]).pipe(
-          takeUntilDestroyed(this._destroyRef),
-          distinctUntilChanged(),
-          switchMap(([dynamicSize, snapScrollToBottom, waitForPreparation]) => {
-            if (!dynamicSize || !snapScrollToBottom || !waitForPreparation) {
-              prepared = this._readyToShow = true;
-              this.refreshActualItemSize();
-              const scrollerComponent = this._scrollerComponent();
-              if (scrollerComponent) {
-                scrollerComponent.prepared = true;
+    combineLatest([$dynamicSize, $snapScrollToBottom, $waitForPreparation]).pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      switchMap(([dynamicSize, snapScrollToBottom, waitForPreparation]) => {
+        if (!dynamicSize || !snapScrollToBottom || !waitForPreparation) {
+          this._readyToShow = true;
+          this.refreshActualItemSize(true);
+          const scrollerComponent = this._scrollerComponent();
+          if (scrollerComponent) {
+            scrollerComponent.prepared = true;
+          }
+          this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: false });
+          this._service.update();
+          this._$show.next(true);
+          return of(false);
+        }
+        if (!!dynamicSize && !!snapScrollToBottom && !!waitForPreparation) {
+          this._$show.next(false);
+          this.cacheClean();
+          this._readyToShow = this._isUserScrolling = false;
+          const scrollerComponent = this._scrollerComponent();
+          if (scrollerComponent) {
+            scrollerComponent.prepared = false;
+            scrollerComponent.stopScrolling();
+          }
+          this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+          return $items.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            map(i => (i ?? []).length > 0),
+            distinctUntilChanged(),
+            switchMap(v => {
+              if (!v) {
+                this.cacheClean();
+                this._readyToShow = this._isUserScrolling = false;
+                this.refreshActualItemSize(false);
+                this._trackBox.isScrollEnd = true;
+                this._updateIterations = 0;
+                this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
+                const scrollerComponent = this._scrollerComponent();
+                if (scrollerComponent) {
+                  scrollerComponent.prepared = false;
+                  scrollerComponent.stopScrolling();
+                }
+                this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+                this._$show.next(false);
+                return of(false);
               }
-              this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: false });
-              this._service.update();
-              this._$show.next(true);
-              return of(false);
-            }
-            if (!!dynamicSize && !!snapScrollToBottom && !!waitForPreparation) {
-              prepared = this._readyToShow = false;
-              this.refreshActualItemSize();
-              return this.$prepared.pipe(
+              return of(true).pipe(
                 takeUntilDestroyed(this._destroyRef),
-                distinctUntilChanged(),
-                switchMap(v => {
-                  if (this.items().length === 0) {
-                    prepared = this._readyToShow = true;
-                    this.refreshActualItemSize();
-                    const scrollerComponent = this._scrollerComponent();
-                    if (scrollerComponent) {
-                      scrollerComponent.prepared = true;
-                      scrollerComponent.stopScrolling();
-                    }
-                    this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-                    this._$fireUpdate.next();
-                    this._$show.next(true);
-                    return of(true);
+                switchMap(() => {
+                  const waitForPreparation = this.waitForPreparation();
+                  if (waitForPreparation) {
+                    this.refreshActualItemSize(false);
+                    return $updateComplete.pipe(
+                      takeUntilDestroyed(this._destroyRef),
+                      take(1),
+                      tap(() => {
+                        this._readyToShow = true;
+                        const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
+                        if (scrollerComponent) {
+                          scrollerComponent.prepared = true;
+                          scrollerComponent.stopScrolling();
+                        }
+                        this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                        this._$show.next(true);
+                      }),
+                      tap(() => {
+                        this.refreshActualItemSize(true);
+                        this._scrollerComponent()?.refresh(true, true);
+                      }),
+                    );
                   }
-                  if (!v) {
-                    this._$show.next(false);
-                    this._readyToShow = isUserScrolling = prepared = false;
-                    this.refreshActualItemSize();
-                    this.cacheClean();
-                    const scrollerComponent = this._scrollerComponent();
-                    if (scrollerComponent) {
-                      scrollerComponent.prepared = false;
-                      scrollerComponent.stopScrolling();
-                    }
-                    this.classes.set({ prepared: v, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
-                    this._$fireUpdate.next();
-                    return of(false);
+                  this._readyToShow = true;
+                  const scrollerComponent = this._scrollerComponent();
+                  if (scrollerComponent) {
+                    scrollerComponent.prepared = true;
+                    scrollerComponent.stopScrolling();
                   }
-                  return of(true).pipe(
-                    takeUntilDestroyed(this._destroyRef),
-                    switchMap(v => {
-                      const waitForPreparation = this.waitForPreparation();
-                      if (waitForPreparation) {
-                        prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
-                        updateIterations = 0;
-                        this._readyToShow = isUserScrolling = prepared = false;
-                        this.refreshActualItemSize();
-                        return $updateComplete.pipe(
-                          takeUntilDestroyed(this._destroyRef),
-                          delay(0),
-                          take(1),
-                          tap(() => {
-                            prepared = this._readyToShow = true;
-                            const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
-                            if (scrollerComponent) {
-                              scrollerComponent.prepared = true;
-                              scrollerComponent.stopScrolling();
-                            }
-                            this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-                            this._$fireUpdate.next();
-                            this._$show.next(true);
-                          }),
-                        );
-                      }
-                      prepared = this._readyToShow = true;
-                      const scrollerComponent = this._scrollerComponent();
-                      if (scrollerComponent) {
-                        scrollerComponent.prepared = true;
-                        scrollerComponent.stopScrolling();
-                      }
-                      this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-                      this._$fireUpdate.next();
-                      this._$show.next(true);
-                      return of(false);
-                    }),
-                  );
-                }),
-                delay(0),
-                tap(() => {
-                  this.refreshActualItemSize();
-                  this._$fireUpdateNextFrame.next();
+                  this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                  this._$show.next(true);
+                  return of(false);
                 }),
               );
-            }
-            prepared = this._readyToShow = true;
-            const scrollerComponent = this._scrollerComponent();
-            if (scrollerComponent) {
-              scrollerComponent.prepared = true;
-              scrollerComponent.stopScrolling();
-            }
-            this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: false });
-            this._service.update(true);
-            this._$show.next(true);
-            return of(false);
-          }),
-        )
+            }),
+          );
+        } else {
+          this._readyToShow = true;
+          this.refreshActualItemSize(true);
+          const scrollerComponent = this._scrollerComponent();
+          if (scrollerComponent) {
+            scrollerComponent.prepared = true;
+            scrollerComponent.stopScrolling();
+          }
+          this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: false });
+          this._service.update(true);
+          this._$show.next(true);
+          this._scrollerComponent()?.refresh(true, true);
+          return of(false);
+        }
       }),
     ).subscribe();
 
@@ -1585,16 +1669,31 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    combineLatest([$items, $itemSize]).pipe(
+    $items.pipe(
       takeUntilDestroyed(),
-      map(([items, itemSize]) => ({ items, itemSize })),
-      tap(({ items, itemSize }) => {
-        this._trackBox.resetCollection(items, itemSize);
+      debounceTime(0),
+      tap(items => {
+        this._trackBox.resetCollection(items, this.actualItemSize());
+        if (!this._readyToShow) {
+          this._readyToShow = this._isUserScrolling = false;
+          this.refreshActualItemSize(false);
+          this._trackBox.isScrollEnd = true;
+          this._updateIterations = 0;
+          this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
+          const scrollerComponent = this._scrollerComponent();
+          if (scrollerComponent) {
+            scrollerComponent.prepared = false;
+            scrollerComponent.stopScrolling();
+          }
+          this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+          this._$show.next(false);
+        }
       }),
     ).subscribe();
 
     combineLatest([$items, $collapsedItemIds, $itemConfigMap, $trackBy]).pipe(
       takeUntilDestroyed(),
+      debounceTime(0),
       tap(([items, collapsedIds, itemConfigMap, trackBy]) => {
         const hiddenItems = new CMap<Id, boolean>();
 
@@ -1681,159 +1780,45 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       filter(v => !!v),
       tap((v) => {
-        const scroller = this._scrollerComponent();
-        if (scroller) {
-          this._trackBox.cancelScrollSnappingToEnd(true);
+        if (this._readyToShow) {
+          const scroller = this._scrollerComponent();
+          if (scroller) {
+            this._trackBox.cancelScrollSnappingToEnd(true);
+          }
         }
       }),
       tap(() => {
-        this._$snapScrollToEndCanceller.next(false);
+        if (this._readyToShow) {
+          this._$snapScrollToEndCanceller.next(false);
+        }
       }),
     ).subscribe();
 
-    const update = (params: {
-      snapScrollToBottom: boolean; bounds: IRect; listBounds: IRect; scrollEndOffset: number; items: IVirtualListCollection<Object>;
-      itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number; bufferSize: number; maxBufferSize: number;
-      snap: boolean; isVertical: boolean; dynamicSize: boolean; enabledBufferOptimization: boolean; cacheVersion: number;
-    }) => {
-      const {
-        snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-        bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-      } = params;
-      const scroller = this._scrollerComponent();
-      if (scroller) {
-        let actualScrollSize = !prepared && snapScrollToBottom ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
-          (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
-          totalSize = 0, displayItems: IRenderVirtualListCollection;
-
-        const { width, height, x, y } = bounds, viewportSize = (isVertical ? height : width);
-
-        let scrollLength = Math.round(this._totalSize()) ?? 0,
-          actualScrollLength = Math.round(scrollLength === 0 ? 0 : scrollLength > viewportSize ? scrollLength - viewportSize : scrollLength),
-          roundedMaxPosition = Math.round(actualScrollLength),
-          scrollPosition = Math.round(actualScrollSize);
-
-        const opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-          bounds: { width, height, x, y }, dynamicSize, isVertical, itemSize,
-          bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
-        };
-
-        if (snapScrollToBottom && !prepared) {
-          const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1 } =
-            this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
-          displayItems = calculatedDisplayItems;
-          totalSize = calculatedTotalSize1;
-          scrollLength = Math.round(totalSize) ?? 0;
-          actualScrollLength = Math.round(scrollLength === 0 ? 0 : scrollLength > viewportSize ? scrollLength - viewportSize : scrollLength);
-          roundedMaxPosition = Math.round(actualScrollLength);
-          scrollPosition = Math.round(actualScrollSize);
-        } else {
-          const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize } = this._trackBox.updateCollection(items, itemConfigMap, opts);
-          displayItems = calculatedDisplayItems;
-          totalSize = calculatedTotalSize;
-        }
-
-        scroller.totalSize = totalSize;
-
-        this._totalSize.set(totalSize);
-
-        this._service.collection = displayItems;
-
-        this.resetBoundsSize(isVertical, totalSize);
-
-        this.createDisplayComponentsIfNeed(displayItems);
-
-        this.tracking();
-
-        if (prepared && this._readyToShow && actualScrollLength > 0) {
-          const isScrollStart = isUserScrolling && scrollPosition < MIN_SCROLL_TO_START_PIXELS;
-          this._isScrollStart.set(isScrollStart);
-          if (isScrollStart) {
-            this._isScrollFinished.set(false);
-          } else {
-            this._isScrollFinished.set(scrollPosition >= roundedMaxPosition);
-          }
-        }
-
-        actualScrollSize = !prepared && snapScrollToBottom ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
-          (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
-        const delta = this._trackBox.delta,
-          roundedActualScrollSize = Math.round(actualScrollSize),
-          scrollPositionAfterUpdate = actualScrollSize + delta,
-          roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
-          roundedMaxPositionAfterUpdate = Math.round(totalSize - viewportSize);
-
-        if (this._isSnappingMethodAdvanced) {
-          this.updateRegularRenderer();
-        }
-
-        scroller.delta = delta;
-
-        this._trackBox.clearDelta();
-
-        if ((snapScrollToBottom && this._trackBox.isSnappedToEnd) ||
-          (snapScrollToBottom && actualScrollSize > 0 &&
-            ((roundedScrollPositionAfterUpdate >= scrollPosition) &&
-              (scrollPosition >= roundedMaxPosition) &&
-              (roundedMaxPositionAfterUpdate >= roundedMaxPosition)))) {
-          if (!this._trackBox.isSnappedToEnd) {
-            this._isScrollFinished.set(true);
-          }
-          this._trackBox.isScrollEnd = true;
-          if (prepared && this._readyToShow) {
-            this.emitScrollEvent(true, false);
-          }
-          if (roundedMaxPositionAfterUpdate > 0) {
-            const params: IScrollToParams = {
-              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: false, behavior: BEHAVIOR_INSTANT,
-              blending: !prepared || scroller.isMoving, duration: this.animationParams().scrollToItem,
-            };
-            scroller?.scrollTo?.(params);
-            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-            return;
-          }
-        } else if (roundedActualScrollSize !== roundedScrollPositionAfterUpdate && scrollPositionAfterUpdate > 0) {
-          if (!snapScrollToBottom && scrollPositionAfterUpdate >= roundedMaxPosition) {
-            if (!this._trackBox.isSnappedToEnd) {
-              this._isScrollFinished.set(true);
-            }
-          }
-          if (this._scrollSize() !== scrollPositionAfterUpdate) {
-            const params: IScrollToParams = {
-              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: !prepared || this._readyToShow,
-              fireUpdate: false, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
-            };
-            scroller.scrollTo(params);
-            this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-            return;
-          }
-        }
-
-        if (!prepared && !this._readyToShow) {
-          this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-        }
-      }
-    };
-
-    combineLatest([$snapScrollToBottom, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $itemSize,
-      $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
-    ]).pipe(
+    $viewInit.pipe(
       takeUntilDestroyed(),
-      distinctUntilChanged(),
-      tap(([
-        snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-        bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-      ]) => {
-        update({
-          snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-          bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
-        });
+      filter(v => !!v),
+      switchMap(() => {
+        return combineLatest([$snapScrollToBottom, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $itemSize,
+          $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
+        ]).pipe(
+          takeUntilDestroyed(this._destroyRef),
+          distinctUntilChanged(),
+          tap(([
+            snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+            bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+          ]) => {
+            update({
+              snapScrollToBottom, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+              bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+            });
+          }),
+        );
       }),
     ).subscribe();
 
     combineLatest([$items, $dynamicSize]).pipe(
       takeUntilDestroyed(),
+      debounceTime(0),
       filter(([, dynamic]) => !dynamic),
       delay(0),
       takeUntilDestroyed(),
@@ -1874,10 +1859,12 @@ export class NgVirtualListComponent implements OnDestroy {
         return fromEvent(scroller, SCROLLER_WHEEL, { passive: true }).pipe(
           takeUntilDestroyed(this._destroyRef),
           filter(() => {
-            return !!this._trackBox.isSnappedToEnd;
+            return !!this._trackBox.isSnappedToEnd && this._readyToShow;
           }),
           tap(() => {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
           }),
         );
       }),
@@ -1893,7 +1880,9 @@ export class NgVirtualListComponent implements OnDestroy {
             return !!this._trackBox.isSnappedToEnd;
           }),
           tap(() => {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
           }),
         );
       }),
@@ -1937,7 +1926,9 @@ export class NgVirtualListComponent implements OnDestroy {
             return 0;
           }),
           tap(() => {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
           }),
         );
       }),
@@ -1968,7 +1959,7 @@ export class NgVirtualListComponent implements OnDestroy {
               takeUntilDestroyed(this._destroyRef),
               takeUntil($touchMoveTakeUntil),
               filter(() => {
-                return !!this._trackBox.isSnappedToEnd;
+                return !!this._trackBox.isSnappedToEnd && this._readyToShow;
               }),
             );
           }),
@@ -1981,7 +1972,9 @@ export class NgVirtualListComponent implements OnDestroy {
             return 0;
           }),
           tap(() => {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
           }),
         );
       }),
@@ -1996,12 +1989,14 @@ export class NgVirtualListComponent implements OnDestroy {
         );
       }),
       tap(userAction => {
-        isUserScrolling = userAction;
+        this._isUserScrolling = userAction;
         const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
         if (scrollerEl && scrollerComponent) {
-          const event = this.emitScrollEvent(false);
+          const event = this.emitScrollEvent(false, this._readyToShow);
           if (userAction) {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
             if (!this.dynamicSize()) {
               this._$fireUpdate.next(event);
             }
@@ -2019,12 +2014,14 @@ export class NgVirtualListComponent implements OnDestroy {
         );
       }),
       tap(userAction => {
-        isUserScrolling = userAction;
+        this._isUserScrolling = userAction;
         const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
         if (scrollerEl && scrollerComponent) {
-          const event = this.emitScrollEvent(true);
+          const event = this.emitScrollEvent(true, this._readyToShow);
           if (userAction) {
-            this._$snapScrollToEndCanceller.next(true);
+            if (this._readyToShow) {
+              this._$snapScrollToEndCanceller.next(true);
+            }
             if (!this.dynamicSize()) {
               this._$fireUpdate.next(event);
             }
@@ -2049,9 +2046,11 @@ export class NgVirtualListComponent implements OnDestroy {
             scrollLength = isVertical ? (listBounds?.height ?? 0) - (bounds?.height ?? 0) : (listBounds?.width ?? 0) - (bounds?.width ?? 0),
             actualScrollSize = scrollSize;
 
-          if (this._trackBox.isSnappedToEnd) {
-            if (scrollSize < scrollLength) {
-              this._trackBox.cancelScrollSnappingToEnd();
+          if (this._readyToShow) {
+            if (this._trackBox.isSnappedToEnd) {
+              if (scrollSize < scrollLength) {
+                this._trackBox.cancelScrollSnappingToEnd();
+              }
             }
           }
 
@@ -2097,7 +2096,7 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(([scroller]) => scroller !== undefined),
       map(([scroller, trackBy, event]) => ({ scroller: scroller, trackBy, event })),
       switchMap(({ scroller, trackBy, event }) => {
-        if (!prepared || !this._readyToShow) {
+        if (!this._readyToShow) {
           return of([false]);
         }
         const scrollerComponent = this._scrollerComponent(),
@@ -2158,7 +2157,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._$snapScrollToEndCanceller.next(true);
               const notChanged = actualScrollSize === currentScrollSize;
               if ((!notChanged && iteration < MAX_SCROLL_TO_ITERATIONS) ||
-                (scrollerComponent.scrollHeight !== (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft) && iteration < MAX_SCROLL_TO_ITERATIONS)) {
+                (!this.snapScrollToBottom() && iteration < MAX_SCROLL_TO_ITERATIONS)) {
                 scrollerComponent?.scrollTo?.(params);
                 this._$scrollTo.next(params as IScrollParams);
                 return of([false, {
@@ -2201,7 +2200,9 @@ export class NgVirtualListComponent implements OnDestroy {
           }
         }
 
-        this._trackBox.cancelScrollSnappingToEnd(true);
+        if (this._readyToShow) {
+          this._trackBox.cancelScrollSnappingToEnd(true);
+        }
 
         const p = params as Pick<IScrollParams, 'cb' | 'scrollCalled' | 'scroller'>;
         if (p.scrollCalled && p.scroller) {
@@ -2304,6 +2305,10 @@ export class NgVirtualListComponent implements OnDestroy {
         this._service.setCollapsedIds(v);
       }),
     ).subscribe();
+  }
+
+  ngAfterViewInit() {
+    this._$viewInit.next(true);
 
     this._$fireUpdate.next({
       scrollSize: 0,
@@ -2318,24 +2323,6 @@ export class NgVirtualListComponent implements OnDestroy {
       scrollDelta: 0,
       itemsRange: undefined,
     });
-  }
-
-  ngAfterViewInit() {
-    this._$viewInit.next(true);
-  }
-
-  private updateToEnd() {
-    const scroller = this._scrollerComponent();
-    if (!!scroller) {
-      const isVerrtical = this._isVertical,
-        actualScrollSize = isVerrtical ? (scroller?.scrollHeight ?? 0) : (scroller?.scrollWidth ?? 0),
-        params: IScrollToParams = {
-          [isVerrtical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualScrollSize,
-          blending: false, fireUpdate: true, userAction: false, behavior: BEHAVIOR_INSTANT,
-        }
-      scroller.scrollTo(params);
-      scroller.refresh();
-    }
   }
 
   private emitScrollEvent(isScrollEnd: boolean = false, update: boolean = true) {
@@ -2379,20 +2366,22 @@ export class NgVirtualListComponent implements OnDestroy {
     }
   }
 
-  private refreshActualItemSize(value: boolean | undefined = undefined) {
+  private refreshActualItemSize(value: boolean) {
+    if (!this.waitForPreparation()) {
+      return;
+    }
     let size: number;
-    if (value === false || !this._readyToShow) {
-      const bounds = this._bounds();
+    const bounds = this._bounds();
+    if (value === false) {
       size = (this._isVertical ?
         bounds?.height || DEFAULT_LIST_SIZE :
-        bounds?.width || DEFAULT_LIST_SIZE) * .5;
+        bounds?.width || DEFAULT_LIST_SIZE);
       this.actualItemSize.set(size);
     } else {
-      size = this.itemSize()
+      size = this.itemSize();
       this.actualItemSize.set(size);
     }
-    this._trackBox.resetCache(this.items(), this.trackBy(), this._isVertical, size);
-    this._$fireUpdateNextFrame.next();
+    this._trackBox.resetCache(this._actualItems(), this.trackBy(), this._isVertical, size, bounds!);
   }
 
   private getIsSnappingMethodAdvanced(m?: SnappingMethod) {
@@ -2605,7 +2594,9 @@ export class NgVirtualListComponent implements OnDestroy {
     if (scrollerComponent) {
       scrollerComponent.reset();
     }
-    this._$prepared.next(false);
+    if (this._scrollerComponent()?.scrollable) {
+      this._$isResetedReachStart.next(true);
+    }
   }
 
   /**
