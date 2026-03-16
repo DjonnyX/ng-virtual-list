@@ -18,15 +18,9 @@ interface IAnimatorUpdateData {
 }
 
 export const DEFAULT_ANIMATION_DURATION = 500,
-  ANIMATOR_MIN_TIMESTAMP = 20,
+  ANIMATOR_MIN_TIMESTAMP = 1000 / 30,
   MIN_ANIMATED_VALUE = 10;
 
-/**
- * Animator
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/utils/animator/animator.ts
- * @author Evgenii Alexandrovich Grebennikov
- * @email djonnyx@gmail.com
- */
 export class Animator {
   private _animationId: number = 0;
 
