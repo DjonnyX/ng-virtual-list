@@ -1,11 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.10.4] - 2026-03-16
+
+### Fixed
+- Smooth scrolling has been implemented.
+- Fix a bug in list initialization.
+
 ## [19.10.3] - 2026-03-13
 
 ### Fixed
 - Emit a scroll event after calling scrollTo and scrollToEnd.
-- Create modules for 19.x 20.x 21.x.
+- Create modules for 19.x 19.x 21.x.
 - Fix a bug in list initialization.
 - API optimization. Hiding unnecessary properties and methods.
 - If the scroll bar is pinned to the end of the list, moving the scroll bar does not reset this pinning.
