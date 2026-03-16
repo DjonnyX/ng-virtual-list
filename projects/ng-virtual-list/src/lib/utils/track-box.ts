@@ -16,7 +16,6 @@ import { debounce } from "./debounce";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
-    RESET = 'reset',
 }
 
 export interface IMetrics {
@@ -82,9 +81,7 @@ export type CacheMapEvents = TrackBoxEvents;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type OnResetEventListener = (reseted: boolean) => void;
-
-export type CacheMapListeners = OnChangeEventListener | OnResetEventListener;
+export type CacheMapListeners = OnChangeEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -321,8 +318,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             (!!currentCollection && currentCollection.length > 0));
 
         this._isReseted = reseted;
-
-        this.dispatch(TrackBoxEvents.RESET, reseted);
 
         this.updateCache(this._previousCollection, currentCollection, itemSize);
 
@@ -868,15 +863,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         bounds: ISize) {
         const map = this._map;
         for (let i = 0, l = collection.length; i < l; i++) {
-            const collectionItem = collection[i], id = collectionItem[trackBy], sizePropertyName = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
+            const collectionItem = collection[i], id = collectionItem[trackBy];
             if (map.has(id)) {
                 const cache = map.get(id), bSize = isVertical ? bounds.height : bounds.width;
-                if (cache[IS_NEW] === false ||
-                    cache.method !== ItemDisplayMethods.NOT_CHANGED ||
-                    cache[sizePropertyName] === itemSize ||
-                    cache[sizePropertyName] === bSize) {
-                    map.set(id, { ...cache, width: isVertical ? cache.width : itemSize, height: isVertical ? itemSize : cache.height });
-                }
+                map.set(id, {
+                    ...cache,
+                    width: isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
+                    height: isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height
+                });
             }
         }
     }
