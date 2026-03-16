@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [21.10.5] - 2026-03-16
+
+### Fixed
+- Smooth scrolling has been implemented.
+- Fix a bug in list initialization.
+
 ## [21.10.3] - 2026-03-14
 
 ### Fixed
