@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.10.10] - 2026-03-16
+
+### Improved
+- Code review.
+
 ## [20.10.9] - 2026-03-16
 
 ### Fixed
