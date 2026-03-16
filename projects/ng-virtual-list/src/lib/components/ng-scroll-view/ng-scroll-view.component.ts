@@ -114,7 +114,7 @@ export class NgScrollView implements OnDestroy {
         this._totalSize = v;
     }
 
-    private _startPosition = this._totalSize;
+    private _startPosition = 0;
 
     get actualScrollHeight() {
         const { height: viewportHeight } = this.viewportBounds(),
