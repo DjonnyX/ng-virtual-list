@@ -239,6 +239,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   constructor(private _service: NgVirtualListService) {
     super();
+  }
+
+  override ngAfterViewInit(): void {
+    super.ngAfterViewInit();
 
     this._service.$langTextDir.pipe(
       takeUntil(this._$unsubscribe),
@@ -312,16 +316,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       }),
     ).subscribe();
 
-    this.$viewInitialized.pipe(
-      takeUntil(this._$unsubscribe),
-      debounceTime(0),
-      tap((v) => {
-        if (v) {
-          this._$updateScrollbarWithUpdate.next(false);
-        }
-      }),
-    ).subscribe();
-
     this.$preparedSignal.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -346,6 +340,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         this._$show.next(scrollbarShow && scrollbarEnabled && preparedSignal);
       }),
     ).subscribe();
+
+    this._$updateScrollbarWithUpdate.next(false);
   }
 
   private updateScrollBarHandler(update: boolean = false) {
@@ -428,7 +424,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       blending = params.blending ?? true,
       fireUpdate = params.fireUpdate ?? false;
 
-      if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
+    if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
       if (this.scrollBar) {
         this.scrollBar.stopScrolling();
       }

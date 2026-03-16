@@ -25,7 +25,7 @@ interface ITemplateContext<D = any> {
   index: number;
 }
 
-const ZEROS_POSITION = -1000, NAVIGATE_TO_ATTEMPT = 5,
+const TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)', NAVIGATE_TO_ATTEMPT = 5,
   DEFAULT_TEMPLATE_CONTEXT: ITemplateContext = {
     data: undefined,
     prevData: undefined,
@@ -544,7 +544,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.position = POSITION_ABSOLUTE;
-    styles.transform = `${TRANSLATE_3D}(${this.data?.config?.isVertical ? 0 : ZEROS_POSITION},${this.data?.config?.isVertical ? 0 : ZEROS_POSITION},0)`;
+    styles.transform = TRANSLATE_3D_HIDDEN;
     styles.zIndex = HIDDEN_ZINDEX;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {
