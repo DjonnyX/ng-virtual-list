@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, EventEmitter, inject, Input, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { RoundedCorner } from '../../types/rounded-corner';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, map, of, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fromEvent, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollBarTheme } from '../../types';
 import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -215,6 +215,70 @@ export class NgScrollBarComponent extends NgScrollView {
   constructor(private _elementRef: ElementRef) {
     super();
 
+    this.$size.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this.totalSize = v;
+      }),
+    ).subscribe();
+
+    this.$interactive.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this.interactive = v;
+      }),
+    ).subscribe();
+
+    this.$loading.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
+      }),
+    ).subscribe();
+
+    this.$theme.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(theme => {
+        if (!!theme) {
+          this._$thumbGradientFill.next(theme.fill);
+          this._$thumbHoverGradientFill.next(theme.hoverFill);
+          this._$thumbPressedGradientFill.next(theme.pressedFill);
+          this._$strokeGradientColor.next(theme.strokeGradientColor);
+          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
+          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
+          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
+          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
+          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
+        }
+      }),
+    ).subscribe();
+
+    const $grabbing = this.$grabbing;
+
+    $grabbing.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this._$classes.next({ grabbing: v });
+      }),
+    ).subscribe();
+
+    combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(([isVertical, thickness, size]) => {
+        this._$thumbWidth.next(isVertical ? thickness : size);
+        this._$thumbHeight.next(isVertical ? size : thickness);
+      }),
+    ).subscribe();
+  }
+
+  override ngAfterViewInit(): void {
+    super.ngAfterViewInit();
     const $isVertical = this.$isVertical.pipe(
       takeUntilDestroyed(this._destroyRef),
       distinctUntilChanged(),
@@ -225,15 +289,6 @@ export class NgScrollBarComponent extends NgScrollView {
       distinctUntilChanged(),
       takeUntilDestroyed(this._destroyRef),
     );
-
-    combineLatest([$isVertical, $thickness, $size]).pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(([isVertical, thickness, size]) => {
-        this._$thumbWidth.next(isVertical ? thickness : size);
-        this._$thumbHeight.next(isVertical ? size : thickness);
-      }),
-    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntilDestroyed(this._destroyRef),
@@ -303,30 +358,6 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    $size.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this.totalSize = v;
-      }),
-    ).subscribe();
-
-    this.$interactive.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this.interactive = v;
-      }),
-    ).subscribe();
-
-    this.$loading.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
-      }),
-    ).subscribe();
-
     combineLatest([this.$show, $isVertical, $thickness]).pipe(
       takeUntilDestroyed(this._destroyRef),
       distinctUntilChanged(),
@@ -358,53 +389,15 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    this.$theme.pipe(
+    const content = this.scrollContent!.nativeElement;
+
+    fromEvent<PointerEvent>(content, 'pointerdown').pipe(
       takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(theme => {
-        if (!!theme) {
-          this._$thumbGradientFill.next(theme.fill);
-          this._$thumbHoverGradientFill.next(theme.hoverFill);
-          this._$thumbPressedGradientFill.next(theme.pressedFill);
-          this._$strokeGradientColor.next(theme.strokeGradientColor);
-          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
-          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
-          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
-          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
-          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
+      tap(e => {
+        if (!!this.substrate) {
+          this.ripple(this.substrate, e);
         }
       }),
-    ).subscribe();
-
-    const $grabbing = this.$grabbing;
-
-    $grabbing.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$classes.next({ grabbing: v });
-      }),
-    ).subscribe();
-
-    const $content = this.$viewInitialized.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      filter(v => !!v),
-      switchMap(() => of(this.scrollContent).pipe(
-        filter(v => !!v),
-        map(v => v!.nativeElement),
-      )),
-    );
-
-    $content.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      switchMap(content => fromEvent<PointerEvent>(content, 'pointerdown').pipe(
-        takeUntilDestroyed(this._destroyRef),
-        tap(e => {
-          if (!!this.substrate) {
-            this.ripple(this.substrate, e);
-          }
-        }),
-      )),
     ).subscribe();
   }
 
