@@ -71,11 +71,5 @@
     &.prepared {
         opacity: 1;
         overflow: hidden;
-
-        &.wait-for-preparation {
-            &.ready-to-start {
-                // transition: opacity 100ms ease-out;
-            }
-        }
     }
 }
