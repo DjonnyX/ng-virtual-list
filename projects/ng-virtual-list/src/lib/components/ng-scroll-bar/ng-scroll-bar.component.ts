@@ -214,6 +214,70 @@ export class NgScrollBarComponent extends NgScrollView {
   constructor(private _elementRef: ElementRef) {
     super();
 
+    this.$size.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this.totalSize = v;
+      }),
+    ).subscribe();
+
+    this.$interactive.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this.interactive = v;
+      }),
+    ).subscribe();
+
+    this.$loading.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
+      }),
+    ).subscribe();
+
+    this.$theme.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(theme => {
+        if (!!theme) {
+          this._$thumbGradientFill.next(theme.fill);
+          this._$thumbHoverGradientFill.next(theme.hoverFill);
+          this._$thumbPressedGradientFill.next(theme.pressedFill);
+          this._$strokeGradientColor.next(theme.strokeGradientColor);
+          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
+          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
+          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
+          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
+          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
+        }
+      }),
+    ).subscribe();
+
+    const $grabbing = this.$grabbing;
+
+    $grabbing.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this._$classes.next({ grabbing: v });
+      }),
+    ).subscribe();
+
+    combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(([isVertical, thickness, size]) => {
+        this._$thumbWidth.next(isVertical ? thickness : size);
+        this._$thumbHeight.next(isVertical ? size : thickness);
+      }),
+    ).subscribe();
+  }
+
+  override ngAfterViewInit(): void {
+    super.ngAfterViewInit();
     const $isVertical = this.$isVertical.pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -224,15 +288,6 @@ export class NgScrollBarComponent extends NgScrollView {
       distinctUntilChanged(),
       takeUntil(this._$unsubscribe),
     );
-
-    combineLatest([$isVertical, $thickness, $size]).pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(([isVertical, thickness, size]) => {
-        this._$thumbWidth.next(isVertical ? thickness : size);
-        this._$thumbHeight.next(isVertical ? size : thickness);
-      }),
-    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntil(this._$unsubscribe),
@@ -302,30 +357,6 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    $size.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(v => {
-        this.totalSize = v;
-      }),
-    ).subscribe();
-
-    this.$interactive.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(v => {
-        this.interactive = v;
-      }),
-    ).subscribe();
-
-    this.$loading.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
-      }),
-    ).subscribe();
-
     combineLatest([this.$show, $isVertical, $thickness]).pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -357,53 +388,15 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    this.$theme.pipe(
+    const content = this.scrollContent!.nativeElement;
+
+    fromEvent<PointerEvent>(content, 'pointerdown').pipe(
       takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(theme => {
-        if (!!theme) {
-          this._$thumbGradientFill.next(theme.fill);
-          this._$thumbHoverGradientFill.next(theme.hoverFill);
-          this._$thumbPressedGradientFill.next(theme.pressedFill);
-          this._$strokeGradientColor.next(theme.strokeGradientColor);
-          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
-          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
-          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
-          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
-          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
+      tap(e => {
+        if (!!this.substrate) {
+          this.ripple(this.substrate, e);
         }
       }),
-    ).subscribe();
-
-    const $grabbing = this.$grabbing;
-
-    $grabbing.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$classes.next({ grabbing: v });
-      }),
-    ).subscribe();
-
-    const $content = this.$viewInitialized.pipe(
-      takeUntil(this._$unsubscribe),
-      filter(v => !!v),
-      switchMap(() => of(this.scrollContent).pipe(
-        filter(v => !!v),
-        map(v => v!.nativeElement),
-      )),
-    );
-
-    $content.pipe(
-      takeUntil(this._$unsubscribe),
-      switchMap(content => fromEvent<PointerEvent>(content, 'pointerdown').pipe(
-        takeUntil(this._$unsubscribe),
-        tap(e => {
-          if (!!this.substrate) {
-            this.ripple(this.substrate, e);
-          }
-        }),
-      )),
     ).subscribe();
   }
 
