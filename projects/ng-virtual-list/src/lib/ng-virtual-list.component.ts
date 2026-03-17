@@ -1545,6 +1545,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
     $items.pipe(
       takeUntilDestroyed(),
+      debounceTime(0),
       tap(items => {
         this._trackBox.resetCollection(items, this.actualItemSize());
       }),
