@@ -55,7 +55,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 10,
+  MIN_PREPARE_ITERATIONS = 35,
   PREPARATION_REUPDATE_LENGTH = 15,
   RESET_CACHE_FRAME_NUMBER = 3,
   EMPTY_SCROLL_STATE_VERSION = '-1',
@@ -1674,7 +1674,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             this._prevScrollStateVersion = v;
           }
           this._trackBox.isScrollEnd = true;
-          this._$fireUpdateNextFrame.next();
+          this._$fireUpdate.next();
           return of(false);
         }
         if (this._prevScrollStateVersion === v) {
@@ -1684,7 +1684,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
           }
           if (this._updateIterations < PREPARATION_REUPDATE_LENGTH) {
             this._updateIterations++;
-            this._$fireUpdateNextFrame.next();
+            this._trackBox.isScrollEnd = true;
+            this._$fireUpdate.next();
             return of(false);
           }
         }
@@ -1728,6 +1729,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
           this._$classes.next({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
           return $items.pipe(
             takeUntil(this._$unsubscribe),
+            debounceTime(0),
             map(i => (i ?? []).length > 0),
             distinctUntilChanged(),
             switchMap(v => {
@@ -2008,23 +2010,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
     $items.pipe(
       takeUntil(this._$unsubscribe),
-      debounceTime(0),
       tap(items => {
         this._trackBox.resetCollection(items, this._$actualItemSize.getValue());
-        if (!this._readyToShow) {
-          this._readyToShow = this._isUserScrolling = false;
-          this.refreshActualItemSize(false);
-          this._trackBox.isScrollEnd = true;
-          this._updateIterations = 0;
-          this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
-          const scrollerComponent = this._scrollerComponent;
-          if (scrollerComponent) {
-            scrollerComponent.prepared = false;
-            scrollerComponent.stopScrolling();
-          }
-          this._$classes.next({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
-          this._$show.next(false);
-        }
       }),
     ).subscribe();
 
