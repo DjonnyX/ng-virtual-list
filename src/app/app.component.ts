@@ -4,6 +4,8 @@ import {
   ScrollBarTheme, RoundedCorner,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
+import { delay, interval, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
@@ -89,16 +91,16 @@ const generateLetter = () => {
   return CHARS[Math.round(Math.random() * CHARS.length)];
 }
 
-const generateWord = () => {
-  const length = 5 + Math.floor(Math.random() * 50), result = [];
+const generateWord = (len: number = 50) => {
+  const length = 5 + Math.floor(Math.random() * len), result = [];
   while (result.length < length) {
     result.push(generateLetter());
   }
   return `${result.join('')}`;
 };
 
-const generateText = () => {
-  const length = 2 + Math.floor(Math.random() * 10), result = [];
+const generateText = (len: number = 10) => {
+  const length = 2 + Math.floor(Math.random() * len), result = [];
   while (result.length < length) {
     result.push(generateWord());
   }
@@ -145,7 +147,25 @@ const generateItems = (len: number) => {
     result.push({ id, name: `Item: ${id}` });
   }
   return result;
-}
+};
+
+const generateDynamicItems = (len: number, startWith: number = 0) => {
+  const result: IVirtualListCollection<ICollectionItem> = [];
+  for (let i = 0, l = len; i < l; i++) {
+    const id = startWith + i;
+    result.push({ id, name: `${id} ${generateText(8)}` });
+  }
+  return result;
+};
+
+const generateDynamicShortItems = (len: number, startWith: number = 0) => {
+  const result: IVirtualListCollection<ICollectionItem> = [];
+  for (let i = 0, l = len; i < l; i++) {
+    const id = startWith + i;
+    result.push({ id, name: `${id} ${generateWord(12)}` });
+  }
+  return result;
+};
 
 @Component({
   selector: 'app-root',
@@ -158,6 +178,8 @@ export class AppComponent {
 
   protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
 
+  protected _dynamicItemsListContainerRef = viewChild('dynamicItemsList', { read: NgVirtualListComponent });
+
   protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
 
   scrollbarTheme = SCROLLBAR_GRADIENT;
@@ -165,6 +187,10 @@ export class AppComponent {
   items = ITEMS;
 
   items1 = generateItems(1000);
+
+  dynamicItems = generateDynamicItems(0, 0);
+
+  dynamicShortItems = generateDynamicShortItems(0, 0);
 
   itemsRtl = ITEMS_RTL;
 
@@ -200,6 +226,71 @@ export class AppComponent {
 
   itemsLength: number = 0;
 
+  dynamicItemsLength: number = 0;
+
+  dynamicShortItemsLength: number = 0;
+
+  constructor() {
+    interval(1000).pipe(
+      takeUntilDestroyed(),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicItems];
+      //   collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
+      //   this.dynamicItems = collection;
+      // }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicItems];
+      //   collection.shift();
+      //   this.dynamicItems = collection;
+      // }),
+      // delay(450),
+      // tap(() => {
+      //   const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
+      //     insertedItems = generateDynamicItems(1, this.dynamicItems.length);
+      //   collection.splice(insertIndex, 0, ...insertedItems);
+      //   this.dynamicItems = collection;
+      // }),
+      delay(650),
+      tap(() => {
+        const collection = [...this.dynamicItems];
+        collection.push(...generateDynamicItems(1, this.dynamicItems.length));
+        this.dynamicItems = collection;
+      }),
+    ).subscribe();
+
+
+    interval(1000).pipe(
+      takeUntilDestroyed(),
+      // delay(0),
+      // tap(() => {
+      //   const collection = [...this.dynamicShortItems];
+      //   collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
+      //   this.dynamicShortItems = collection;
+      // }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicShortItems];
+      //   collection.shift();
+      //   this.dynamicShortItems = collection;
+      // }),
+      // delay(450),
+      // tap(() => {
+      //   const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),
+      //     insertedItems = generateDynamicShortItems(1, this.dynamicShortItems.length);
+      //   collection.splice(insertIndex, 0, ...insertedItems);
+      //   this.dynamicShortItems = collection;
+      // }),
+      delay(650),
+      tap(() => {
+        const collection = [...this.dynamicShortItems];
+        collection.push(...generateDynamicShortItems(1, this.dynamicShortItems.length));
+        this.dynamicShortItems = collection;
+      }),
+    ).subscribe();
+  }
+
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef(), id = this.itemId;
     if (list && id !== undefined) {
@@ -233,6 +324,16 @@ export class AppComponent {
   onButtonChangeItemsLengthHandler() {
     const len = this.itemsLength;
     this.items1 = generateItems(len);
+  }
+
+  onButtonChangeDynamicItemsLengthHandler() {
+    const len = this.dynamicItemsLength;
+    this.dynamicItems = generateDynamicItems(len);
+  }
+
+  onButtonChangeDynamicShortItemsLengthHandler() {
+    const len = this.dynamicShortItemsLength;
+    this.dynamicShortItems = generateDynamicShortItems(len);
   }
 
   onSelectHandler(data: Array<Id> | Id | undefined) {
