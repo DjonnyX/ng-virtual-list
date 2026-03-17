@@ -19,6 +19,11 @@
 .ngvl__snapped-container {
     position: relative;
     width: 100%;
+    opacity: 0;
+
+    &.prepared {
+        opacity: 1;
+    }
 }
 
 .ngvl__list-snapper {
