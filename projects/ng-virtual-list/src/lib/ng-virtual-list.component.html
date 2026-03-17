@@ -2,7 +2,7 @@
   {{ $screenReaderFormattedMessage | async }}
 </div>
 <ng-container *ngIf="$snap | async">
-  <div #snappedContainer class="ngvl__snapped-container">
+  <div #snappedContainer class="ngvl__snapped-container" [ngClass]="($classes | async)!">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
       <ng-container #snapRendererContainer></ng-container>
     </div>
