@@ -7,7 +7,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 20.10.12</span></div>
+    <div class="version"><span>v 20.10.15</span></div>
   </div>
 
   <div class="vl-section">
@@ -156,7 +156,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
+        [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
         [scrollbarTheme]="scrollbarTheme" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
