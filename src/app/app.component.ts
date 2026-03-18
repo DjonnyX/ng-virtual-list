@@ -7,6 +7,7 @@ import {
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 import { delay, interval, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
@@ -189,9 +190,9 @@ export class AppComponent {
 
   items1 = generateItems(1000);
 
-  dynamicItems = generateDynamicItems(0, 0);
+  dynamicItems = generateDynamicItems(20, 0);
 
-  dynamicShortItems = generateDynamicShortItems(0, 0);
+  dynamicShortItems = generateDynamicShortItems(20, 0);
 
   itemsRtl = ITEMS_RTL;
 
@@ -233,6 +234,7 @@ export class AppComponent {
 
   constructor() {
     interval(1000).pipe(
+      takeUntilDestroyed(),
       // delay(250),
       // tap(() => {
       //   const collection = [...this.dynamicItems];
@@ -262,6 +264,7 @@ export class AppComponent {
 
 
     interval(1000).pipe(
+      takeUntilDestroyed(),
       // delay(0),
       // tap(() => {
       //   const collection = [...this.dynamicShortItems];

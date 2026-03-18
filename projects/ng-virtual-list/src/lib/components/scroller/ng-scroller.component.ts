@@ -218,10 +218,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (update) {
       this.scrollBar?.scroll({
         [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: thumbPosition, fireUpdate: false, behavior: BEHAVIOR_INSTANT,
-        userAction: false, blending: false,
+        userAction: false, blending: true,
       });
     }
-    this.scrollbarShow.set(isVertical ? this.scrollHeight > 0 : this.scrollWidth > 0);
+    this.scrollbarShow.set(this.scrollable);
   };
 
   ngAfterViewInit() {
@@ -235,9 +235,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   protected override onDragStart() {
     super.onDragStart();
 
-    if (!!this.scrollBar) {
-      this.scrollBar.stopScrolling();
-    }
+    this.stopScrollbar();
 
     this._isScrollbarUserAction = false;
 
@@ -247,9 +245,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   override reset() {
     super.reset(this.startOffset());
     this.totalSize = 0;
-    if (this.scrollBar) {
-      this.scrollBar.stopScrolling();
-    }
+    this.stopScrollbar();
     this.refresh(true, true);
     this.prepared = false;
   }
@@ -280,13 +276,17 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       fireUpdate = params.fireUpdate ?? false;
 
     if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
-      if (this.scrollBar) {
-        this.scrollBar.stopScrolling();
-      }
+      this.stopScrollbar();
       this._isScrollbarUserAction = false;
     }
 
     this.scroll(params);
+  }
+
+  stopScrollbar() {
+    if (!!this.scrollBar) {
+      this.scrollBar.stopScrolling();
+    }
   }
 
   onScrollBarDragHandler(event: IScrollBarDragEvent) {

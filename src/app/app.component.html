@@ -7,7 +7,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 20.10.6</span></div>
+    <div class="version"><span>v 21.10.7</span></div>
   </div>
 
   <div class="vl-section">
@@ -55,29 +55,6 @@
       }
     }
   </ng-template>
-
-  <div class="vl-section">
-    <div class="vl-section__container">
-      <h2>Vertical virtual list (Dynamic size; Multi select; Snap Scroll To Bottom)</h2>
-      <div class="scroll-to__controls">
-        <input type="number" class="scroll-to__input" [(ngModel)]="itemsLength" [required]="true" [min]="0"
-          [max]="100000">
-        <button class="scroll-to__button" (click)="onButtonChangeItemsLengthHandler()">setup</button>
-      </div>
-      <ng-virtual-list class="list" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-        [dynamicSize]="true" [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]" [scrollbarTheme]="scrollbarTheme"
-        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToBottom]="true"></ng-virtual-list>
-    </div>
-  </div>
-
-  <div class="vl-section">
-    <div class="vl-section__container">
-      <h2>Vertical virtual list (right-to-left direction)</h2>
-      <ng-virtual-list class="list" langTextDir="rtl" [items]="itemsRtl" methodForSelecting="multi-select"  [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-        [dynamicSize]="false" [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]" [scrollbarTheme]="scrollbarTheme"
-        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
-    </div>
-  </div>
 
   <div class="vl-section">
     <div class="vl-section__container">
@@ -179,7 +156,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
+        [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
         [scrollbarTheme]="scrollbarTheme" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
