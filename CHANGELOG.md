@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.10.16] - 2026-03-19
+
+### Fixed
+- Fixed a bug in validating the snappingMethod property.
+
 ## [20.10.15] - 2026-03-18
 
 ### Fixed
