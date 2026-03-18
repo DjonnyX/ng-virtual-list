@@ -803,9 +803,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _snappingMethodOptions = {
     transform: (v: SnappingMethod) => {
-      const valid = validateString(v) && (v === 'normal' || v === 'advanced' || 'chat');
+      const valid = validateString(v) && (v === SnappingMethods.NORMAL || v === SnappingMethods.ADVANCED || v === SnappingMethods.CHAT);
       if (!valid) {
-        console.error('The "snappingMethod" parameter must have the value `normal`, `advanced` or `chat`.');
+        console.error(`The "snappingMethod" parameter must have the value '${SnappingMethods.NORMAL}', '${SnappingMethods.ADVANCED}' or '${SnappingMethods.CHAT}'.`);
         return DEFAULT_SNAPPING_METHOD;
       }
       return v;
