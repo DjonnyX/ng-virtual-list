@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [16.10.5] - 2026-03-18
+## [16.10.5] - 2026-03-19
 
 ### Fixed
 - Smooth scrolling has been implemented.

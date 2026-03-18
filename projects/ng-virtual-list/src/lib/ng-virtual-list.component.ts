@@ -298,7 +298,7 @@ export class NgVirtualListComponent implements OnDestroy {
   protected readonly $loading = this._$loading.asObservable();
 
   private _loadingTransform = (v: boolean) => {
-    const valid = validateObject(v);
+    const valid = validateBoolean(v);
 
     if (!valid) {
       console.error('The "loading" parameter must be of type `boolean`.');
@@ -1224,9 +1224,9 @@ export class NgVirtualListComponent implements OnDestroy {
   protected readonly $snappingMethod = this._$snappingMethod.asObservable();
 
   private _snappingMethodTransform = (v: SnappingMethod) => {
-    const valid = validateString(v) && (v === 'normal' || v === 'advanced');
+    const valid = validateString(v) && (v === SnappingMethods.NORMAL || v === SnappingMethods.ADVANCED || v === SnappingMethods.CHAT);
     if (!valid) {
-      console.error('The "snappingMethod" parameter must have the value `normal` or `advanced`.');
+      console.error(`The "snappingMethod" parameter must have the value '${SnappingMethods.NORMAL}', '${SnappingMethods.ADVANCED}' or '${SnappingMethods.CHAT}'.`);
       return DEFAULT_SNAPPING_METHOD;
     }
     return v;
