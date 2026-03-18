@@ -190,9 +190,9 @@ export class AppComponent {
 
   items1 = generateItems(1000);
 
-  dynamicItems = generateDynamicItems(0, 0);
+  dynamicItems = generateDynamicItems(20, 0);
 
-  dynamicShortItems = generateDynamicShortItems(0, 0);
+  dynamicShortItems = generateDynamicShortItems(20, 0);
 
   itemsRtl = ITEMS_RTL;
 
