@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.10.5] - 2026-03-18
+
+### Fixed
+- Smooth scrolling has been implemented.
+- Fixed initialization of static lists.
+- Fixed an issue where scroll animation would stop when adding items to a collection in a static list.
+- Fixed handling of the snapScrollToBottom property for static lists.
+
 ## [19.10.4] - 2026-03-16
 
 ### Fixed
