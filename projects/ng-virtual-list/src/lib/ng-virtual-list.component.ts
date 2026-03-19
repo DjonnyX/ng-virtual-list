@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, ElementRef, EventEmitter, Input,
+  ChangeDetectionStrategy, Component, ComponentRef, ElementRef, EventEmitter, Input,
   OnDestroy, Output, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -259,8 +259,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollbarThemeTransform(v);
 
     this._$scrollbarTheme.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollbarTheme() { return this._$scrollbarTheme.getValue() as ScrollBarTheme; }
 
@@ -289,8 +287,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollbarMinSizeTransform(v);
 
     this._$scrollbarMinSize.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollbarMinSize() { return this._$scrollbarMinSize.getValue() as number; }
 
@@ -319,8 +315,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._loadingTransform(v);
 
     this._$loading.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get loading() { return this._$loading.getValue() as boolean; }
 
@@ -349,8 +343,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._waitForPreparationTransform(v);
 
     this._$waitForPreparation.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get waitForPreparation() { return this._$waitForPreparation.getValue() as boolean; }
 
@@ -379,8 +371,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._clickDistanceTransform(v);
 
     this._$clickDistance.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get clickDistance() { return this._$clickDistance.getValue() as number; }
 
@@ -409,8 +399,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._snapToEndTransitionInstantOffsetTransform(v);
 
     this._$snapToEndTransitionInstantOffset.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get snapToEndTransitionInstantOffset() { return this._$snapToEndTransitionInstantOffset.getValue(); }
 
@@ -439,8 +427,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollStartOffsetTransform(v);
 
     this._$scrollStartOffset.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollStartOffset() { return this._$scrollStartOffset.getValue(); }
 
@@ -469,8 +455,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollEndOffsetTransform(v);
 
     this._$scrollEndOffset.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollEndOffset() { return this._$scrollEndOffset.getValue(); }
 
@@ -499,8 +483,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._snapScrollToBottomTransform(v);
 
     this._$snapScrollToBottom.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get snapScrollToBottom() { return this._$snapScrollToBottom.getValue(); }
 
@@ -530,8 +512,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._langTextDirTransform(v);
 
     this._$langTextDir.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get langTextDir() { return this._$langTextDir.getValue(); }
 
@@ -545,8 +525,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     }
 
     this._$defaultItemValue.next(v);
-
-    this._cdr.markForCheck();
   };
   get defaultItemValue() { return this._$defaultItemValue.getValue(); }
 
@@ -589,8 +567,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._itemsTransform(v);
 
     this._$items.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get items() { return this._$items.getValue() as IVirtualListCollection; }
 
@@ -630,8 +606,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._selectedIdsTransform(v);
 
     this._$selectedIds.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get selectedIds() { return this._$selectedIds.getValue(); }
 
@@ -671,8 +645,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._collapsedIdsTransform(v);
 
     this._$collapsedIds.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
@@ -702,8 +674,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._selectByClickTransform(v);
 
     this._$selectByClick.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get selectByClick() { return this._$selectByClick.getValue(); }
 
@@ -733,8 +703,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._collapseByClickTransform(v);
 
     this._$collapseByClick.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get collapseByClick() { return this._$collapseByClick.getValue(); }
 
@@ -763,8 +731,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._snapTransform(v);
 
     this._$snap.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get snap() { return this._$snap.getValue(); }
 
@@ -793,8 +759,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollbarEnabledTransform(v);
 
     this._$scrollbarEnabled.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
@@ -823,8 +787,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollbarInteractiveTransform(v);
 
     this._$scrollbarInteractive.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollbarInteractive() { return this._$scrollbarInteractive.getValue(); }
 
@@ -853,8 +815,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._scrollBehaviorTransform(v);
 
     this._$scrollBehavior.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get scrollBehavior() { return this._$scrollBehavior.getValue(); }
 
@@ -883,8 +843,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._animationParamsTransform(v);
 
     this._$animationParams.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get animationParams() { return this._$animationParams.getValue(); }
 
@@ -913,8 +871,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._overscrollEnabledTransform(v);
 
     this._$overscrollEnabled.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get overscrollEnabled() { return this._$overscrollEnabled.getValue(); }
 
@@ -946,8 +902,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._enabledBufferOptimizationTransform(v);
 
     this._$enabledBufferOptimization.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get enabledBufferOptimization() { return this._$enabledBufferOptimization.getValue(); }
 
@@ -979,8 +933,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._itemRendererTransform(v);
 
     this._$itemRenderer.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get itemRenderer() { return this._$itemRenderer.getValue() as TemplateRef<any>; }
 
@@ -1029,8 +981,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._itemConfigMapTransform(v);
 
     this._$itemConfigMap.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get itemConfigMap() { return this._$itemConfigMap.getValue(); }
 
@@ -1062,8 +1012,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._itemSizeTransform(v);
 
     this._$itemSize.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get itemSize() { return this._$itemSize.getValue(); }
 
@@ -1096,8 +1044,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._dynamicSizeTransform(v);
 
     this._$dynamicSize.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get dynamicSize() { return this._$dynamicSize.getValue(); }
 
@@ -1125,8 +1071,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._directionTransform(v);
 
     this._$direction.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get direction() { return this._$direction.getValue(); }
 
@@ -1154,8 +1098,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const transformedValue = this._collectionModeTransform(v);
 
     this._$collectionMode.next(transformedValue);
-
-    this._cdr.markForCheck();
   };
   get collectionMode() { return this._$collectionMode.getValue(); }
 
@@ -1370,6 +1312,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   private _$listBounds = new BehaviorSubject<IRect | null>(null);
 
   private _$scrollSize = new BehaviorSubject<number>(0);
+  protected readonly $scrollSize = this._$scrollSize.asObservable();
 
   private _$isScrollStart = new BehaviorSubject<boolean>(true);
 
@@ -1586,7 +1529,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
 
   constructor(
-    private _cdr: ChangeDetectorRef,
     private _elementRef: ElementRef<HTMLDivElement>,
     private _service: NgVirtualListService,
   ) {
@@ -1713,17 +1655,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
           this._$classes.next({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
           return $items.pipe(
             takeUntil(this._$unsubscribe),
-            debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
-                this.cacheClean();
                 this._readyToShow = this._isUserScrolling = false;
-                this.refreshActualItemSize(false);
-                if (snapScrollToBottom) {
-                  this._trackBox.isScrollEnd = true;
-                }
-                this._updateIterations = 0;
-                this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
                 const scrollerComponent = this._scrollerComponent;
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
@@ -1731,8 +1665,22 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 }
                 this._$classes.next({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
+                this._$fireUpdateNextFrame.next();
+              }
+            }),
+            debounceTime(0),
+            tap(items => {
+              if (!items || items.length === 0) {
+                this.cacheClean();
+                this.refreshActualItemSize(false);
+                if (snapScrollToBottom) {
+                  this._trackBox.isScrollEnd = true;
+                }
+                this._updateIterations = 0;
+                this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
               }
               this._trackBox.resetCollection(items, this._$actualItemSize.getValue());
+              this._$fireUpdateNextFrame.next();
             }),
             map(i => (i ?? []).length > 0),
             distinctUntilChanged(),
@@ -1752,6 +1700,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                       take(1),
                       tap(() => {
                         this._readyToShow = true;
+                        if (this._$scrollSize.getValue() > 0) {
+                          this._$isResetedReachStart.next(false);
+                        }
                         const waitForPreparation = this._$waitForPreparation.getValue(), scrollerComponent = this._scrollerComponent;
                         if (scrollerComponent) {
                           scrollerComponent.prepared = true;
@@ -1782,6 +1733,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         } else {
           return $items.pipe(
             takeUntil(this._$unsubscribe),
+            tap(items => {
+              this._readyToShow = true;
+              this._trackBox.resetCollection(items, this._$actualItemSize.getValue());
+            }),
             debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
@@ -1804,6 +1759,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
               this.refreshActualItemSize(false);
               if (snapScrollToBottom) {
                 this._trackBox.isScrollEnd = true;
+              }
+              if (this._$scrollSize.getValue() > 0) {
+                this._$isResetedReachStart.next(false);
               }
               const scrollerComponent = this._scrollerComponent;
               if (scrollerComponent) {
@@ -1963,7 +1921,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     ),
       $listBounds = this._$listBounds.asObservable().pipe(
         filter(b => !!b),
-      ), $scrollSize = this._$scrollSize.asObservable(),
+      ), $scrollSize = this.$scrollSize.pipe(
+        takeUntil(this._$unsubscribe),
+        distinctUntilChanged(),
+      ),
       $itemSize = this.$itemSize.pipe(
         map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
       ),
@@ -1998,7 +1959,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       $actualItems = this._$actualItems.asObservable(),
       $screenReaderMessage = this.$screenReaderMessage,
       $displayItems = this._service.$displayItems,
-      $cacheVersion = this._$cacheVersion.asObservable();
+      $cacheVersion = this.$cacheVersion.pipe(
+        takeUntil(this._$unsubscribe),
+        distinctUntilChanged(),
+      );
 
     $itemSize.pipe(
       takeUntil(this._$unsubscribe),
