@@ -57,8 +57,10 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  MIN_PREPARE_ITERATIONS = 5,
+  PREPARE_ITERATIONS = 5,
+  BEGINING_PREPARE_ITERATIONS = 15,
   PREPARATION_REUPDATE_LENGTH = 2,
+  BEGINING_PREPARATION_REUPDATE_LENGTH = 10,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -1210,12 +1212,15 @@ export class NgVirtualListComponent implements OnDestroy {
       this._service.clickDistance = dist;
     });
 
+    let isBegining = true;
+    const minPrepareIterations = isBegining ? BEGINING_PREPARE_ITERATIONS : PREPARE_ITERATIONS,
+      preparationReupdateLength = isBegining ? BEGINING_PREPARATION_REUPDATE_LENGTH : PREPARATION_REUPDATE_LENGTH;
     const $updateComplete = this.$update.pipe(
       takeUntilDestroyed(),
       debounceTime(0),
       switchMap((v) => {
         if (((this._prevScrollStateVersion === EMPTY_SCROLL_STATE_VERSION) || (this._prevScrollStateVersion !== v)) &&
-          (this._updateIterations < MIN_PREPARE_ITERATIONS)) {
+          (this._updateIterations < minPrepareIterations)) {
           if (v !== EMPTY_SCROLL_STATE_VERSION) {
             this._prevScrollStateVersion = v;
           }
@@ -1225,7 +1230,7 @@ export class NgVirtualListComponent implements OnDestroy {
         }
         if (this._prevScrollStateVersion === v) {
           this._trackBox.isScrollEnd = true;
-          if (this._updateIterations < PREPARATION_REUPDATE_LENGTH) {
+          if (this._updateIterations < preparationReupdateLength) {
             this._updateIterations++;
             this._$fireUpdate.next();
             return of(false);
@@ -1264,7 +1269,9 @@ export class NgVirtualListComponent implements OnDestroy {
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
               if (!items || items.length === 0) {
-                this.cacheClean();
+                if (!isBegining) {
+                  this.cacheClean();
+                }
                 this._readyToShow = this._isUserScrolling = false;
                 this.refreshActualItemSize(false);
                 if (snapScrollToBottom) {
@@ -1313,6 +1320,7 @@ export class NgVirtualListComponent implements OnDestroy {
                       tap(() => {
                         this.refreshActualItemSize(true);
                         this._scrollerComponent()?.refresh(true, true);
+                        isBegining = false;
                       }),
                     );
                   }
@@ -1324,6 +1332,7 @@ export class NgVirtualListComponent implements OnDestroy {
                   }
                   this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
                   this._$show.next(true);
+                  isBegining = false;
                   return of(false);
                 }),
               );
@@ -1335,7 +1344,9 @@ export class NgVirtualListComponent implements OnDestroy {
             debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
-                this.cacheClean();
+                if (!isBegining) {
+                  this.cacheClean();
+                }
                 const scrollerComponent = this._scrollerComponent();
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
@@ -1362,8 +1373,9 @@ export class NgVirtualListComponent implements OnDestroy {
               this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
               this._$show.next(true);
               this._$fireUpdate.next();
+              isBegining = false;
             }),
-          );;
+          );
         }
       }),
     ).subscribe();
@@ -2366,7 +2378,7 @@ export class NgVirtualListComponent implements OnDestroy {
   }
 
   private refreshActualItemSize(value: boolean) {
-    if (!this.waitForPreparation() || !this.dynamicSize()) {
+    if (!this.waitForPreparation() || !this.dynamicSize() || !this.snapScrollToBottom()) {
       return;
     }
     let size: number;
