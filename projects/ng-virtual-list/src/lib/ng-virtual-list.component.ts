@@ -1312,6 +1312,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   private _$listBounds = new BehaviorSubject<IRect | null>(null);
 
   private _$scrollSize = new BehaviorSubject<number>(0);
+  protected readonly $scrollSize = this._$scrollSize.asObservable();
 
   private _$isScrollStart = new BehaviorSubject<boolean>(true);
 
@@ -1918,7 +1919,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     ),
       $listBounds = this._$listBounds.asObservable().pipe(
         filter(b => !!b),
-      ), $scrollSize = this._$scrollSize.pipe(
+      ), $scrollSize = this.$scrollSize.pipe(
         takeUntil(this._$unsubscribe),
         distinctUntilChanged(),
       ),
