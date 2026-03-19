@@ -71,7 +71,9 @@ export class NgVirtualListService {
 
   dynamic: boolean = true;
 
-  snapScrollToBottom: boolean = false;
+  snapScrollToStart: boolean = false;
+
+  snapScrollToEnd: boolean = false;
 
   private _trackBox: TrackBox | undefined;
 

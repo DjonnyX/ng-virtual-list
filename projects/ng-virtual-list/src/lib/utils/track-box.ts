@@ -431,11 +431,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return isFromItemIdFound ? scrollSize : -1;
     }
 
-    cancelScrollSnappingToEnd(clearBuffer: boolean = false) {
-        this._isScrollEnd = false;
+    preventScrollSnapping(clearBuffer: boolean = false) {
+        this._isScrollStart = this._isScrollEnd = false;
 
         if (clearBuffer) {
-            this._isScrollSnapToEnd = 0;
+            this._isScrollSnapToStart = this._isScrollSnapToEnd = 0;
         }
     }
 
@@ -501,9 +501,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         this._deletedItemsMap = {};
 
-        if (!dynamicSize) {
-            this._isScrollStart = false;
-        }
         this._crudDetected = false;
 
         if (opt.dynamicSize) {
@@ -620,7 +617,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftSizeOfDeletedItems = 0,
             itemById: I | undefined = undefined,
             itemByIdPos: number = this._scrollStartOffset,
-            targetDisplayItemIndex: number = -1,
             isTargetInOverscroll: boolean = false,
             actualScrollSize = itemByIdPos,
             totalSize = this._scrollStartOffset + this._scrollEndOffset,
@@ -647,7 +643,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let y = this._scrollStartOffset, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
+            let y = this._scrollStartOffset, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
@@ -698,13 +694,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (itemById === undefined) {
                         if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
                             stickyComponentSize = componentSize;
-                            stickyCollectionItem = collectionItem;
                             y -= stickyComponentSize;
                         }
 
                         if (id === fromItemId) {
                             isFromItemIdFound = true;
-                            targetDisplayItemIndex = i;
                             itemById = collectionItem;
                             itemByIdPos = y;
                         } else {

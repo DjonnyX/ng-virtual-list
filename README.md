@@ -674,7 +674,8 @@ Inputs
 | waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
 | scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
 | scrollEndOffset | number? = 0 | Sets the scroll end offset value; Default value is "0". |
-| snapScrollToBottom | boolean? = false | Determines whether the scroll will be anchored to the end of the list at startup.. Default value is "false". |
+| snapScrollToStart | boolean? = true | Determines whether the scroll will be anchored to the start of the list. Default value is "true". This property takes precedence over the snapScrollToEnd property. That is, if snapScrollToStart and snapScrollToEnd are enabled, the list will initially snap to the beginning; if you move the scroll bar to the end, the list will snap to the end. If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; if you move the scroll bar to the beginning, the list will snap to the beginning. If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end. |
+| snapScrollToEnd | boolean? = true | Determines whether the scroll will be anchored to the утв of the list. Default value is "true". That is, if snapScrollToStart and snapScrollToEnd are enabled, the list will initially snap to the beginning; if you move the scroll bar to the end, the list will snap to the end. If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; if you move the scroll bar to the beginning, the list will snap to the beginning. If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end. |
 | snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
 | scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
 | scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
@@ -710,7 +711,7 @@ Methods
 | scrollToEnd | | Scrolls the list to the end of the content height. |
 | getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
-| stopSnappingScrollToEnd |  | Stops the list from snapping to the bottom edge. |
+| preventSnapping |  | Prevents the list from snapping to its start or end edge. |
 
 <br/>
 

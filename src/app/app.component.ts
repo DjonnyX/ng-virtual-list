@@ -235,25 +235,25 @@ export class AppComponent {
   constructor() {
     interval(1000).pipe(
       takeUntilDestroyed(),
-      // delay(250),
-      // tap(() => {
-      //   const collection = [...this.dynamicItems];
-      //   collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
-      //   this.dynamicItems = collection;
-      // }),
+      delay(250),
+      tap(() => {
+        const collection = [...this.dynamicItems];
+        collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
+        this.dynamicItems = collection;
+      }),
       // delay(250),
       // tap(() => {
       //   const collection = [...this.dynamicItems];
       //   collection.shift();
       //   this.dynamicItems = collection;
       // }),
-      // delay(450),
-      // tap(() => {
-      //   const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
-      //     insertedItems = generateDynamicItems(1, this.dynamicItems.length);
-      //   collection.splice(insertIndex, 0, ...insertedItems);
-      //   this.dynamicItems = collection;
-      // }),
+      delay(450),
+      tap(() => {
+        const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
+          insertedItems = generateDynamicItems(1, this.dynamicItems.length);
+        collection.splice(insertIndex, 0, ...insertedItems);
+        this.dynamicItems = collection;
+      }),
       delay(650),
       tap(() => {
         const collection = [...this.dynamicItems];
@@ -265,25 +265,25 @@ export class AppComponent {
 
     interval(1000).pipe(
       takeUntilDestroyed(),
-      // delay(0),
-      // tap(() => {
-      //   const collection = [...this.dynamicShortItems];
-      //   collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
-      //   this.dynamicShortItems = collection;
-      // }),
+      delay(0),
+      tap(() => {
+        const collection = [...this.dynamicShortItems];
+        collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
+        this.dynamicShortItems = collection;
+      }),
       // delay(250),
       // tap(() => {
       //   const collection = [...this.dynamicShortItems];
       //   collection.shift();
       //   this.dynamicShortItems = collection;
       // }),
-      // delay(450),
-      // tap(() => {
-      //   const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),
-      //     insertedItems = generateDynamicShortItems(1, this.dynamicShortItems.length);
-      //   collection.splice(insertIndex, 0, ...insertedItems);
-      //   this.dynamicShortItems = collection;
-      // }),
+      delay(450),
+      tap(() => {
+        const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),
+          insertedItems = generateDynamicShortItems(1, this.dynamicShortItems.length);
+        collection.splice(insertIndex, 0, ...insertedItems);
+        this.dynamicShortItems = collection;
+      }),
       delay(650),
       tap(() => {
         const collection = [...this.dynamicShortItems];

@@ -39,7 +39,9 @@ export const DEFAULT_DYNAMIC_SIZE = true;
 
 export const DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET = 1;
 
-export const DEFAULT_SNAP_SCROLLTO_BOTTOM = false;
+export const DEFAULT_SNAP_SCROLLTO_START = true;
+
+export const DEFAULT_SNAP_SCROLLTO_END = true;
 
 export const TRACK_BY_PROPERTY_NAME = 'id';
 
