@@ -711,8 +711,6 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   itemSize = input<number>(DEFAULT_ITEM_SIZE, { ...this._itemSizeOptions });
 
-  protected actualItemSize = signal<number>(this.itemSize());
-
   private _dynamicSizeOptions = {
     transform: (v: boolean) => {
       const valid = validateBoolean(v);
@@ -1290,7 +1288,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }),
             debounceTime(0),
             tap(items => {
-              this._trackBox.resetCollection(items, this.actualItemSize());
+              this._trackBox.resetCollection(items, this.itemSize());
             }),
             map(i => (i ?? []).length > 0),
             distinctUntilChanged(),
@@ -1355,7 +1353,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
               }
-              this._trackBox.resetCollection(items, this.actualItemSize());
+              this._trackBox.resetCollection(items, this.itemSize());
             }),
             map(i => (i ?? []).length > 0),
             distinctUntilChanged(),
@@ -1522,9 +1520,6 @@ export class NgVirtualListComponent implements OnDestroy {
       $itemSize = toObservable(this.itemSize).pipe(
         map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
       ),
-      $actualItemSize = toObservable(this.actualItemSize).pipe(
-        map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
-      ),
       $bufferSize = toObservable(this.bufferSize).pipe(
         map(v => v < 0 ? DEFAULT_BUFFER_SIZE : v),
       ),
@@ -1554,14 +1549,6 @@ export class NgVirtualListComponent implements OnDestroy {
       $screenReaderMessage = toObservable(this.screenReaderMessage),
       $displayItems = this._service.$displayItems,
       $cacheVersion = toObservable(this._cacheVersion);
-
-    $itemSize.pipe(
-      takeUntilDestroyed(),
-      distinctUntilChanged(),
-      tap(size => {
-        this.actualItemSize.set(size);
-      }),
-    ).subscribe()
 
     combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
@@ -1820,7 +1807,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       filter(v => !!v),
       switchMap(() => {
-        return combineLatest([$snapScrollToBottom, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $actualItemSize,
+        return combineLatest([$snapScrollToBottom, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $itemSize,
           $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
         ]).pipe(
           takeUntilDestroyed(this._destroyRef),
@@ -2118,7 +2105,7 @@ export class NgVirtualListComponent implements OnDestroy {
         if (scrollerComponent) {
           const items = this._actualItems();
           if (items && items.length) {
-            const dynamicSize = this.dynamicSize(), itemSize = this.actualItemSize();
+            const dynamicSize = this.dynamicSize(), itemSize = this.itemSize();
 
             if (dynamicSize) {
               const { width, height, x, y } = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
@@ -2185,7 +2172,7 @@ export class NgVirtualListComponent implements OnDestroy {
               const index = items.findIndex(item => item[trackBy] === id);
               if (index > -1) {
                 const isVertical = this._isVertical,
-                  currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), scrollSize = index * this.actualItemSize();
+                  currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), scrollSize = index * this.itemSize();
                 if (currentScrollSize !== scrollSize) {
                   this._$snapScrollToEndCanceller.next(true);
                   const params: IScrollToParams = {
@@ -2387,10 +2374,8 @@ export class NgVirtualListComponent implements OnDestroy {
       size = (this._isVertical ?
         bounds?.height || DEFAULT_LIST_SIZE :
         bounds?.width || DEFAULT_LIST_SIZE);
-      this.actualItemSize.set(size);
     } else {
       size = this.itemSize();
-      this.actualItemSize.set(size);
     }
     this._trackBox.resetCache(this._actualItems(), this.trackBy(), this._isVertical, size, bounds!);
   }

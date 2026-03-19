@@ -842,26 +842,47 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return metrics;
     }
 
+    private _resetedCacheIds: Array<Id> = [];
+
     resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number,
         bounds: ISize) {
-        const map = this._map, bSize = isVertical ? bounds.height : bounds.width;
+        const map = this._map, ids: Array<Id> = [],
+            bSize = isVertical ? bounds.height : bounds.width;
         let totalSize = 0;
         for (let i = collection.length - 1, l = 0; i >= l; i--) {
-            const collectionItem = collection[i], id = collectionItem[trackBy];
-            if ((totalSize > bSize) && !collectionItem[IS_RESETED]) {
-                return;
-            }
+            const collectionItem = collection[i], id: Id = collectionItem[trackBy];
             if (map.has(id)) {
-                const cache = map.get(id),
-                    width = isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
+                const cache = map.get(id), isReseted = this._resetedCacheIds.indexOf(id) > -1;
+                if ((totalSize > bSize) && !isReseted) {
+                    break;
+                }
+                const width = isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
                     height = isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height;
+                ids.push(id);
                 map.set(id, {
                     ...cache,
                     width,
                     height,
-                    [IS_RESETED]: true,
                 });
+                if (!isReseted) {
+                    this._resetedCacheIds.push(id);
+                }
                 totalSize += isVertical ? height : width;
+            }
+        }
+        for (let i = 0, l = this._resetedCacheIds.length; i < l; i++) {
+            const id = this._resetedCacheIds[i];
+            if (ids.indexOf(id) === -1) {
+                if (map.has(id)) {
+                    const cache = map.get(id),
+                        width = isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
+                        height = isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height;
+                    map.set(id, {
+                        ...cache,
+                        width,
+                        height,
+                    });
+                }
             }
         }
     }
@@ -1246,15 +1267,22 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    private clearResetedCacheIds() {
+        this._resetedCacheIds = [];
+    }
+
     cacheClean() {
         this._map.clear();
         this._snapshot.clear();
+        this.clearResetedCacheIds();
     }
 
     override dispose() {
         super.dispose();
 
         this.disposeClearBufferSizeTimer();
+
+        this.clearResetedCacheIds();
 
         if (this._debouncedIsScrollStartOff) {
             this._debouncedIsScrollStartOff.dispose();
