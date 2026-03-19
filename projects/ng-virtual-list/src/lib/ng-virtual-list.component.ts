@@ -1665,6 +1665,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 }
                 this._$classes.next({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
+                this._$fireUpdateNextFrame.next();
               }
             }),
             debounceTime(0),
@@ -1679,6 +1680,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 this._prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
               }
               this._trackBox.resetCollection(items, this._$actualItemSize.getValue());
+              this._$fireUpdateNextFrame.next();
             }),
             map(i => (i ?? []).length > 0),
             distinctUntilChanged(),
