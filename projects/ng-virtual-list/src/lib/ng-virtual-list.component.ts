@@ -1312,6 +1312,7 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$listBounds = new BehaviorSubject<IRect | null>(null);
 
   private _$scrollSize = new BehaviorSubject<number>(0);
+  readonly $scrollSize = this._$scrollSize.asObservable();
 
   private _$isScrollStart = new BehaviorSubject<boolean>(true);
 
@@ -1919,7 +1920,10 @@ export class NgVirtualListComponent implements OnDestroy {
     ),
       $listBounds = this._$listBounds.asObservable().pipe(
         filter(b => !!b),
-      ), $scrollSize = this._$scrollSize.asObservable(),
+      ), $scrollSize = this.$scrollSize.pipe(
+        takeUntilDestroyed(this._destroyRef),
+        distinctUntilChanged(),
+      ),
       $itemSize = this.$itemSize.pipe(
         map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
       ),
@@ -1954,7 +1958,10 @@ export class NgVirtualListComponent implements OnDestroy {
       $actualItems = this._$actualItems.asObservable(),
       $screenReaderMessage = this.$screenReaderMessage,
       $displayItems = this._service.$displayItems,
-      $cacheVersion = this._$cacheVersion.asObservable();
+      $cacheVersion = this.$cacheVersion.pipe(
+        takeUntilDestroyed(this._destroyRef),
+        distinctUntilChanged(),
+      );
 
     $itemSize.pipe(
       takeUntilDestroyed(this._destroyRef),
