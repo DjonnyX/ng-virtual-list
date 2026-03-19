@@ -1267,9 +1267,7 @@ export class NgVirtualListComponent implements OnDestroy {
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
               if (!items || items.length === 0) {
-                if (!isBegining) {
-                  this.cacheClean();
-                }
+                this.cacheClean();
                 this._readyToShow = this._isUserScrolling = false;
                 this.refreshActualItemSize(false);
                 if (snapScrollToBottom) {
@@ -1302,6 +1300,7 @@ export class NgVirtualListComponent implements OnDestroy {
                   const waitForPreparation = this.waitForPreparation();
                   if (waitForPreparation) {
                     this.refreshActualItemSize(false);
+                    this._$fireUpdateNextFrame.next();
                     return $updateComplete.pipe(
                       takeUntilDestroyed(this._destroyRef),
                       take(1),
@@ -1318,6 +1317,7 @@ export class NgVirtualListComponent implements OnDestroy {
                       tap(() => {
                         this.refreshActualItemSize(true);
                         this._scrollerComponent()?.refresh(true, true);
+                        this._$fireUpdateNextFrame.next();
                         isBegining = false;
                       }),
                     );
@@ -1342,9 +1342,7 @@ export class NgVirtualListComponent implements OnDestroy {
             debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
-                if (!isBegining) {
-                  this.cacheClean();
-                }
+                this.cacheClean();
                 const scrollerComponent = this._scrollerComponent();
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
