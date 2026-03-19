@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [21.10.8] - 2026-03-19
+
+### Improved
+- README.md has been updated
+
 ## [21.10.6] - 2026-03-19
 
 ### Fixed
