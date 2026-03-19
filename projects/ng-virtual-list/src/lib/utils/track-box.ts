@@ -704,13 +704,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         if (id === fromItemId) {
                             isFromItemIdFound = true;
                             targetDisplayItemIndex = i;
-                            if (stickyCollectionItem && itemConfigMap) {
-                                const { num } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical);
-                                if (num > 0) {
-                                    isTargetInOverscroll = true;
-                                    y -= size - this._scrollEndOffset - componentSize - stickyComponentSize;
-                                }
-                            }
                             itemById = collectionItem;
                             itemByIdPos = y;
                         } else {
@@ -760,17 +753,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 y += componentSize;
-            }
-
-            if (isTargetInOverscroll) {
-                const collectionLength = collection.length, { num } = this.getElementNumToEnd(
-                    collectionLength - (checkOverscrollItemsLimit < 0 ? 0 : collectionLength - checkOverscrollItemsLimit),
-                    collection, map, typicalItemSize, size, isVertical,
-                    collectionLength - (collectionLength - (targetDisplayItemIndex + 1)),
-                );
-                if (num > 0) {
-                    itemsFromStartToScrollEnd -= num;
-                }
             }
 
             if (itemsFromStartToScrollEnd <= -1) {
