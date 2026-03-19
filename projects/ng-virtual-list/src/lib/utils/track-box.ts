@@ -110,7 +110,8 @@ interface IItem<I = any> {
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
-    IS_NEW = 'isNew',
+    IS_NEW = 'n',
+    IS_RESETED = 'r',
     SCROLL_SNAP_TO_START_ITERATIONS = 10,
     SCROLL_SNAP_TO_END_ITERATIONS = 5;
 
@@ -843,16 +844,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     resetCache<I extends IItem, C extends Array<I>>(collection: C, trackBy: string, isVertical: boolean, itemSize: number,
         bounds: ISize) {
-        const map = this._map;
-        for (let i = 0, l = collection.length; i < l; i++) {
+        const map = this._map, bSize = isVertical ? bounds.height : bounds.width;
+        let totalSize = 0;
+        for (let i = collection.length - 1, l = 0; i >= l; i--) {
             const collectionItem = collection[i], id = collectionItem[trackBy];
+            if ((totalSize > bSize) && !collectionItem[IS_RESETED]) {
+                return;
+            }
             if (map.has(id)) {
-                const cache = map.get(id), bSize = isVertical ? bounds.height : bounds.width;
+                const cache = map.get(id),
+                    width = isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
+                    height = isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height;
                 map.set(id, {
                     ...cache,
-                    width: isVertical ? cache.width : (cache.width <= itemSize || cache.width === bSize) ? itemSize : cache.width,
-                    height: isVertical ? (cache.height <= itemSize || cache.height === bSize) ? itemSize : cache.height : cache.height
+                    width,
+                    height,
+                    [IS_RESETED]: true,
                 });
+                totalSize += isVertical ? height : width;
             }
         }
     }
