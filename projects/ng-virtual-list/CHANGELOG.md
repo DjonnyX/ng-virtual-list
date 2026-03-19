@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [14.10.7] - 2026-03-19
+
+### Fixed
+- List initialization has been fixed.
+
+### Improved
+- Code review.
+
 ## [14.10.6] - 2026-03-19
 
 ### Fixed
