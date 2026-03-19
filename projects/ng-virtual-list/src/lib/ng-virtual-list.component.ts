@@ -1312,7 +1312,7 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$listBounds = new BehaviorSubject<IRect | null>(null);
 
   private _$scrollSize = new BehaviorSubject<number>(0);
-  readonly $scrollSize = this._$scrollSize.asObservable();
+  protected readonly $scrollSize = this._$scrollSize.asObservable();
 
   private _$isScrollStart = new BehaviorSubject<boolean>(true);
 
