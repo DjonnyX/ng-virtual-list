@@ -1262,7 +1262,6 @@ export class NgVirtualListComponent implements OnDestroy {
           this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
           return $items.pipe(
             takeUntilDestroyed(this._destroyRef),
-            debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
                 this.cacheClean();
@@ -1281,6 +1280,9 @@ export class NgVirtualListComponent implements OnDestroy {
                 this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
               }
+            }),
+            debounceTime(0),
+            tap(items => {
               this._trackBox.resetCollection(items, this.actualItemSize());
             }),
             map(i => (i ?? []).length > 0),
