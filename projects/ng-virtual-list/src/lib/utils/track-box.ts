@@ -112,7 +112,6 @@ const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
     IS_NEW = 'n',
-    IS_RESETED = 'r',
     SCROLL_SNAP_TO_START_ITERATIONS = 10,
     SCROLL_SNAP_TO_END_ITERATIONS = 5;
 
@@ -663,7 +662,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     componentSizeDelta = componentSnapshotSize;
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
-                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, isNew });
+                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, [IS_NEW]: isNew });
                             if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 deltaFromStartCreation += componentSizeDelta;
                                 componentSizeDelta = 0;
@@ -672,7 +671,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         }
                         case ItemDisplayMethods.CREATE: {
                             componentSizeDelta = typicalItemSize;
-                            map.set(id, { ...cache, method: ItemDisplayMethods.UPDATE, isNew });
+                            map.set(id, { ...cache, method: ItemDisplayMethods.UPDATE, [IS_NEW]: isNew });
                             if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 deltaFromStartCreation += componentSizeDelta;
                                 componentSizeDelta = 0;
