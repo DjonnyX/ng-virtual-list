@@ -887,6 +887,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const cacheItem = cache[id];
             map.set(id, { ...(map.get(id) || {}), ...cacheItem });
         }
+        this.changes(true);
     }
 
     clearDeltaDirection() {

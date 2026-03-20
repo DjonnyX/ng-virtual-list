@@ -58,10 +58,7 @@ interface IScrollParams {
 
 const MIN_SCROLL_TO_START_PIXELS = 10,
   RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-  PREPARE_ITERATIONS = 5,
-  BEGINING_PREPARE_ITERATIONS = 15,
-  PREPARATION_REUPDATE_LENGTH = 2,
-  BEGINING_PREPARATION_REUPDATE_LENGTH = 10,
+  PREPARE_ITERATIONS = 1,
   EMPTY_SCROLL_STATE_VERSION = '-1',
   ROLE_LIST = 'list',
   ROLE_LIST_BOX = 'listbox',
@@ -1262,14 +1259,14 @@ export class NgVirtualListComponent implements OnDestroy {
       this._service.clickDistance = dist;
     });
 
-    const $viewInit = this.$viewInit;
+    const $viewInit = this.$viewInit,
+      $prerenderContainer = toObservable(this._prerenderContainer);
 
-    let isBegining = true;
     const $prerender = $viewInit.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
       switchMap(v => {
-        return of(this._prerenderContainer()).pipe(
+        return $prerenderContainer.pipe(
           takeUntilDestroyed(this._destroyRef),
           filter(v => !!v),
           switchMap(v => v.$render),
@@ -1277,31 +1274,19 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     );
 
-    const minPrepareIterations = isBegining ? BEGINING_PREPARE_ITERATIONS : PREPARE_ITERATIONS,
-      preparationReupdateLength = isBegining ? BEGINING_PREPARATION_REUPDATE_LENGTH : PREPARATION_REUPDATE_LENGTH;
     const $updateComplete = this.$update.pipe(
       takeUntilDestroyed(),
       debounceTime(0),
       switchMap((v) => {
         if (((this._prevScrollStateVersion === EMPTY_SCROLL_STATE_VERSION) || (this._prevScrollStateVersion !== v)) &&
-          (this._updateIterations < minPrepareIterations)) {
+          (this._updateIterations < PREPARE_ITERATIONS)) {
           if (v !== EMPTY_SCROLL_STATE_VERSION) {
             this._prevScrollStateVersion = v;
           }
-          this._trackBox.isScrollEnd = true;
-          this._$fireUpdate.next();
+          this._$fireUpdateNextFrame.next();
           return of(false);
         }
-        if (this._prevScrollStateVersion === v) {
-          this._trackBox.isScrollEnd = true;
-          if (this._updateIterations < preparationReupdateLength) {
-            this._updateIterations++;
-            this._$fireUpdate.next();
-            return of(false);
-          }
-        }
         this._prevScrollStateVersion = v;
-        this.refreshActualItemSize(false);
         return of(true);
       }),
       filter(v => !!v),
@@ -1313,11 +1298,12 @@ export class NgVirtualListComponent implements OnDestroy {
       $snapScrollToEnd = toObservable(this.snapScrollToEnd),
       $waitForPreparation = toObservable(this.waitForPreparation);
 
-    combineLatest([$viewInit, $dynamicSize, $snapScrollToStart, $snapScrollToEnd, $waitForPreparation]).pipe(
+    combineLatest([$viewInit, $prerenderContainer, $dynamicSize, $snapScrollToStart, $snapScrollToEnd, $waitForPreparation]).pipe(
       takeUntilDestroyed(this._destroyRef),
       distinctUntilChanged(),
-      filter(([init]) => !!init),
-      switchMap(([, dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
+      filter(([init, prerenderContainer]) => !!init && !!prerenderContainer),
+      delay(0),
+      switchMap(([, , dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
         if (!!dynamicSize && !snapScrollToStart && !!snapScrollToEnd && !!waitForPreparation) {
           this._$show.next(false);
           this.cacheClean();
@@ -1334,7 +1320,6 @@ export class NgVirtualListComponent implements OnDestroy {
               if (!items || items.length === 0) {
                 this.cacheClean();
                 this._readyToShow = this._isUserScrolling = false;
-                this.refreshActualItemSize(false);
                 if (snapScrollToEnd) {
                   this._trackBox.isScrollEnd = true;
                 }
@@ -1349,95 +1334,77 @@ export class NgVirtualListComponent implements OnDestroy {
                 this._$show.next(false);
               }
             }),
-            debounceTime(0),
             tap(items => {
               this._trackBox.resetCollection(items, this.itemSize());
             }),
-            map(i => (i ?? []).length > 0),
-            distinctUntilChanged(),
-            switchMap(v => {
-              if (!v) {
-                return of(false);
-              }
-              return of(true).pipe(
-                takeUntilDestroyed(this._destroyRef),
-                switchMap(() => {
-                  const waitForPreparation = this.waitForPreparation();
-                  if (waitForPreparation) {
-                    this.refreshActualItemSize(false);
-                    this._$fireUpdateNextFrame.next();
-                    return $updateComplete.pipe(
-                      takeUntilDestroyed(this._destroyRef),
-                      take(1),
-                      tap(() => {
-                        this._readyToShow = true;
-                        const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
-                        if (scrollerComponent) {
-                          scrollerComponent.prepared = true;
-                          scrollerComponent.stopScrolling();
-                        }
-                        this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-                        this._$show.next(true);
-                      }),
-                      tap(() => {
-                        this.refreshActualItemSize(true);
-                        this._scrollerComponent()?.refresh(true, true);
-                        this._$fireUpdateNextFrame.next();
-                        isBegining = false;
-                      }),
-                    );
-                  }
-                  this._readyToShow = true;
-                  const scrollerComponent = this._scrollerComponent();
-                  if (scrollerComponent) {
-                    scrollerComponent.prepared = true;
-                    scrollerComponent.stopScrolling();
-                  }
-                  this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
-                  this._$show.next(true);
-                  isBegining = false;
+            switchMap(i => of((i ?? []).length > 0).pipe(
+              distinctUntilChanged(),
+              switchMap(v => {
+                if (!v) {
                   return of(false);
-                }),
-              );
-            }),
+                }
+                const waitForPreparation = this.waitForPreparation();
+                if (waitForPreparation) {
+                  this._$fireUpdateNextFrame.next();
+                  return $updateComplete.pipe(
+                    takeUntilDestroyed(this._destroyRef),
+                    take(1),
+                    tap(() => {
+                      this._readyToShow = true;
+                      const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
+                      if (scrollerComponent) {
+                        scrollerComponent.prepared = true;
+                      }
+                      this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                      this._$show.next(true);
+                    }),
+                  );
+                }
+                this._readyToShow = true;
+                const scrollerComponent = this._scrollerComponent();
+                if (scrollerComponent) {
+                  scrollerComponent.prepared = true;
+                }
+                this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                this._$show.next(true);
+                return of(false);
+              }),
+            )),
           );
         } else {
           return $items.pipe(
             takeUntilDestroyed(this._destroyRef),
-            debounceTime(0),
             tap(items => {
               if (!items || items.length === 0) {
                 this.cacheClean();
                 const scrollerComponent = this._scrollerComponent();
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
-                  scrollerComponent.stopScrolling();
                 }
                 this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
               }
               this._trackBox.resetCollection(items, this.itemSize());
             }),
-            map(i => (i ?? []).length > 0),
-            distinctUntilChanged(),
-            filter(v => !!v),
-            tap(() => {
-              this._readyToShow = true;
-              this.refreshActualItemSize(false);
-              if (snapScrollToStart) {
-                this._trackBox.isScrollStart = true;
-              } else if (snapScrollToEnd) {
-                this._trackBox.isScrollEnd = true;
-              }
-              const scrollerComponent = this._scrollerComponent();
-              if (scrollerComponent) {
-                scrollerComponent.prepared = true;
-              }
-              this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
-              this._$show.next(true);
-              this._$fireUpdate.next();
-              isBegining = false;
-            }),
+            switchMap(i => of((i ?? []).length > 0).pipe(
+              distinctUntilChanged(),
+              filter(v => !!v),
+              tap(() => {
+                this._readyToShow = true;
+                if (snapScrollToStart) {
+                  this._trackBox.isScrollStart = true;
+                } else if (snapScrollToEnd) {
+                  this._trackBox.isScrollEnd = true;
+                }
+                const scrollerComponent = this._scrollerComponent();
+                if (scrollerComponent) {
+                  scrollerComponent.prepared = true;
+                }
+                this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
+                this._$show.next(true);
+                this._$fireUpdate.next();
+              }),
+            )),
           );
         }
       }),
@@ -1449,7 +1416,6 @@ export class NgVirtualListComponent implements OnDestroy {
       switchMap(() => {
         return $prerender.pipe(
           takeUntilDestroyed(this._destroyRef),
-          filter(v => this._readyToShow),
           tap(cache => {
             this._trackBox.refreshCache(cache);
           }),
@@ -1813,7 +1779,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
         this.tracking();
 
-        if (emitable && this._readyToShow && actualScrollLength > 0) {
+        if (emitable && this._readyToShow && actualScrollLength > 0 && !this.loading()) {
           const isScrollStart = this._isUserScrolling && scrollPosition < MIN_SCROLL_TO_START_PIXELS;
           this._isScrollStart.set(isScrollStart);
           if (isScrollStart) {
@@ -1823,10 +1789,7 @@ export class NgVirtualListComponent implements OnDestroy {
           }
         }
 
-        actualScrollSize = ((!this._readyToShow && snapScrollToEnd) || this._trackBox.isSnappedToEnd) ?
-          (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
-          (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
-        const delta = this._readyToShow && !this._trackBox.isSnappedToStart ? this._trackBox.delta : 0,
+        const delta = this._trackBox.delta,
           roundedActualScrollSize = Math.round(actualScrollSize),
           scrollPositionAfterUpdate = actualScrollSize + delta,
           roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
@@ -2152,12 +2115,12 @@ export class NgVirtualListComponent implements OnDestroy {
           if (this._readyToShow) {
             if (this._trackBox.isSnappedToStart) {
               if (scrollSize > 0) {
-                this._trackBox.preventScrollSnapping();
+                this._$preventScrollSnapping.next(true);
               }
             }
             if (this._trackBox.isSnappedToEnd) {
               if (scrollSize < scrollLength) {
-                this._trackBox.preventScrollSnapping();
+                this._$preventScrollSnapping.next(true);
               }
             }
           }
@@ -2483,22 +2446,6 @@ export class NgVirtualListComponent implements OnDestroy {
         this._trackBox.removeEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler);
       }
     }
-  }
-
-  private refreshActualItemSize(value: boolean) {
-    if (!this.waitForPreparation() || !this.dynamicSize() || !this.snapScrollToEnd()) {
-      return;
-    }
-    let size: number;
-    const bounds = this._bounds(), dynamicSize = this.dynamicSize();
-    if (dynamicSize && value === false) {
-      size = (this._isVertical ?
-        bounds?.height || DEFAULT_LIST_SIZE :
-        bounds?.width || DEFAULT_LIST_SIZE);
-    } else {
-      size = this.itemSize();
-    }
-    this._trackBox.resetCache(this._actualItems(), this.trackBy(), this._isVertical, size, bounds!);
   }
 
   private getIsSnappingMethodAdvanced(m?: SnappingMethod) {
