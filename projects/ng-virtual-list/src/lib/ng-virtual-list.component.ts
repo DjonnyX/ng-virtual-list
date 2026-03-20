@@ -2177,12 +2177,15 @@ export class NgVirtualListComponent implements OnDestroy {
         if (scrollerComponent) {
           const items = this._actualItems();
           if (items && items.length) {
-            const dynamicSize = this.dynamicSize(), itemSize = this.itemSize();
+            const dynamicSize = this.dynamicSize(), itemSize = this.itemSize(), snapScrollToEnd = this.snapScrollToEnd();
 
             if (dynamicSize) {
               const { width, height, x, y } = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
                 itemConfigMap = this.itemConfigMap(), items = this._actualItems(), isVertical = this._isVertical,
-                currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), delta = this._trackBox.delta,
+                currentScrollSize = snapScrollToEnd && this._trackBox.isSnappedToEnd ?
+                  (isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth) :
+                  (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+                delta = this._trackBox.delta,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
                   bounds: { width, height, x, y }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
                   bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(),
@@ -2244,7 +2247,8 @@ export class NgVirtualListComponent implements OnDestroy {
               const index = items.findIndex(item => item[trackBy] === id);
               if (index > -1) {
                 const isVertical = this._isVertical,
-                  currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft), scrollSize = index * this.itemSize();
+                  currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+                  scrollSize = index * this.itemSize();
                 if (currentScrollSize !== scrollSize) {
                   this._$preventScrollSnapping.next(true);
                   const params: IScrollToParams = {
@@ -2600,51 +2604,65 @@ export class NgVirtualListComponent implements OnDestroy {
     if (scroller) {
       scroller.stopScrolling();
     }
-    const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
-      blending = options?.blending ?? false,
-      iteration = options?.iteration ?? 0;
-    validateScrollBehavior(behavior);
-    validateIteration(iteration);
-    const trackBy = this.trackBy(), items = this.items(), firsItem = items.length > 0 ? items[0] : undefined, id = firsItem?.[trackBy],
-      actualIteration = validateScrollIteration(iteration);
-    if (!!firsItem) {
-      this._$scrollTo.next({ id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb });
-      this._elementRef.nativeElement.focus();
+    if (scroller) {
+      if (this.snapScrollToStart()) {
+        scroller.stopScrolling();
+        this._isScrollStart.set(true);
+        this._trackBox.isScrollStart = true;
+        this._trackBox.isScrollEnd = false;
+        this._$fireUpdate.next();
+        this._elementRef.nativeElement.focus();
+        cb?.();
+      } else {
+        const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
+          blending = options?.blending ?? false,
+          iteration = options?.iteration ?? 0;
+        validateScrollBehavior(behavior);
+        validateIteration(iteration);
+        const trackBy = this.trackBy(), items = this.items(), firsItem = items.length > 0 ? items[0] : undefined, id = firsItem?.[trackBy],
+          actualIteration = validateScrollIteration(iteration);
+        if (!!firsItem) {
+          this._$scrollTo.next({ id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb });
+          this._elementRef.nativeElement.focus();
+        }
+      }
     }
   }
 
   /**
-   * Scrolls the scroll area to the last item in the collection.
+   * @deprecated
+   * The scrollToEndItem method is deprecated. Use the scrollToEnd method.
    */
   scrollToEndItem(cb?: () => void, options?: IScrollOptions) {
-    const scroller = this._scrollerComponent();
-    if (scroller) {
-      scroller.stopScrolling();
-    }
-    const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
-      blending = options?.blending ?? false,
-      iteration = options?.iteration ?? 0;
-    validateScrollBehavior(behavior);
-    validateIteration(iteration);
-    const trackBy = this.trackBy(), items = this.items(), latItem = items[items.length > 0 ? items.length - 1 : 0], id = latItem[trackBy],
-      actualIteration = validateScrollIteration(iteration);
-    this._$scrollTo.next({ id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb });
-    this._elementRef.nativeElement.focus();
+    throw Error('The scrollToEndItem method is deprecated. Use the scrollToEnd method.');
   }
 
   /**
-   * Scrolls the list to the end of the content height.
+   * Scrolls the list to the end of the content size.
    */
-  scrollToEnd() {
-    this._isScrollFinished.set(true);
-    this._trackBox.isScrollEnd = true;
+  scrollToEnd(cb?: () => void, options?: IScrollOptions) {
     const scroller = this._scrollerComponent();
     if (scroller) {
-      scroller.stopScrolling();
-      const isVertical = this._isVertical, scrollSize = isVertical ? scroller.actualScrollHeight : scroller.actualScrollWidth;
-      this._scrollSize.set(scrollSize);
-      this._trackBox.changes();
-      this._elementRef.nativeElement.focus();
+      if (this.snapScrollToEnd()) {
+        scroller.stopScrolling();
+        this._isScrollFinished.set(true);
+        this._trackBox.isScrollStart = false;
+        this._trackBox.isScrollEnd = true;
+        this._$fireUpdate.next();
+        this._elementRef.nativeElement.focus();
+        cb?.();
+      } else {
+        scroller.stopScrolling();
+        const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
+          blending = options?.blending ?? false,
+          iteration = options?.iteration ?? 0;
+        validateScrollBehavior(behavior);
+        validateIteration(iteration);
+        const trackBy = this.trackBy(), items = this.items(), latItem = items[items.length > 0 ? items.length - 1 : 0], id = latItem[trackBy],
+          actualIteration = validateScrollIteration(iteration);
+        this._$scrollTo.next({ id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb });
+        this._elementRef.nativeElement.focus();
+      }
     }
   }
 
