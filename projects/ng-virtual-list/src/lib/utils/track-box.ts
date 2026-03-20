@@ -13,6 +13,7 @@ import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
 import { debounce } from "./debounce";
+import { PrerenderCache } from "../components/prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -878,6 +879,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     });
                 }
             }
+        }
+    }
+
+    refreshCache(cache: PrerenderCache) {
+        const map = this._map, ids: Array<Id> = [];
+        for (const id in cache) {
+            const cacheItem = cache[id];
+            map.set(id, { ...(map.get(id) || {}), ...cacheItem });
         }
     }
 

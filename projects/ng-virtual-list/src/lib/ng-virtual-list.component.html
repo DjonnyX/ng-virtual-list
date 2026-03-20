@@ -2,12 +2,18 @@
   {{ screenReaderFormattedMessage() }}
 </div>
 
+<div class="ngvl__prerender-wrapper">
+  <prerender-container #prerenderContainer [itemComponentClass]="itemComponentClass" [bounds]="bounds()!"
+    [items]="items()" [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()"
+    [trackBy]="trackBy()" />
+</div>
+
 @if (snap()) {
-  <div #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">
-    <div #snapped part="snapped-item" class="ngvl__list-snapper">
-      <ng-container #snapRendererContainer></ng-container>
-    </div>
+<div #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">
+  <div #snapped part="snapped-item" class="ngvl__list-snapper">
+    <ng-container #snapRendererContainer></ng-container>
   </div>
+</div>
 }
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
   [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarTheme]="scrollbarTheme()"
