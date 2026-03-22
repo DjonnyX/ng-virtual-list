@@ -298,6 +298,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _isReseted: boolean = true;
 
+    private _prerenderedCache: PrerenderCache | null = null;
+
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
@@ -837,12 +839,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     }
 
     refreshCache(cache: PrerenderCache) {
-        const map = this._map, ids: Array<Id> = [];
-        for (const id in cache) {
-            const cacheItem = cache[id];
-            map.set(id, { ...(map.get(id) || {}), ...cacheItem });
-        }
-        this.changes(true);
+        this._prerenderedCache = cache;
     }
 
     clearDeltaDirection() {
@@ -1222,6 +1219,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (this._isLazy && (this._isScrollStart)) {
                 this._debouncedIsScrollStartOff.execute();
             }
+        }
+        const cache = this._prerenderedCache;
+        if (!!cache) {
+            for (const id in cache) {
+                const cacheItem = cache[id];
+                this.set(id, { ...(this.get(id) || {}), ...cacheItem });
+            }
+            this._prerenderedCache = null;
         }
     }
 

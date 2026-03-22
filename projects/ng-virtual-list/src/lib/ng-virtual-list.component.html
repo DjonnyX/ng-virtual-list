@@ -5,7 +5,7 @@
 <div class="ngvl__prerender-wrapper">
   <prerender-container #prerenderContainer [itemComponentClass]="itemComponentClass" [bounds]="bounds()!"
     [items]="items()" [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()"
-    [trackBy]="trackBy()" />
+    [trackBy]="trackBy()" [itemRenderer]="itemRenderer()" />
 </div>
 
 @if (snap()) {

@@ -52,4 +52,8 @@ export interface IScrollEvent {
      * Display items range
      */
     itemsRange: [number, number] | undefined;
+    /**
+     * Has user action
+     */
+    userAction: boolean;
 }

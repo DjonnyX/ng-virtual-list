@@ -1,13 +1,13 @@
 import { Component, computed, effect, inject, input, OnDestroy, Signal, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { debounceTime, from, tap } from 'rxjs';
+import { debounceTime, from, Subject, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, ScrollBarTheme } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
   BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME, SCROLLER_SCROLL,
-  SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOP_PROP_NAME,
+  TOP_PROP_NAME,
 } from '../../const';
 import { TextDirection, TextDirections } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
@@ -19,9 +19,7 @@ const TOP = 'top',
   INSTANT = 'instant',
   AUTO = 'auto';
 
-export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
-  WHEEL_EVENT = new Event(SCROLLER_WHEEL),
-  SCROLLBAR_SCROLL_EVENT = new Event(SCROLLER_SCROLLBAR_SCROLL);
+export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
 
 /**
  * The scroller for the NgVirtualList item component
@@ -85,6 +83,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   get host() {
     return this.scrollViewport()?.nativeElement;
   }
+
+  private _$scrollbarScroll = new Subject<boolean>();
+  readonly $scrollbarScroll = this._$scrollbarScroll.asObservable();
 
   private _prepared = false;
   set prepared(v: boolean) {
@@ -291,6 +292,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   onScrollBarDragHandler(event: IScrollBarDragEvent) {
     const { animation, position, min, max, userAction } = event;
+    this._$scrollbarScroll.next(userAction);
     this._isScrollbarUserAction = userAction;
     this.stopScrolling();
     this._isMoving = true;

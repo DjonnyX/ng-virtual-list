@@ -1,4 +1,4 @@
-import { PrerenderCache } from "../types";
+import { PrerenderCache } from "../types/cache";
 
 export enum PrerenderTrackBoxEvents {
     RESIZE = 'resize',

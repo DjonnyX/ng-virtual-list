@@ -10,6 +10,7 @@ interface IScrollEventParams {
     isVertical: boolean;
     itemsRange: [number, number] | undefined;
     isEnd: boolean;
+    userAction: boolean;
 }
 
 /**
@@ -52,8 +53,11 @@ export class ScrollEvent implements IScrollEvent {
     private _itemsRange: [number, number] | undefined;
     get itemsRange() { return this._itemsRange; }
 
+    private _userAction: boolean;
+    get userAction() { return this._userAction; }
+
     constructor(params: IScrollEventParams) {
-        const { direction, container, list, scrollSize, delta, isVertical, scrollDelta, itemsRange, isEnd } = params;
+        const { direction, container, list, scrollSize, delta, isVertical, scrollDelta, itemsRange, isEnd, userAction } = params;
         this._direction = direction;
         this._isVertical = isVertical;
         this._scrollSize = scrollSize;
@@ -65,5 +69,6 @@ export class ScrollEvent implements IScrollEvent {
         this._scrollDelta = scrollDelta;
         this._isStart = this._scrollSize === 0;
         this._itemsRange = itemsRange;
+        this._userAction = userAction;
     }
 }

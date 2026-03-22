@@ -1,3 +1,5 @@
+import { TemplateRef } from "@angular/core";
+
 /**
  * IPrerenderTrackBoxRefreshParams.
  * Maximum performance for extremely large lists.
@@ -7,6 +9,7 @@
  * @email djonnyx@gmail.com
  */
 export interface IPrerenderTrackBoxRefreshParams {
+    itemRenderer: TemplateRef<any> | undefined;
     dynamic: boolean;
     itemSize: number;
     isVertical: boolean;

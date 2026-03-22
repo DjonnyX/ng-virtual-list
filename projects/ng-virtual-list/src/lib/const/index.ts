@@ -53,7 +53,7 @@ export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
 export const MAX_SCROLL_TO_ITERATIONS = 7;
 
-export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
+export const DEFAULT_SNAPPING_METHOD = SnappingMethods.STANDART;
 
 export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
 
@@ -174,8 +174,6 @@ export const KEY_DOWN = 'keydown';
 export const SCROLL = 'scroll';
 
 export const SCROLLER_SCROLL = 'scroll';
-
-export const SCROLLER_SCROLLBAR_SCROLL = 'scrollbar-scroll';
 
 export const SCROLL_END = 'scrollend';
 

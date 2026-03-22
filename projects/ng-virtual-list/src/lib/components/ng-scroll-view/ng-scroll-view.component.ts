@@ -8,7 +8,7 @@ import { ISize } from '../../types';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
     BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL,
-    SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
+    TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import { SCROLL_VIEW_INVERSION } from './const';
@@ -39,9 +39,7 @@ const TOP = 'top',
     SPEED_SCALE = 15,
     OVERSCROLL_START_ITERATION = 2;
 
-export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
-    WHEEL_EVENT = new Event(SCROLLER_WHEEL),
-    SCROLLBAR_SCROLL_EVENT = new Event(SCROLLER_SCROLLBAR_SCROLL);
+export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
 
 /**
  * NgScrollView

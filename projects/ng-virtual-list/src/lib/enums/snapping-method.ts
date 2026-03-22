@@ -8,4 +8,4 @@ import { SnappingMethods } from "./snapping-methods";
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export type SnappingMethod = SnappingMethods | 'normal' | 'advanced' | 'chat';
+export type SnappingMethod = SnappingMethods | 'standart' | 'normal' | 'advanced';

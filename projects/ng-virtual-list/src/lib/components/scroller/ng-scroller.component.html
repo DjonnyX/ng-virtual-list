@@ -6,6 +6,7 @@
             <ng-content></ng-content>
         </div>
     </div>
+    @if (scrollbarEnabled()) {
     @let prepared = preparedSignal();
     <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
         [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="prepared"
@@ -13,4 +14,5 @@
         [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
         [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
         (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+    }
 </div>

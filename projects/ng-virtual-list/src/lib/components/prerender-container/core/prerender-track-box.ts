@@ -2,7 +2,7 @@ import { ComponentRef, ViewContainerRef } from "@angular/core";
 import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem } from "../../../models";
 import { Id, ISize } from "../../../types";
 import { CMap } from "../../../utils/cmap";
-import { PrerenderCache } from "../types";
+import { PrerenderCache } from "../types/cache";
 import { BaseVirtualListItemComponent } from "../../../models/base-virtual-list-item-component";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
 import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, SIZE_AUTO, TRACK_BY_PROPERTY_NAME } from "../../../const";
@@ -28,12 +28,12 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             delta: 0,
             x: 0,
             y: 0,
-            width: (isVertical ? bounds.width : dynamic ? SIZE_AUTO : itemSize) as any,
-            height: (isVertical ? dynamic ? SIZE_AUTO : itemSize : bounds.height) as any,
+            width: (isVertical ? bounds.width : itemSize) as any,
+            height: (isVertical ? itemSize : bounds.height) as any,
         },
         data,
-        previouseData: undefined,
-        nextData: undefined,
+        previouseData: data,
+        nextData: data,
         config: {
             new: false,
             odd: false,
@@ -83,22 +83,15 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
         this.dispatch(PrerenderTrackBoxEvents.RESIZE, (this._map?.toObject() || {}));
     });
 
-    create(container: ViewContainerRef) {
-        this._container = container;
-    }
-
-    reset(componentClass: Component$1<BaseVirtualListItemComponent>, items: IVirtualListCollection,
-        bounds: ISize, params: IPrerenderTrackBoxRefreshParams) {
-        this._items = items;
-        this._componentClass = componentClass;
-        this.refresh(componentClass, bounds, params);
-    }
+    private _active: boolean = true;
+    get active() { return this._active; }
 
     private refresh(componentClass: Component$1<BaseVirtualListItemComponent>, bounds: ISize, params: IPrerenderTrackBoxRefreshParams) {
         const isVertical = params.isVertical ?? true,
             dynamic = params.dynamic ?? DEFAULT_DYNAMIC_SIZE,
             itemsSize = params.itemSize ?? DEFAULT_ITEM_SIZE,
             trackBy = params.trackBy ?? TRACK_BY_PROPERTY_NAME,
+            itemRenderer = params.itemRenderer,
             boundsSize = isVertical ? bounds.height : bounds.width,
             items = this._items, components = this._components,
             resizeObserver = this._componentsResizeObserver;
@@ -117,6 +110,7 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
                 let comp: ComponentRef<BaseVirtualListItemComponent>;
                 if (components.length <= j) {
                     comp = this._container.createComponent(componentClass);
+                    comp.instance.renderer = itemRenderer;
                     if (!!resizeObserver) {
                         resizeObserver.observe(comp.instance.element);
                     }
@@ -135,8 +129,53 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
         }
     }
 
+    create(container: ViewContainerRef) {
+        this._container = container;
+    }
+
+    reset(componentClass: Component$1<BaseVirtualListItemComponent>, items: IVirtualListCollection,
+        bounds: ISize, params: IPrerenderTrackBoxRefreshParams) {
+        this._items = items;
+        this._componentClass = componentClass;
+        this.refresh(componentClass, bounds, params);
+    }
+
     getCache(): PrerenderCache {
-        return this._map ? this._map.toObject() : {};
+        return !!this._map ? this._map.toObject() : {};
+    }
+
+    clear() {
+        if (!!this._map) {
+            this._map.clear();
+        }
+    }
+
+    on() {
+        if (this._active) {
+            return;
+        }
+
+        this._active = true;
+        const components = this._components;
+        if (!!components) {
+            const observer = this._componentsResizeObserver;
+            for (const comp of components) {
+                if (!!comp && !!observer) {
+                    observer.observe(comp.instance.element);
+                }
+            }
+        }
+    }
+
+    off() {
+        if (!this._active) {
+            return;
+        }
+
+        this._active = false;
+        if (!!this._componentsResizeObserver) {
+            this._componentsResizeObserver?.disconnect();
+        }
     }
 
     override dispose() {

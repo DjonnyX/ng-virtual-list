@@ -6,15 +6,15 @@
  */
 export enum SnappingMethods {
     /**
-     * Normal group rendering.
+     * The group is rendered on a background.
+     */
+    STANDART = 'standart',
+    /**
+     * Experimental.
      */
     NORMAL = 'normal',
     /**
-     * The group is rendered on a transparent background. List items below the group are not rendered.
+     * Experimental.
      */
     ADVANCED = 'advanced',
-    /**
-     * The group is rendered on a background.
-     */
-    CHAT = 'chat',
 }

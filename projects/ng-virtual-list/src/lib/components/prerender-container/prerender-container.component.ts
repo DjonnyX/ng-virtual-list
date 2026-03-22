@@ -1,5 +1,5 @@
 import {
-    ChangeDetectionStrategy, Component, ElementRef, inject, input, OnDestroy, ViewChild, ViewContainerRef, ViewEncapsulation,
+    ChangeDetectionStrategy, Component, ElementRef, inject, input, OnDestroy, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { toggleClassName } from "ng-virtual-list";
@@ -7,7 +7,7 @@ import { combineLatest, filter, Subject, tap } from "rxjs";
 import { CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../const";
 import { IVirtualListCollection } from "../../models";
 import { ISize } from "../../types";
-import { PrerenderCache } from "./types";
+import { PrerenderCache } from "./types/cache";
 import { BaseVirtualListItemComponent } from "../../models/base-virtual-list-item-component";
 import { Component$1 } from "../../models/component.model";
 import { NgVirtualListItemComponent } from "../list-item/ng-virtual-list-item.component";
@@ -15,7 +15,7 @@ import { PrerenderTrackBox } from "./core";
 import { PrerenderTrackBoxEvents } from "./events";
 
 /**
- * PrerenderContainer
+ * Prerender container.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/prerender-container/prerender-container.component.ts
@@ -49,6 +49,8 @@ export class PrerenderContainer implements OnDestroy {
 
     trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
 
+    itemRenderer = input<TemplateRef<any>>();
+
     itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(NgVirtualListItemComponent);
 
     private _$render = new Subject<PrerenderCache>();
@@ -64,6 +66,8 @@ export class PrerenderContainer implements OnDestroy {
     };
 
     private _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+    get active() { return this._trackBox?.active ?? false; }
 
     constructor() {
         this._trackBox!.addEventListener(PrerenderTrackBoxEvents.RESIZE, this._onTrackBoxResizeHandler);
@@ -93,8 +97,9 @@ export class PrerenderContainer implements OnDestroy {
             takeUntilDestroyed(),
             filter(([b, i]) => !!b && !!i),
             tap(([bounds, items]) => {
-                if (!!this._trackBox) {
+                if (this.active && !!this._trackBox) {
                     this._trackBox.reset(this.itemComponentClass(), items, bounds, {
+                        itemRenderer: this.itemRenderer(),
                         dynamic: this.dynamic(),
                         itemSize: this.itemSize(),
                         isVertical: this.isVertical(),
@@ -111,6 +116,24 @@ export class PrerenderContainer implements OnDestroy {
                 this._$render.next(cache);
             }),
         ).subscribe();
+    }
+
+    clear() {
+        if (!!this._trackBox) {
+            this._trackBox.clear();
+        }
+    }
+
+    on() {
+        if (!!this._trackBox) {
+            this._trackBox.on();
+        }
+    }
+
+    off() {
+        if (!!this._trackBox) {
+            this._trackBox.off();
+        }
     }
 
     ngAfterViewInit() {
