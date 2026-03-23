@@ -1,12 +1,12 @@
 import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgVirtualListItemModule } from '../../components/list-item/ng-virtual-list-item.module';
 import { PrerenderContainer } from './prerender-container.component';
+import { PrerenderListModule } from './components/prerender-list/prerender-list.module';
 
 @NgModule({
     declarations: [PrerenderContainer],
     exports: [PrerenderContainer],
-    imports: [CommonModule, NgVirtualListItemModule],
+    imports: [CommonModule, PrerenderListModule],
     schemas: [NO_ERRORS_SCHEMA],
 })
 export class PrerenderContainerModule { }

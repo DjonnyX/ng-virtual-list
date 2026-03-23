@@ -1,5 +1,5 @@
 import { Tracker } from './tracker';
-import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
+import { BaseVirtualListItemComponent } from '../components/list-item/base';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { Id, ISize } from '../types';

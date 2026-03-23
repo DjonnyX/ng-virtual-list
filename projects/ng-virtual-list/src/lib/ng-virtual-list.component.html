@@ -2,11 +2,10 @@
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<div class="ngvl__prerender-wrapper">
-  <prerender-container #prerenderContainer [itemComponentClass]="itemComponentClass" [bounds]="bounds()!"
-    [items]="items()" [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()"
-    [trackBy]="trackBy()" [itemRenderer]="itemRenderer()" />
-</div>
+<prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [items]="items()"
+  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
+  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
+  [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (snap()) {
 <div #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">

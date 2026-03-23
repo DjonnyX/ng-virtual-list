@@ -1,7 +1,7 @@
 import { ComponentRef } from "@angular/core";
 import { ScrollDirection } from "../models";
 import { IRenderVirtualListCollection } from "../models/render-collection.model";
-import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
+import { BaseVirtualListItemComponent } from "../components/list-item/base";
 import { Id, ISize } from "../types";
 import { CMap } from "./cmap";
 

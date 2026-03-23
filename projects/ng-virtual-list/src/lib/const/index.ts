@@ -199,3 +199,15 @@ export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
+export const MIN_SCROLL_TO_START_PIXELS = 10,
+    MIN_SCROLL_VELOCITY_FOR_OPTIMIZATION = 10,
+    RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
+    PREPARE_ITERATIONS = 5,
+    PREPARATION_REUPDATE_LENGTH = 5,
+    EMPTY_SCROLL_STATE_VERSION = '-1',
+    ROLE_LIST = 'list',
+    ROLE_LIST_BOX = 'listbox',
+    ITEM_ID = 'item-id',
+    ITEM_CONTAINER = 'ngvl-item__container',
+    READY_TO_START = 'ready-to-start',
+    WAIT_FOR_PREPARATION = 'wait-for-preparation';

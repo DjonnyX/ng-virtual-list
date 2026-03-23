@@ -11,7 +11,7 @@ import {
 } from "../const";
 import { IVirtualListItemConfigMap } from "../models";
 import { bufferInterpolation } from "./buffer-interpolation";
-import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
+import { BaseVirtualListItemComponent } from "../components/list-item/base";
 import { debounce } from "./debounce";
 import { PrerenderCache } from "../components/prerender-container/types/cache";
 

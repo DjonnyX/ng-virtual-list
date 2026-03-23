@@ -1,3 +1,4 @@
-<div #list class="ngvl__list-scroller">
-  <ng-container #renderersContainer></ng-container>
-</div>
+<prerender-list #list [bounds]="bounds()!" [direction]="direction()" [items]="items()" [dynamic]="dynamic()"
+  [isVertical]="isVertical()" [itemSize]="itemSize()" [trackBy]="trackBy()" [itemRenderer]="itemRenderer()"
+  [startOffset]="startOffset()" [endOffset]="endOffset()" [scrollbarEnabled]="scrollbarEnabled()"
+  [enabled]="enabled()" />

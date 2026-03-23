@@ -5,10 +5,11 @@
  * @email djonnyx@gmail.com
  */
 export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0) => {
-    let timeout: any;
+    let timeout: any = null;
     const dispose = () => {
-        if (timeout !== undefined) {
+        if (timeout !== null) {
             clearTimeout(timeout);
+            timeout = null
         }
     }
     const execute = (...args: Array<any>) => {
@@ -17,6 +18,9 @@ export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number
         timeout = setTimeout(() => {
             cb(...args);
         }, debounceTime);
+    };
+    const getIsDisposed = () => {
+        return timeout === null;
     };
     return {
         /**
@@ -27,5 +31,9 @@ export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number
          * Method of destroying handlers
          */
         dispose,
+        /**
+         * Indicates whether the handler has been removed (true) or not (false)
+         */
+        getIsDisposed,
     };
 };

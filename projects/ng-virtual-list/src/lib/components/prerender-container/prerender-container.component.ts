@@ -1,18 +1,16 @@
 import {
-    ChangeDetectionStrategy, Component, ElementRef, inject, input, OnDestroy, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation,
+    ChangeDetectionStrategy, Component, input, TemplateRef, viewChild, ViewEncapsulation,
 } from "@angular/core";
-import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { toggleClassName } from "ng-virtual-list";
-import { combineLatest, filter, Subject, tap } from "rxjs";
-import { CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../const";
+import {
+    DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
+} from "../../const";
 import { IVirtualListCollection } from "../../models";
-import { ISize } from "../../types";
-import { PrerenderCache } from "./types/cache";
-import { BaseVirtualListItemComponent } from "../../models/base-virtual-list-item-component";
-import { Component$1 } from "../../models/component.model";
-import { NgVirtualListItemComponent } from "../list-item/ng-virtual-list-item.component";
-import { PrerenderTrackBox } from "./core";
-import { PrerenderTrackBoxEvents } from "./events";
+import { ISize, ScrollBarTheme } from "../../types";
+import { Direction } from "../../enums";
+import { PrerenderList } from "./components/prerender-list/prerender-list.component";
+import { filter, Observable, switchMap } from "rxjs";
+import { PrerenderCache } from "./types";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 
 /**
  * Prerender container.
@@ -25,7 +23,7 @@ import { PrerenderTrackBoxEvents } from "./events";
 @Component({
     selector: 'prerender-container',
     templateUrl: './prerender-container.component.html',
-    styleUrl: '../../ng-virtual-list.component.scss',
+    styleUrls: ['../../ng-virtual-list.component.scss', './prerender-container.component.scss'],
     host: {
         'style': 'position: relative;'
     },
@@ -33,13 +31,24 @@ import { PrerenderTrackBoxEvents } from "./events";
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class PrerenderContainer implements OnDestroy {
-    @ViewChild('renderersContainer', { read: ViewContainerRef })
-    private _listContainerRef: ViewContainerRef | undefined;
+export class PrerenderContainer {
+    private _list = viewChild<PrerenderList>('list');
+
+    enabled = input<boolean>(false);
+
+    direction = input<Direction>(DEFAULT_DIRECTION);
 
     isVertical = input<boolean>(true);
 
     items = input.required<IVirtualListCollection>();
+
+    scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
+
+    scrollbarTheme = input<ScrollBarTheme | null>(null);
+
+    startOffset = input<number>(0);
+
+    endOffset = input<number>(0);
 
     bounds = input.required<ISize>();
 
@@ -51,103 +60,40 @@ export class PrerenderContainer implements OnDestroy {
 
     itemRenderer = input<TemplateRef<any>>();
 
-    itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(NgVirtualListItemComponent);
+    readonly $render: Observable<PrerenderCache>;
 
-    private _$render = new Subject<PrerenderCache>();
-    $render = this._$render.asObservable();
-
-    private _$componentResize = new Subject<PrerenderCache>();
-    protected $componentResize = this._$componentResize.asObservable();
-
-    private _trackBox: PrerenderTrackBox | null = new PrerenderTrackBox();
-
-    private _onTrackBoxResizeHandler = (cache: PrerenderCache) => {
-        this._$componentResize.next(cache);
-    };
-
-    private _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
-    get active() { return this._trackBox?.active ?? false; }
+    get active() {
+        return this._list()?.active ?? false;
+    }
 
     constructor() {
-        this._trackBox!.addEventListener(PrerenderTrackBoxEvents.RESIZE, this._onTrackBoxResizeHandler);
+        const $list = toObservable(this._list);
 
-        const $isVertical = toObservable(this.isVertical);
-        $isVertical.pipe(
-            takeUntilDestroyed(),
-            tap(v => {
-                const el = this._elementRef.nativeElement;
-                toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
-            }),
-        ).subscribe();
-
-        const $items = toObservable(this.items),
-            $bounds = toObservable(this.bounds);
-        $bounds.pipe(
+        this.$render = $list.pipe(
             takeUntilDestroyed(),
             filter(v => !!v),
-            tap(({ width, height }) => {
-                const el = this._elementRef.nativeElement;
-                el.style.width = `${width}px`;
-                el.style.height = `${height}px`;
-            }),
-        ).subscribe();
-
-        combineLatest([$bounds, $items]).pipe(
-            takeUntilDestroyed(),
-            filter(([b, i]) => !!b && !!i),
-            tap(([bounds, items]) => {
-                if (this.active && !!this._trackBox) {
-                    this._trackBox.reset(this.itemComponentClass(), items, bounds, {
-                        itemRenderer: this.itemRenderer(),
-                        dynamic: this.dynamic(),
-                        itemSize: this.itemSize(),
-                        isVertical: this.isVertical(),
-                        trackBy: this.trackBy(),
-                    });
-                }
-            }),
-        ).subscribe();
-
-        const $componentResize = this.$componentResize;
-        $componentResize.pipe(
-            takeUntilDestroyed(),
-            tap(cache => {
-                this._$render.next(cache);
-            }),
-        ).subscribe();
+            switchMap(v => v.$render),
+        );
     }
 
     clear() {
-        if (!!this._trackBox) {
-            this._trackBox.clear();
+        const list = this._list();
+        if (!!list) {
+            list.clear();
         }
     }
 
     on() {
-        if (!!this._trackBox) {
-            this._trackBox.on();
+        const list = this._list();
+        if (!!list) {
+            list.on();
         }
     }
 
     off() {
-        if (!!this._trackBox) {
-            this._trackBox.off();
-        }
-    }
-
-    ngAfterViewInit() {
-        this._trackBox!.create(this._listContainerRef!);
-    }
-
-    ngOnDestroy(): void {
-        this.dispose();
-    }
-
-    dispose() {
-        if (!!this._trackBox) {
-            this._trackBox.dispose();
-            this._trackBox = null;
+        const list = this._list();
+        if (!!list) {
+            list.off();
         }
     }
 }

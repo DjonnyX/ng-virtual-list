@@ -74,7 +74,7 @@ const roundedRectPath = (width: number, height: number, tl: number, tr: number, 
  * @email djonnyx@gmail.com
  */
 @Component({
-  selector: 'ng-substrate',
+  selector: 'substrate',
   templateUrl: './substrate.component.html',
   styleUrl: './substrate.component.scss',
   standalone: false,
@@ -125,21 +125,21 @@ export class SubstrateComponent {
 
   height = input.required<number>();
 
-  roundCorner = input<RoundedCorner | undefined>(undefined);
+  roundCorner = input<RoundedCorner | null>(null);
 
   type = input<SubstarateStyle>(SubstarateStyles.NONE);
 
-  strokeColors = input<string | GradientColor | undefined>();
+  strokeColors = input<string | GradientColor | null>();
 
   strokeWidth = input<number>(DEFAULT_STROKE_WIDTH);
 
   strokeAnimationDuration = input<number>(DEFAULT_STROKE_ANIMATION_DURATION);
 
-  rippleColor = input<Color | undefined>(DEFAULT_RIPPLE_COLOR);
+  rippleColor = input<Color | null>(DEFAULT_RIPPLE_COLOR);
 
-  fillColors = input<string | GradientColor | undefined>(DEFAULT_FILL_COLORS);
+  fillColors = input<string | GradientColor | null>(DEFAULT_FILL_COLORS);
 
-  fillPositions = input<GradientColorPositions | undefined>(undefined);
+  fillPositions = input<GradientColorPositions | null>(null);
 
   rippleEnabled = signal<boolean>(false);
 

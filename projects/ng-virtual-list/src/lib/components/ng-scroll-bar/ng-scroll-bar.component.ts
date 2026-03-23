@@ -10,22 +10,10 @@ import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IScrollBarDragEvent } from './interfaces';
 import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
-
-const DEFAULT_THICKNESS = 6,
-  DEFAULT_SIZE = 6,
-  DEFAULT_ROUNDED_CORNER: RoundedCorner = [3, 3, 3, 3],
-  DEFAULT_STROKE_ANIMATION_DURATION = 500,
-  DEFAULT_RIPPLE_ENABLED = true,
-  DEFAULT_RIPPLE_COLOR = 'rgba(0,0,0,0.5)',
-  PX = 'px',
-  WIDTH = 'width',
-  HEIGHT = 'height',
-  OPACITY = 'opacity',
-  OPACITY_0 = '0',
-  OPACITY_1 = '1',
-  TRANSITION = 'transition',
-  NONE = 'none',
-  TRANSITION_FADE_IN = `${OPACITY} 500ms ease-out`;
+import {
+  DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
+  DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
+} from './const';
 
 /**
  * ScrollBar component.
@@ -53,7 +41,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
   size = input<number>(DEFAULT_SIZE);
 
-  theme = input<ScrollBarTheme | undefined>(undefined);
+  theme = input<ScrollBarTheme | null>(null);
 
   startOffset = input<number>(0);
 
@@ -69,21 +57,21 @@ export class NgScrollBarComponent extends NgScrollView {
 
   thickness = signal<number>(DEFAULT_THICKNESS);
 
-  fill: Signal<string | GradientColor | undefined>;
+  fill: Signal<string | GradientColor | null>;
 
-  thumbGradientFill = signal<string | GradientColor | undefined>(undefined);
+  thumbGradientFill = signal<string | GradientColor | null>(null);
 
-  thumbHoverGradientFill = signal<string | GradientColor | undefined>(undefined);
+  thumbHoverGradientFill = signal<string | GradientColor | null>(null);
 
-  thumbPressedGradientFill = signal<string | GradientColor | undefined>(undefined);
+  thumbPressedGradientFill = signal<string | GradientColor | null>(null);
 
-  strokeGradientColor = signal<string | GradientColor | undefined>(undefined);
+  strokeGradientColor = signal<string | GradientColor | null>(null);
 
   strokeAnimationDuration = signal<number>(DEFAULT_STROKE_ANIMATION_DURATION);
 
   roundCorner = signal<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
 
-  rippleColor = signal<Color | undefined>(DEFAULT_RIPPLE_COLOR);
+  rippleColor = signal<Color | null>(DEFAULT_RIPPLE_COLOR);
 
   rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
 
@@ -178,9 +166,9 @@ export class NgScrollBarComponent extends NgScrollView {
     });
 
     this.styles = computed(() => {
-      const show = this.show();
+      const show = this.show(), sizePropName = this.isVertical() ? WIDTH : HEIGHT;
       return {
-        [this.isVertical() ? WIDTH : HEIGHT]: `${this.thickness()}${PX}`,
+        [sizePropName]: `${show ? this.thickness() : 0}${PX}`,
         [OPACITY]: show ? OPACITY_1 : OPACITY_0, [TRANSITION]: show ? TRANSITION_FADE_IN : NONE,
       };
     });
