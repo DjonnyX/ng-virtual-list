@@ -1341,7 +1341,6 @@ export class NgVirtualListComponent implements OnDestroy {
           const scrollerComponent = this._scrollerComponent();
           if (scrollerComponent) {
             scrollerComponent.prepared = false;
-            scrollerComponent.stopMeasureVelocity();
             scrollerComponent.stopScrolling();
           }
           this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
@@ -1360,7 +1359,6 @@ export class NgVirtualListComponent implements OnDestroy {
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
                   scrollerComponent.stopScrolling();
-                  scrollerComponent.stopMeasureVelocity();
                 }
                 this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
@@ -1376,7 +1374,6 @@ export class NgVirtualListComponent implements OnDestroy {
                 prerenderContainer!.off();
                 const scrollerComponent = this._scrollerComponent();
                 if (scrollerComponent) {
-                  scrollerComponent.startMeasureVelocity();
                 }
                 return of(false);
               }
@@ -1393,7 +1390,6 @@ export class NgVirtualListComponent implements OnDestroy {
                     const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
                     if (scrollerComponent) {
                       scrollerComponent.prepared = true;
-                      scrollerComponent.startMeasureVelocity();
                     }
                     this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
                     this._$show.next(true);
@@ -1405,7 +1401,6 @@ export class NgVirtualListComponent implements OnDestroy {
               const scrollerComponent = this._scrollerComponent();
               if (scrollerComponent) {
                 scrollerComponent.prepared = true;
-                scrollerComponent.startMeasureVelocity();
               }
               this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
               this._$show.next(true);
@@ -1422,7 +1417,6 @@ export class NgVirtualListComponent implements OnDestroy {
                 const scrollerComponent = this._scrollerComponent();
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
-                  scrollerComponent.stopMeasureVelocity();
                 }
                 this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
                 this._$show.next(false);
@@ -1442,7 +1436,6 @@ export class NgVirtualListComponent implements OnDestroy {
               const scrollerComponent = this._scrollerComponent();
               if (scrollerComponent) {
                 scrollerComponent.prepared = true;
-                scrollerComponent.startMeasureVelocity();
               }
               this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
               this._$show.next(true);
@@ -1985,7 +1978,7 @@ export class NgVirtualListComponent implements OnDestroy {
             snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
             bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
           ]) => {
-            const scroller = this._scrollerComponent(), velocity = scroller?.velocity ?? 0;
+            const scroller = this._scrollerComponent(), velocity = scroller?.averageVelocity ?? 0;
             this._updateDebounced = this._readyToShow && (velocity < MIN_SCROLL_VELOCITY_FOR_OPTIMIZATION);
             if (this._updateDebounced) {
               debouncedUpdate.execute({
