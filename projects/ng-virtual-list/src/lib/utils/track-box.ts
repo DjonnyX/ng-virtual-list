@@ -274,8 +274,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _previousTotalSize = 0;
 
-    protected _scrollDelta: number = 0;
-    get scrollDelta() { return this._scrollDelta; }
+    protected _deltaOfNewItems: number = 0;
+    get deltaOfNewItems() { return this._deltaOfNewItems; }
 
     isAdaptiveBuffer = true;
 
@@ -614,6 +614,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftItemsWeight = 0, rightItemsWeight = 0,
             leftHiddenItemsWeight = 0,
             totalItemsToDisplayEndWeight = 0,
+            deltaOfNewItems = 0,
             leftSizeOfAddedItems = 0,
             leftSizeOfUpdatedItems = 0,
             leftSizeOfDeletedItems = 0,
@@ -743,6 +744,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             }
                         }
                     }
+                    
+                    if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
+                        deltaOfNewItems += componentSizeDelta;
+                    }
                 } else {
                     if (i < itemsFromDisplayEndToOffsetEnd) {
                         rightItemsWeight += componentSize;
@@ -794,6 +799,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
             startCreationDelta = deltaFromStartCreation > 0 ? deltaFromStartCreation : 0,
             delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + startCreationDelta;
+
+            this._deltaOfNewItems = deltaOfNewItems;
 
         if (isFromId && !isTargetInOverscroll) {
             actualScrollSize -= this._scrollStartOffset;
@@ -847,7 +854,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     }
 
     clearDelta(clearDirectionDetector = false): void {
-        this._delta = 0;
+        this._delta = this._deltaOfNewItems = 0;
 
         if (clearDirectionDetector) {
             this.clearScrollDirectionCache();

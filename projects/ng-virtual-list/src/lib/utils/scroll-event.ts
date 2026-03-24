@@ -5,7 +5,7 @@ interface IScrollEventParams {
     container: HTMLElement;
     list: HTMLElement;
     delta: number;
-    scrollDelta: number;
+    deltaOfNewItems: number;
     scrollSize: number;
     isVertical: boolean;
     itemsRange: [number, number] | undefined;
@@ -47,8 +47,8 @@ export class ScrollEvent implements IScrollEvent {
     private _delta: number = 0;
     get delta() { return this._delta; }
 
-    private _scrollDelta: number = 0;
-    get scrollDelta() { return this._scrollDelta; }
+    private _deltaOfNewItems: number = 0;
+    get deltaOfNewItems() { return this._deltaOfNewItems; }
 
     private _itemsRange: [number, number] | undefined;
     get itemsRange() { return this._itemsRange; }
@@ -57,7 +57,7 @@ export class ScrollEvent implements IScrollEvent {
     get userAction() { return this._userAction; }
 
     constructor(params: IScrollEventParams) {
-        const { direction, container, list, scrollSize, delta, isVertical, scrollDelta, itemsRange, isEnd, userAction } = params;
+        const { direction, container, list, scrollSize, delta, isVertical, deltaOfNewItems, itemsRange, isEnd, userAction } = params;
         this._direction = direction;
         this._isVertical = isVertical;
         this._scrollSize = scrollSize;
@@ -66,7 +66,7 @@ export class ScrollEvent implements IScrollEvent {
         this._size = isVertical ? container.offsetHeight : container.offsetWidth;
         this._isEnd = isEnd;
         this._delta = delta;
-        this._scrollDelta = scrollDelta;
+        this._deltaOfNewItems = deltaOfNewItems;
         this._isStart = this._scrollSize === 0;
         this._itemsRange = itemsRange;
         this._userAction = userAction;

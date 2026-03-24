@@ -13,7 +13,7 @@ import { TextDirection, TextDirections } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
-import { MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS } from './const';
+import { MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MEASURE_VELOCITY_TIMER } from './const';
 
 const TOP = 'top',
   LEFT = 'left',
@@ -89,9 +89,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   private _$scrollbarScroll = new Subject<boolean>();
   readonly $scrollbarScroll = this._$scrollbarScroll.asObservable();
 
-  protected _averageVelocity: number = 0;
-  get averageVelocity() { return this._averageVelocity; }
-
   private _prepared = false;
   set prepared(v: boolean) {
     if (this._prepared !== v) {
@@ -145,6 +142,22 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   private _measureVelocityTimestamp: number = Date.now();
 
   private _measureVelocityLastPosition: number = this.isVertical() ? this._y : this._x;
+
+  private _measureVelocityAnimationFrameId: number = -1;
+
+  private _measureVelocityAnimationTimer: number = -1;
+
+  private _velocities: Array<number> = [];
+
+  protected _velocity: number = 0;
+  get velocity() { return this._velocity; }
+
+  protected _averageVelocity: number = 0;
+  get averageVelocity() { return this._averageVelocity; }
+
+  private _measureVelocityHandler = () => {
+    this.measureVelocityExecutor();
+  }
 
   constructor() {
     super();
@@ -200,9 +213,13 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     });
   }
 
-  private _velocities: Array<number> = [];
-
   private measureVelocity() {
+    this._measureVelocityAnimationTimer = MEASURE_VELOCITY_TIMER;
+
+    this.measureVelocityExecutor();
+  };
+
+  private measureVelocityExecutor() {
     const timestamp = Date.now();
     if (timestamp === this._measureVelocityTimestamp) {
       return;
@@ -216,11 +233,29 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this._velocities.shift();
     }
     avgVelocity += velocity;
+    this._velocity = velocity;
     this._velocities.push(velocity);
     this._averageVelocity = avgVelocity / MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS;
     this._measureVelocityLastPosition = position;
     this._measureVelocityTimestamp = timestamp;
-  };
+
+    this.runMeasureVelocity();
+  }
+
+  stopMeasureVelocity() {
+    if (this._measureVelocityAnimationFrameId > -1) {
+      cancelAnimationFrame(this._measureVelocityAnimationFrameId);
+      this._measureVelocityAnimationFrameId = -1;
+    }
+  }
+
+  private runMeasureVelocity() {
+    this.stopMeasureVelocity();
+    if (this._measureVelocityAnimationTimer >= 0) {
+      this._measureVelocityAnimationTimer--;
+      this._measureVelocityAnimationFrameId = requestAnimationFrame(this._measureVelocityHandler);
+    }
+  }
 
   private updateScrollBarHandler(update: boolean = false) {
     const direction = this.direction(),
@@ -348,5 +383,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
+
+    this.stopMeasureVelocity();
   }
 }

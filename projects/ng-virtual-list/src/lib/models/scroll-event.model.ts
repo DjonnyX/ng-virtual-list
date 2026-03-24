@@ -45,9 +45,9 @@ export interface IScrollEvent {
      */
     delta: number;
     /**
-     * Scroll delta
+     * Delta of new items
      */
-    scrollDelta: number;
+    deltaOfNewItems: number;
     /**
      * Display items range
      */

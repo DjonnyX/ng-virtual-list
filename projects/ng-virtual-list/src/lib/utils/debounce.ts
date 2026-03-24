@@ -1,10 +1,25 @@
+export interface IDebounce {
+    /**
+     *  Call handling method
+     */
+    execute: (...args: Array<any>) => void;
+    /**
+     * Method of destroying handlers
+     */
+    dispose: () => void;
+    /**
+     * Indicates whether the handler has been removed (true) or not (false)
+     */
+    getIsDisposed: () => boolean;
+}
+
 /**
  * Simple debounce function.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0) => {
+export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0): IDebounce => {
     let timeout: any = null;
     const dispose = () => {
         if (timeout !== null) {

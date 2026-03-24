@@ -54,6 +54,15 @@ export class NgScrollView extends BaseScrollView {
 
     private _overscrollIteration: number = 0;
 
+    protected override _totalSize: number = 0;
+    override set totalSize(v: number) {
+        if (this._totalSize !== v) {
+            this._totalSize = v;
+            const isVertical = this.isVertical();
+            this.move(isVertical, isVertical ? this._y : this._x, true, true, true);
+        }
+    }
+
     set delta(v: number) {
         this._startPosition += v;
     }
