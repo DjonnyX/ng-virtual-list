@@ -356,6 +356,12 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
+    protected isAnimatedValueOutOfRange(value: number) {
+        const isVertical = this.direction() === ScrollerDirection.VERTICAL,
+            scrollSize = isVertical ? this.scrollHeight : this.scrollWidth;
+        return value < 0 || value > scrollSize;
+    }
+
     protected normalizeAnimatedValue(value: number) {
         const isVertical = this.direction() === ScrollerDirection.VERTICAL,
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
@@ -416,6 +422,10 @@ export class NgScrollView extends BaseScrollView {
             duration = params.duration ?? ANIMATION_DURATION,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
+        if (this._x !== posX && this.isAnimatedValueOutOfRange(posX)
+            || this._y !== posY && this.isAnimatedValueOutOfRange(posY)) {
+            return;
+        }
         const limits = this.scrollLimits(),
             x = this.normalizeAnimatedValue(limits ? this._x : posX),
             y = this.normalizeAnimatedValue(limits ? this._y : posY),
@@ -423,6 +433,9 @@ export class NgScrollView extends BaseScrollView {
             yy = y,
             prevX = this._x,
             prevY = this._y;
+        if (limits) {
+            return;
+        }
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== yy) {
