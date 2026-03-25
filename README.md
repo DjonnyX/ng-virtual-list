@@ -704,10 +704,10 @@ Methods
 
 | Method | Type | Description |
 |--|--|--|
-| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
-| scrollToStart | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the scroll area to the first item in the collection. |
-| scrollToEnd | (cb?: () => void, options?: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts)) | Scrolls the list to the end of the content height. |
-| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), behavior?: ScrollBehavior) => void | Returns the bounds of an element with a given id |
+| scrollTo | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), (cb: () => void) \| null = null, options: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts) \| null = null) | The method scrolls the list to the element with the given `id` and returns the value of the scrolled area. |
+| scrollToStart | (cb: (() => void) \| null = null, options: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts) \| null = null) | Scrolls the scroll area to the first item in the collection. |
+| scrollToEnd | (cb: (() => void) \| null = null, options: [IScrollOptions](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts) \| null = null) | Scrolls the list to the end of the content height. |
+| getItemBounds | (id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)) => [ISize \| null](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/size.ts) | Returns the bounds of an element with a given id |
 | focus | [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts), align: [FocusAlignment](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/focus-alignment.ts) = [FocusAlignments.NONE](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/focus-alignments.ts) | Focus an list item by a given id. |
 | preventSnapping |  | Prevents the list from snapping to its start or end edge. |
 

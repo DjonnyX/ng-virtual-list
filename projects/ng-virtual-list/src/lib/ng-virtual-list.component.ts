@@ -2531,9 +2531,9 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * Returns the bounds of an element with a given id
    */
-  getItemBounds(id: Id): ISize | undefined {
+  getItemBounds(id: Id): ISize | null {
     validateId(id);
-    return this._trackBox.getItemBounds(id);
+    return this._trackBox.getItemBounds(id) ?? null;
   }
 
   /**
@@ -2563,7 +2563,7 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * The method scrolls the list to the element with the given `id` and returns the value of the scrolled area.
    */
-  scrollTo(id: Id, cb?: () => void, options?: IScrollOptions) {
+  scrollTo(id: Id, cb: (() => void) | null = null, options: IScrollOptions | null = null) {
     const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
       blending = options?.blending ?? false,
       focused = options?.focused ?? true,
@@ -2581,7 +2581,9 @@ export class NgVirtualListComponent implements OnDestroy {
             this._service.focus(el, FocusAlignments.NONE);
           }
         }
-        cb?.();
+        if (typeof cb === 'function') {
+          cb?.();
+        }
       }
     });
   }
@@ -2589,7 +2591,7 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * Scrolls the scroll area to the first item in the collection.
    */
-  scrollToStart(cb?: () => void, options?: IScrollOptions) {
+  scrollToStart(cb: (() => void) | null = null, options: IScrollOptions | null = null) {
     const scroller = this._scrollerComponent();
     if (scroller) {
       scroller.stopScrolling();
@@ -2616,7 +2618,9 @@ export class NgVirtualListComponent implements OnDestroy {
               this._service.focus(el, FocusAlignments.NONE);
             }
           }
-          cb?.();
+          if (typeof cb === 'function') {
+            cb?.();
+          }
         }
       });
     }
@@ -2633,7 +2637,7 @@ export class NgVirtualListComponent implements OnDestroy {
   /**
    * Scrolls the list to the end of the content size.
    */
-  scrollToEnd(cb?: () => void, options?: IScrollOptions) {
+  scrollToEnd(cb: (() => void) | null = null, options: IScrollOptions | null = null) {
     const scroller = this._scrollerComponent();
     if (scroller) {
       scroller.stopScrolling();
@@ -2659,7 +2663,9 @@ export class NgVirtualListComponent implements OnDestroy {
             this._service.focus(el, FocusAlignments.NONE);
           }
         }
-        cb?.();
+        if (typeof cb === 'function') {
+          cb?.();
+        }
       }
     });
   }
