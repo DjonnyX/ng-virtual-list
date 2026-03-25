@@ -165,6 +165,16 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   constructor() {
     super();
 
+    const $loading = toObservable(this.loading);
+    $loading.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        if (v) {
+          this._$preventDragMove.next();
+        }
+      }),
+    ).subscribe();
+
     this._service.$langTextDir.pipe(
       tap(v => {
         this.langTextDir.set(v);
