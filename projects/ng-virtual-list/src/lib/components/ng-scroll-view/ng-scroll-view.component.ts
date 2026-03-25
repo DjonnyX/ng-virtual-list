@@ -382,9 +382,12 @@ export class NgScrollView extends BaseScrollView {
             }, onComplete: ({ value }) => {
                 this.move(isVertical, value, false, userAction);
                 this._$scrollEnd.next(userAction);
+                this.onAnimationComplete(value);
             },
         });
     }
+
+    protected onAnimationComplete(position: number) { }
 
     fireScroll(userAction: boolean = false) {
         this.stopScrolling();

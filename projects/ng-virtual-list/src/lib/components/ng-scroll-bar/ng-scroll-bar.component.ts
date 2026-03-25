@@ -37,6 +37,8 @@ export class NgScrollBarComponent extends NgScrollView {
 
   onDrag = output<IScrollBarDragEvent>();
 
+  onDragEnd = output<IScrollBarDragEvent>();
+
   thumbGradientPositions = input<GradientColorPositions>([0, 0]);
 
   size = input<number>(DEFAULT_SIZE);
@@ -176,19 +178,20 @@ export class NgScrollBarComponent extends NgScrollView {
     this.$scroll.pipe(
       takeUntilDestroyed(),
       tap(v => {
-        const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-          scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
-          scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
-        if (!!scrollViewport && !!scrollContent) {
-          const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
-            viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
-          this.onDrag.emit({
-            position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
-            min: scrollSize !== 0 ? (this.startOffset() / scrollSize) : 0,
-            max: scrollSize !== 0 ? ((viewportSize - this.endOffset() - contentSize) / scrollSize) : 0,
-            animation: !this._isMoving,
-            userAction: v,
-          });
+        const event = this.createDragEvent(v);
+        if (!!event) {
+          this.onDrag.emit(event);
+        }
+      }),
+    ).subscribe();
+
+    const $scrollEnd = this.$scrollEnd;
+    $scrollEnd.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        const event = this.createDragEvent(false);
+        if (!!event) {
+          this.onDragEnd.emit(event);
         }
       }),
     ).subscribe();
@@ -209,6 +212,25 @@ export class NgScrollBarComponent extends NgScrollView {
         }
       }
     });
+  }
+
+  private createDragEvent(userAction: boolean) {
+    const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+      scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
+      scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+    if (!!scrollViewport && !!scrollContent) {
+      const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
+        viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
+      const event: IScrollBarDragEvent = {
+        position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
+        min: scrollSize !== 0 ? (this.startOffset() / scrollSize) : 0,
+        max: scrollSize !== 0 ? ((viewportSize - this.endOffset() - contentSize) / scrollSize) : 0,
+        animation: !this._isMoving,
+        userAction,
+      };
+      return event;
+    }
+    return null;
   }
 
   private thumbHit(x: number, y: number): boolean {

@@ -359,10 +359,16 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     }
   }
 
+  protected override onAnimationComplete(position: number) {
+    this._velocities = [0];
+    this._velocity = 0;
+    this._$scrollEnd.next(false);
+  }
+
   onScrollBarDragHandler(event: IScrollBarDragEvent) {
     const { animation, position, min, max, userAction } = event;
-    this._$scrollbarScroll.next(userAction);
     this._isScrollbarUserAction = userAction;
+    this._$scrollbarScroll.next(userAction);
     this.stopScrolling();
     const isVertical = this.isVertical(),
       {
@@ -377,6 +383,20 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       blending: false, userAction, fireUpdate: userAction, fromScrollbar: true,
     });
     this.emitScrollableEvent();
+    this.fireUpdateIfEdgesDetected(position, min, max, animation, userAction);
+  }
+
+  onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
+    const { animation, position, min, max, userAction } = event;
+    this._isScrollbarUserAction = false;
+    this._velocities = [0];
+    this._velocity = 0;
+    this._$scrollbarScroll.next(false);
+    this.fireScrollEvent(false);
+    this.fireUpdateIfEdgesDetected(position, min, max, animation, false);
+  }
+
+  private fireUpdateIfEdgesDetected(position: number, min: number = 0, max: number = 1, animation: boolean = false, userAction: boolean = false) {
     if (userAction && animation && this._service.dynamic) {
       if (position <= min) {
         this._service.scrollToStart();
