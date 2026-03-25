@@ -18,4 +18,5 @@ export interface IScrollToParams {
     userAction?: boolean;
     fromScrollbar?: boolean;
     duration?: number;
+    useLimits?: boolean;
 }

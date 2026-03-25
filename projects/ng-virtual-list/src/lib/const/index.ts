@@ -51,7 +51,7 @@ export const DEFAULT_COLLECTION_MODE = CollectionModes.NORMAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
-export const MAX_SCROLL_TO_ITERATIONS = 7;
+export const MAX_SCROLL_TO_ITERATIONS = 5;
 
 export const DEFAULT_SNAPPING_METHOD = SnappingMethods.STANDART;
 
@@ -170,6 +170,8 @@ export const POINTER_OUT = 'pointerout';
 export const CLICK = 'click';
 
 export const KEY_DOWN = 'keydown';
+
+export const KEY_TAB = 'Tab';
 
 export const SCROLL = 'scroll';
 

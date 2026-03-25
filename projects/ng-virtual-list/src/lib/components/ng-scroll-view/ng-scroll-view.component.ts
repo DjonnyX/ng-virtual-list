@@ -425,10 +425,11 @@ export class NgScrollView extends BaseScrollView {
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
             duration = params.duration ?? ANIMATION_DURATION,
+            useLimits = params.useLimits ?? false,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
-        if (this._x !== posX && this.isAnimatedValueOutOfRange(posX)
-            || this._y !== posY && this.isAnimatedValueOutOfRange(posY)) {
+        if ((this._x !== posX && this.isAnimatedValueOutOfRange(posX)
+            || this._y !== posY && this.isAnimatedValueOutOfRange(posY)) && !useLimits) {
             return;
         }
         const limits = this.scrollLimits(),
@@ -438,9 +439,6 @@ export class NgScrollView extends BaseScrollView {
             yy = y,
             prevX = this._x,
             prevY = this._y;
-        if (limits) {
-            return;
-        }
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== yy) {
