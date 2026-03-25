@@ -138,6 +138,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   readonly viewInitialized = signal<boolean>(false);
 
   private _isScrollbarUserAction: boolean = false;
+  get isScrollbarUserAction() {
+    return this._isScrollbarUserAction;
+  }
 
   private _measureVelocityTimestamp: number = Date.now();
 
@@ -339,14 +342,15 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   scrollTo(params: IScrollToParams) {
     const userAction = params.userAction ?? true,
       blending = params.blending ?? true,
-      fireUpdate = params.fireUpdate ?? false;
+      fireUpdate = params.fireUpdate ?? false,
+      fromScrollbar = params.fromScrollbar ?? false;
 
-    if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
+    if (userAction && (!blending && !this._isMoving) && !fireUpdate && !fromScrollbar) {
       this.stopScrollbar();
       this._isScrollbarUserAction = false;
     }
 
-    this.scroll(params);
+    this.scroll({...params, userAction: userAction && !fromScrollbar});
   }
 
   stopScrollbar() {
@@ -367,9 +371,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         scrollSize: isVertical ? this.scrollHeight : this.scrollWidth,
         position,
       });
+      
     this.scrollTo({
       [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? this.scrollBehavior() : INSTANT,
-      blending: false, userAction: false, fireUpdate: userAction,
+      blending: false, userAction, fireUpdate: userAction, fromScrollbar: true,
     });
     this.emitScrollableEvent();
     if (userAction && animation && this._service.dynamic) {

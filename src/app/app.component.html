@@ -141,9 +141,10 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list (with snapping)</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-        [itemConfigMap]="groupItemsStickyMap"  [dynamicSize]="false" [itemSize]="40" [snap]="true" (onItemClick)="onItemClick($event)" [scrollbarTheme]="scrollbarTheme"
-        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
+      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="2" [maxBufferSize]="2"
+        [itemConfigMap]="groupItemsStickyMap"  [dynamicSize]="false" [itemSize]="40" [snap]="true" (onItemClick)="onItemClick($event)"
+        [scrollbarTheme]="scrollbarTheme" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()">
+      </ng-virtual-list>
     </div>
   </div>
 
@@ -156,7 +157,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
+        [bufferSize]="3" [maxBufferSize]="3" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
         [scrollbarTheme]="scrollbarTheme" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>

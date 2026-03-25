@@ -8,6 +8,8 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-user-drag: none;
     -moz-user-drag: none;
+    text-rendering: optimizeSpeed;
+    image-rendering: optimizeSpeed;
 }
 
 .ngvl-item__container {
