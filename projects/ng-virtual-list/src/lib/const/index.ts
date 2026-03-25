@@ -199,7 +199,7 @@ export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
-export const MIN_SCROLL_TO_START_PIXELS = 10,
+export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10,
     MIN_SCROLL_VELOCITY_FOR_OPTIMIZATION = 74,
     RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
     PREPARE_ITERATIONS = 5,

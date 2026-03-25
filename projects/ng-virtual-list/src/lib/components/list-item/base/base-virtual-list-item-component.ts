@@ -9,7 +9,7 @@ import {
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
-  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
+  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
 
@@ -149,7 +149,7 @@ export class BaseVirtualListItemComponent {
   protected update() {
     const data = this._data, regular = this.regular, length = this._regularLength;
     if (data) {
-      this._elementRef.nativeElement.setAttribute(ID, `${data.id}`);
+      this._elementRef.nativeElement.setAttribute(ITEM_ID, `${data.id}`);
       const styles = this._elementRef.nativeElement.style;
       styles.zIndex = data.config.zIndex;
       styles.position = POSITION_ABSOLUTE;

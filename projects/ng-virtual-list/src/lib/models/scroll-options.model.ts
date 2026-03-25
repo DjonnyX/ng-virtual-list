@@ -17,4 +17,8 @@ export interface IScrollOptions {
      * Specifies whether scrolling will smoothly transition to the previous animation. Default value is false.
      */
     blending?: boolean;
+    /**
+     * Determines whether the element will have focus after scrolling is complete. Default value is true.
+     */
+    focused?: boolean;
 }
