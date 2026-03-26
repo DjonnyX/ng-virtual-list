@@ -61,6 +61,20 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         this._trackingPropertyName = trackingPropertyName;
     }
 
+    private tearOutSnapedDisplayObjectByItemId = (itemId: Id, snapedComponents: Array<ComponentRef<C>> | null | undefined):
+        ComponentRef<C> | null => {
+        if (!snapedComponents || snapedComponents?.length === 0) {
+            return null;
+        }
+        const index = snapedComponents?.findIndex(comp => comp?.instance?.itemId === itemId);
+        if (index > -1) {
+            const comp = snapedComponents[index];
+            snapedComponents.splice(index, 1);
+            return comp;
+        }
+        return snapedComponents.shift() ?? null;
+    }
+
     /**
      * tracking by propName
      */
@@ -91,7 +105,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                         if (indexByUntrackedItems > -1) {
                             if (item.config.snapped || item.config.snappedOut) {
                                 if (snaped.length > 0) {
-                                    snapedComponent = snaped.shift();
+                                    snapedComponent = this.tearOutSnapedDisplayObjectByItemId(item.id, snaped);
                                     if (!!snapedComponent) {
                                         isRegularSnapped = true;
                                         snapedComponent.instance.item = item;
@@ -161,7 +175,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                 if (comp) {
                     if (item.config.snapped || item.config.snappedOut) {
                         if (snaped.length > 0) {
-                            snapedComponent = snaped.shift();
+                            snapedComponent = this.tearOutSnapedDisplayObjectByItemId(item.id, snaped);
                             isRegularSnapped = true;
                             if (!!snapedComponent) {
                                 snapedComponent.instance.item = item;

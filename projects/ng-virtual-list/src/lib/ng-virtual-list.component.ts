@@ -2386,6 +2386,7 @@ export class NgVirtualListComponent implements OnDestroy {
       if (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS && this._snapContainerRef) {
         while (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS) {
           const comp = this._snapContainerRef.createComponent(this._itemComponentClass);
+          comp.instance.renderer = this._itemRenderer();
           comp.instance.regular = true;
           this._snapedDisplayComponents.push(comp);
           this._trackBox.snapedDisplayComponents = this._snapedDisplayComponents;
@@ -2397,42 +2398,36 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._trackBox.items = displayItems;
 
-    const _listContainerRef = this._listContainerRef;
+    const listContainerRef = this._listContainerRef;
 
     const maxLength = displayItems.length, components = this._displayComponents;
 
-    if (_listContainerRef) {
+    if (!!listContainerRef) {
+      const doMap: { [id: number]: number } = {};
+      let i = 0;
+      for (let l = components.length; i < l; i++) {
+        const item = components[i];
+        if (item) {
+          const id = item.instance.id;
+          item.instance.renderer = this._itemRenderer();
+          doMap[id] = i;
+        }
+      }
       while (components.length < maxLength) {
-        const comp = _listContainerRef.createComponent(this._itemComponentClass);
+        const comp = listContainerRef.createComponent(this._itemComponentClass);
+        const id = comp.instance.id;
+        comp.instance.renderer = this._itemRenderer();
+        doMap[id] = i;
         components.push(comp);
         this._componentsResizeObserver.observe(comp.instance.element);
+        i++;
       }
+      this._trackBox.setDisplayObjectIndexMapById(doMap);
     }
-    this.resetRenderers();
   }
 
   private updateRegularRenderer() {
     this._resizeSnappedComponentHandler();
-  }
-
-  private resetRenderers(itemRenderer?: TemplateRef<HTMLElement>) {
-    const doMap: { [id: number]: number } = {}, components = this._displayComponents;
-    for (let i = 0, l = components.length; i < l; i++) {
-      const item = components[i];
-      if (item) {
-        const id = item.instance.id;
-        item.instance.renderer = itemRenderer || this._itemRenderer();
-        doMap[id] = i;
-      }
-    }
-
-    if (this._isSnappingMethodAdvanced && this.snap() && this._snapedDisplayComponents.length > 0 && this._snapContainerRef) {
-      for (const comp of this._snapedDisplayComponents) {
-        comp.instance.renderer = itemRenderer || this._itemRenderer();
-      }
-    }
-
-    this._trackBox.setDisplayObjectIndexMapById(doMap);
   }
 
   /**

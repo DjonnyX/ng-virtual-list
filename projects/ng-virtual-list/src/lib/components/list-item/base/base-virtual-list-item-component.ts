@@ -102,8 +102,11 @@ export class BaseVirtualListItemComponent {
 
   itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
+  protected _renderer: TemplateRef<any> | undefined;
   set renderer(v: TemplateRef<any> | undefined) {
-    this.itemRenderer.set(v);
+    if (this._renderer !== v) {
+      this.itemRenderer.set(v);
+    }
   }
 
   protected _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
