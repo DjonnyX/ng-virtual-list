@@ -87,9 +87,9 @@
           [max]="100000">
           <button class="scroll-to__button" (click)="onButtonChangeDynamicItemsLengthHandler()">setup</button>
       </div>
-      <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicItems" methodForSelecting="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
+      <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicItems" methodForSelecting="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="2" [maxBufferSize]="2"
         [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]" [scrollbarTheme]="scrollbarTheme"
-        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="false"></ng-virtual-list>
+        (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToEnd]="false"></ng-virtual-list>
     </div>
   </div>
 
@@ -101,7 +101,7 @@
           [max]="100000">
         <button class="scroll-to__button" (click)="onButtonChangeDynamicShortItemsLengthHandler()">setup</button>
       </div>
-      <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicShortItems" methodForSelecting="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5"
+      <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicShortItems" methodForSelecting="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="2" [maxBufferSize]="2"
         [dynamicSize]="false" [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]" [scrollbarTheme]="scrollbarTheme"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="false"></ng-virtual-list>
     </div>
