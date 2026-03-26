@@ -13,7 +13,7 @@ import {
 import { IScrollToParams } from './interfaces';
 import {
     ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_VELOCITY_TIMESTAMP,
-    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_INVERSION, SMOOTH, SPEED_SCALE, TOP,
+    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -37,9 +37,6 @@ export class NgScrollView extends BaseScrollView {
     scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
 
     overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
-
-    protected _$preventDragMove = new Subject<void>();
-    protected readonly $preventDragMove = this._$preventDragMove.asObservable();
 
     protected _$scroll = new Subject<boolean>();
     readonly $scroll = this._$scroll.asObservable();
@@ -70,16 +67,15 @@ export class NgScrollView extends BaseScrollView {
 
     constructor() {
         super();
-        const $preventDragMove = this.$preventDragMove,
-            $viewport = toObservable(this.scrollViewport).pipe(
-                takeUntilDestroyed(this._destroyRef),
-                filter(v => !!v),
-                map(v => v.nativeElement),
-            ), $content = toObservable(this.scrollContent).pipe(
-                takeUntilDestroyed(this._destroyRef),
-                filter(v => !!v),
-                map(v => v.nativeElement),
-            ), $wheelEmitter = this._inversion ? $viewport : $content;
+        const $viewport = toObservable(this.scrollViewport).pipe(
+            takeUntilDestroyed(this._destroyRef),
+            filter(v => !!v),
+            map(v => v.nativeElement),
+        ), $content = toObservable(this.scrollContent).pipe(
+            takeUntilDestroyed(this._destroyRef),
+            filter(v => !!v),
+            map(v => v.nativeElement),
+        ), $wheelEmitter = this._inversion ? $viewport : $content;
 
         $wheelEmitter.pipe(
             takeUntilDestroyed(this._destroyRef),
@@ -104,7 +100,7 @@ export class NgScrollView extends BaseScrollView {
         const $mouseUp = fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }).pipe(
             takeUntilDestroyed(this._destroyRef),
         ),
-            $mouseDragCancel = race([$mouseUp, $preventDragMove]).pipe(
+            $mouseDragCancel = $mouseUp.pipe(
                 takeUntilDestroyed(this._destroyRef),
                 tap(() => {
                     this._isMoving = false;
@@ -173,7 +169,7 @@ export class NgScrollView extends BaseScrollView {
         const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
             takeUntilDestroyed(this._destroyRef),
         ),
-            $touchCanceler = race([$touchUp, $preventDragMove]).pipe(
+            $touchCanceler = $touchUp.pipe(
                 takeUntilDestroyed(this._destroyRef),
                 tap(() => {
                     this._isMoving = false;
