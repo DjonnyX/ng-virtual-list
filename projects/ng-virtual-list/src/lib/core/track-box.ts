@@ -547,10 +547,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      * Calculates the entry into the overscroll area and returns the number of overscroll elements
      */
     protected getElementNumToEnd<I extends IItem, C extends Array<I>>(i: number, collection: C, map: CMap<Id, ISize>, typicalItemSize: number,
-        size: number, isVertical: boolean, indexOffset: number = 0): { num: number, offset: number } {
+        size: number, isVertical: boolean, indexOffset: number = 0, reverse: boolean = false): { num: number, offset: number } {
         const trackBy = this._trackingPropertyName, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME;
         let offset = 0, num = 0;
-        for (let j = collection.length - indexOffset - 1; j >= i; j--) {
+        for (let j = collection.length - indexOffset - 1; reverse ? j >= 0 : j >= i; j--) {
             const item = collection[j], id = item[trackBy];
             let itemSize = 0;
             if (map.has(id)) {
@@ -559,11 +559,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             } else {
                 itemSize = typicalItemSize;
             }
+            if (offset + itemSize > size) {
+                return { num, offset };
+            }
             offset += itemSize;
             num++;
-            if (offset > size) {
-                return { num: 0, offset };
-            }
         }
         return { num, offset };
     }
@@ -646,7 +646,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let y = this._scrollStartOffset, stickyComponentSize = 0;
+            let y = this._scrollStartOffset;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
@@ -695,13 +695,22 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (isFromId) {
                     if (itemById === undefined) {
-                        if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
-                            stickyComponentSize = componentSize;
-                            y -= stickyComponentSize;
-                        }
-
                         if (id === fromItemId) {
                             isFromItemIdFound = true;
+
+                            const { num, offset } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical),
+                                leftViewportSize = size - offset;
+                            if (leftViewportSize > 0) {
+                                const { num: num1, offset: offset1 } = this.getElementNumToEnd(i + num, collection, map, typicalItemSize, size, isVertical, 0, true),
+                                    deltaNum = (num1 - num), deltaOffset = (offset1 - offset);
+                                totalItemsToDisplayEndWeight += offset;
+                                itemsFromStartToScrollEnd -= deltaNum;
+                                rightItemsWeight = rightItemLength = 0;
+                                leftHiddenItemsWeight -= deltaOffset;
+                                leftItemsWeights.splice(leftItemsWeights.length - deltaNum, deltaNum);
+                                y -= deltaOffset;
+                            }
+
                             itemById = collectionItem;
                             itemByIdPos = y;
                         } else {

@@ -287,7 +287,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (update) {
       this.scrollBar?.scroll({
         [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: thumbPosition, fireUpdate: false, behavior: BEHAVIOR_INSTANT,
-        userAction: false, blending: true,
+        userAction: false, blending: true, useLimits: true,
       });
     }
     this.scrollbarShow.set(this.scrollable && this.scrollbarEnabled());
