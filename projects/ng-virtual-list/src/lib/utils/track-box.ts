@@ -897,6 +897,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             typicalItemSize,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
+
         if (items.length) {
             const trackBy = this._trackingPropertyName, actualSnippedPosition = snippedPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
@@ -908,7 +909,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
                 endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
-            console.log(deltaOffet)
+
             if (snap) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
                     const collectionItem = items[i];
