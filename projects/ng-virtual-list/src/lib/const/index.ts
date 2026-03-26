@@ -2,6 +2,8 @@ import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections }
 import { Directions } from "../enums/directions";
 import { GradientColor, IAnimationParams, ScrollBarTheme } from "../types";
 
+export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
+
 export const DEFAULT_ITEM_SIZE = 24;
 
 export const DEFAULT_BUFFER_SIZE = 2;
@@ -201,16 +203,28 @@ export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
-export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10,
-    MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1 = 74,
-    MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 = 500,
-    RANGE_DISPLAY_ITEMS_END_OFFSET = 20,
-    PREPARE_ITERATIONS = 5,
-    PREPARATION_REUPDATE_LENGTH = 5,
-    EMPTY_SCROLL_STATE_VERSION = '-1',
-    ROLE_LIST = 'list',
-    ROLE_LIST_BOX = 'listbox',
-    ITEM_ID = 'item-id',
-    ITEM_CONTAINER = 'ngvl-item__container',
-    READY_TO_START = 'ready-to-start',
-    WAIT_FOR_PREPARATION = 'wait-for-preparation';
+export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10;
+
+export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1 = 74;
+
+export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 = 500;
+
+export const RANGE_DISPLAY_ITEMS_END_OFFSET = 20;
+
+export const PREPARE_ITERATIONS = 5;
+
+export const PREPARATION_REUPDATE_LENGTH = 5;
+
+export const EMPTY_SCROLL_STATE_VERSION = '-1';
+
+export const ROLE_LIST = 'list';
+
+export const ROLE_LIST_BOX = 'listbox';
+
+export const ITEM_ID = 'item-id';
+
+export const ITEM_CONTAINER = 'ngvl-item__container';
+
+export const READY_TO_START = 'ready-to-start';
+
+export const WAIT_FOR_PREPARATION = 'wait-for-preparation';

@@ -8,7 +8,7 @@
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (snap()) {
-<div #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">
+<div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">
   <div #snapped part="snapped-item" class="ngvl__list-snapper">
     <ng-container #snapRendererContainer></ng-container>
   </div>

@@ -16,7 +16,7 @@ import {
   DEFAULT_SCREEN_READER_MESSAGE, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_END, MIN_PIXELS_FOR_PREVENT_SNAPPING,
   MOUSE_DOWN, TOUCH_START, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION,
   DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
-  DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION,
+  DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, READY_TO_START, WAIT_FOR_PREPARATION, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2,
 } from './const';
@@ -863,7 +863,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
-  private _snapedDisplayComponent: ComponentRef<BaseVirtualListItemComponent> | undefined;
+  private _snapedDisplayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
   private _bounds = signal<IRect | null>(null);
   protected get bounds() { return this._bounds; }
@@ -883,50 +883,50 @@ export class NgVirtualListComponent implements OnDestroy {
   private _listResizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
-    const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponent = this._snapedDisplayComponent?.instance;
-    if (list && scroller && snappedComponent) {
-      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect(), listElement = list?.nativeElement,
+    const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snapedDisplayComponents;
+    if (list && scroller && snappedComponents.length > 0) {
+      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect();/*, listElement = list?.nativeElement,
         { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
-        { width, height } = bounds ?? { width: 0, height: 0 }/*,
+        { width, height } = bounds ?? { width: 0, height: 0 },
         isScrollable = isVertical ? scroller.nativeElement.scrollHeight > 0 : scroller.nativeElement.scrollWidth > 0*/;
 
-      let scrollBarSize = isVertical ? width - lWidth : height - lHeight;
+      // const langTextDir = this.langTextDir();
 
-      this._service.scrollBarSize = scrollBarSize;
+      // const snappingMethod = this.snappingMethod();
+      // if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
+      //   // snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} 0 Z")`;
+      // }
 
-      const langTextDir = this.langTextDir();
-
-      const snappingMethod = this.snappingMethod();
-      if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-        snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} 0 Z")`;
-      }
-
-      snappedComponent.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
-      const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-        scrollerElement = scroller.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
-
-      let left: number, right: number, top: number, bottom: number;
-      if (isVertical) {
-        left = 0;
-        right = width - scrollBarSize;
-        top = sHeight;
-        bottom = height;
-        if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-          if (langTextDir === TextDirections.RTL) {
-            scrollerElement.style.clipPath = `path("M 0 0 L 0 ${height} L ${width} ${height} L ${width} ${top + delta} L ${scrollBarSize} ${top + delta} L ${scrollBarSize} 0 Z")`;
-          } else {
-            scrollerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
-          }
-        }
-      } else {
-        left = sWidth;
-        right = width;
-        top = 0;
-        bottom = height - scrollBarSize;
-        if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-          scrollerElement.style.clipPath = `path("M ${width} 0 L ${width} ${bottom} L 0 ${bottom} L 0 0 L ${width} 0 Z")`;
+      for (const comp of snappedComponents) {
+        if (!!comp) {
+          comp.instance.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
         }
       }
+      // const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
+      //   scrollerElement = scroller.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
+
+      // let left: number, right: number, top: number, bottom: number;
+      // if (isVertical) {
+      //   left = 0;
+      //   right = width - scrollBarSize;
+      //   top = sHeight;
+      //   bottom = height;
+      //   if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
+      //     if (langTextDir === TextDirections.RTL) {
+      //       scrollerElement.style.clipPath = `path("M 0 0 L 0 ${height} L ${width} ${height} L ${width} ${top + delta} L ${scrollBarSize} ${top + delta} L ${scrollBarSize} 0 Z")`;
+      //     } else {
+      //       scrollerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
+      //     }
+      //   }
+      // } else {
+      //   left = sWidth;
+      //   right = width;
+      //   top = 0;
+      //   bottom = height - scrollBarSize;
+      //   if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
+      //     scrollerElement.style.clipPath = `path("M ${width} 0 L ${width} ${bottom} L 0 ${bottom} L 0 0 L ${width} 0 Z")`;
+      //   }
+      // }
     }
   };
 
@@ -1121,6 +1121,16 @@ export class NgVirtualListComponent implements OnDestroy {
     this._trackBox.displayComponents = this._displayComponents;
 
     let hasUserAction = false, hasScrollbarUserAction = false;
+
+    const $scrollbarTheme = toObservable(this.scrollbarTheme);
+    $scrollbarTheme.pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      tap(theme => {
+        const { thickness = 0 } = theme;
+        this._service.scrollBarSize = thickness;
+      }),
+    ).subscribe();
 
     this.$fireUpdateNextFrame.pipe(
       takeUntilDestroyed(),
@@ -2373,13 +2383,15 @@ export class NgVirtualListComponent implements OnDestroy {
     }
 
     if (this._isSnappingMethodAdvanced && this.snap()) {
-      if (!this._snapedDisplayComponent && this._snapContainerRef) {
-        const comp = this._snapContainerRef.createComponent(this._itemComponentClass);
-        comp.instance.regular = true;
-        this._snapedDisplayComponent = comp;
-        this._trackBox.snapedDisplayComponent = this._snapedDisplayComponent;
-        this._resizeSnappedObserver = new ResizeObserver(this._resizeSnappedComponentHandler);
-        this._resizeSnappedObserver.observe(comp.instance.element);
+      if (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS && this._snapContainerRef) {
+        while (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS) {
+          const comp = this._snapContainerRef.createComponent(this._itemComponentClass);
+          comp.instance.regular = true;
+          this._snapedDisplayComponents.push(comp);
+          this._trackBox.snapedDisplayComponents = this._snapedDisplayComponents;
+          this._resizeSnappedObserver = new ResizeObserver(this._resizeSnappedComponentHandler);
+          this._resizeSnappedObserver.observe(comp.instance.element);
+        }
       }
     }
 
@@ -2414,9 +2426,10 @@ export class NgVirtualListComponent implements OnDestroy {
       }
     }
 
-    if (this._isSnappingMethodAdvanced && this.snap() && this._snapedDisplayComponent && this._snapContainerRef) {
-      const comp = this._snapedDisplayComponent;
-      comp.instance.renderer = itemRenderer || this._itemRenderer();
+    if (this._isSnappingMethodAdvanced && this.snap() && this._snapedDisplayComponents.length > 0 && this._snapContainerRef) {
+      for (const comp of this._snapedDisplayComponents) {
+        comp.instance.renderer = itemRenderer || this._itemRenderer();
+      }
     }
 
     this._trackBox.setDisplayObjectIndexMapById(doMap);
@@ -2641,28 +2654,31 @@ export class NgVirtualListComponent implements OnDestroy {
       this._updateId = undefined;
     }
 
-    if (this._trackBox) {
+    if (!!this._trackBox) {
       this._trackBox.dispose();
     }
 
-    if (this._componentsResizeObserver) {
+    if (!!this._componentsResizeObserver) {
       this._componentsResizeObserver.disconnect();
     }
 
-    if (this._resizeSnappedObserver) {
+    if (!!this._resizeSnappedObserver) {
       this._resizeSnappedObserver.disconnect();
     }
 
-    if (this._resizeObserver) {
+    if (!!this._resizeObserver) {
       this._resizeObserver.disconnect();
     }
 
-    if (this._listResizeObserver) {
+    if (!!this._listResizeObserver) {
       this._listResizeObserver.disconnect();
     }
 
-    if (this._snapedDisplayComponent) {
-      this._snapedDisplayComponent.destroy();
+    if (!!this._snapedDisplayComponents) {
+      while (this._snapedDisplayComponents.length > 0) {
+        const comp = this._displayComponents.shift();
+        comp?.destroy();
+      }
     }
 
     if (this._displayComponents) {

@@ -148,14 +148,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._displayComponents = v;
     }
 
-    protected _snapedDisplayComponent: ComponentRef<C> | null | undefined;
+    protected _snapedDisplayComponents: Array<ComponentRef<C>> | null | undefined;
 
-    set snapedDisplayComponent(v: ComponentRef<C> | null | undefined) {
-        if (this._snapedDisplayComponent === v) {
+    set snapedDisplayComponents(v: Array<ComponentRef<C>> | null | undefined) {
+        if (this._snapedDisplayComponents === v) {
             return;
         }
 
-        this._snapedDisplayComponent = v;
+        this._snapedDisplayComponents = v;
     }
 
     protected _isSnappingMethodAdvanced: boolean = false;
@@ -582,7 +582,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
             size = isVertical ? height : width, totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
-            map = this._map, snapshot = this._snapshot, checkOverscrollItemsLimit = Math.ceil(typicalItemSize !== 0 ? size / typicalItemSize : 0),
+            map = this._map, snapshot = this._snapshot,
             snippedPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
                 || (typeof fromItemId === 'string' && fromItemId > '-1');
@@ -744,7 +744,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             }
                         }
                     }
-                    
+
                     if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
                         deltaOfNewItems += componentSizeDelta;
                     }
@@ -800,7 +800,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             startCreationDelta = deltaFromStartCreation > 0 ? deltaFromStartCreation : 0,
             delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + startCreationDelta;
 
-            this._deltaOfNewItems = deltaOfNewItems;
+        this._deltaOfNewItems = deltaOfNewItems;
 
         if (isFromId && !isTargetInOverscroll) {
             actualScrollSize -= this._scrollStartOffset;
@@ -899,7 +899,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             displayItems: IRenderVirtualListCollection = [];
         if (items.length) {
             const trackBy = this._trackingPropertyName, actualSnippedPosition = snippedPos,
-                isSnappingMethodAdvanced = this.isSnappingMethodAdvanced,
+                isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
+                deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset,
                 positionOffset = isVertical ? offsetY : offsetX;
             let pos = startPosition,
@@ -907,7 +908,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
                 endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
-
+            console.log(deltaOffet)
             if (snap) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
                     const collectionItem = items[i];
@@ -938,7 +939,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
                                 absoluteEndPositionPercent,
-                                delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - size : 0,
+                                delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
@@ -1006,7 +1007,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteEndPositionPercent,
                                 width: w,
                                 height: h,
-                                delta: actualEndSnippedPosition - size,
+                                delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
@@ -1077,7 +1078,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             absoluteEndPositionPercent,
                             width: isVertical ? normalizedItemWidth : size,
                             height: isVertical ? size : normalizedItemHeight,
-                            delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - size : 0,
+                            delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                         }, config = {
                             new: (cache satisfies Cache)?.[IS_NEW] === true,
                             odd: isOdd,
@@ -1112,7 +1113,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
                         nextSticky = item;
                         nextSticky.config.snapped = snapped;
-                        nextSticky.measures.delta = isVertical ? (item.measures.y - scrollSize) : (item.measures.x - scrollSize);
+                        nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
                         nextSticky.config.zIndex = '3';
                     }
                     if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
@@ -1122,7 +1123,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         nextEndSticky = item;
                         nextEndSticky.config.zIndex = '3';
                         nextEndSticky.config.snapped = snapped;
-                        nextEndSticky.measures.delta = isVertical ? (item.measures.y - scrollSize) : (item.measures.x - scrollSize);
+                        nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
                     }
 
                     displayItems.push(item);
@@ -1141,10 +1142,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     stickyItem.config.snapped = nextSticky.config.snapped = false;
                     stickyItem.config.snappedOut = true;
                     stickyItem.config.sticky = 1;
-                    stickyItem.measures.delta = isVertical ? stickyItem.measures.y - scrollSize : stickyItem.measures.x - scrollSize;
+                    stickyItem.measures.delta = (isVertical ? stickyItem.measures.y : stickyItem.measures.x) - scrollSize;
                 } else {
                     nextSticky.config.snapped = true;
-                    nextSticky.measures.delta = isVertical ? nextSticky.measures.y - scrollSize : nextSticky.measures.x - scrollSize;
+                    nextSticky.measures.delta = (isVertical ? nextSticky.measures.y : nextSticky.measures.x) - scrollSize;
                     stickyItem.measures[axis] = stickyItem.measures[axis] + stickyItem.measures[sizeProperty];
                 }
             }
@@ -1156,10 +1157,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     endStickyItem.config.snapped = nextEndSticky.config.snapped = false;
                     endStickyItem.config.snappedOut = true;
                     endStickyItem.config.sticky = 2;
-                    endStickyItem.measures.delta = isVertical ? endStickyItem.measures.y - scrollSize : endStickyItem.measures.x - scrollSize;
+                    endStickyItem.measures.delta = (isVertical ? endStickyItem.measures.y : endStickyItem.measures.x) - scrollSize;
                 } else {
                     nextEndSticky.config.snapped = true;
                     nextEndSticky.measures[axis] = actualEndSnippedPosition - nextEndSticky.measures[sizeProperty];
+                    nextEndSticky.measures.delta = (isVertical ? nextEndSticky.measures.y : nextEndSticky.measures.x) - scrollSize;
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
                 }
             }
@@ -1185,7 +1187,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this._snapedDisplayComponent, this.scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snapedDisplayComponents, this.scrollDirection);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {

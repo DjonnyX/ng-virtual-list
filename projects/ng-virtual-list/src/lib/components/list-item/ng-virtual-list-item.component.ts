@@ -14,7 +14,7 @@ import { FocusAlignments } from '../../enums';
 import { IDisplayObjectConfig } from '../../models';
 import { createDisplayId, getListElementByIndex } from './utils';
 import {
-  ATTR_AREA_SELECTED, EVENT_FOCUS_IN, EVENT_FOCUS_OUT, EVENT_KEY_DOWN, ID, KEY_ARR_DOWN, KEY_ARR_LEFT,
+  ATTR_AREA_SELECTED, EVENT_FOCUS_IN, EVENT_FOCUS_OUT, EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT,
   KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE, NAVIGATE_TO_ATTEMT,
 } from './const';
 
@@ -86,8 +86,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     this._id = this._service.generateComponentId();
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
-
-    this._elementRef.nativeElement.setAttribute(ID, this.displayId);
   }
 
   ngOnInit(): void {

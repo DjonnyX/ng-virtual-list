@@ -141,7 +141,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Virtual group list (with snapping)</h2>
-      <ng-virtual-list class="list" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="2" [maxBufferSize]="2"
+      <ng-virtual-list class="list" langTextDir="rtl" [items]="groupItems" [itemRenderer]="groupItemRenderer" [bufferSize]="2" [maxBufferSize]="2"
         [itemConfigMap]="groupItemsStickyMap"  [dynamicSize]="false" [itemSize]="40" [snap]="true" (onItemClick)="onItemClick($event)"
         [scrollbarTheme]="scrollbarTheme" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()">
       </ng-virtual-list>
