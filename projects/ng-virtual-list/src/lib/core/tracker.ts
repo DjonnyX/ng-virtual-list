@@ -1,9 +1,10 @@
 import { ComponentRef } from "@angular/core";
-import { ScrollDirection } from "../models";
+import { ScrollDirection } from "../types";
 import { IRenderVirtualListCollection } from "../models/render-collection.model";
 import { BaseVirtualListItemComponent } from "../components/list-item/base";
-import { Id, ISize } from "../types";
-import { CMap } from "./cmap";
+import { ISize } from '../interfaces';
+import { Id } from "../types";
+import { CMap } from "../utils/cmap";
 
 type TrackingPropertyId = string | number;
 
@@ -20,7 +21,7 @@ export interface IVirtualListItemComponent<I = any> {
  * Tracks display items by property
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/core/tracker.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

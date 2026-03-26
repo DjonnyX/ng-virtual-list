@@ -1,4 +1,5 @@
-import { Id, ISize } from "../../../types";
+import { ISize } from '../../../interfaces';
+import { Id } from "../../../types";
 
 /**
  * PrerenderCache

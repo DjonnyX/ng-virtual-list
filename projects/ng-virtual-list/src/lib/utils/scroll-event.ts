@@ -1,4 +1,5 @@
-import { IScrollEvent, ScrollDirection } from "../models";
+import { IScrollEvent } from "../interfaces";
+import { ScrollDirection } from '../types';
 
 interface IScrollEventParams {
     direction: ScrollDirection;

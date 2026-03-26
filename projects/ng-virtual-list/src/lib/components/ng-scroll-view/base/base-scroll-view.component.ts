@@ -4,7 +4,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, Subject, tap } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
-import { ISize } from '../../../types';
+import { ISize } from '../../../interfaces';
 import { SCROLL_VIEW_INVERSION } from '../const';
 
 /**

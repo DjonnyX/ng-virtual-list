@@ -2,17 +2,17 @@ import { ComponentRef } from "@angular/core";
 import { IRenderVirtualListCollection, } from "../models/render-collection.model";
 import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
-import { CMap } from './cmap';
 import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
-import { IRect, ISize } from "../types";
+import { IRect, ISize } from "../interfaces";
 import {
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IVirtualListItemConfigMap } from "../models";
-import { bufferInterpolation } from "./buffer-interpolation";
+import { debounce } from "../utils";
+import { CMap } from '../utils/cmap';
+import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/list-item/base";
-import { debounce } from "./debounce";
 import { PrerenderCache } from "../components/prerender-container/types/cache";
 
 export enum TrackBoxEvents {
@@ -44,7 +44,7 @@ export interface IMetrics {
     leftSizeOfAddedItems: number;
     sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
     snap: boolean;
-    snippedPos: number;
+    snipedPos: number;
     startIndex: number;
     startPosition: number;
     totalItemsToDisplayEndWeight: number;
@@ -119,7 +119,7 @@ type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/core/track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -583,7 +583,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             size = isVertical ? height : width, totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
             map = this._map, snapshot = this._snapshot,
-            snippedPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsWeights: Array<number> = [],
+            snipedPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
                 || (typeof fromItemId === 'string' && fromItemId > '-1');
 
@@ -831,7 +831,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftSizeOfAddedItems,
             sizeProperty,
             snap,
-            snippedPos,
+            snipedPos,
             startIndex,
             startPosition,
             totalItemsToDisplayEndWeight,
@@ -890,7 +890,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             scrollSize,
             sizeProperty,
             snap,
-            snippedPos,
+            snipedPos,
             startPosition,
             totalLength,
             startIndex,
@@ -899,7 +899,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             displayItems: IRenderVirtualListCollection = [];
 
         if (items.length) {
-            const trackBy = this._trackingPropertyName, actualSnippedPosition = snippedPos,
+            const trackBy = this._trackingPropertyName, actualSnippedPosition = snipedPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset,
@@ -1137,7 +1137,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME;
 
-            if (nextSticky && stickyItem && nextSticky.measures[axis] <= actualSnippedPosition + stickyItemSize) {
+            if (!!nextSticky && !!stickyItem && nextSticky.measures[axis] <= actualSnippedPosition + stickyItemSize) {
                 if (nextSticky.measures[axis] > scrollSize - stickyItemSize) {
                     stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
                     stickyItem.config.snapped = nextSticky.config.snapped = false;
@@ -1151,7 +1151,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            if (nextEndSticky && endStickyItem &&
+            if (!!nextEndSticky && !!endStickyItem &&
                 (nextEndSticky.measures[axis] >= actualEndSnippedPosition - endStickyItemSize - nextEndSticky.measures[sizeProperty])) {
                 if (nextEndSticky.measures[axis] < actualEndSnippedPosition - nextEndSticky.measures[sizeProperty]) {
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
@@ -1199,11 +1199,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._tracker.untrackComponentByIdProperty(component);
     }
 
-    getItemBounds(id: Id): ISize | undefined {
+    getItemBounds(id: Id): ISize | null {
         if (this.has(id)) {
-            return this.get(id);
+            return this.get(id) ?? null;
         }
-        return undefined;
+        return null;
     }
 
     private _debouncedIsScrollStartOff = debounce(() => {
@@ -1250,11 +1250,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         this.disposeClearBufferSizeTimer();
 
-        if (this._debouncedIsScrollStartOff) {
+        if (!!this._debouncedIsScrollStartOff) {
             this._debouncedIsScrollStartOff.dispose();
         }
 
-        if (this._tracker) {
+        if (!!this._tracker) {
             this._tracker.dispose();
         }
     }

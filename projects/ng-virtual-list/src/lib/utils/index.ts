@@ -1,8 +1,5 @@
 import { debounce } from "./debounce";
 import { toggleClassName } from './toggle-class-name';
-import {
-    IMetrics,
-} from "./track-box";
 import { IDebounce } from "./debounce";
 import { ScrollEvent } from "./scroll-event";
 
@@ -13,7 +10,6 @@ export {
 };
 
 export type {
-    IMetrics,
     IDebounce,
 };
 

@@ -1,11 +1,12 @@
 import { ComponentRef, ViewContainerRef } from "@angular/core";
 import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem } from "../../../models";
-import { Id, ISize } from "../../../types";
+import { Id } from "../../../types";
+import { ISize } from '../../../interfaces';
 import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
 import { BaseVirtualListItemComponent } from "../../list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
-import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, SIZE_AUTO, TRACK_BY_PROPERTY_NAME } from "../../../const";
+import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";
 import { EventEmitter } from "../../../utils/event-emitter/event-emitter";
 import { PrerenderTrackBoxEvents, PrerenderTrackBoxHandlers } from "../events";

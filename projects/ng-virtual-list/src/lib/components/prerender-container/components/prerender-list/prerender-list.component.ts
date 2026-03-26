@@ -9,8 +9,9 @@ import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, READY_TO_START, TRACK_BY_PROPERTY_NAME, WAIT_FOR_PREPARATION,
 } from "../../../../const";
+import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
-import { ISize, ScrollBarTheme } from "../../../../types";
+import { ScrollBarTheme } from "../../../../types";
 import { PrerenderCache } from "../../types/cache";
 import { BaseVirtualListItemComponent } from "../../../list-item/base";
 import { Component$1 } from "../../../../models/component.model";

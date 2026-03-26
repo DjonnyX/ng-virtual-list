@@ -1,7 +1,7 @@
 import { RANGE_DISPLAY_ITEMS_END_OFFSET } from "../const";
 import { IRenderVirtualListItem } from "../models";
 import { IRenderVirtualListCollection } from "../models/render-collection.model";
-import { ISize } from "../types";
+import { ISize } from "../interfaces";
 
 export const formatScreenReaderMessage = (items: IRenderVirtualListCollection, messagePattern: string | undefined, scrollSize: number,
     isVertical: boolean, bounds: ISize) => {

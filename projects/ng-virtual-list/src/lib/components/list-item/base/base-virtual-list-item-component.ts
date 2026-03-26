@@ -1,5 +1,5 @@
 import { computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
-import { ISize } from '../../../types';
+import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
 import {

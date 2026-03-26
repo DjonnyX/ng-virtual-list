@@ -1,8 +1,9 @@
 import { TrackBox, ItemDisplayMethods, TrackBoxEvents, IMetrics } from './track-box';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
-import { Id, ISize } from '../types';
-import { CMap } from './cmap';
+import { ISize } from '../interfaces';
+import { Id } from '../types';
+import { CMap } from '../utils/cmap';
 
 interface IItem<I = any> {
     [prop: string]: I;
@@ -120,7 +121,6 @@ describe('TrackBox', () => {
             snap: true,
             enabledBufferOptimization: false,
             fromItemId: undefined,
-            reversed: false
         });
         expect(trackBox.isReseted).toBeTruthy();
     });
@@ -226,7 +226,7 @@ describe('TrackBox', () => {
                 leftSizeOfAddedItems: 0,
                 sizeProperty: 'height',
                 snap: false,
-                snippedPos: 0,
+                snipedPos: 0,
                 startIndex: 0,
                 startPosition: 0,
                 totalItemsToDisplayEndWeight: 0,
@@ -236,7 +236,6 @@ describe('TrackBox', () => {
                 isFromItemIdFound: false,
                 offsetX: 0,
                 offsetY: 0,
-                reversed: false,
                 isUpdating: false
             };
             return metric;

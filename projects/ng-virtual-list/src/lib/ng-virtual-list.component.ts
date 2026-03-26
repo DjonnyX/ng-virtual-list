@@ -21,16 +21,19 @@ import {
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2,
 } from './const';
 import {
-  IRenderVirtualListItem, IScrollEvent, IScrollOptions, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
+  IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
 } from './models';
-import { FocusAlignment, IAnimationParams, Id, IRect, ISize, ScrollBarTheme } from './types';
+import {
+  IScrollEvent, IScrollOptions, IAnimationParams, IRect, ISize,
+} from './interfaces';
+import { FocusAlignment, Id, ScrollBarTheme } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
   SnappingMethod, SnappingMethods, TextDirection, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './utils/track-box';
+import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { BaseVirtualListItemComponent } from './components/list-item/base';
 import { Component$1 } from './models/component.model';

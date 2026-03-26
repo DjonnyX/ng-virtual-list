@@ -1,6 +1,7 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
-import { GradientColor, IAnimationParams, ScrollBarTheme } from "../types";
+import { IAnimationParams } from '../interfaces';
+import { GradientColor, ScrollBarTheme } from "../types";
 
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
