@@ -105,6 +105,7 @@ export class BaseVirtualListItemComponent {
   protected _renderer: TemplateRef<any> | undefined;
   set renderer(v: TemplateRef<any> | undefined) {
     if (this._renderer !== v) {
+      this._renderer = v;
       this.itemRenderer.set(v);
     }
   }
