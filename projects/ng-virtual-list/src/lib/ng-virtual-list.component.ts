@@ -888,48 +888,46 @@ export class NgVirtualListComponent implements OnDestroy {
   private _resizeSnappedComponentHandler = () => {
     const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snappedDisplayComponents;
     if (list && scroller && snappedComponents.length > 0) {
-      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect();/*, listElement = list?.nativeElement,
-        { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
-        { width, height } = bounds ?? { width: 0, height: 0 },
-        isScrollable = isVertical ? scroller.nativeElement.scrollHeight > 0 : scroller.nativeElement.scrollWidth > 0*/;
-
-      // const langTextDir = this.langTextDir();
-
-      // const snappingMethod = this.snappingMethod();
-      // if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-      //   // snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} 0 Z")`;
-      // }
+      const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect();
 
       for (const comp of snappedComponents) {
         if (!!comp) {
           comp.instance.regularLength = `${isVertical ? listBounds.width : listBounds.height}${PX}`;
         }
       }
-      // const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
-      //   scrollerElement = scroller.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0;
 
-      // let left: number, right: number, top: number, bottom: number;
-      // if (isVertical) {
-      //   left = 0;
-      //   right = width - scrollBarSize;
-      //   top = sHeight;
-      //   bottom = height;
-      //   if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-      //     if (langTextDir === TextDirections.RTL) {
-      //       scrollerElement.style.clipPath = `path("M 0 0 L 0 ${height} L ${width} ${height} L ${width} ${top + delta} L ${scrollBarSize} ${top + delta} L ${scrollBarSize} 0 Z")`;
-      //     } else {
-      //       scrollerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
-      //     }
-      //   }
-      // } else {
-      //   left = sWidth;
-      //   right = width;
-      //   top = 0;
-      //   bottom = height - scrollBarSize;
-      //   if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
-      //     scrollerElement.style.clipPath = `path("M ${width} 0 L ${width} ${bottom} L 0 ${bottom} L 0 0 L ${width} 0 Z")`;
-      //   }
-      // }
+      const snappingMethod = this.snappingMethod();
+      if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
+        const snappedComponent = snappedComponents?.[0].instance;
+        if (!!snappedComponent) {
+          const { width, height } = bounds ?? { width: 0, height: 0 }, langTextDir = this.langTextDir();
+
+          snappedComponent.element.style.clipPath = `path("M 0 0 L 0 ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} ${snappedComponent.element.offsetHeight} L ${snappedComponent.element.offsetWidth} 0 Z")`;
+
+          const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
+            scrollerElement = scroller.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0,
+            scrollBarSize = this.scrollbarTheme().thickness;
+
+          let left: number, right: number, top: number, bottom: number;
+          if (isVertical) {
+            left = 0;
+            right = width - scrollBarSize + 2;
+            top = sHeight;
+            bottom = height;
+            if (langTextDir === TextDirections.RTL) {
+              scrollerElement.style.clipPath = `path("M 0 0 L 0 ${height} L ${width} ${height} L ${width} ${top + delta} L ${scrollBarSize} ${top + delta} L ${scrollBarSize} 0 Z")`;
+            } else {
+              scrollerElement.style.clipPath = `path("M 0 ${top + delta} L 0 ${height} L ${width} ${height} L ${width} 0 L ${right} 0 L ${right} ${top + delta} Z")`;
+            }
+          } else {
+            left = sWidth;
+            right = width;
+            top = 0;
+            bottom = height - scrollBarSize;
+            scrollerElement.style.clipPath = `path("M ${width} 0 L ${width} ${bottom} L 0 ${bottom} L 0 0 L ${width} 0 Z")`;
+          }
+        }
+      }
     }
   };
 

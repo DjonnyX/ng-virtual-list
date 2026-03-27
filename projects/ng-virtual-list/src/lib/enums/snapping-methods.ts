@@ -14,7 +14,7 @@ export enum SnappingMethods {
      */
     NORMAL = 'normal',
     /**
-     * Experimental.
+     * A mask is applied to the viewport area so that the background is displayed underneath the attached group.
      */
     ADVANCED = 'advanced',
 }
