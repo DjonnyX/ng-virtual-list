@@ -35,60 +35,60 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
   styleUrl: './ng-scroll-bar.component.scss'
 })
 export class NgScrollBarComponent extends NgScrollView {
-  loading = input<boolean>(false);
+  readonly loading = input<boolean>(false);
 
-  onDrag = output<IScrollBarDragEvent>();
+  readonly onDrag = output<IScrollBarDragEvent>();
 
-  onDragEnd = output<IScrollBarDragEvent>();
+  readonly onDragEnd = output<IScrollBarDragEvent>();
 
-  thumbGradientPositions = input<GradientColorPositions>([0, 0]);
+  readonly thumbGradientPositions = input<GradientColorPositions>([0, 0]);
 
-  size = input<number>(DEFAULT_SIZE);
+  readonly size = input<number>(DEFAULT_SIZE);
 
-  theme = input<ScrollBarTheme | null>(null);
+  readonly theme = input<ScrollBarTheme | null>(null);
 
-  scrollbarMinSize = input<number>(0);
+  readonly scrollbarMinSize = input<number>(0);
 
-  prepared = input<boolean>(false);
+  readonly prepared = input<boolean>(false);
 
-  interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+  readonly interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
 
-  show = input<boolean>(false);
+  readonly show = input<boolean>(false);
 
-  thickness = signal<number>(DEFAULT_THICKNESS);
+  protected readonly thickness = signal<number>(DEFAULT_THICKNESS);
 
-  fill: Signal<string | GradientColor | null>;
+  protected readonly fill: Signal<Color | GradientColor | null>;
 
-  thumbGradientFill = signal<string | GradientColor | null>(null);
+  protected readonly thumbGradientFill = signal<Color | GradientColor | null>(null);
 
-  thumbHoverGradientFill = signal<string | GradientColor | null>(null);
+  protected readonly thumbHoverGradientFill = signal<Color | GradientColor | null>(null);
 
-  thumbPressedGradientFill = signal<string | GradientColor | null>(null);
+  protected readonly thumbPressedGradientFill = signal<Color | GradientColor | null>(null);
 
-  strokeGradientColor = signal<string | GradientColor | null>(null);
+  protected readonly strokeGradientColor = signal<Color | GradientColor | null>(null);
 
-  strokeAnimationDuration = signal<number>(DEFAULT_STROKE_ANIMATION_DURATION);
+  protected readonly strokeAnimationDuration = signal<number>(DEFAULT_STROKE_ANIMATION_DURATION);
 
-  roundCorner = signal<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
+  protected readonly roundCorner = signal<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
 
-  rippleColor = signal<Color | null>(DEFAULT_RIPPLE_COLOR);
+  protected readonly rippleColor = signal<Color | null>(DEFAULT_RIPPLE_COLOR);
 
-  rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
+  protected readonly rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
 
-  hoverState = signal<boolean>(false);
+  protected readonly hoverState = signal<boolean>(false);
 
-  pressedState = signal<boolean>(false);
+  protected readonly pressedState = signal<boolean>(false);
 
-  type: Signal<SubstarateStyle>;
+  protected readonly type: Signal<SubstarateStyle>;
 
-  styles: Signal<{ [sName: string]: any }>;
+  protected readonly styles: Signal<{ [sName: string]: any }>;
 
-  thumbWidth: Signal<number>;
+  protected readonly thumbWidth: Signal<number>;
 
-  thumbHeight: Signal<number>;
+  protected readonly thumbHeight: Signal<number>;
 
   private _$scrollingCancel = new Subject<void>();
-  readonly $scrollingCancel = this._$scrollingCancel.asObservable();
+  protected readonly $scrollingCancel = this._$scrollingCancel.asObservable();
 
   private _elementRef = inject(ElementRef);
 

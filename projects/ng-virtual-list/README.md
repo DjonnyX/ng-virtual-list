@@ -518,9 +518,9 @@ import { NgVirtualListComponent, GradientColor, RoundedCorner, ScrollBarTheme } 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   SCROLLBAR_GRADIENT: ScrollBarTheme = {
-    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
-    hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
-    pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
+    fill: "rgba(51, 0, 97, 1)",
+    hoverFill: "rgba(73, 6, 133, 1)",
+    pressedFill: "rgba(73, 6, 150, 1)",
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
     thickness: 6,
@@ -669,7 +669,7 @@ Inputs
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| null | Sets the selected items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
-| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme. |
+| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme.  |
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
 | waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
 | scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
