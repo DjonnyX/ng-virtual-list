@@ -1080,8 +1080,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _readyToShow = false;
 
-  private _isUserScrolling = false;
-
   private _prevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION;
 
   private _updateIterations = 0;
@@ -1260,7 +1258,7 @@ export class NgVirtualListComponent implements OnDestroy {
           prerenderContainer!.on();
           this._$show.next(false);
           this.cacheClean();
-          this._readyToShow = this._isUserScrolling = false;
+          this._readyToShow = false;
           const scrollerComponent = this._scrollerComponent();
           if (scrollerComponent) {
             scrollerComponent.prepared = false;
@@ -1272,7 +1270,7 @@ export class NgVirtualListComponent implements OnDestroy {
             tap(items => {
               if (!items || items.length === 0) {
                 this.cacheClean();
-                this._readyToShow = this._isUserScrolling = false;
+                this._readyToShow = false;
                 if (snapScrollToEnd) {
                   this._trackBox.isScrollEnd = true;
                 }

@@ -41,15 +41,15 @@ export class BaseVirtualListItemComponent {
 
   protected _isCollapsed: boolean = false;
 
-  config = signal<IDisplayObjectConfig>({} as IDisplayObjectConfig);
+  protected readonly config = signal<IDisplayObjectConfig>({} as IDisplayObjectConfig);
 
-  measures = signal<IDisplayObjectMeasures | null>(null);
+  protected readonly measures = signal<IDisplayObjectMeasures | null>(null);
 
-  focused = signal<boolean>(false);
+  protected readonly focused = signal<boolean>(false);
 
-  part = signal<string>(PART_DEFAULT_ITEM);
+  protected readonly part = signal<string>(PART_DEFAULT_ITEM);
 
-  data = signal<IRenderVirtualListItem | null>(null);
+  protected readonly data = signal<IRenderVirtualListItem | null>(null);
   protected _data: IRenderVirtualListItem | null = null;
   set item(v: IRenderVirtualListItem | null) {
     if (this._data === v || this._data?.id === -1 || !v) {
@@ -69,13 +69,13 @@ export class BaseVirtualListItemComponent {
     this.data.set(v);
   }
 
-  classes!: Signal<{ [cName: string]: boolean; }>;
+  protected readonly classes!: Signal<{ [cName: string]: boolean; }>;
 
-  index!: Signal<number>;
+  protected readonly index!: Signal<number>;
 
-  templateContext!: Signal<ITemplateContext>;
+  protected readonly templateContext!: Signal<ITemplateContext>;
 
-  regular: boolean = false;
+  public regular: boolean = false;
 
   protected _scrollBarSize: number = 0;
 
@@ -100,7 +100,7 @@ export class BaseVirtualListItemComponent {
     return this._data?.id;
   }
 
-  itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
+  protected readonly itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
   protected _renderer: TemplateRef<any> | undefined;
   set renderer(v: TemplateRef<any> | undefined) {

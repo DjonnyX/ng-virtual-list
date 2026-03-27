@@ -38,9 +38,9 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent implements OnInit {
-  protected _service = inject(NgVirtualListService);
+  protected readonly _service = inject(NgVirtualListService);
 
-  maxClickDistance = signal<number>(DEFAULT_CLICK_DISTANCE);
+  protected readonly maxClickDistance = signal<number>(DEFAULT_CLICK_DISTANCE);
 
   private _selectHandler = (data: IRenderVirtualListItem<any> | null) =>
     /**
