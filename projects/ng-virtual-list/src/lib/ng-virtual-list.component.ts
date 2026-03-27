@@ -866,7 +866,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _displayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
-  private _snapedDisplayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
+  private _snappedDisplayComponents: Array<ComponentRef<BaseVirtualListItemComponent>> = [];
 
   private _bounds = signal<IRect | null>(null);
   protected get bounds() { return this._bounds; }
@@ -886,7 +886,7 @@ export class NgVirtualListComponent implements OnDestroy {
   private _listResizeObserver: ResizeObserver | null = null;
 
   private _resizeSnappedComponentHandler = () => {
-    const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snapedDisplayComponents;
+    const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snappedDisplayComponents;
     if (list && scroller && snappedComponents.length > 0) {
       const isVertical = this._isVertical, listBounds = list.nativeElement.getBoundingClientRect();/*, listElement = list?.nativeElement,
         { width: lWidth, height: lHeight } = listElement?.getBoundingClientRect() ?? { width: 0, height: 0 },
@@ -2422,13 +2422,13 @@ export class NgVirtualListComponent implements OnDestroy {
     }
 
     if (this._isSnappingMethodAdvanced && this.snap()) {
-      if (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS && this._snapContainerRef) {
-        while (this._snapedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS) {
+      if (this._snappedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS && this._snapContainerRef) {
+        while (this._snappedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS) {
           const comp = this._snapContainerRef.createComponent(this._itemComponentClass);
           comp.instance.renderer = this._itemRenderer();
           comp.instance.regular = true;
-          this._snapedDisplayComponents.push(comp);
-          this._trackBox.snapedDisplayComponents = this._snapedDisplayComponents;
+          this._snappedDisplayComponents.push(comp);
+          this._trackBox.snappedDisplayComponents = this._snappedDisplayComponents;
           this._resizeSnappedObserver = new ResizeObserver(this._resizeSnappedComponentHandler);
           this._resizeSnappedObserver.observe(comp.instance.element);
         }
@@ -2708,8 +2708,8 @@ export class NgVirtualListComponent implements OnDestroy {
       this._listResizeObserver.disconnect();
     }
 
-    if (!!this._snapedDisplayComponents) {
-      while (this._snapedDisplayComponents.length > 0) {
+    if (!!this._snappedDisplayComponents) {
+      while (this._snappedDisplayComponents.length > 0) {
         const comp = this._displayComponents.shift();
         comp?.destroy();
       }

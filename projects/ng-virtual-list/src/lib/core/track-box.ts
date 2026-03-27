@@ -8,7 +8,7 @@ import { IRect, ISize } from "../interfaces";
 import {
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
-import { IVirtualListItemConfigMap } from "../models";
+import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
 import { debounce } from "../utils";
 import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
@@ -148,14 +148,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._displayComponents = v;
     }
 
-    protected _snapedDisplayComponents: Array<ComponentRef<C>> | null | undefined;
+    protected _snappedDisplayComponents: Array<ComponentRef<C>> | null | undefined;
 
-    set snapedDisplayComponents(v: Array<ComponentRef<C>> | null | undefined) {
-        if (this._snapedDisplayComponents === v) {
+    set snappedDisplayComponents(v: Array<ComponentRef<C>> | null | undefined) {
+        if (this._snappedDisplayComponents === v) {
             return;
         }
 
-        this._snapedDisplayComponents = v;
+        this._snappedDisplayComponents = v;
     }
 
     protected _isSnappingMethodAdvanced: boolean = false;
@@ -935,7 +935,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio);
                     if (sticky === 1) {
                         const isOdd = i % 2 != 0,
-                            measures = {
+                            measures: IRenderVirtualListItemMeasures = {
                                 x: isVertical ? startPosition : actualSnippedPosition,
                                 y: isVertical ? actualSnippedPosition : startPosition,
                                 width: isVertical ? normalizedItemWidth : size,
@@ -950,7 +950,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteEndPosition,
                                 absoluteEndPositionPercent,
                                 delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
-                            }, config = {
+                            }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
@@ -1003,7 +1003,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             absoluteStartPosition = pos - (scrollSize - size) - size, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                             absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                            measures = {
+                            measures: IRenderVirtualListItemMeasures = {
                                 x: isVertical ? 0 : actualEndSnippedPosition - w,
                                 y: isVertical ? actualEndSnippedPosition - h : 0,
                                 size,
@@ -1018,7 +1018,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 width: w,
                                 height: h,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
-                            }, config = {
+                            }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
@@ -1065,7 +1065,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const id = collectionItem[trackBy], cache = this.get(id)!,
                     size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
 
-                if (id !== stickyItem?.id && id !== endStickyItem?.id) {
+                if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
                     const isOdd = i % 2 != 0,
                         sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
@@ -1074,7 +1074,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                         absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                        measures = {
+                        measures: IRenderVirtualListItemMeasures = {
                             x: isVertical ? 0 : pos,
                             y: isVertical ? pos : 0,
                             size,
@@ -1089,7 +1089,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             width: isVertical ? normalizedItemWidth : size,
                             height: isVertical ? size : normalizedItemHeight,
                             delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
-                        }, config = {
+                        }, config: IRenderVirtualListItemConfig = {
                             new: (cache satisfies Cache)?.[IS_NEW] === true,
                             odd: isOdd,
                             even: !isOdd,
@@ -1103,6 +1103,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             dynamic: dynamicSize,
                             isSnappingMethodAdvanced,
                             tabIndex: count,
+                            isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
                             zIndex: '0',
                         };
 
@@ -1197,7 +1198,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this._snapedDisplayComponents, this.scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this.scrollDirection);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {

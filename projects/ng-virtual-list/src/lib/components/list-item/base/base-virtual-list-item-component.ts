@@ -151,23 +151,26 @@ export class BaseVirtualListItemComponent {
   }
 
   protected update() {
-    const data = this._data, regular = this.regular, length = this._regularLength;
+    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement;
     if (data) {
-      this._elementRef.nativeElement.setAttribute(ITEM_ID, `${data.id}`);
-      const styles = this._elementRef.nativeElement.style;
+      el.setAttribute(ITEM_ID, `${data.id}`);
+      const styles = el.style;
       styles.zIndex = data.config.zIndex;
       styles.position = POSITION_ABSOLUTE;
+      if (data.config.isStub === true) {
+        el.style.visibility = VISIBILITY_HIDDEN;
+      }
       if (regular) {
-        this._elementRef.nativeElement.setAttribute(POSITION, POSITION_ZERO);
+        el.setAttribute(POSITION, POSITION_ZERO);
         styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
-        this._elementRef.nativeElement.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
+        el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
         styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX}, ${POSITION_ZERO})`;
       }
       styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
       styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     } else {
-      this._elementRef.nativeElement.removeAttribute(ID);
+      el.removeAttribute(ID);
     }
   }
 
@@ -214,11 +217,13 @@ export class BaseVirtualListItemComponent {
 
       styles.display = DISPLAY_BLOCK;
     } else {
-      if (styles.visibility === VISIBILITY_VISIBLE) {
-        return;
+      const isStub = this._data?.config?.isStub ?? false;
+      if (!isStub) {
+        if (styles.visibility === VISIBILITY_VISIBLE) {
+          return;
+        }
+        styles.visibility = VISIBILITY_VISIBLE;
       }
-
-      styles.visibility = VISIBILITY_VISIBLE;
     }
   }
 
