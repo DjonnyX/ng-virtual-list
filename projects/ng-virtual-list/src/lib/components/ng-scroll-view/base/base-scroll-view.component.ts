@@ -64,35 +64,38 @@ export class BaseScrollView implements OnDestroy {
     }
     get y() { return this._y; }
 
+    protected _actualTotalSize: number = 0;
     protected _totalSize: number = 0;
     set totalSize(v: number) {
-        this._totalSize = v;
+        if (this._totalSize !== v) {
+            this._totalSize = v;
+            const startOffset = this.startOffset();
+            this._actualTotalSize = v + startOffset;
+        }
     }
 
     get actualScrollHeight() {
         const { height: viewportHeight } = this.viewportBounds(),
-            totalSize = this._totalSize,
+            totalSize = this._actualTotalSize,
             isVertical = this.isVertical(),
             startOffset = this.startOffset(),
-            endOffset = this.endOffset(),
-            actualTotalSize = totalSize + startOffset;
+            endOffset = this.endOffset();
         if (this._inversion) {
-            return actualTotalSize > viewportHeight ? isVertical ? endOffset : 0 : viewportHeight - actualTotalSize;
+            return totalSize > viewportHeight ? isVertical ? endOffset : 0 : viewportHeight - totalSize;
         }
-        return actualTotalSize < viewportHeight ? isVertical ? startOffset : 0 : actualTotalSize - viewportHeight;
+        return totalSize < viewportHeight ? isVertical ? startOffset : 0 : totalSize - viewportHeight;
     }
 
     get actualScrollWidth() {
         const { width: viewportWidth } = this.viewportBounds(),
-            totalSize = this._totalSize,
+            totalSize = this._actualTotalSize,
             isVertical = this.isVertical(),
             startOffset = this.startOffset(),
-            endOffset = this.endOffset(),
-            actualTotalSize = totalSize + startOffset;
+            endOffset = this.endOffset();
         if (this._inversion) {
-            return actualTotalSize > viewportWidth ? isVertical ? 0 : endOffset : viewportWidth - actualTotalSize;
+            return totalSize > viewportWidth ? isVertical ? 0 : endOffset : viewportWidth - totalSize;
         }
-        return actualTotalSize < viewportWidth ? isVertical ? 0 : startOffset : actualTotalSize - viewportWidth;
+        return totalSize < viewportWidth ? isVertical ? 0 : startOffset : totalSize - viewportWidth;
     }
 
     protected _actualX: number = 0;

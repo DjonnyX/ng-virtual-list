@@ -3,11 +3,11 @@ import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substr
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { RoundedCorner } from '../../types/rounded-corner';
-import { combineLatest, fromEvent, Subject, tap } from 'rxjs';
+import { combineLatest, filter, fromEvent, Subject, tap } from 'rxjs';
 import { ScrollBarTheme } from '../../types';
 import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { IScrollBarDragEvent } from './interfaces';
 import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 import {
@@ -94,6 +94,18 @@ export class NgScrollBarComponent extends NgScrollView {
 
   constructor() {
     super();
+
+    const $prepared = toObservable(this.prepared);
+    $prepared.pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      tap(() => {
+        this.scrollLimits();
+        this.refreshX(this._x);
+        this.refreshY(this._y);
+        this.fireScrollEvent(false);
+      }),
+    ).subscribe();
 
     this.thumbWidth = computed(() => {
       return this.isVertical() ? this.thickness() : this.size();

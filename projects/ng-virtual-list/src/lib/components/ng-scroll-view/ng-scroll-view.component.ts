@@ -74,7 +74,7 @@ export class NgScrollView extends BaseScrollView {
             takeUntilDestroyed(this._destroyRef),
             switchMap(content => {
                 return fromEvent<WheelEvent>(content, WHEEL, { passive: false }).pipe(
-                    filter(v => this._interactive),
+                    filter(() => this._interactive),
                     takeUntilDestroyed(this._destroyRef),
                     tap(e => {
                         const isVertical = this.isVertical();
@@ -175,7 +175,7 @@ export class NgScrollView extends BaseScrollView {
             switchMap(content => {
                 return fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
                     takeUntilDestroyed(this._destroyRef),
-                    filter(v => this._interactive),
+                    filter(() => this._interactive),
                     switchMap(e => {
                         this.cancelOverscroll();
                         this.onDragStart();
