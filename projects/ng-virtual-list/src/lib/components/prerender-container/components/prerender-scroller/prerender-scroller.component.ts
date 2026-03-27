@@ -8,6 +8,7 @@ import { NgScrollBarComponent } from '../../../ng-scroll-bar/ng-scroll-bar.compo
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, from, tap } from 'rxjs';
 import { ScrollBox } from '../../../scroller/utils';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/const';
 
 /**
  * PrerenderScrollerComponent.
@@ -23,6 +24,7 @@ import { ScrollBox } from '../../../scroller/utils';
     styleUrl: '../../../scroller/ng-scroller.component.scss',
     providers: [
         { provide: SCROLL_VIEW_INVERSION, useValue: false },
+        { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
     ],
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,10 +38,6 @@ export class PrerenderScrollerComponent extends BaseScrollView {
     scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
 
     scrollbarTheme = input<ScrollBarTheme | null>(null);
-
-    startOffset = input<number>(0);
-
-    endOffset = input<number>(0);
 
     classes = input<{ [cName: string]: boolean }>({});
 

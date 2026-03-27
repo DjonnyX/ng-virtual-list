@@ -3,7 +3,7 @@ import { SCROLLER_SCROLL } from "../../../const";
 
 export const SCROLL_VIEW_INVERSION = new InjectionToken<boolean>('ScrollViewInversion');
 
-export const SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT = new InjectionToken<boolean>('ScrollViewUseScrollLimitsAsDefault');
+export const SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO = new InjectionToken<boolean>('ScrollViewNormalizeValueFromZero');
 
 export const TOP = 'top',
     LEFT = 'left',

@@ -14,7 +14,7 @@ import {
   DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
   DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
-import { SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT } from '../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
 
 /**
  * ScrollBar component.
@@ -28,7 +28,7 @@ import { SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT } from '../ng-scroll-view/cons
   selector: 'ng-scroll-bar',
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
-    { provide: SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT, useValue: true },
+    { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
   ],
   standalone: false,
   templateUrl: './ng-scroll-bar.component.html',
@@ -46,10 +46,6 @@ export class NgScrollBarComponent extends NgScrollView {
   size = input<number>(DEFAULT_SIZE);
 
   theme = input<ScrollBarTheme | null>(null);
-
-  startOffset = input<number>(0);
-
-  endOffset = input<number>(0);
 
   scrollbarMinSize = input<number>(0);
 
@@ -244,22 +240,6 @@ export class NgScrollBarComponent extends NgScrollView {
       }
     }
     return false;
-  }
-
-  protected override normalizeAnimatedValue(value: number) {
-    const isVertical = this.isVertical(), scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
-      scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
-    if (!!scrollContent && !!scrollViewport) {
-      const startOffset = this.startOffset(), endOffset = this.endOffset();
-      if (isVertical) {
-        const maxY = scrollViewport.offsetHeight - endOffset - scrollContent.offsetHeight;
-        return value < startOffset ? startOffset : value > maxY ? maxY : value;
-      } else {
-        const maxX = scrollViewport.offsetWidth - endOffset - scrollContent.offsetWidth;
-        return value < startOffset ? startOffset : value > maxX ? maxX : value;
-      }
-    }
-    return value;
   }
 
   ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {

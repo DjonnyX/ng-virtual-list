@@ -13,7 +13,7 @@ import {
 import { IScrollToParams } from './interfaces';
 import {
     ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_VELOCITY_TIMESTAMP,
-    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT, SMOOTH, SPEED_SCALE, TOP,
+    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -32,13 +32,13 @@ import { BaseScrollView } from './base/base-scroll-view.component';
 })
 export class NgScrollView extends BaseScrollView {
     @ViewChild('scrollViewport', { read: CdkScrollable })
-    cdkScrollable: CdkScrollable | undefined;
+    readonly cdkScrollable: CdkScrollable | undefined;
 
-    scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
+    readonly scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
 
-    overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
+    readonly overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
 
-    protected readonly _useLimitsAsDefault = inject(SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT);
+    protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
 
     protected _$scroll = new Subject<boolean>();
     readonly $scroll = this._$scroll.asObservable();
@@ -53,15 +53,6 @@ export class NgScrollView extends BaseScrollView {
     protected _interactive = true;
 
     private _overscrollIteration: number = 0;
-
-    protected override _totalSize: number = 0;
-    override set totalSize(v: number) {
-        if (this._totalSize !== v) {
-            this._totalSize = v;
-            const isVertical = this.isVertical();
-            this.move(isVertical, isVertical ? this._y : this._x, true, true, true);
-        }
-    }
 
     set delta(v: number) {
         this._startPosition += v;
@@ -356,16 +347,11 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
-    protected isAnimatedValueOutOfRange(value: number) {
+    protected normalizeValue(value: number) {
         const isVertical = this.direction() === ScrollerDirection.VERTICAL,
-            scrollSize = isVertical ? this.scrollHeight : this.scrollWidth;
-        return value < 0 || value > scrollSize;
-    }
-
-    protected normalizeAnimatedValue(value: number) {
-        const isVertical = this.direction() === ScrollerDirection.VERTICAL,
+            startOffset = this._normalizeValueFromZero ? 0 : this.startOffset(),
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-            result = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
+            result = value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value;
         return result;
     }
 
@@ -399,13 +385,13 @@ export class NgScrollView extends BaseScrollView {
     scrollLimits(value?: number | undefined): boolean {
         const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
         if (isVertical) {
-            const yy = this.normalizeAnimatedValue(y);
+            const yy = this.normalizeValue(y);
             if (y !== yy) {
                 this.y = yy;
                 return true;
             }
         } else {
-            const xx = this.normalizeAnimatedValue(x);
+            const xx = this.normalizeValue(x);
             if (x !== xx) {
                 this.x = xx;
                 return true;
@@ -423,16 +409,11 @@ export class NgScrollView extends BaseScrollView {
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
             duration = params.duration ?? ANIMATION_DURATION,
-            useLimits = params.useLimits ?? this._useLimitsAsDefault,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
-        if ((this._x !== posX && this.isAnimatedValueOutOfRange(posX)
-            || this._y !== posY && this.isAnimatedValueOutOfRange(posY)) && !useLimits) {
-            return;
-        }
         const limits = this.scrollLimits(),
-            x = this.normalizeAnimatedValue(limits ? this._x : posX),
-            y = this.normalizeAnimatedValue(limits ? this._y : posY),
+            x = this.normalizeValue(posX),
+            y = this.normalizeValue(posY),
             xx = x,
             yy = y,
             prevX = this._x,

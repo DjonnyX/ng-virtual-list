@@ -1857,7 +1857,7 @@ export class NgVirtualListComponent implements OnDestroy {
               }
               const params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT, useLimits: true,
+                fireUpdate, behavior: BEHAVIOR_INSTANT,
                 blending: false, duration: this.animationParams().scrollToItem,
               };
               scroller?.scrollTo?.(params);
@@ -1884,7 +1884,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: false, behavior: BEHAVIOR_INSTANT, userAction: false, useLimits: true,
+              fireUpdate: false, behavior: BEHAVIOR_INSTANT, userAction: false,
               blending: false, duration: this.animationParams().scrollToItem,
             };
             scroller?.scrollTo?.(params);
@@ -1903,7 +1903,7 @@ export class NgVirtualListComponent implements OnDestroy {
               }
               const params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem, useLimits: false
+                fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
               };
               scroller.scrollTo(params);
               if (emitUpdate) {
@@ -2192,7 +2192,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 this._trackBox.clearDelta();
                 const params: IScrollToParams = {
                   [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, behavior: BEHAVIOR_INSTANT as ScrollBehavior,
-                  fireUpdate, blending, useLimits: true,
+                  fireUpdate, blending,
                 };
                 scrollerComponent?.scrollTo?.(params);
                 return of([finished, {
@@ -2213,7 +2213,7 @@ export class NgVirtualListComponent implements OnDestroy {
                   this._$preventScrollSnapping.next(true);
                   const params: IScrollToParams = {
                     [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize, fireUpdate,
-                    behavior: BEHAVIOR_INSTANT as ScrollBehavior, blending, useLimits: true,
+                    behavior: BEHAVIOR_INSTANT as ScrollBehavior, blending,
                   };
                   scrollerComponent?.scrollTo?.(params);
                   return of([true, { id, blending, iteration: nextIteration, scrollCalled, cb }]);
@@ -2239,7 +2239,7 @@ export class NgVirtualListComponent implements OnDestroy {
         this._$scrollingTo.next(false);
         if (!this.dynamicSize()) {
           this._$fireUpdate.next(true);
-          this._scrollerComponent()?.refresh(false, true, true);
+          this._scrollerComponent()?.refresh(false, true);
         }
         this.emitScrollEvent(true, false, true);
         scrollParams?.cb?.();
