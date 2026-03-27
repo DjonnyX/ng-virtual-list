@@ -636,17 +636,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (isFromId) {
                 for (let stickyId: Id | undefined = undefined, i = 0, l = collection.length; i < l; i++) {
                     const item = collection[i], id = item?.[trackBy];
-                    if (stickyId !== undefined && !itemConfigMap[id]?.sticky && id === fromItemId) {
-                        stickyItemId = stickyId;
-                        break;
-                    }
                     if (itemConfigMap[id]?.sticky === 1) {
                         stickyId = id;
+                    }
+                    if (!itemConfigMap[id]?.sticky) {
+                        stickyItemId = stickyId;
+                    }
+                    if (id === fromItemId) {
+                        break;
                     }
                 }
             }
 
-            let y = this._scrollStartOffset;
+            let y = this._scrollStartOffset, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
@@ -695,6 +697,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (isFromId) {
                     if (itemById === undefined) {
+                        if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
+                            stickyComponentSize = componentSize;
+                            stickyCollectionItem = collectionItem;
+                            y -= stickyComponentSize;
+                        }
+
                         if (id === fromItemId) {
                             isFromItemIdFound = true;
 
