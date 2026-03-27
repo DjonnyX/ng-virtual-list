@@ -132,6 +132,7 @@ export class BaseScrollView implements OnDestroy {
         if (viewport) {
             this.viewportBounds.set({ width: viewport.offsetWidth, height: viewport.offsetHeight });
         }
+        this.onResizeViewport();
     }
 
     protected _contentResizeObserver: ResizeObserver;
@@ -141,6 +142,7 @@ export class BaseScrollView implements OnDestroy {
         if (content) {
             this.contentBounds.set({ width: content.offsetWidth, height: content.offsetHeight });
         }
+        this.onResizeContent();
     }
 
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
@@ -179,6 +181,10 @@ export class BaseScrollView implements OnDestroy {
             }),
         ).subscribe();
     }
+
+    protected onResizeViewport() { }
+
+    protected onResizeContent() { }
 
     ngOnDestroy(): void {
         if (this._viewportResizeObserver) {

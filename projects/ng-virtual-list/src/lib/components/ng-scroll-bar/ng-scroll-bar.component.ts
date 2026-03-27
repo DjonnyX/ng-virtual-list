@@ -14,6 +14,7 @@ import {
   DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
   DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
+import { SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT } from '../ng-scroll-view/const';
 
 /**
  * ScrollBar component.
@@ -27,6 +28,7 @@ import {
   selector: 'ng-scroll-bar',
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
+    { provide: SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT, useValue: true },
   ],
   standalone: false,
   templateUrl: './ng-scroll-bar.component.html',

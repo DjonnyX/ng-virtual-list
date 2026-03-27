@@ -1,5 +1,5 @@
 import {
-    Component, input, ViewChild,
+    Component, inject, input, ViewChild,
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -13,7 +13,7 @@ import {
 import { IScrollToParams } from './interfaces';
 import {
     ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_VELOCITY_TIMESTAMP,
-    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SMOOTH, SPEED_SCALE, TOP,
+    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -37,6 +37,8 @@ export class NgScrollView extends BaseScrollView {
     scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
 
     overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
+
+    protected readonly _useLimitsAsDefault = inject(SCROLL_VIEW_USE_SCROLL_LIMITS_AS_DEFAULT);
 
     protected _$scroll = new Subject<boolean>();
     readonly $scroll = this._$scroll.asObservable();
@@ -421,7 +423,7 @@ export class NgScrollView extends BaseScrollView {
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
             duration = params.duration ?? ANIMATION_DURATION,
-            useLimits = params.useLimits ?? false,
+            useLimits = params.useLimits ?? this._useLimitsAsDefault,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
         if ((this._x !== posX && this.isAnimatedValueOutOfRange(posX)

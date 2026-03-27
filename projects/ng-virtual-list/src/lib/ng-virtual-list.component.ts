@@ -2239,6 +2239,7 @@ export class NgVirtualListComponent implements OnDestroy {
         this._$scrollingTo.next(false);
         if (!this.dynamicSize()) {
           this._$fireUpdate.next(true);
+          this._scrollerComponent()?.refresh(false, true, true);
         }
         this.emitScrollEvent(true, false, true);
         scrollParams?.cb?.();

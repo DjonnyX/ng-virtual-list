@@ -3,7 +3,7 @@ import {
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { toggleClassName } from "ng-virtual-list";
+import { toggleClassName } from "../../../../utils";
 import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
 import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
