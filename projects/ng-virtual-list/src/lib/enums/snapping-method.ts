@@ -2,10 +2,10 @@ import { SnappingMethods } from "./snapping-methods";
 
 /**
  * Snapping method.
- * 'normal' - Normal group rendering.
- * 'advanced' - The group is rendered on a transparent background. List items below the group are not rendered.
+ * 'standart' - Classic group visualization.
+ * 'advanced' - A mask is applied to the viewport area so that the background is displayed underneath the attached group.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/snapping-method.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export type SnappingMethod = SnappingMethods | 'standart' | 'normal' | 'advanced';
+export type SnappingMethod = SnappingMethods | 'standart' | 'advanced';

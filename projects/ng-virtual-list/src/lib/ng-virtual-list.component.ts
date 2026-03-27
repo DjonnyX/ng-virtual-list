@@ -755,9 +755,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _snappingMethodOptions = {
     transform: (v: SnappingMethod) => {
-      const valid = validateString(v) && (v === SnappingMethods.NORMAL || v === SnappingMethods.ADVANCED || v === SnappingMethods.STANDART);
+      const valid = validateString(v) && (v === SnappingMethods.ADVANCED || v === SnappingMethods.STANDART);
       if (!valid) {
-        console.error(`The "snappingMethod" parameter must have the value '${SnappingMethods.NORMAL}', '${SnappingMethods.ADVANCED}' or '${SnappingMethods.STANDART}'.`);
+        console.error(`The "snappingMethod" parameter must have the value '${SnappingMethods.ADVANCED}' or '${SnappingMethods.STANDART}'.`);
         return DEFAULT_SNAPPING_METHOD;
       }
       return v;
@@ -766,7 +766,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
   /**
    * Snapping method. Default value is 'standart'.
-   * STANDART - The group is rendered on a background.
+   * 'standart' - Classic group visualization.
+   * 'advanced' - A mask is applied to the viewport area so that the background is displayed underneath the attached group.
    */
   snappingMethod = input<SnappingMethod>(DEFAULT_SNAPPING_METHOD, { ...this._snappingMethodOptions });
 
@@ -897,7 +898,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }
 
       const snappingMethod = this.snappingMethod();
-      if (snappingMethod === SnappingMethods.NORMAL || snappingMethod === SnappingMethods.ADVANCED) {
+      if (snappingMethod === SnappingMethods.ADVANCED) {
         const snappedComponent = snappedComponents?.[0].instance;
         if (!!snappedComponent) {
           const { width, height } = bounds ?? { width: 0, height: 0 }, langTextDir = this.langTextDir();
