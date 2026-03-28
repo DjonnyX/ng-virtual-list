@@ -1732,8 +1732,25 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    let isLoading = false;
     const $loading = toObservable(this.loading);
+    $loading.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+      skip(1),
+      filter(v => !v),
+      switchMap(() => {
+        return $actualItems.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          debounceTime(100),
+          take(1),
+          tap(() => {
+            this._scrollerComponent()?.refreshScrollbar();
+          }),
+        )
+      }),
+    ).subscribe();
+
+    let isLoading = false;
     $loading.pipe(
       takeUntilDestroyed(),
       skip(1),

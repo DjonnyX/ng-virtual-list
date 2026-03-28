@@ -311,6 +311,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this._$updateScrollBar.next();
   }
 
+  refreshScrollbar() {
+    this.updateScrollBarHandler(true, false, false);
+  }
+
   protected override onDragStart() {
     super.onDragStart();
 
