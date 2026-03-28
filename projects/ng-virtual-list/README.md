@@ -543,8 +543,23 @@ export class AppComponent {
 
 ```
 
+```scss
+
+.list {
+    &::part(scrollbar-track) {
+        margin-right: 2px;
+        overflow: initial;
+    }
+
+    &::part(scrollbar-thumb) {
+        border: 1px solid #8738c3;
+        border-radius: 4px;
+    }
+}
+```
+
 ```html
-<ng-virtual-list [scrollbarTheme]="scrollbarTheme" [items]="items" [itemRenderer]="itemRenderer"></ng-virtual-list>
+<ng-virtual-list class="list" [scrollbarTheme]="scrollbarTheme" [items]="items" [itemRenderer]="itemRenderer"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
   @if (data) {
