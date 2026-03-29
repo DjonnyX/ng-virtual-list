@@ -233,7 +233,3 @@ export const ROLE_LIST_BOX = 'listbox';
 export const ITEM_ID = 'item-id';
 
 export const ITEM_CONTAINER = 'ngvl-item__container';
-
-export const READY_TO_START = 'ready-to-start';
-
-export const WAIT_FOR_PREPARATION = 'wait-for-preparation';

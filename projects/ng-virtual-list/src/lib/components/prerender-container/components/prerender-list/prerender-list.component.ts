@@ -7,7 +7,7 @@ import { toggleClassName } from "../../../../utils";
 import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
 import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
-    DEFAULT_SCROLLBAR_ENABLED, PX, READY_TO_START, TRACK_BY_PROPERTY_NAME, WAIT_FOR_PREPARATION,
+    DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
@@ -71,7 +71,7 @@ export class PrerenderList implements OnDestroy {
 
     itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(PrerenderVirtualListItemComponent);
 
-    protected readonly classes = signal<{ [cName: string]: boolean }>({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
+    protected readonly classes = signal<{ [cName: string]: boolean }>({ prepared: true });
 
     private _$render = new Subject<PrerenderCache>();
     $render = this._$render.asObservable();

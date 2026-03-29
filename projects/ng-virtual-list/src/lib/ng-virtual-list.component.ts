@@ -17,10 +17,9 @@ import {
   MOUSE_DOWN, TOUCH_START, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION,
   DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
   DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
-  PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, READY_TO_START, WAIT_FOR_PREPARATION, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB,
-  MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2,
-  PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS, PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS,
-  PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
+  PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
+  MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
+  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -1288,7 +1287,7 @@ export class NgVirtualListComponent implements OnDestroy {
             scrollerComponent.prepared = false;
             scrollerComponent.stopScrolling();
           }
-          this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+          this.classes.set({ prepared: false });
           return $items.pipe(
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
@@ -1309,13 +1308,17 @@ export class NgVirtualListComponent implements OnDestroy {
                   scrollerComponent.prepared = false;
                   scrollerComponent.stopScrolling();
                 }
-                this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
+                this.classes.set({ prepared: true });
                 this._$show.next(true);
               } else {
-                if (this.prerenderable) {
-                  prerenderContainer!.on();
+                this._trackBox.isScrollEnd = true;
+                const waitForPreparation = this.waitForPreparation();
+                if (waitForPreparation) {
+                  if (this.prerenderable) {
+                    prerenderContainer!.on();
+                  }
                 }
-                this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+                this.classes.set({ prepared: false });
                 this._$show.next(false);
               }
             }),
@@ -1328,25 +1331,24 @@ export class NgVirtualListComponent implements OnDestroy {
               }
               const waitForPreparation = this.waitForPreparation();
               if (waitForPreparation) {
+                this._trackBox.isScrollEnd = true;
                 if (this.prerenderable) {
                   prerenderContainer!.on();
-                }
-                if (!snapScrollToStart && snapScrollToEnd) {
-                  this._trackBox.isScrollEnd = true;
                 }
                 return $initialRenderStabilizer.pipe(
                   takeUntilDestroyed(this._destroyRef),
                   take(1),
                   tap(() => {
+                    this._trackBox.isScrollEnd = true;
                     if (this.prerenderable) {
                       prerenderContainer!.off();
                     }
                     this._readyForShow = true;
-                    const waitForPreparation = this.waitForPreparation(), scrollerComponent = this._scrollerComponent();
+                    const scrollerComponent = this._scrollerComponent();
                     if (scrollerComponent) {
                       scrollerComponent.prepared = true;
                     }
-                    this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+                    this.classes.set({ prepared: true });
                     this._$show.next(true);
                   }),
                 );
@@ -1362,7 +1364,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (scrollerComponent) {
                 scrollerComponent.prepared = true;
               }
-              this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: waitForPreparation });
+              this.classes.set({ prepared: true });
               this._$show.next(true);
               return of(false);
             }),
@@ -1378,7 +1380,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 if (scrollerComponent) {
                   scrollerComponent.prepared = false;
                 }
-                this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+                this.classes.set({ prepared: false });
                 this._$show.next(false);
               }
               this._trackBox.resetCollection(items, this.itemSize());
@@ -1397,7 +1399,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (scrollerComponent) {
                 scrollerComponent.prepared = true;
               }
-              this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
+              this.classes.set({ prepared: true });
               this._$show.next(true);
               this._$fireUpdate.next(false);
             }),
