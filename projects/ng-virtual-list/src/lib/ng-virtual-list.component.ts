@@ -1292,8 +1292,14 @@ export class NgVirtualListComponent implements OnDestroy {
           return $items.pipe(
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
-              if (!items || items.length === 0) {
+              this._trackBox.resetCollection(items, this.itemSize());
+            }),
+            switchMap(i => of((i ?? []).length > 0)),
+            distinctUntilChanged(),
+            tap(v => {
+              if (!v) {
                 this.cacheClean();
+                this.cleanup();
                 this._readyForShow = false;
                 if (!snapScrollToStart && snapScrollToEnd) {
                   this._trackBox.isScrollEnd = true;
@@ -1303,19 +1309,16 @@ export class NgVirtualListComponent implements OnDestroy {
                   scrollerComponent.prepared = false;
                   scrollerComponent.stopScrolling();
                 }
-                this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
-                this._$show.next(false);
+                this.classes.set({ prepared: true, [READY_TO_START]: true, [WAIT_FOR_PREPARATION]: true });
+                this._$show.next(true);
               } else {
                 if (this.prerenderable) {
                   prerenderContainer!.on();
                 }
+                this.classes.set({ prepared: false, [READY_TO_START]: false, [WAIT_FOR_PREPARATION]: false });
+                this._$show.next(false);
               }
             }),
-            tap(items => {
-              this._trackBox.resetCollection(items, this.itemSize());
-            }),
-            switchMap(i => of((i ?? []).length > 0)),
-            distinctUntilChanged(),
             switchMap(v => {
               if (!v) {
                 if (this.prerenderable) {
@@ -2423,7 +2426,7 @@ export class NgVirtualListComponent implements OnDestroy {
           deltaOfNewItems: this._trackBox.deltaOfNewItems, isVertical,
           scrollSize,
           itemsRange,
-          isEnd: this._trackBox.isSnappedToEnd || (Math.round(scrollSize) === Math.round(maxScrollSize)),
+          isEnd: !scrollerComponent.scrollable || this._trackBox.isSnappedToEnd || (Math.round(scrollSize) === Math.round(maxScrollSize)),
           userAction,
         });
       if (update) {
@@ -2689,6 +2692,14 @@ export class NgVirtualListComponent implements OnDestroy {
         }
       }
     });
+  }
+
+  protected cleanup() {
+    const displayItems: IRenderVirtualListCollection = [];
+    this._service.collection = displayItems;
+    this.createDisplayComponentsIfNeed(displayItems);
+    this.tracking();
+    this.emitScrollEvent(true, false, false);
   }
 
   /**
