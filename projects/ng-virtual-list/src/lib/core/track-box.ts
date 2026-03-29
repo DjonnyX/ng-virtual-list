@@ -112,8 +112,8 @@ const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
     IS_NEW = 'n',
-    SCROLL_SNAP_TO_START_ITERATIONS = 20,
-    SCROLL_SNAP_TO_END_ITERATIONS = 20;
+    SCROLL_SNAP_TO_START_ITERATIONS = Number.MAX_SAFE_INTEGER,
+    SCROLL_SNAP_TO_END_ITERATIONS = Number.MAX_SAFE_INTEGER;
 
 type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
@@ -190,7 +190,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     set isScrollStart(v: boolean) {
         this._isScrollStart = v;
         if (v) {
-            this._isScrollSnapToStart = SCROLL_SNAP_TO_START_ITERATIONS;
+            this._isScrollSnapToStart = true;
         }
     }
 
@@ -199,22 +199,22 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     set isScrollEnd(v: boolean) {
         this._isScrollEnd = v;
         if (v) {
-            this._isScrollSnapToEnd = SCROLL_SNAP_TO_END_ITERATIONS;
+            this._isScrollSnapToEnd = true;
         }
     }
 
     protected _isScrollEnd: boolean = false;
 
-    protected _isScrollSnapToStart: number = 0;
+    protected _isScrollSnapToStart: boolean = false;
 
     get isSnappedToStart() {
-        return this._isScrollStart || this._isScrollSnapToStart > 0;
+        return this._isScrollStart || this._isScrollSnapToStart;
     }
 
-    protected _isScrollSnapToEnd: number = 0;
+    protected _isScrollSnapToEnd: boolean = false;
 
     get isSnappedToEnd() {
-        return this._isScrollEnd || this._isScrollSnapToEnd > 0;
+        return this._isScrollEnd || this._isScrollSnapToEnd;
     }
 
     protected _scrollStartOffset: number = 0;
@@ -437,7 +437,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._isScrollStart = this._isScrollEnd = false;
 
         if (clearBuffer) {
-            this._isScrollSnapToStart = this._isScrollSnapToEnd = 0;
+            this._isScrollSnapToStart = this._isScrollSnapToEnd = false;
         }
     }
 
@@ -482,18 +482,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             crudDetected: this._crudDetected,
             deletedItemsMap,
         });
-
-        if (this.isSnappedToStart) {
-            if (this._isScrollSnapToStart) {
-                this._isScrollSnapToStart--;
-            }
-        }
-
-        if (this.isSnappedToEnd) {
-            if (this._isScrollSnapToEnd) {
-                this._isScrollSnapToEnd--;
-            }
-        }
 
         this._delta += metrics.delta;
 
