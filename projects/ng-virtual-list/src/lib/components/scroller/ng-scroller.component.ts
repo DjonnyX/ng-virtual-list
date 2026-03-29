@@ -358,6 +358,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   scrollTo(params: IScrollToParams) {
     const userAction = params.userAction ?? true;
+    if (userAction) {
+      this._isScrollbarUserAction = false;
+      this.scrollBar?.stopScrolling();
+    }
     this.scroll({ ...params, userAction: userAction });
   }
 
@@ -374,7 +378,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   onScrollBarDragHandler(event: IScrollBarDragEvent) {
-    const { animation, position, min, max, userAction } = event;
+    const { position, min, max, userAction } = event;
     this._isScrollbarUserAction = userAction;
     this._$scrollbarScroll.next(userAction);
     this.stopScrolling();
