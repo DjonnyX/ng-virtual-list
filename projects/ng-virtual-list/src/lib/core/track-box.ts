@@ -111,9 +111,7 @@ interface IItem<I = any> {
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
-    IS_NEW = 'n',
-    SCROLL_SNAP_TO_START_ITERATIONS = Number.MAX_SAFE_INTEGER,
-    SCROLL_SNAP_TO_END_ITERATIONS = Number.MAX_SAFE_INTEGER;
+    IS_NEW = 'n';
 
 type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
