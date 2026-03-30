@@ -1,6 +1,6 @@
 /**
  * Interface IScrollOptions.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/scroll-options.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -17,4 +17,8 @@ export interface IScrollOptions {
      * Specifies whether scrolling will smoothly transition to the previous animation. Default value is false.
      */
     blending?: boolean;
+    /**
+     * Determines whether the element will have focus after scrolling is complete. Default value is true.
+     */
+    focused?: boolean;
 }

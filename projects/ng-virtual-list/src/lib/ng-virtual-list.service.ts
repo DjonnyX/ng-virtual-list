@@ -2,16 +2,18 @@ import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
-import { TrackBox } from './utils/track-box';
-import { IRenderVirtualListItem, IScrollOptions, IVirtualListItem } from './models';
+import { TrackBox } from './core/track-box';
+import { IRenderVirtualListItem, IVirtualListItem } from './models';
+import { IAnimationParams, IScrollOptions } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
 } from './const';
 import { FocusAlignment, Id } from './types';
 import { getListElements, NGVL_INDEX } from './components/list-item/utils';
+import { FocusItemParams } from './types/focus-item-params';
 
 /**
  * NgVirtualListService
@@ -25,12 +27,15 @@ import { getListElements, NGVL_INDEX } from './components/list-item/utils';
   providedIn: 'root'
 })
 export class NgVirtualListService {
+  private _id: number = 0;
+  get id() { return this._id; }
+
   private _nextComponentId: number = 0;
 
-  private _$itemClick = new Subject<IRenderVirtualListItem<any> | undefined>();
+  private _$itemClick = new Subject<IRenderVirtualListItem<any> | null>();
   $itemClick = this._$itemClick.asObservable();
 
-  private _$selectedIds = new BehaviorSubject<Array<Id> | Id | undefined>(undefined);
+  private _$selectedIds = new BehaviorSubject<Array<Id> | Id | null>(null);
   $selectedIds = this._$selectedIds.asObservable();
 
   private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
@@ -47,6 +52,9 @@ export class NgVirtualListService {
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
 
+  private _$focusItem = new Subject<FocusItemParams>();
+  readonly $focusItem = this._$focusItem.asObservable();
+
   private _$scrollToStart = new Subject<IScrollOptions | undefined>();
   readonly $scrollToStart = this._$scrollToStart.asObservable();
 
@@ -59,8 +67,6 @@ export class NgVirtualListService {
 
   scrollEndOffset: number = 0;
 
-  scrollBarSize: number = 0;
-
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
@@ -71,7 +77,11 @@ export class NgVirtualListService {
 
   dynamic: boolean = true;
 
-  snapScrollToBottom: boolean = false;
+  snapScrollToStart: boolean = false;
+
+  snapScrollToEnd: boolean = false;
+
+  animationParams: IAnimationParams = DEFAULT_ANIMATION_PARAMS;
 
   private _trackBox: TrackBox | undefined;
 
@@ -108,6 +118,21 @@ export class NgVirtualListService {
     this._$langTextDir.next(v);
   }
 
+  get scrollBarSize() { return this._$scrollBarSize.getValue(); }
+
+  private _scrollBarSize: number = 0;
+  set scrollBarSize(v: number) {
+    if (this._scrollBarSize === v) {
+      return;
+    }
+
+    this._scrollBarSize = v;
+
+    this._$scrollBarSize.next(v);
+  }
+  private _$scrollBarSize = new BehaviorSubject<number>(this._scrollBarSize);
+  readonly $scrollBarSize = this._$scrollBarSize.asObservable();
+
   private _$clickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
   readonly $clickDistance = this._$clickDistance.asObservable();
   get clickDistance() { return this._$clickDistance.getValue(); }
@@ -131,7 +156,7 @@ export class NgVirtualListService {
           case MethodsForSelectingTypes.SELECT: {
             const curr = this._$selectedIds.getValue();
             if (typeof curr !== 'number' && typeof curr !== 'string') {
-              this._$selectedIds.next(undefined);
+              this._$selectedIds.next(null);
             }
             break;
           }
@@ -143,7 +168,7 @@ export class NgVirtualListService {
           }
           case MethodsForSelectingTypes.NONE:
           default: {
-            this._$selectedIds.next(undefined);
+            this._$selectedIds.next(null);
             break;
           }
         }
@@ -151,7 +176,7 @@ export class NgVirtualListService {
     ).subscribe();
   }
 
-  setSelectedIds(ids: Array<Id> | Id | undefined) {
+  setSelectedIds(ids: Array<Id> | Id | null) {
     if (JSON.stringify(this._$selectedIds.getValue()) !== JSON.stringify(ids)) {
       this._$selectedIds.next(ids);
     }
@@ -163,7 +188,7 @@ export class NgVirtualListService {
     }
   }
 
-  itemClick(data: IRenderVirtualListItem | undefined) {
+  itemClick(data: IRenderVirtualListItem | null) {
     this._$itemClick.next(data);
     if (this.collapseByClick) {
       this.collapse(data);
@@ -182,15 +207,15 @@ export class NgVirtualListService {
    * @param data 
    * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
    */
-  select(data: IRenderVirtualListItem | undefined, selected: boolean | undefined = undefined) {
-    if (data && data.config.selectable) {
+  select(data: IRenderVirtualListItem | null, selected: boolean | undefined = undefined) {
+    if (!!data && data.config.selectable) {
       switch (this._$methodOfSelecting.getValue()) {
         case MethodsForSelectingTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
           if (selected === undefined) {
-            this._$selectedIds.next(curr !== data?.id ? data?.id : undefined);
+            this._$selectedIds.next(curr !== data?.id ? data?.id : null);
           } else {
-            this._$selectedIds.next(selected ? data?.id : undefined);
+            this._$selectedIds.next(selected ? data?.id : null);
           }
           break;
         }
@@ -221,7 +246,7 @@ export class NgVirtualListService {
         }
         case MethodsForSelectingTypes.NONE:
         default: {
-          this._$selectedIds.next(undefined);
+          this._$selectedIds.next(null);
         }
       }
     }
@@ -232,8 +257,8 @@ export class NgVirtualListService {
     * @param data 
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
-  collapse(data: IRenderVirtualListItem | undefined, collapsed: boolean | undefined = undefined) {
-    if (data && data.config.sticky > 0 && data.config.collapsable) {
+  collapse(data: IRenderVirtualListItem | null, collapsed: boolean | undefined = undefined) {
+    if (!!data && data.config.sticky > 0 && data.config.collapsable) {
       const curr = [...(this._$collapsedIds.getValue() || []) as Array<Id>], index = curr.indexOf(data.id);
       if (collapsed === undefined) {
         if (index > -1) {
@@ -259,14 +284,14 @@ export class NgVirtualListService {
     }
   }
 
-  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment, behavior: ScrollBehavior) => void) | undefined;
-
-  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
+  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO): boolean {
     element.focus({ preventScroll: true });
-    if (element.parentElement) {
-      const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
-      this.itemToFocus?.(element, pos, align, behavior);
+    if (!!element.parentElement) {
+      const position = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
+      this._$focusItem.next({ element, position, align, behavior });
+      return true;
     }
+    return false;
   }
 
   focusFirstElement() {
@@ -294,7 +319,8 @@ export class NgVirtualListService {
     this._$focusedId.next(id);
   }
 
-  initialize(trackBox: TrackBox) {
+  initialize(id: number, trackBox: TrackBox) {
+    this._id = id;
     this._trackBox = trackBox;
   }
 

@@ -1,8 +1,9 @@
 import { Tracker } from './tracker';
-import { BaseVirtualListItemComponent } from '../models/base-virtual-list-item-component';
+import { BaseVirtualListItemComponent } from '../components/list-item/base';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
 import { IRenderVirtualListItem } from '../models/render-item.model';
-import { Id, ISize } from '../types';
+import { ISize } from '../interfaces';
+import { Id } from '../types';
 
 class ComponentRef<C extends any> {
     get instance(): C {
@@ -49,47 +50,47 @@ class Component {
 }
 
 const generateComponent = (id: number): ComponentRef<BaseVirtualListItemComponent> => {
-    return new ComponentRef(new Component(id));
+    return new ComponentRef<BaseVirtualListItemComponent>(new Component(id) as unknown as BaseVirtualListItemComponent);
 };
 
 const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
     return {
-    id,
-    index: 0,
-    measures: {
-        x: 0, y: 0, width: 0, height: 0, delta: 0,
-        positionOffset: 0,
-        position: 0,
-        scrollSize: 0,
-        size: 0,
-        boundsSize: 0,
-        absoluteStartPosition: 0,
-        absoluteStartPositionPercent: 0,
-        absoluteEndPosition: 0,
-        absoluteEndPositionPercent: 0
-    },
-    data: {
-        [trackBy]: id,
-    },
-    config: {
-        new: false,
-        odd: false,
-        even: false,
-        collapsable: false,
-        sticky: 0,
-        selectable: false,
-        snap: false,
-        snapped: false,
-        snappedOut: false,
-        isVertical: false,
-        dynamic: false,
-        isSnappingMethodAdvanced: false,
-        tabIndex: 0,
-        zIndex: '0',
-    },
-    previouseData: undefined,
-    nextData: undefined,
-};
+        id,
+        index: 0,
+        measures: {
+            x: 0, y: 0, width: 0, height: 0, delta: 0,
+            positionOffset: 0,
+            position: 0,
+            scrollSize: 0,
+            size: 0,
+            boundsSize: 0,
+            absoluteStartPosition: 0,
+            absoluteStartPositionPercent: 0,
+            absoluteEndPosition: 0,
+            absoluteEndPositionPercent: 0
+        },
+        data: {
+            [trackBy]: id,
+        },
+        config: {
+            new: false,
+            odd: false,
+            even: false,
+            collapsable: false,
+            sticky: 0,
+            selectable: false,
+            snap: false,
+            snapped: false,
+            snappedOut: false,
+            isVertical: false,
+            dynamic: false,
+            isSnappingMethodAdvanced: false,
+            tabIndex: 0,
+            zIndex: '0',
+        },
+        previouseData: undefined,
+        nextData: undefined,
+    };
 };
 
 class TrackerTested<C extends BaseVirtualListItemComponent = any> extends Tracker<C> { }
@@ -113,7 +114,7 @@ describe('Tracker', () => {
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
-            const comp = components[i], instance = comp.instance as Component;
+            const comp = components[i], instance = comp.instance as unknown as Component;
             if (instance.visible) {
                 result.push(instance?.id);
             }
@@ -151,7 +152,7 @@ describe('Tracker', () => {
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
-            const comp = components[i], instance = comp.instance as Component;
+            const comp = components[i], instance = comp.instance as unknown as Component;
             if (instance.visible) {
                 result.push(instance?.item?.data[trackBy]);
             }
@@ -189,7 +190,7 @@ describe('Tracker', () => {
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
-            const comp = components[i], instance = comp.instance as Component;
+            const comp = components[i], instance = comp.instance as unknown as Component;
             if (instance.visible) {
                 result.push(instance?.item?.data[trackBy]);
             }
@@ -227,7 +228,7 @@ describe('Tracker', () => {
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
-            const comp = components[i], instance = comp.instance as Component;
+            const comp = components[i], instance = comp.instance as unknown as Component;
             if (instance.visible) {
                 result.push(instance?.item?.data[trackBy]);
             }

@@ -1,6 +1,6 @@
 import { CacheMap } from './cache-map';
-import { CMap } from './cmap';
-import { ISize } from '../types';
+import { CMap } from '../utils/cmap';
+import { ISize } from '../interfaces';
 
 class CMapTested<K = string, V = any> extends CMap<K, V> {
     override toObject() {

@@ -1,9 +1,10 @@
 import { ComponentRef } from "@angular/core";
-import { ScrollDirection } from "../models";
+import { ScrollDirection } from "../types";
 import { IRenderVirtualListCollection } from "../models/render-collection.model";
-import { BaseVirtualListItemComponent } from "../models/base-virtual-list-item-component";
-import { Id, ISize } from "../types";
-import { CMap } from "./cmap";
+import { BaseVirtualListItemComponent } from "../components/list-item/base";
+import { ISize } from '../interfaces';
+import { Id } from "../types";
+import { CMap } from "../utils/cmap";
 
 type TrackingPropertyId = string | number;
 
@@ -20,7 +21,7 @@ export interface IVirtualListItemComponent<I = any> {
  * Tracks display items by property
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/tracker.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/core/tracker.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -61,10 +62,24 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         this._trackingPropertyName = trackingPropertyName;
     }
 
+    private tearOutSnapedDisplayObjectByItemId = (itemId: Id, snappedComponents: Array<ComponentRef<C>> | null | undefined):
+        ComponentRef<C> | null => {
+        if (!snappedComponents || snappedComponents?.length === 0) {
+            return null;
+        }
+        const index = snappedComponents?.findIndex(comp => comp?.instance?.itemId === itemId);
+        if (index > -1) {
+            const comp = snappedComponents[index];
+            snappedComponents.splice(index, 1);
+            return comp;
+        }
+        return snappedComponents.shift() ?? null;
+    }
+
     /**
      * tracking by propName
      */
-    track(items: IRenderVirtualListCollection, components: Array<ComponentRef<C>>, snapedComponent: ComponentRef<C> | null | undefined,
+    track(items: IRenderVirtualListCollection, components: Array<ComponentRef<C>>, snappedComponents: Array<ComponentRef<C>> | null | undefined,
         direction: ScrollDirection): void {
         if (!items) {
             return;
@@ -72,12 +87,12 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
 
         const untrackedItems = [...components], newTrackItems: Array<any> = [],
             untrackedComponentsByTypeMap: { [type: string]: Array<{ comp: ComponentRef<C>; index: number }>; } = {},
-            isDown = direction === 0 || direction === 1;
+            isDown = direction === 0 || direction === 1, snapped = !!snappedComponents ? [...snappedComponents] : [];
         let isRegularSnapped = false;
 
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
             const item = items[i], itemTrackingProperty = item.id;
-
+            let snappedComponent: ComponentRef<C> | null | undefined;
             if (this._trackMap) {
                 if (this._trackMap.has(itemTrackingProperty)) {
                     const diId = this._trackMap.get(itemTrackingProperty),
@@ -89,15 +104,18 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                             return v.instance.id === compId;
                         });
                         if (indexByUntrackedItems > -1) {
-                            if (snapedComponent) {
-                                if (item.config.snapped || item.config.snappedOut) {
-                                    isRegularSnapped = true;
-                                    snapedComponent.instance.item = item;
-                                    snapedComponent.instance.show();
+                            if (item.config.snapped || item.config.snappedOut) {
+                                if (snapped.length > 0) {
+                                    snappedComponent = this.tearOutSnapedDisplayObjectByItemId(item.id, snapped);
+                                    if (!!snappedComponent) {
+                                        isRegularSnapped = true;
+                                        snappedComponent.instance.item = item;
+                                        snappedComponent.instance.show();
+                                    }
                                 }
                             }
 
-                            if (snapedComponent) {
+                            if (!!snappedComponent) {
                                 if (item.config.snapped || item.config.snappedOut) {
                                     comp.instance.item = null;
                                     comp.instance.hide();
@@ -135,6 +153,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         }
 
         for (let i = 0, l = newTrackItems.length; i < l; i++) {
+            let snappedComponent: ComponentRef<C> | null | undefined;
             if (untrackedItems.length > 0) {
                 const item = newTrackItems[i], itemTrackingProperty = item.id,
                     type = item.data?.type;
@@ -155,14 +174,17 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                 }
 
                 if (comp) {
-                    if (snapedComponent) {
-                        if (item.config.snapped || item.config.snappedOut) {
+                    if (item.config.snapped || item.config.snappedOut) {
+                        if (snapped.length > 0) {
+                            snappedComponent = this.tearOutSnapedDisplayObjectByItemId(item.id, snapped);
                             isRegularSnapped = true;
-                            snapedComponent.instance.item = item;
-                            snapedComponent.instance.show();
+                            if (!!snappedComponent) {
+                                snappedComponent.instance.item = item;
+                                snappedComponent.instance.show();
+                            }
                         }
                     }
-                    if (snapedComponent) {
+                    if (!!snappedComponent) {
                         if (item.config.snapped || item.config.snappedOut) {
                             comp.instance.item = null;
                             comp.instance.hide();
@@ -191,9 +213,12 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         }
 
         if (!isRegularSnapped) {
-            if (snapedComponent) {
-                snapedComponent.instance.item = null;
-                snapedComponent.instance.hide();
+            for (let i = 0, l = snapped.length; i < l; i++) {
+                const snappedComponent = snapped[i];
+                if (!!snappedComponent) {
+                    snappedComponent.instance.item = null;
+                    snappedComponent.instance.hide();
+                }
             }
         }
     }
