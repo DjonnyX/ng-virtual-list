@@ -1810,13 +1810,13 @@ export class NgVirtualListComponent implements OnDestroy {
     $preventScrollSnapping.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
-      tap((v) => {
+      tap(() => {
         if (this._readyForShow) {
           this._trackBox.isScrollStart = this._trackBox.isScrollEnd = false;
           this._isScrollStart.set(false);
           this._isScrollEnd.set(false);
           const scroller = this._scrollerComponent();
-          if (scroller) {
+          if (!!scroller) {
             this._trackBox.preventScrollSnapping(true);
           }
         }
@@ -1890,18 +1890,18 @@ export class NgVirtualListComponent implements OnDestroy {
           actualScrollSize = Math.round(scrollSize + delta);
         if (this._readyForShow && !isLoading) {
           if (maxScrollSize >= 0) {
-            const isScrollStart = actualScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING;
+            const isScrollStart = (actualScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING);
             if (isScrollStart) {
-              this._trackBox.isScrollStart = true;
               this._isScrollStart.set(true);
-              this._trackBox.isScrollEnd = false;
               this._isScrollEnd.set(false);
+              this._trackBox.isScrollStart = true;
+              this._trackBox.isScrollEnd = false;
             } else {
-              const isScrollEnd = actualScrollSize >= (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING);
-              this._trackBox.isScrollStart = false;
+              const isScrollEnd = (actualScrollSize >= (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING));
               this._isScrollStart.set(false);
-              this._trackBox.isScrollEnd = isScrollEnd;
               this._isScrollEnd.set(isScrollEnd);
+              this._trackBox.isScrollStart = false;
+              this._trackBox.isScrollEnd = isScrollEnd;
             }
           }
         }
@@ -1994,10 +1994,9 @@ export class NgVirtualListComponent implements OnDestroy {
             return;
           }
 
-          if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) ||
-            (snapScrollToEnd && scrollPositionAfterUpdate > 0 &&
-              ((roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING) &&
-                (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate)))) {
+          if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) || (!snapScrollToStart && snapScrollToEnd && !scroller.scrollable) ||
+            (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate) ||
+            (roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
             this._trackBox.clearDelta();
 
             if (!this._trackBox.isSnappedToEnd) {
@@ -2660,17 +2659,13 @@ export class NgVirtualListComponent implements OnDestroy {
     validateIteration(iteration);
     const actualIteration = validateScrollIteration(iteration);
     this._elementRef.nativeElement.focus();
+    if (!this._scrollerComponent()?.scrollable) {
+      this.scrollToFinalize(id, focused, cb);
+      return;
+    }
     this._$scrollTo.next({
       id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
-        if (focused) {
-          const el = this.getFocusedElementById(id);
-          if (!!el) {
-            this._service.focus(el, FocusAlignments.NONE);
-          }
-        }
-        if (typeof cb === 'function') {
-          cb?.();
-        }
+        this.scrollToFinalize(id, focused, cb);
       }
     });
   }
@@ -2689,9 +2684,9 @@ export class NgVirtualListComponent implements OnDestroy {
       iteration = options?.iteration ?? 0;
     validateScrollBehavior(behavior);
     validateIteration(iteration);
-    const trackBy = this.trackBy(), items = this.items(), firsItem = items.length > 0 ? items[0] : undefined, id = firsItem?.[trackBy],
+    const trackBy = this.trackBy(), items = this.items(), firstItem = items.length > 0 ? items[0] ?? null : null, id = firstItem?.[trackBy] ?? null,
       actualIteration = validateScrollIteration(iteration);
-    if (!!firsItem) {
+    if (!!firstItem) {
       this._elementRef.nativeElement.focus();
       this._$scrollTo.next({
         id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
@@ -2699,15 +2694,7 @@ export class NgVirtualListComponent implements OnDestroy {
           this._trackBox.isScrollStart = true;
           this._trackBox.isScrollEnd = false;
           this._$fireUpdate.next(true);
-          if (focused) {
-            const el = this.getFocusedElementById(id);
-            if (!!el) {
-              this._service.focus(el, FocusAlignments.NONE);
-            }
-          }
-          if (typeof cb === 'function') {
-            cb?.();
-          }
+          this.scrollToFinalize(id, focused, cb);
         }
       });
     }
@@ -2738,23 +2725,31 @@ export class NgVirtualListComponent implements OnDestroy {
     const trackBy = this.trackBy(), items = this.items(), latItem = items[items.length > 0 ? items.length - 1 : 0], id = latItem[trackBy],
       actualIteration = validateScrollIteration(iteration);
     this._elementRef.nativeElement.focus();
+    if (!this._scrollerComponent()?.scrollable) {
+      this.scrollToFinalize(id, focused, cb);
+      return;
+    }
     this._$scrollTo.next({
       id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
         this._isScrollEnd.set(true);
         this._trackBox.isScrollStart = false;
         this._trackBox.isScrollEnd = true;
         this._$fireUpdate.next(true);
-        if (focused) {
-          const el = this.getFocusedElementById(id);
-          if (!!el) {
-            this._service.focus(el, FocusAlignments.NONE);
-          }
-        }
-        if (typeof cb === 'function') {
-          cb?.();
-        }
+        this.scrollToFinalize(id, focused, cb);
       }
     });
+  }
+
+  private scrollToFinalize(id: Id, focused: boolean, cb: (() => void) | null) {
+    if (focused) {
+      const el = this.getFocusedElementById(id);
+      if (!!el) {
+        this._service.focus(el, FocusAlignments.NONE);
+      }
+    }
+    if (typeof cb === 'function') {
+      cb?.();
+    }
   }
 
   protected cleanup() {
