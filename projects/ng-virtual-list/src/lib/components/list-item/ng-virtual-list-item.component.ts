@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, Injector, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { map, tap, combineLatest, fromEvent, switchMap, of } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, delay, filter, debounceTime } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { FocusAlignment, Id } from '../../types';
 import {
-  DEFAULT_CLICK_DISTANCE, VISIBILITY_HIDDEN,
+  DEFAULT_CLICK_DISTANCE, NAVIGATION_BY_KEYBOARD_TIMER, VISIBILITY_HIDDEN,
 } from '../../const';
 import { BaseVirtualListItemComponent } from './base';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
@@ -15,7 +15,7 @@ import { IDisplayObjectConfig } from '../../models';
 import { createDisplayId, getListElementByIndex } from './utils';
 import {
   ATTR_AREA_SELECTED, EVENT_FOCUS_IN, EVENT_FOCUS_OUT, EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT,
-  KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE, NAVIGATE_TO_ATTEMT,
+  KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE,
 } from './const';
 
 /**
@@ -144,42 +144,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
     $focused.pipe(
       takeUntilDestroyed(this._destroyRef),
+      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
       switchMap(v => {
         if (v) {
-          return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
-            takeUntilDestroyed(this._destroyRef),
-            tap(e => {
-              switch (e.key) {
-                case KEY_SPACE: {
-                  e.stopImmediatePropagation();
-                  e.preventDefault();
-                  this._service.select(this._data);
-                  this._service.collapse(this._data);
-                  break;
-                }
-                case KEY_ARR_LEFT:
-                  if (!this.config().isVertical) {
-                    this.toPrevItem(e);
-                  }
-                  break;
-                case KEY_ARR_UP:
-                  if (this.config().isVertical) {
-                    this.toPrevItem(e);
-                  }
-                  break;
-                case KEY_ARR_RIGHT:
-                  if (!this.config().isVertical) {
-                    this.toNextItem(e);
-                  }
-                  break;
-                case KEY_ARR_DOWN:
-                  if (this.config().isVertical) {
-                    this.toNextItem(e);
-                  }
-                  break;
-              }
-            }),
-          );
+          return this.keyKode();
         }
         return of(false);
       }),
@@ -222,44 +190,82 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     ).subscribe();
   }
 
-  private toNextItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+  private keyKode() {
+    return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
+      takeUntilDestroyed(this._destroyRef),
+      switchMap(e => {
+        switch (e.key) {
+          case KEY_SPACE: {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            this._service.select(this._data);
+            this._service.collapse(this._data);
+            break;
+          }
+          case KEY_ARR_LEFT:
+            if (!this.config().isVertical) {
+              return this.toPrevItem(e);
+            }
+            break;
+          case KEY_ARR_UP:
+            if (this.config().isVertical) {
+              return this.toPrevItem(e);
+            }
+            break;
+          case KEY_ARR_RIGHT:
+            if (!this.config().isVertical) {
+              return this.toNextItem(e);
+            }
+            break;
+          case KEY_ARR_DOWN:
+            if (this.config().isVertical) {
+              return this.toNextItem(e);
+            }
+            break;
+        }
+        return of(null);
+      }),
+    );
+  }
+
+  private toNextItem(e: Event): Observable<any> {
+    if (!!e && e.cancelable) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+
     const index = this.focusNext();
     if (index > -1) {
       this._service.lastFocusedItemId = index;
-      if (!!e && e.cancelable) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-      }
-      return;
     }
-
-    if (this._service.lastFocusedItemId > -1) {
-      this.focus(FocusAlignments.CENTER, this._service.lastFocusedItemId);
-    }
-
-    if (attempt > 0) {
-      this.toNextItem(e, attempt - 1);
-    }
+    return of(e).pipe(
+      takeUntilDestroyed(this._destroyRef),
+      filter(v => !!v),
+      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      switchMap(() => {
+        return this.keyKode();
+      }),
+    );
   }
 
-  private toPrevItem(e: Event, attempt: number = NAVIGATE_TO_ATTEMT) {
+  private toPrevItem(e: Event): Observable<any> {
+    if (!!e && e.cancelable) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+
     const index = this.focusPrev();
     if (index > -1) {
       this._service.lastFocusedItemId = index;
-      if (!!e && e.cancelable) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-      }
-      return;
     }
-
-    if (this._service.lastFocusedItemId > -1) {
-      this.focus(FocusAlignments.CENTER, this._service.lastFocusedItemId);
-    }
-
-    if (attempt > 0) {
-      this.toPrevItem(e, attempt - 1);
-    }
+    return of(e).pipe(
+      takeUntilDestroyed(this._destroyRef),
+      filter(v => !!v),
+      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      switchMap(() => {
+        return this.keyKode();
+      }),
+    );
   }
 
   private focusNext(): number {
@@ -270,8 +276,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         index++;
         const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
         if (!!element && element.style.visibility !== VISIBILITY_HIDDEN) {
-          this._service.focus(element);
-          return index;
+          const focused = this._service.focus(element);
+          if (focused) {
+            return index;
+          }
         }
       }
     }

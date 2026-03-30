@@ -23,9 +23,12 @@ export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
 
 export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
 
+export const NAVIGATION_BY_KEYBOARD_TIMER = 50;
+
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,
     navigateToItem: 150,
+    navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
 };
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;

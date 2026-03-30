@@ -4,15 +4,16 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
 import { TrackBox } from './core/track-box';
 import { IRenderVirtualListItem, IVirtualListItem } from './models';
-import { IScrollOptions } from './interfaces';
+import { IAnimationParams, IScrollOptions } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
 } from './const';
 import { FocusAlignment, Id } from './types';
 import { getListElements, NGVL_INDEX } from './components/list-item/utils';
+import { FocusItemParams } from './types/focus-item-params';
 
 /**
  * NgVirtualListService
@@ -51,6 +52,9 @@ export class NgVirtualListService {
   $focusedId = this._$focusedId.asObservable();
   get focusedId() { return this._$focusedId.getValue(); }
 
+  private _$focusItem = new Subject<FocusItemParams>();
+  readonly $focusItem = this._$focusItem.asObservable();
+
   private _$scrollToStart = new Subject<IScrollOptions | undefined>();
   readonly $scrollToStart = this._$scrollToStart.asObservable();
 
@@ -76,6 +80,8 @@ export class NgVirtualListService {
   snapScrollToStart: boolean = false;
 
   snapScrollToEnd: boolean = false;
+
+  animationParams: IAnimationParams = DEFAULT_ANIMATION_PARAMS;
 
   private _trackBox: TrackBox | undefined;
 
@@ -278,14 +284,14 @@ export class NgVirtualListService {
     }
   }
 
-  itemToFocus: ((element: HTMLElement, position: number, align: FocusAlignment, behavior: ScrollBehavior) => void) | undefined;
-
-  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO) {
+  focus(element: HTMLElement, align: FocusAlignment = FocusAlignments.CENTER, behavior: ScrollBehavior = BEHAVIOR_AUTO): boolean {
     element.focus({ preventScroll: true });
-    if (element.parentElement) {
-      const pos = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
-      this.itemToFocus?.(element, pos, align, behavior);
+    if (!!element.parentElement) {
+      const position = parseFloat(element.parentElement?.getAttribute('position') ?? '0');
+      this._$focusItem.next({ element, position, align, behavior });
+      return true;
     }
+    return false;
   }
 
   focusFirstElement() {

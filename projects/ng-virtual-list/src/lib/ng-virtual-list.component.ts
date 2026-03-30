@@ -53,6 +53,7 @@ import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
 import { validateFocusAlignment, validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
 import { getSelectorByItemId } from './utils/get-selector-by-item-id';
+import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
 
 /**
  * Virtual list component.
@@ -967,13 +968,13 @@ export class NgVirtualListComponent implements OnDestroy {
     }
   }
 
-  private itemToFocus = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER,
+  private focusItem = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER,
     behavior: ScrollBehavior = BEHAVIOR_AUTO) => {
     if (!this._readyForShow) {
       return;
     }
     const scroller = this._scrollerComponent();
-    if (scroller) {
+    if (!!scroller) {
       const { width, height } = this._bounds()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
         isVertical = this._isVertical,
         viewportSize = isVertical ? height : width,
@@ -1113,11 +1114,85 @@ export class NgVirtualListComponent implements OnDestroy {
     this._id = NgVirtualListComponent.__nextId;
 
     this._service.initialize(this._id, this._trackBox);
-    this._service.itemToFocus = this.itemToFocus;
+
+    this._service.animationParams = this.animationParams();
 
     this._trackBox.displayComponents = this._displayComponents;
 
     let hasUserAction = false, hasScrollbarUserAction = false;
+
+    this._scroller = computed(() => {
+      return this._scrollerComponent()?.scrollViewport();
+    });
+
+    this._list = computed(() => {
+      return this._scrollerComponent()?.scrollContent();
+    });
+
+    this._service.$focusItem.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      tap((params) => {
+        const { element, position, align, behavior } = params;
+        this.focusItem(element, position, align, behavior);
+      }),
+    ).subscribe();
+
+    const $list = toObservable(this._list).pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      map(v => v.nativeElement),
+      take(1),
+    );
+
+    const preventKeyboardEvent = (event: KeyboardEvent, isVertical: boolean) => {
+      const scroller = this._scrollerComponent();
+      if (!!scroller) {
+        const scrollStartOffset = this.scrollStartOffset(), scrollable = scroller.scrollable ?? false,
+          scrollSize = isVertical ? scroller.scrollTop : scroller.scrollLeft,
+          scrollWeight = isVertical ? scroller.scrollHeight : scroller.scrollWidth;
+        if (scrollable || scrollSize <= scrollStartOffset || scrollSize >= scrollWeight) {
+          if (!!event && event.cancelable) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+          }
+        }
+      }
+    };
+
+    $list.pipe(
+      takeUntilDestroyed(),
+      filter(element => !!element),
+      switchMap(element => {
+        return fromEvent<KeyboardEvent>(element, EVENT_KEY_DOWN).pipe(
+          takeUntilDestroyed(this._destroyRef),
+          switchMap(e => {
+            switch (e.key) {
+              case KEY_ARR_LEFT:
+                if (!this.isVertical) {
+                  preventKeyboardEvent(e, this.isVertical);
+                }
+                break;
+              case KEY_ARR_UP:
+                if (this.isVertical) {
+                  preventKeyboardEvent(e, this.isVertical);
+                }
+                break;
+              case KEY_ARR_RIGHT:
+                if (!this.isVertical) {
+                  preventKeyboardEvent(e, this.isVertical);
+                }
+                break;
+              case KEY_ARR_DOWN:
+                if (this.isVertical) {
+                  preventKeyboardEvent(e, this.isVertical);
+                }
+                break;
+            }
+            return of(null);
+          }),
+        );
+      }),
+    ).subscribe();
 
     const $scrollbarTheme = toObservable(this.scrollbarTheme);
     $scrollbarTheme.pipe(
@@ -1171,14 +1246,6 @@ export class NgVirtualListComponent implements OnDestroy {
         this.scrollToEnd(null, options);
       }),
     ).subscribe();
-
-    this._scroller = computed(() => {
-      return this._scrollerComponent()?.scrollViewport();
-    });
-
-    this._list = computed(() => {
-      return this._scrollerComponent()?.scrollContent();
-    });
 
     effect(() => {
       const dir = this.langTextDir() as TextDirection;
@@ -1448,11 +1515,11 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    toObservable(this._list).pipe(
+    $list.pipe(
       takeUntilDestroyed(),
-      filter(v => !!v),
-      tap(v => {
-        this._service.listElement = v.nativeElement;
+      filter(element => !!element),
+      tap(element => {
+        this._service.listElement = element;
       }),
     ).subscribe();
 
@@ -2052,12 +2119,6 @@ export class NgVirtualListComponent implements OnDestroy {
         filter(v => !!v),
         take(1),
         switchMap(scroller => scroller.$scrollbarScroll),
-      ),
-      $list = toObservable(this._list).pipe(
-        takeUntilDestroyed(),
-        filter(v => !!v),
-        map(v => v.nativeElement),
-        take(1),
       );
 
     const scrollHandler = (userAction: boolean = false) => {

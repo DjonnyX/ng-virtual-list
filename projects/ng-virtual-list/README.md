@@ -662,7 +662,7 @@ Inputs
 
 | Property | Type | Description |
 |---|---|---|
-| animationParams | [IAnimationParams](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/animation-params.ts)? = { scrollToItem: 50, navigateToItem: 150 } | Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150 }". |
+| animationParams | [IAnimationParams](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/animation-params.ts)? = { scrollToItem: 50, navigateToItem: 150, navigateByKeyboard: 50 } | Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150, , navigateByKeyboard: 50 }". |
 | bufferSize | number? = 2 | Number of elements outside the scope of visibility. Default value is 2. |
 | maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |

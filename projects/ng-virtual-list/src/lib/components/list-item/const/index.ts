@@ -1,6 +1,5 @@
 export const ID = 'id',
     TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)',
-    NAVIGATE_TO_ATTEMT = 5,
     ATTR_AREA_SELECTED = 'area-selected',
     POSITION = 'position',
     POSITION_ZERO = '0',

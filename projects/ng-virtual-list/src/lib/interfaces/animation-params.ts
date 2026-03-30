@@ -9,4 +9,5 @@
 export interface IAnimationParams {
     scrollToItem: number;
     navigateToItem: number;
+    navigateByKeyboard: number;
 }
