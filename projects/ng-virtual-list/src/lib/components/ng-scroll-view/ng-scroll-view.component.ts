@@ -254,9 +254,6 @@ export class NgScrollView extends BaseScrollView {
                 e.stopImmediatePropagation();
                 e.preventDefault();
             }
-            if (this._overscrollIteration > 0) {
-                this.scrollContent()?.nativeElement?.click();
-            }
             this._overscrollIteration = 0;
         } else {
             if (this._overscrollIteration < OVERSCROLL_START_ITERATION) {
