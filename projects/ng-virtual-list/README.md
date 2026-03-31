@@ -10,7 +10,7 @@ Works correctly in all browsers and platforms.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
-<b>Angular version 20.X.X</b>.
+<b>Angular version 19.X.X</b>.
 
 ![npm](https://img.shields.io/npm/v/ng-virtual-list)
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
