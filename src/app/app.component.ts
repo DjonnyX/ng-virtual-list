@@ -233,25 +233,25 @@ export class AppComponent {
 
   constructor() {
     interval(1000).pipe(
-      // delay(250),
-      // tap(() => {
-      //   const collection = [...this.dynamicItems];
-      //   collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
-      //   this.dynamicItems = collection;
-      // }),
+      delay(250),
+      tap(() => {
+        const collection = [...this.dynamicItems];
+        collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
+        this.dynamicItems = collection;
+      }),
       // delay(250),
       // tap(() => {
       //   const collection = [...this.dynamicItems];
       //   collection.shift();
       //   this.dynamicItems = collection;
       // }),
-      // delay(450),
-      // tap(() => {
-      //   const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
-      //     insertedItems = generateDynamicItems(1, this.dynamicItems.length);
-      //   collection.splice(insertIndex, 0, ...insertedItems);
-      //   this.dynamicItems = collection;
-      // }),
+      delay(450),
+      tap(() => {
+        const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
+          insertedItems = generateDynamicItems(1, this.dynamicItems.length);
+        collection.splice(insertIndex, 0, ...insertedItems);
+        this.dynamicItems = collection;
+      }),
       delay(650),
       tap(() => {
         const collection = [...this.dynamicItems];
@@ -262,25 +262,25 @@ export class AppComponent {
 
 
     interval(1000).pipe(
-      // delay(0),
-      // tap(() => {
-      //   const collection = [...this.dynamicShortItems];
-      //   collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
-      //   this.dynamicShortItems = collection;
-      // }),
+      delay(0),
+      tap(() => {
+        const collection = [...this.dynamicShortItems];
+        collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
+        this.dynamicShortItems = collection;
+      }),
       // delay(250),
       // tap(() => {
       //   const collection = [...this.dynamicShortItems];
       //   collection.shift();
       //   this.dynamicShortItems = collection;
       // }),
-      // delay(450),
-      // tap(() => {
-      //   const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),
-      //     insertedItems = generateDynamicShortItems(1, this.dynamicShortItems.length);
-      //   collection.splice(insertIndex, 0, ...insertedItems);
-      //   this.dynamicShortItems = collection;
-      // }),
+      delay(450),
+      tap(() => {
+        const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),
+          insertedItems = generateDynamicShortItems(1, this.dynamicShortItems.length);
+        collection.splice(insertIndex, 0, ...insertedItems);
+        this.dynamicShortItems = collection;
+      }),
       delay(650),
       tap(() => {
         const collection = [...this.dynamicShortItems];
@@ -292,7 +292,7 @@ export class AppComponent {
 
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef, id = this.itemId;
-    if (list && id !== undefined) {
+    if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);
         console.info(`scrollTo finished. id: ${id}`);
@@ -304,7 +304,7 @@ export class AppComponent {
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef, id = this.dlItemId;
-    if (list && id !== undefined) {
+    if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);
         console.info(`scrollTo finished. id: ${id}`);
@@ -314,7 +314,7 @@ export class AppComponent {
     }
   }
 
-  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | null) {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
@@ -335,7 +335,7 @@ export class AppComponent {
     this.dynamicShortItems = generateDynamicShortItems(len);
   }
 
-  onSelectHandler(data: Array<Id> | Id | undefined) {
+  onSelectHandler(data: Array<Id> | Id | null) {
     console.info(`Select: ${JSON.stringify(data)}`);
   }
 

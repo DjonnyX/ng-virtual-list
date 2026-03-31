@@ -1,0 +1,8 @@
+<div localeSensitive [langTextDir]="($langTextDir | async)!" [listDir]="($direction | async)" class="ngvl__container"
+    [ngClass]="($containerClasses | async)!">
+    <div #scrollViewport part="scroller" class="ngvl__scroller">
+        <div #scrollContent part="list" class="ngvl__list" [ngClass]="($actualClasses | async)">
+            <ng-content></ng-content>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-<ng-container *ngIf="data">
+<ng-container *ngIf="($data | async) as data">
     <div itemClick [maxClickDistance]="$maxClickDistance | async" [part]="$part | async"
         [attr.ngvl-index]="data.config.tabIndex || -1" tabindex="-1" class="ngvl-item__container"
         [ngClass]="$classes | async" (onClick)="onClickHandler()">
