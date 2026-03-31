@@ -1,10 +1,11 @@
 import { TemplateRef } from '@angular/core';
-import { Id, ISize } from '../types';
-import { IRenderVirtualListItem } from './render-item.model';
+import { Id } from '../types';
+import { ISize } from './size';
+import { IRenderVirtualListItem } from '../models/render-item.model';
 
 /**
  * Virtual List Item Interface
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/base-virtual-list-item-component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/interfaces/base-virtual-list-item-component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

@@ -1,4 +1,4 @@
-import { IRect } from "../types";
+import { IRect } from "../interfaces";
 
 /**
  * Display object metrics.

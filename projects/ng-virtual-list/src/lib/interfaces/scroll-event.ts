@@ -1,8 +1,8 @@
-import { ScrollDirection } from "./scroll-direction.model";
+import { ScrollDirection } from "../types/scroll-direction";
 
 /**
  * Interface IScrollEvent.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/models/scroll-event.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/interfaces/scroll-event.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -45,11 +45,15 @@ export interface IScrollEvent {
      */
     delta: number;
     /**
-     * Scroll delta
+     * Delta of new items
      */
-    scrollDelta: number;
+    deltaOfNewItems: number;
     /**
      * Display items range
      */
     itemsRange: [number, number] | undefined;
+    /**
+     * Has user action
+     */
+    userAction: boolean;
 }
