@@ -1,0 +1,59 @@
+import { ScrollDirection } from "../types/scroll-direction";
+
+/**
+ * Interface IScrollEvent.
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/interfaces/scroll-event.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
+export interface IScrollEvent {
+    /**
+     * Scroll area offset
+     */
+    scrollSize: number;
+    /**
+     * Full size of the scroll area
+     */
+    scrollWeight: number;
+    /**
+     * Viewport size
+     */
+    size: number;
+    /**
+     * Size of the list of elements
+     */
+    listSize: number;
+    /**
+     * Specifies whether the list orientation is vertical.
+     */
+    isVertical: boolean;
+    /**
+     * A value of -1 indicates the direction is up or left (if the list direction is horizontal).
+     * A value of 1 indicates the direction is down or right (if the list direction is horizontal).
+     */
+    direction: ScrollDirection;
+    /**
+     * If true then indicates that the list has been scrolled to the end.
+     */
+    isStart: boolean;
+    /**
+     * If true then indicates that the list has been scrolled to the end.
+     */
+    isEnd: boolean;
+    /**
+     * Delta of marked and unmarked area
+     */
+    delta: number;
+    /**
+     * Delta of new items
+     */
+    deltaOfNewItems: number;
+    /**
+     * Display items range
+     */
+    itemsRange: [number, number] | undefined;
+    /**
+     * Has user action
+     */
+    userAction: boolean;
+}

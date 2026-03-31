@@ -7,11 +7,14 @@
             <ng-content></ng-content>
         </div>
     </div>
-    <ng-scroll-bar #scrollBar [direction]="($direction | async)!" [size]="($thumbSize | async)!"
-        [theme]="($scrollbarTheme | async)!" [thumbGradientPositions]="($thumbGradientPositions | async)!"
-        [loading]="($loading | async)!" [prepared]="($prepared | async)!"
-        [interactive]="($scrollbarInteractive | async)!" [show]="($show | async)!"
-        [startOffset]="($startOffset | async)!" [endOffset]="($endOffset | async)!"
-        [overscrollEnabled]="($overscrollEnabled | async)!" [scrollBehavior]="($scrollBehavior | async)!"
-        [scrollbarMinSize]="($scrollbarMinSize | async)!" (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+    <ng-container *ngIf="($scrollbarEnabled | async)!">
+        <ng-scroll-bar #scrollBar [direction]="($direction | async)!" [size]="($actualThumbSize | async)!"
+            [theme]="($scrollbarTheme | async)!" [thumbGradientPositions]="($thumbColorPositions | async)!"
+            [loading]="($loading | async)!" [prepared]="($preparedSignal | async)!"
+            [interactive]="($scrollbarInteractive | async)!" [show]="($show | async)!"
+            [startOffset]="($startOffset | async)!" [endOffset]="($endOffset | async)!"
+            [overscrollEnabled]="($overscrollEnabled | async)!" [scrollBehavior]="($scrollBehavior | async)!"
+            [scrollbarMinSize]="($scrollbarMinSize | async)!" (onDrag)="onScrollBarDragHandler($event)"
+            (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
+    </ng-container>
 </div>

@@ -1,8 +1,17 @@
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
   {{ $screenReaderFormattedMessage | async }}
 </div>
+
+<prerender-container #prerender [bounds]="($bounds | async)!" [direction]="($direction | async)!"
+  [items]="items" [dynamic]="($dynamicSize | async)!" [isVertical]="($isVertical | async)!"
+  [itemSize]="($itemSize | async)!" [trackBy]="($trackBy | async)!" [itemRenderer]="($itemRenderer | async)!"
+  [startOffset]="($scrollStartOffset | async)!" [endOffset]="($scrollEndOffset | async)!"
+  [scrollbarEnabled]="(scroller.$scrollbarShow | async)!"
+  [enabled]="($prerenderEnabled | async)!"></prerender-container>
+
 <ng-container *ngIf="$snap | async">
-  <div #snappedContainer class="ngvl__snapped-container" [ngClass]="($classes | async)!">
+  <div localeSensitive [langTextDir]="($langTextDir | async)!" #snappedContainer class="ngvl__snapped-container"
+    [ngClass]="($classes | async)!">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
       <ng-container #snapRendererContainer></ng-container>
     </div>
