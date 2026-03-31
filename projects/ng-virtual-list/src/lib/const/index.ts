@@ -1,6 +1,9 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
-import { GradientColor, IAnimationParams, ScrollBarTheme } from "../types";
+import { IAnimationParams } from '../interfaces';
+import { GradientColor, ScrollBarTheme } from "../types";
+
+export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
 export const DEFAULT_ITEM_SIZE = 24;
 
@@ -20,9 +23,12 @@ export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
 
 export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
 
+export const NAVIGATION_BY_KEYBOARD_TIMER = 50;
+
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,
     navigateToItem: 150,
+    navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
 };
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;
@@ -39,7 +45,9 @@ export const DEFAULT_DYNAMIC_SIZE = true;
 
 export const DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET = 1;
 
-export const DEFAULT_SNAP_SCROLLTO_BOTTOM = false;
+export const DEFAULT_SNAP_SCROLLTO_START = true;
+
+export const DEFAULT_SNAP_SCROLLTO_END = true;
 
 export const TRACK_BY_PROPERTY_NAME = 'id';
 
@@ -49,9 +57,9 @@ export const DEFAULT_COLLECTION_MODE = CollectionModes.NORMAL;
 
 export const DISPLAY_OBJECTS_LENGTH_MESUREMENT_ERROR = 1;
 
-export const MAX_SCROLL_TO_ITERATIONS = 7;
+export const MAX_SCROLL_TO_ITERATIONS = 5;
 
-export const DEFAULT_SNAPPING_METHOD = SnappingMethods.NORMAL;
+export const DEFAULT_SNAPPING_METHOD = SnappingMethods.STANDART;
 
 export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
 
@@ -169,11 +177,11 @@ export const CLICK = 'click';
 
 export const KEY_DOWN = 'keydown';
 
+export const KEY_TAB = 'Tab';
+
 export const SCROLL = 'scroll';
 
 export const SCROLLER_SCROLL = 'scroll';
-
-export const SCROLLER_SCROLLBAR_SCROLL = 'scrollbar-scroll';
 
 export const SCROLL_END = 'scrollend';
 
@@ -199,3 +207,32 @@ export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
+export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10;
+
+export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1 = 74;
+
+export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 = 500;
+
+export const RANGE_DISPLAY_ITEMS_END_OFFSET = 20;
+
+export const PREPARE_ITERATIONS = 1;
+
+export const PREPARATION_REUPDATE_LENGTH = 0;
+
+export const PREPARE_ITERATIONS_FOR_UPDATE_ITEMS = 1;
+
+export const PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS = 0;
+
+export const PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS = 1;
+
+export const PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS = 0;
+
+export const EMPTY_SCROLL_STATE_VERSION = '-1';
+
+export const ROLE_LIST = 'list';
+
+export const ROLE_LIST_BOX = 'listbox';
+
+export const ITEM_ID = 'item-id';
+
+export const ITEM_CONTAINER = 'ngvl-item__container';

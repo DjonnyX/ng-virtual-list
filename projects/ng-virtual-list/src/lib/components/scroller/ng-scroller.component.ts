@@ -1,26 +1,25 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, from, Subject, takeUntil, tap } from 'rxjs';
+import { Component, EventEmitter, inject, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, ScrollBarTheme } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE,
-  LEFT_PROP_NAME, SCROLLER_SCROLL, SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOP_PROP_NAME,
+  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME,
+  SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
 import { TextDirection, TextDirections } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
+import { MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MEASURE_VELOCITY_TIMER } from './const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
 
 const TOP = 'top',
   LEFT = 'left',
-  INSTANT = 'instant',
-  AUTO = 'auto';
+  INSTANT = 'instant' as ScrollBehavior;
 
-export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
-  WHEEL_EVENT = new Event(SCROLLER_WHEEL),
-  SCROLLBAR_SCROLL_EVENT = new Event(SCROLLER_SCROLLBAR_SCROLL);
+export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
 
 /**
  * The scroller for the NgVirtualList item component
@@ -36,12 +35,15 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
   styleUrls: ['./ng-scroller.component.scss'],
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: false },
+    { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   @ViewChild('scrollBar', { read: NgScrollBarComponent })
-  scrollBar: NgScrollBarComponent | undefined;
+  readonly scrollBar: NgScrollBarComponent | undefined;
+
+  @Output()
+  readonly onScrollbarVisible = new EventEmitter<boolean>();
 
   private _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
   readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
@@ -109,28 +111,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
   get classes() { return this._$classes.getValue(); }
 
-  private _$startOffset = new BehaviorSubject<number>(0);
-  readonly $startOffset = this._$startOffset.asObservable();
-
-  @Input()
-  set startOffset(v: number) {
-    if (this._$startOffset.getValue() !== v) {
-      this._$startOffset.next(v);
-    }
-  }
-  get startOffset() { return this._$startOffset.getValue(); }
-
-  private _$endOffset = new BehaviorSubject<number>(0);
-  readonly $endOffset = this._$endOffset.asObservable();
-
-  @Input()
-  set endOffset(v: number) {
-    if (this._$endOffset.getValue() !== v) {
-      this._$endOffset.next(v);
-    }
-  }
-  get endOffset() { return this._$endOffset.getValue(); }
-
   private _$scrollbarTheme = new BehaviorSubject<ScrollBarTheme | undefined>(undefined);
   readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
 
@@ -141,7 +121,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     }
   }
   get scrollbarTheme() { return this._$scrollbarTheme.getValue(); }
-
 
   private _$scrollbarMinSize = new BehaviorSubject<number>(DEFAULT_SCROLLBAR_MIN_SIZE);
   readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
@@ -166,26 +145,34 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   private _$thumbSize = new BehaviorSubject<number>(0);
   readonly $thumbSize = this._$thumbSize.asObservable();
 
+  private _$thumbColorPositions = new BehaviorSubject<GradientColorPositions>([0, 0]);
+  readonly $thumbColorPositions = this._$thumbColorPositions.asObservable();
+
+  private _$actualThumbSize = new BehaviorSubject<number>(0);
+  readonly $actualThumbSize = this._$actualThumbSize.asObservable();
+
   private _$scrollbarShow = new BehaviorSubject<boolean>(false);
   readonly $scrollbarShow = this._$scrollbarShow.asObservable();
 
   private _$show = new BehaviorSubject<boolean>(false);
   readonly $show = this._$show.asObservable();
 
-  private _$prepared = new BehaviorSubject<boolean>(false);
-  readonly $prepared = this._$prepared.asObservable();
+  private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
+  readonly $langTextDir = this._$langTextDir.asObservable();
 
   private _$preparedSignal = new BehaviorSubject<boolean>(false);
   readonly $preparedSignal = this._$preparedSignal.asObservable();
 
-  private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
-  readonly $langTextDir = this._$langTextDir.asObservable();
+  private _service = inject(NgVirtualListService);
 
   private _scrollBox = new ScrollBox();
 
   get host() {
     return this.scrollViewport?.nativeElement;
   }
+
+  private _$scrollbarScroll = new Subject<boolean>();
+  readonly $scrollbarScroll = this._$scrollbarScroll.asObservable();
 
   private _prepared = false;
   set prepared(v: boolean) {
@@ -199,7 +186,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (v !== undefined && !Number.isNaN(v)) {
       this._x = this._actualX = v;
 
-      this._$updateScrollBar.next();
+      this.measureVelocity();
+
+      this.updateScrollBar();
     }
   }
   override get x() { return this._x; }
@@ -208,49 +197,86 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (v !== undefined && !Number.isNaN(v)) {
       this._y = this._actualY = v;
 
-      this._$updateScrollBar.next();
+      this.measureVelocity();
+
+      this.updateScrollBar();
     }
   }
   override get y() { return this._y; }
 
-  protected override _onResizeViewportHandler = () => {
-    const viewport = this.scrollViewport?.nativeElement;
-    if (viewport) {
-      this._$viewportBounds.next({ width: viewport.offsetWidth, height: viewport.offsetHeight });
-      this._$updateScrollBar.next();
-    }
-  }
-
-  protected override _onResizeContentHandler = () => {
-    const content = this.scrollContent?.nativeElement;
-    if (content) {
-      this._$contentBounds.next({ width: content.offsetWidth, height: content.offsetHeight });
-      this._$updateScrollBar.next();
-    }
-  }
-
-  protected _$scrollbarDrag = new Subject<IScrollBarDragEvent>();
-  protected $scrollbarDrag = this._$scrollbarDrag.asObservable();
-
-  private _$updateScrollbarWithUpdate = new Subject<boolean>();
-  readonly $updateScrollbarWithUpdate = this._$updateScrollbarWithUpdate.asObservable();
-
   private _isScrollbarUserAction: boolean = false;
+  get isScrollbarUserAction() {
+    return this._isScrollbarUserAction;
+  }
 
-  constructor(private _service: NgVirtualListService) {
+  private _measureVelocityTimestamp: number = Date.now();
+
+  private _measureVelocityLastPosition: number = this._$isVertical.getValue() ? this._y : this._x;
+
+  private _measureVelocityAnimationFrameId: number = -1;
+
+  private _measureVelocityAnimationTimer: number = -1;
+
+  private _velocities: Array<number> = [];
+
+  protected _velocity: number = 0;
+  get velocity() { return this._velocity; }
+
+  protected _averageVelocity: number = 0;
+  get averageVelocity() { return this._averageVelocity; }
+
+  private _measureVelocityHandler = () => {
+    this.measureVelocityExecutor();
+  }
+
+  constructor() {
     super();
+
+    this._service.$langTextDir.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      tap(v => {
+        this._$langTextDir.next(v);
+      }),
+    ).subscribe();
+
+    this.$thumbGradientPositions.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      tap(v => {
+        this._$thumbColorPositions.next(v);
+      }),
+    ).subscribe();
+
+    this.$thumbSize.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      tap(v => {
+        this._$actualThumbSize.next(v);
+      }),
+    ).subscribe();
   }
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
 
-    this._service.$langTextDir.pipe(
+    const $prepared = this.$preparedSignal;
+    $prepared.pipe(
       takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      debounceTime(0),
-      tap(v => {
-        this._$langTextDir.next(v);
-      })
+      filter(v => !!v),
+      tap(() => {
+        this.updateScrollBarHandler(true, false, true);
+      }),
+    ).subscribe();
+
+    const $scrollbarEnabled = this.$scrollbarEnabled,
+      $scrollbarShow = this.$scrollbarShow;
+
+    combineLatest([$scrollbarEnabled, $scrollbarShow, $prepared]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([scrollbarEnabled, scrollbarShow, prepared]) => {
+        this._$show.next(scrollbarEnabled && scrollbarShow && prepared);
+      }),
     ).subscribe();
 
     const $startOffset = this.$startOffset,
@@ -261,36 +287,19 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
     from([$endOffset, $startOffset, $thumbSize, $scrollbarMinSize, $isVertical]).pipe(
       takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
+      debounceTime(0),
       tap(() => {
-        this._$updateScrollBar.next();
+        this.updateScrollBar();
       }),
     ).subscribe();
 
-    combineLatest([this.$startOffset, this.$endOffset]).pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      tap(() => {
-        this._$updateScrollBar.next();
-      }),
-    ).subscribe();
-
-    const $updateScrollBar = this.$updateScrollBar,
-      $updateScrollbarWithUpdate = this._$updateScrollbarWithUpdate;
+    const $updateScrollBar = this.$updateScrollBar;
 
     $updateScrollBar.pipe(
       takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(() => {
-        this._$updateScrollbarWithUpdate.next(!this._isScrollbarUserAction);
-      }),
-    ).subscribe();
-
-    $updateScrollbarWithUpdate.pipe(
-      takeUntil(this._$unsubscribe),
-      debounceTime(0),
-      tap(v => {
-        this.updateScrollBarHandler(v);
+        this.updateScrollBarHandler(!this._isScrollbarUserAction);
       }),
     ).subscribe();
 
@@ -316,49 +325,85 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       }),
     ).subscribe();
 
-    this.$preparedSignal.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      debounceTime(0),
-      tap((v) => {
-        this._$prepared.next(v);
-      }),
-    ).subscribe();
-
-    this.$scrollbarDrag.pipe(
-      takeUntil(this._$unsubscribe),
-      distinctUntilChanged(),
-      debounceTime(0),
-      tap((e) => {
-        this.scrollbarDrag(e);
-      }),
-    ).subscribe();
-
-    combineLatest([this.$scrollbarShow, this.$scrollbarEnabled, this.$preparedSignal]).pipe(
-      takeUntil(this._$unsubscribe),
-      tap(([scrollbarShow, scrollbarEnabled, preparedSignal]) => {
-        this._$show.next(scrollbarShow && scrollbarEnabled && preparedSignal);
-      }),
-    ).subscribe();
-
-    this._$updateScrollbarWithUpdate.next(false);
+    this.updateScrollBarHandler();
+    this.runMeasureVelocity();
   }
 
-  private updateScrollBarHandler(update: boolean = false) {
+  protected override onResizeViewport() {
+    const viewport = this.scrollViewport?.nativeElement;
+    if (viewport) {
+      this._$viewportBounds.next({ width: viewport.offsetWidth, height: viewport.offsetHeight });
+      this.updateScrollBar();
+    }
+  }
+
+  protected override onResizeContent() {
+    const content = this.scrollContent?.nativeElement;
+    if (content) {
+      this._$contentBounds.next({ width: content.offsetWidth, height: content.offsetHeight });
+      this.updateScrollBar();
+    }
+  }
+
+  private measureVelocity() {
+    this._measureVelocityAnimationTimer = MEASURE_VELOCITY_TIMER;
+
+    this.measureVelocityExecutor();
+  };
+
+  private measureVelocityExecutor() {
+    const timestamp = Date.now();
+    if (timestamp === this._measureVelocityTimestamp) {
+      return;
+    }
+    const position = Math.abs(this._$isVertical.getValue() ? this._y : this._x);
+    const timeDelta = timestamp - this._measureVelocityTimestamp,
+      positionDelta = Math.abs(position - this._measureVelocityLastPosition),
+      velocity = timeDelta > 0 ? positionDelta / timeDelta : 0;
+    let avgVelocity = this._velocities.length > 0 ? this._velocities.reduce((p, c) => p + c) : 0;
+    if (this._velocities.length >= MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS) {
+      this._velocities.shift();
+    }
+    avgVelocity += velocity;
+    this._velocity = velocity;
+    this._velocities.push(velocity);
+    this._averageVelocity = avgVelocity / MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS;
+    this._measureVelocityLastPosition = position;
+    this._measureVelocityTimestamp = timestamp;
+
+    this.runMeasureVelocity();
+  }
+
+  stopMeasureVelocity() {
+    if (this._measureVelocityAnimationFrameId > -1) {
+      cancelAnimationFrame(this._measureVelocityAnimationFrameId);
+      this._measureVelocityAnimationFrameId = -1;
+    }
+  }
+
+  private runMeasureVelocity() {
+    this.stopMeasureVelocity();
+    if (this._measureVelocityAnimationTimer >= 0) {
+      this._measureVelocityAnimationTimer--;
+      this._measureVelocityAnimationFrameId = requestAnimationFrame(this._measureVelocityHandler);
+    }
+  }
+
+  private updateScrollBarHandler(update: boolean = false, blending: boolean = true, fireUpdate: boolean = false) {
     const direction = this._$direction.getValue(),
       isVertical = this._$isVertical.getValue(),
+      viewportBounds = this._$viewportBounds.getValue(),
+      contentBounds = this._$contentBounds.getValue(),
       startOffset = this._$startOffset.getValue(),
       endOffset = this._$endOffset.getValue(),
-      scrollContent = this.scrollContent?.nativeElement as HTMLElement,
-      scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement,
       {
         thumbSize,
         thumbPosition,
         thumbGradientPositions,
       } = this._scrollBox.calculateScroll({
         direction,
-        viewportWidth: scrollViewport.offsetWidth, viewportHeight: scrollViewport.offsetHeight,
-        contentWidth: scrollContent.offsetWidth, contentHeight: scrollContent.offsetHeight,
+        viewportWidth: viewportBounds.width, viewportHeight: viewportBounds.height,
+        contentWidth: contentBounds.width, contentHeight: contentBounds.height,
         startOffset,
         endOffset,
         positionX: this._x,
@@ -368,14 +413,23 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
     this._$thumbGradientPositions.next(thumbGradientPositions);
     this._$thumbSize.next(thumbSize);
+    const actualThumbPosition = thumbPosition < startOffset ? startOffset : thumbPosition;
     if (update) {
       this.scrollBar?.scroll({
-        [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: thumbPosition, fireUpdate: false, behavior: BEHAVIOR_INSTANT,
-        userAction: false, blending: true,
+        [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: actualThumbPosition, fireUpdate, behavior: BEHAVIOR_INSTANT,
+        userAction: false, blending,
       });
     }
-    this._$scrollbarShow.next(this.scrollable);
+    this._$scrollbarShow.next(this.scrollable && this._$scrollbarEnabled.getValue());
   };
+
+  private updateScrollBar() {
+    this._$updateScrollBar.next();
+  }
+
+  refreshScrollbar() {
+    this.updateScrollBarHandler(true, false, false);
+  }
 
   protected override onDragStart() {
     super.onDragStart();
@@ -384,7 +438,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
     this._isScrollbarUserAction = false;
 
-    this._$updateScrollBar.next();
+    this.updateScrollBar();
   }
 
   override reset() {
@@ -401,31 +455,30 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     }
 
     this.scrollLimits();
+
     if (this._$isVertical.getValue()) {
       this.refreshY(this._y);
     } else {
       this.refreshX(this._x);
     }
+
     if (updateScrollbar) {
-      this._$updateScrollbarWithUpdate.next(false);
+      this.updateScrollBarHandler(false);
       this.emitScrollableEvent();
     }
+
     if (fireUpdate) {
       this.fireScrollEvent(false);
     }
   }
 
   scrollTo(params: IScrollToParams) {
-    const userAction = params.userAction ?? true,
-      blending = params.blending ?? true,
-      fireUpdate = params.fireUpdate ?? false;
-
-    if (userAction && (!blending && !this._isMoving) && !fireUpdate) {
-      this.stopScrollbar();
+    const userAction = params.userAction ?? true;
+    if (userAction) {
       this._isScrollbarUserAction = false;
+      this.scrollBar?.stopScrolling();
     }
-
-    this.scroll(params);
+    this.scroll({ ...params, userAction: userAction });
   }
 
   stopScrollbar() {
@@ -434,15 +487,20 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     }
   }
 
-  onScrollBarDragHandler(event: IScrollBarDragEvent) {
-    this._$scrollbarDrag.next(event);
+  protected override onAnimationComplete(position: number) {
+    this._velocities = [0];
+    this._velocity = 0;
+    this._$scrollEnd.next(false);
   }
 
-  scrollbarDrag(event: IScrollBarDragEvent) {
-    const { animation, position, min, max, userAction } = event;
+  onScrollBarDragHandler(event: IScrollBarDragEvent) {
+    const { position, min, max, userAction } = event;
     this._isScrollbarUserAction = userAction;
+    if (!userAction) {
+      return;
+    }
+    this._$scrollbarScroll.next(userAction);
     this.stopScrolling();
-    this._isMoving = true;
     const isVertical = this._$isVertical.getValue(),
       {
         position: absolutePosition,
@@ -450,14 +508,31 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         scrollSize: isVertical ? this.scrollHeight : this.scrollWidth,
         position,
       });
+
     this.scrollTo({
-      [isVertical ? TOP : LEFT]: absolutePosition, behavior: animation ? this._$scrollBehavior.getValue() : INSTANT,
-      blending: false, userAction, fireUpdate: userAction,
+      [isVertical ? TOP : LEFT]: absolutePosition, behavior: INSTANT,
+      blending: false, userAction: false, fireUpdate: true,
     });
     this.emitScrollableEvent();
-    this._isMoving = false;
+    this.fireUpdateIfEdgesDetected(position, min, max, true, true);
+  }
 
-    if (userAction && animation && this._service.dynamic) {
+  onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
+    const { position, min, max, userAction } = event;
+    this._isScrollbarUserAction = false;
+    this._velocities = [0];
+    this._velocity = 0;
+    if (!userAction) {
+      return;
+    }
+    this.refresh(true, true);
+    this.fireUpdateIfEdgesDetected(position, min, max, true, true);
+    this._$scrollbarScroll.next(false);
+    this.fireScrollEvent(false);
+  }
+
+  private fireUpdateIfEdgesDetected(position: number, min: number = 0, max: number = 1, animation: boolean = false, userAction: boolean = false) {
+    if (userAction && animation) {
       if (position <= min) {
         this._service.scrollToStart();
       } else if (position >= max) {
@@ -468,5 +543,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
+
+    this.stopMeasureVelocity();
   }
 }
