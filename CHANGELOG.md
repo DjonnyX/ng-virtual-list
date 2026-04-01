@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.10.19] - 2026-04-01
+
+### Fixed
+- Minor bugs fixed
+
 ## [20.10.18] - 2026-03-30
 
 ### Fixed
