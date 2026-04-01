@@ -1,53 +1,28 @@
-import { Component, DestroyRef, ElementRef, inject, Input, OnDestroy, ViewChild, } from '@angular/core';
+import {
+    Component, inject, Input, ViewChild,
+} from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
-import { BehaviorSubject, distinctUntilChanged, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ScrollerDirection } from './enums';
-import { ScrollerDirections } from './enums';
-import { ISize } from '../../types';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, SCROLLER_SCROLL,
-    SCROLLER_SCROLLBAR_SCROLL, SCROLLER_WHEEL, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
+    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP,
+    TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
-import { SCROLL_VIEW_INVERSION } from './const';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-const calculateDirection = (buffer: Array<[number, number]>) => {
-    for (let i = buffer.length - 1, l = 0; i >= l; i--) {
-        const v = buffer[i];
-        if (v[0] === 0) {
-            continue;
-        }
-        return Math.sign(v[0]);
-    }
-    return 1;
-};
-
-const TOP = 'top',
-    LEFT = 'left',
-    INSTANT = 'instant',
-    AUTO = 'auto',
-    SMOOTH = 'smooth',
-    DURATION = 2000,
-    FRICTION_FORCE = .035,
-    MAX_DURATION = 4000,
-    ANIMATION_DURATION = 50,
-    MASS = .005,
-    MAX_DIST = 12500,
-    MAX_VELOCITY_TIMESTAMP = 100,
-    SPEED_SCALE = 15,
-    OVERSCROLL_START_ITERATION = 2;
-
-export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
-    WHEEL_EVENT = new Event(SCROLLER_WHEEL),
-    SCROLLBAR_SCROLL_EVENT = new Event(SCROLLER_SCROLLBAR_SCROLL);
+import {
+    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_VELOCITY_TIMESTAMP,
+    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+} from './const';
+import { calculateDirection } from './utils';
+import { BaseScrollView } from './base/base-scroll-view.component';
 
 /**
  * NgScrollView
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/scroll-view/scroll-view.directive.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-scroll-view/ng-scroll-view.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -55,25 +30,9 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL),
     selector: 'ng-scroll-view',
     template: '',
 })
-export class NgScrollView implements OnDestroy {
-    @ViewChild('scrollContent')
-    scrollContent: ElementRef<HTMLDivElement> | undefined;
-
+export class NgScrollView extends BaseScrollView {
     @ViewChild('scrollViewport', { read: CdkScrollable })
-    cdkScrollable: CdkScrollable | undefined;
-
-    @ViewChild('scrollViewport')
-    scrollViewport: ElementRef<HTMLDivElement> | undefined;
-
-    protected _$direction = new BehaviorSubject<ScrollerDirections>(ScrollerDirection.VERTICAL);
-    readonly $direction = this._$direction.asObservable();
-    @Input()
-    set direction(v: ScrollerDirections) {
-        if (this._$direction.getValue() !== v) {
-            this._$direction.next(v);
-        }
-    }
-    get direction() { return this._$direction.getValue(); }
+    readonly cdkScrollable: CdkScrollable | undefined;
 
     protected _$scrollBehavior = new BehaviorSubject<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
     readonly $scrollBehavior = this._$scrollBehavior.asObservable();
@@ -95,14 +54,7 @@ export class NgScrollView implements OnDestroy {
     }
     get overscrollEnabled() { return this._$overscrollEnabled.getValue(); }
 
-    protected _$isVertical = new BehaviorSubject<boolean>(true);
-    readonly $isVertical = this._$isVertical.asObservable();
-
-    protected _$grabbing = new BehaviorSubject<boolean>(false);
-    readonly $grabbing = this._$grabbing.asObservable();
-
-    protected _$updateScrollBar = new Subject<void>();
-    protected $updateScrollBar = this._$updateScrollBar.asObservable();
+    protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
 
     protected _$scroll = new Subject<boolean>();
     readonly $scroll = this._$scroll.asObservable();
@@ -110,128 +62,11 @@ export class NgScrollView implements OnDestroy {
     protected _$scrollEnd = new Subject<boolean>();
     readonly $scrollEnd = this._$scrollEnd.asObservable();
 
-    get scrollable() {
-        const { width, height } = this._$viewportBounds.getValue(),
-            isVertical = this._$isVertical.getValue(),
-            viewportSize = isVertical ? height : width,
-            totalSize = this._totalSize;
-        return totalSize > viewportSize;
-    }
-
-    protected _isMoving = false;
-    get isMoving() {
-        return this._isMoving;
-    }
-
-    protected _x: number = 0;
-    set x(v: number) {
-        this._x = this._actualX = v;
-    }
-    get x() { return this._x; }
-
-    protected _y: number = 0;
-    set y(v: number) {
-        this._y = this._actualY = v;
-    }
-    get y() { return this._y; }
-
-    protected _totalSize: number = 0;
-    set totalSize(v: number) {
-        if (this._totalSize !== v) {
-            this._totalSize = v;
-        }
-    }
-    get totalSize() { return this._totalSize; }
-
     private _startPosition = 0;
-
-    get actualScrollHeight() {
-        const { height: viewportHeight } = this._$viewportBounds.getValue(),
-            totalSize = this._totalSize;
-        if (this._inversion) {
-            return totalSize > viewportHeight ? 0 : viewportHeight - totalSize;
-        }
-        return totalSize < viewportHeight ? 0 : totalSize - viewportHeight;
-    }
-
-    get actualScrollWidth() {
-        const { width: viewportWidth } = this._$viewportBounds.getValue(),
-            totalSize = this._totalSize;
-        if (this._inversion) {
-            return totalSize > viewportWidth ? 0 : viewportWidth - totalSize;
-        }
-        return totalSize < viewportWidth ? 0 : totalSize - viewportWidth;
-    }
-
-    protected _actualX: number = 0;
-    get actualScrollLeft() {
-        return this._actualX;
-    }
-
-    protected _actualY: number = 0;
-    get actualScrollTop() {
-        return this._actualY;
-    }
-
-    get scrollLeft() {
-        return this._x;
-    }
-
-    get scrollTop() {
-        return this._y;
-    }
-
-    get scrollWidth() {
-        const { width: viewportWidth } = this._$viewportBounds.getValue(),
-            actualViewportWidth = viewportWidth,
-            { width: contentWidth } = this._$contentBounds.getValue();
-        if (this._inversion) {
-            return contentWidth > actualViewportWidth ? 0 : (actualViewportWidth - contentWidth);
-        }
-        return contentWidth < actualViewportWidth ? 0 : (contentWidth - actualViewportWidth);
-    }
-
-    get scrollHeight() {
-        const { height: viewportHeight } = this._$viewportBounds.getValue(),
-            actualViewportHeight = viewportHeight,
-            { height: contentHeight } = this._$contentBounds.getValue();
-        if (this._inversion) {
-            return contentHeight > actualViewportHeight ? 0 : (actualViewportHeight - contentHeight);
-        }
-        return contentHeight < actualViewportHeight ? 0 : (contentHeight - actualViewportHeight);
-    }
-
-    protected _velocity: number = 0;
-
-    protected _$viewportBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
-    readonly $viewportBounds = this._$viewportBounds.asObservable();
-
-    protected _$contentBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
-    readonly $contentBounds = this._$contentBounds.asObservable();
-
-    protected _viewportResizeObserver: ResizeObserver;
-
-    protected _onResizeViewportHandler = () => {
-        const viewport = this.scrollViewport?.nativeElement;
-        if (viewport) {
-            this._$viewportBounds.next({ width: viewport.offsetWidth, height: viewport.offsetHeight });
-        }
-    }
-
-    protected _contentResizeObserver: ResizeObserver;
-
-    protected _onResizeContentHandler = () => {
-        const content = this.scrollContent?.nativeElement;
-        if (!!content) {
-            this._$contentBounds.next({ width: content.offsetWidth, height: content.offsetHeight });
-        }
-    }
 
     protected _animator = new Animator();
 
     protected _interactive = true;
-
-    private _inversion = inject(SCROLL_VIEW_INVERSION);
 
     private _overscrollIteration: number = 0;
 
@@ -239,45 +74,40 @@ export class NgScrollView implements OnDestroy {
         this._startPosition += v;
     }
 
-    protected _destroyRef = inject(DestroyRef);
-
     constructor() {
-        this._viewportResizeObserver = new ResizeObserver(this._onResizeViewportHandler);
-        this._contentResizeObserver = new ResizeObserver(this._onResizeContentHandler);
-
-        const $direction = this.$direction;
-        $direction.pipe(
-            takeUntilDestroyed(this._destroyRef),
-            distinctUntilChanged(),
-            tap(v => {
-                this._$isVertical.next(v === ScrollerDirection.VERTICAL);
-            }),
-        ).subscribe();
+        super();
     }
 
-    ngAfterViewInit() {
-        const viewport = this.scrollViewport!.nativeElement,
-            content = this.scrollContent!.nativeElement,
-            wheelEmitter = this._inversion ? viewport : content;
+    override ngAfterViewInit() {
+        super.ngAfterViewInit();
 
-        this._viewportResizeObserver.observe(viewport);
-        this._onResizeViewportHandler();
-
-        this._contentResizeObserver.observe(content);
-        this._onResizeContentHandler();
-
-        fromEvent<WheelEvent>(wheelEmitter, WHEEL, { passive: false }).pipe(
-            filter(v => this._interactive),
+        const $viewport = of(this.scrollViewport).pipe(
             takeUntilDestroyed(this._destroyRef),
-            tap(e => {
-                const isVertical = this._$isVertical.getValue();
-                this.emitScrollableEvent();
-                this.checkOverscroll(e);
-                this.stopScrolling();
-                const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                    startPos = isVertical ? this.y : this.x,
-                    delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
-                this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
+            filter(v => !!v),
+            map(v => v!.nativeElement),
+        ), $content = of(this.scrollContent).pipe(
+            takeUntilDestroyed(this._destroyRef),
+            filter(v => !!v),
+            map(v => v!.nativeElement),
+        ), $wheelEmitter = this._inversion ? $viewport : $content;
+
+        $wheelEmitter.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            switchMap(content => {
+                return fromEvent<WheelEvent>(content, WHEEL, { passive: false }).pipe(
+                    filter(() => this._interactive),
+                    takeUntilDestroyed(this._destroyRef),
+                    tap(e => {
+                        const isVertical = this._$isVertical.getValue();
+                        this.emitScrollableEvent();
+                        this.checkOverscroll(e);
+                        this.stopScrolling();
+                        const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                            startPos = isVertical ? this.y : this.x,
+                            delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
+                        this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
+                    }),
+                );
             }),
         ).subscribe();
 
@@ -292,57 +122,62 @@ export class NgScrollView implements OnDestroy {
                 }),
             );
 
-        fromEvent<MouseEvent>(content, MOUSE_DOWN, { passive: false }).pipe(
+        $content.pipe(
             takeUntilDestroyed(this._destroyRef),
-            filter(v => this._interactive),
-            switchMap(e => {
-                this.cancelOverscroll();
-                this.onDragStart();
-                this.stopScrolling();
-                const target = e.target as HTMLElement;
-                if (target.classList.contains(INTERACTIVE)) {
-                    return of(undefined);
-                }
-                const inversion = this._inversion, isVertical = this._$isVertical.getValue();
-                this._isMoving = true;
-                this._$grabbing.next(true);
-                this._startPosition = (isVertical ? this.y : this.x);
-                let prevClientPosition = 0,
-                    startClientPos = isVertical ? e.clientY : e.clientX,
-                    offsets = new Array<[number, number]>(),
-                    velocities = new Array<[number, number]>(),
-                    startTime = Date.now();
-                return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
+            switchMap(content => {
+                return fromEvent<MouseEvent>(content, MOUSE_DOWN, { passive: false }).pipe(
                     takeUntilDestroyed(this._destroyRef),
-                    takeUntil($mouseDragCancel),
-                    tap(e => {
-                        this.checkOverscroll(e);
-                    }),
+                    filter(v => this._interactive),
                     switchMap(e => {
-                        const { position, currentPos, endTime, scrollDelta } =
-                            this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                        prevClientPosition = currentPos;
-                        this.move(isVertical, position, true, true, true);
-                        startTime = endTime;
-                        return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
+                        this.cancelOverscroll();
+                        this.onDragStart();
+                        this.stopScrolling();
+                        const target = e.target as HTMLElement;
+                        if (target.classList.contains(INTERACTIVE)) {
+                            return of(undefined);
+                        }
+                        const inversion = this._inversion, isVertical = this._$isVertical.getValue();
+                        this._isMoving = true;
+                        this._$grabbing.next(true);
+                        this._startPosition = (isVertical ? this.y : this.x);
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.clientY : e.clientX,
+                            offsets = new Array<[number, number]>(),
+                            velocities = new Array<[number, number]>(),
+                            startTime = Date.now();
+                        return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
+                            takeUntil($mouseDragCancel),
                             tap(e => {
-                                this.cancelOverscroll();
-                                const endTime = Date.now(),
-                                    timestamp = endTime - startTime,
-                                    { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
-                                    { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
-                                this._isMoving = false;
-                                this._$grabbing.next(true);
-                                if (this._$scrollBehavior.getValue() === BEHAVIOR_INSTANT as ScrollBehavior) {
-                                    return;
-                                }
-                                this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
+                                this.checkOverscroll(e);
+                            }),
+                            switchMap(e => {
+                                const { position, currentPos, endTime, scrollDelta } =
+                                    this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
+                                prevClientPosition = currentPos;
+                                this.move(isVertical, position, true, true, true);
+                                startTime = endTime;
+                                return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
+                                    takeUntilDestroyed(this._destroyRef),
+                                    tap(e => {
+                                        this.cancelOverscroll();
+                                        const endTime = Date.now(),
+                                            timestamp = endTime - startTime,
+                                            { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
+                                            { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
+                                        this._isMoving = false;
+                                        this._$grabbing.next(false);
+                                        if (this._$scrollBehavior.getValue() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+                                        this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
+                                    }),
+                                );
                             }),
                         );
-                    }),
+                    })
                 );
-            })
+            }),
         ).subscribe();
 
         const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
@@ -356,57 +191,61 @@ export class NgScrollView implements OnDestroy {
                 }),
             );
 
-        fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
+        $content.pipe(
             takeUntilDestroyed(this._destroyRef),
-            filter(v => this._interactive),
-            switchMap(e => {
-                this.cancelOverscroll();
-                this.onDragStart();
-                this.stopScrolling();
-                const target = e.target as HTMLElement;
-                if (target.classList.contains(INTERACTIVE)) {
-                    return of(undefined);
-                }
-                const inversion = this._inversion, isVertical = this._$isVertical.getValue();
-                this._isMoving = true;
-                this._$grabbing.next(true);
-                this._startPosition = (isVertical ? this.y : this.x);
-                let prevClientPosition = 0,
-                    startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
-                    offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
-                    startTime = Date.now();
-                return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
+            switchMap(content => {
+                return fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
                     takeUntilDestroyed(this._destroyRef),
-                    takeUntil($touchCanceler),
-                    tap(e => {
-                        this.checkOverscroll(e);
-                    }),
+                    filter(() => this._interactive),
                     switchMap(e => {
-                        const { position, currentPos, endTime, scrollDelta } =
-                            this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                        prevClientPosition = currentPos;
-                        this.move(isVertical, position, true, true, true);
-                        startTime = endTime;
-                        return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
+                        this.cancelOverscroll();
+                        this.onDragStart();
+                        this.stopScrolling();
+                        const target = e.target as HTMLElement;
+                        if (target.classList.contains(INTERACTIVE)) {
+                            return of(undefined);
+                        }
+                        const inversion = this._inversion, isVertical = this._$isVertical.getValue();
+                        this._isMoving = true;
+                        this._$grabbing.next(true);
+                        this._startPosition = (isVertical ? this.y : this.x);
+                        let prevClientPosition = 0,
+                            startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
+                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
+                            startTime = Date.now();
+                        return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
+                            takeUntil($touchCanceler),
                             tap(e => {
-                                this.cancelOverscroll();
-                                const endTime = Date.now(),
-                                    timestamp = endTime - startTime,
-                                    { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
-                                    { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
-                                this._isMoving = false;
-                                this._$grabbing.next(false);
-
-                                if (this._$scrollBehavior.getValue() === BEHAVIOR_INSTANT as ScrollBehavior) {
-                                    return;
-                                }
-                                this.moveWithAcceleration(isVertical, position, this._velocity, v0, a0, timestamp);
+                                this.checkOverscroll(e);
+                            }),
+                            switchMap(e => {
+                                const { position, currentPos, endTime, scrollDelta } =
+                                    this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
+                                prevClientPosition = currentPos;
+                                this.move(isVertical, position, true, true, true);
+                                startTime = endTime;
+                                return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
+                                    takeUntilDestroyed(this._destroyRef),
+                                    tap(e => {
+                                        this.cancelOverscroll();
+                                        const endTime = Date.now(),
+                                            timestamp = endTime - startTime,
+                                            { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
+                                            { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
+                                        this._isMoving = false;
+                                        this._$grabbing.next(false);
+                                        if (this._$scrollBehavior.getValue() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+                                        this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
+                                    }),
+                                );
                             }),
                         );
-                    }),
+                    })
                 );
-            })
+            }),
         ).subscribe();
     }
 
@@ -422,7 +261,6 @@ export class NgScrollView implements OnDestroy {
         return { position, currentPos, endTime, scrollDelta };
     }
 
-
     private cancelOverscroll() {
         if (!this._$overscrollEnabled.getValue()) {
             return;
@@ -436,9 +274,6 @@ export class NgScrollView implements OnDestroy {
             if (e.cancelable) {
                 e.stopImmediatePropagation();
                 e.preventDefault();
-            }
-            if (this._overscrollIteration > 0) {
-                this.scrollContent?.nativeElement?.click();
             }
             this._overscrollIteration = 0;
         } else {
@@ -530,10 +365,11 @@ export class NgScrollView implements OnDestroy {
         }
     }
 
-    protected normalizeAnimatedValue(value: number) {
+    protected normalizeValue(value: number) {
         const isVertical = this._$direction.getValue() === ScrollerDirection.VERTICAL,
+            startOffset = this._normalizeValueFromZero ? 0 : this._$startOffset.getValue(),
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-            result = value < 0 ? 0 : value > scrollSize ? scrollSize : value;
+            result = value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value;
         return result;
     }
 
@@ -550,9 +386,12 @@ export class NgScrollView implements OnDestroy {
             }, onComplete: ({ value }) => {
                 this.move(isVertical, value, false, userAction);
                 this._$scrollEnd.next(userAction);
+                this.onAnimationComplete(value);
             },
         });
     }
+
+    protected onAnimationComplete(position: number) { }
 
     fireScroll(userAction: boolean = false) {
         this.stopScrolling();
@@ -564,13 +403,13 @@ export class NgScrollView implements OnDestroy {
     scrollLimits(value?: number | undefined): boolean {
         const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this._$isVertical.getValue();
         if (isVertical) {
-            const yy = this.normalizeAnimatedValue(y);
+            const yy = this.normalizeValue(y);
             if (y !== yy) {
                 this.y = yy;
                 return true;
             }
         } else {
-            const xx = this.normalizeAnimatedValue(x);
+            const xx = this.normalizeValue(x);
             if (x !== xx) {
                 this.x = xx;
                 return true;
@@ -591,8 +430,8 @@ export class NgScrollView implements OnDestroy {
             isVertical = this._$direction.getValue() === ScrollerDirection.VERTICAL;
 
         const limits = this.scrollLimits(),
-            x = this.normalizeAnimatedValue(limits ? this._x : posX),
-            y = this.normalizeAnimatedValue(limits ? this._y : posY),
+            x = this.normalizeValue(posX),
+            y = this.normalizeValue(posY),
             xx = x,
             yy = y,
             prevX = this._x,
@@ -665,15 +504,11 @@ export class NgScrollView implements OnDestroy {
         this.move(this._$isVertical.getValue(), offset);
     }
 
-    ngOnDestroy(): void {
+    override ngOnDestroy(): void {
+        super.ngOnDestroy();
+
         if (this._animator) {
             this._animator.dispose();
-        }
-        if (this._viewportResizeObserver) {
-            this._viewportResizeObserver.disconnect();
-        }
-        if (this._contentResizeObserver) {
-            this._contentResizeObserver.disconnect();
         }
     }
 }

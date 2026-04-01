@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BehaviorSubject, combineLatest, delay, filter, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Color } from '../../types/color';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
@@ -9,60 +10,12 @@ import { SubstarateModes } from './enums/substrate-modes';
 import { SubstarateStyle } from './types';
 import { SubstarateStyles } from './enums';
 import { getShapeMinSize } from '../../utils/get-shape-min-size';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-const DEFAULT_STROKE_ANIMATION_DURATION = 1000,
-  DEFAULT_FILL_COLORS: GradientColor = ["rgba(0, 0, 0, .1)", "rgba(0, 0, 0, .1)"],
-  DEFAULT_STROKE_WIDTH = 3,
-  RIPPLE_ANIMATE_CLASS = 'animate',
-  DEFAULT_RIPPLE_COLOR = 'rgba(0, 0, 0, .1)',
-  SHAPE_NAME = 'ng-substrate-shape',
-  CLIP_NAME = 'ng-substrate-clip',
-  GRADIENT_COLOR_NAME = 'stop-color',
-  FILL_GRADIENT_NAME = 'ng-substrate-fill-gradient',
-  STROKE_GRADIENT_NAME = 'ng-substrate-stroke-gradient',
-  FILL = 'fill',
-  INHERIT = 'inherit',
-  STROKE_WIDTH = 'stroke-width',
-  DUR = 'dur',
-  X1 = 'x1',
-  X2 = 'x2',
-  ID = 'id',
-  HREF = 'href',
-  CLIP_PATH = 'clip-path',
-  PX = 'px',
-  MS = 'ms',
-  D = 'd',
-  VIEW_BOX = 'viewBox',
-  CX = 'cx',
-  CY = 'cy',
-  R = 'r',
-  STROKE = 'stroke',
-  NONE = 'none';
-
-const circlePath = (cx: number, cy: number, r: number) => {
-  return `M ${cx} ${cy} m -${r}, 0 a ${r},${r} 0 1,1 ${(r * 2)},0 a ${r},${r} 0 1,1 -${(r * 2)},0`;
-};
-
-const roundedRectPath = (width: number, height: number, tl: number, tr: number, br: number, bl: number) => {
-  const top = width - tl - tr;
-  const right = height - tr - br;
-  const bottom = width - br - bl;
-  const left = height - bl - tl;
-  const d = `
-        M${tl},0
-        h${top}
-        a${tr},${tr} 0 0 1 ${tr},${tr}
-        v${right}
-        a${br},${br} 0 0 1 -${br},${br}
-        h-${bottom}
-        a${bl},${bl} 0 0 1 -${bl},-${bl}
-        v-${left}
-        a${tl},${tl} 0 0 1 ${tl},-${tl}
-        z
-    `;
-  return d;
-};
+import { circlePath, roundedRectPath } from './utils';
+import {
+  CLIP_NAME, CLIP_PATH, CX, CY, D, DEFAULT_FILL_COLORS, DEFAULT_RIPPLE_COLOR, DEFAULT_STROKE_ANIMATION_DURATION,
+  DEFAULT_STROKE_WIDTH, DUR, FILL, FILL_GRADIENT_NAME, GRADIENT_COLOR_NAME, HREF, ID, MS, NONE, PX, R, RIPPLE_ANIMATE_CLASS,
+  SHAPE_NAME, STROKE, STROKE_GRADIENT_NAME, STROKE_WIDTH, VIEW_BOX, X1, X2,
+} from './const';
 
 /**
  * Substrate
@@ -73,7 +26,7 @@ const roundedRectPath = (width: number, height: number, tl: number, tr: number, 
  * @email djonnyx@gmail.com
  */
 @Component({
-  selector: 'ng-substrate',
+  selector: 'substrate',
   templateUrl: './substrate.component.html',
   styleUrls: ['./substrate.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -239,8 +192,8 @@ export class SubstrateComponent {
     this._$rippleEnabled.next(v);
   }
   get rippleEnabled() { return this._$rippleEnabled.getValue(); }
-  
-  private _destroyRef = inject(DestroyRef);
+
+  protected _destroyRef = inject(DestroyRef);
 
   constructor(private _elementRef: ElementRef<HTMLDivElement>) {
     this._id = SubstrateComponent.nextId;
@@ -292,21 +245,18 @@ export class SubstrateComponent {
     this.$fillColors.pipe(
       takeUntilDestroyed(this._destroyRef),
       tap(fillColors => {
-        if (Array.isArray(fillColors) && fillColors.length === 2) {
-          const fillGradientColor1 = this.fillGradientColor1, fillGradientColor2 = this.fillGradientColor2;
-          if (fillGradientColor1 && fillGradientColor2) {
-            fillGradientColor1.nativeElement.setAttribute(GRADIENT_COLOR_NAME, `${fillColors[0]}`);
-            fillGradientColor2.nativeElement.setAttribute(GRADIENT_COLOR_NAME, `${fillColors[1]}`);
+        const color1: Color = Array.isArray(fillColors) && fillColors.length > 0 ?
+          fillColors[0] : typeof fillColors === 'string' ? fillColors as Color : DEFAULT_FILL_COLORS[0];
+        const color2: Color = Array.isArray(fillColors) && fillColors.length > 1 ?
+          fillColors[1] : typeof fillColors === 'string' ? fillColors as Color : DEFAULT_FILL_COLORS[1];
+        const fillGradientColor1 = this.fillGradientColor1, fillGradientColor2 = this.fillGradientColor2;
+        if (fillGradientColor1 && fillGradientColor2) {
+          fillGradientColor1.nativeElement.setAttribute(GRADIENT_COLOR_NAME, `${color1}`);
+          fillGradientColor2.nativeElement.setAttribute(GRADIENT_COLOR_NAME, `${color2}`);
 
-            const shape = this.shape?.nativeElement;
-            if (shape) {
-              shape.setAttribute(FILL, `url(#${FILL_GRADIENT_NAME}${this._id})`);
-            }
-          }
-        } else {
           const shape = this.shape?.nativeElement;
           if (shape) {
-            shape.setAttribute(FILL, INHERIT);
+            shape.setAttribute(FILL, `url(#${FILL_GRADIENT_NAME}${this._id})`);
           }
         }
       }),

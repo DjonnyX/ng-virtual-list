@@ -9,13 +9,40 @@ import { RoundedCorner } from "./rounded-corner";
  * @email djonnyx@gmail.com
  */
 export type ScrollBarTheme = {
-    fill: GradientColor;
-    hoverFill: GradientColor;
-    pressedFill: GradientColor;
-    strokeGradientColor: GradientColor;
+    /**
+     * Fill color or gradient in normal state.
+     */
+    fill: Color | GradientColor;
+    /**
+     * Fill color or gradient in hover state.
+     */
+    hoverFill: Color | GradientColor;
+    /**
+     * Fill color or gradient in pressed state.
+     */
+    pressedFill: Color | GradientColor;
+    /**
+     * Fill color or gradient in stroke mode.
+     */
+    strokeGradientColor: Color | GradientColor;
+    /**
+     * Stroke animation duration.
+     */
     strokeAnimationDuration: number;
+    /**
+     * Scrollbar thickness.
+     */
     thickness: number;
+    /**
+     * An array of edge roundings where ['top-left', 'top-right', 'bottom-right', 'bottom-left']
+     */
     roundCorner: RoundedCorner;
+    /**
+     * Ripple effect color.
+     */
     rippleColor: Color;
+    /**
+     * Determines whether the ripple effect is enabled or not.
+     */
     rippleEnabled: boolean;
 }
