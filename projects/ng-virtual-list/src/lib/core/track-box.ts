@@ -17,6 +17,7 @@ import { PrerenderCache } from "../components/prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
+    TICK = 'tick',
 }
 
 export interface IMetrics {
@@ -82,7 +83,9 @@ export type CacheMapEvents = TrackBoxEvents;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type CacheMapListeners = OnChangeEventListener;
+export type OnTickEventListener = () => void;
+
+export type CacheMapListeners = OnChangeEventListener | OnTickEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -270,6 +273,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    protected fireTick() {
+        this.dispatch(TrackBoxEvents.TICK);
+    }
+
     protected _previousTotalSize = 0;
 
     protected _deltaOfNewItems: number = 0;
@@ -300,6 +307,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected override lifeCircle() {
         this.fireChangeIfNeed();
+
+        this.fireTick();
 
         this.lifeCircleDo();
     }
