@@ -17,6 +17,7 @@ import { PrerenderCache } from "../components/prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
+    TICK = 'tick',
 }
 
 export interface IMetrics {
@@ -82,7 +83,9 @@ export type CacheMapEvents = TrackBoxEvents;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type CacheMapListeners = OnChangeEventListener;
+export type OnTickEventListener = () => void;
+
+export type CacheMapListeners = OnChangeEventListener | OnTickEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -117,7 +120,7 @@ type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/core/track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/core/track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -270,6 +273,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    protected fireTick() {
+        this.dispatch(TrackBoxEvents.TICK);
+    }
+
     protected _previousTotalSize = 0;
 
     protected _deltaOfNewItems: number = 0;
@@ -300,6 +307,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected override lifeCircle() {
         this.fireChangeIfNeed();
+
+        this.fireTick();
 
         this.lifeCircleDo();
     }

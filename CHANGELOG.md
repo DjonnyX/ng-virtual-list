@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.10.10] - 2026-03-30
+
+### Refactor
+- ResizeObserver replaced with internal tick chec.
+
 ## [20.10.9] - 2026-03-30
 
 ### Added
