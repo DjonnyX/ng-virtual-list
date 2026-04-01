@@ -34,7 +34,7 @@ import {
   SnappingMethod, SnappingMethods, TextDirection, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBoxEvents, TrackBox } from './core/track-box';
+import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { BaseVirtualListItemComponent } from './components/list-item/base';
 import { Component$1 } from './models/component.model';
@@ -51,9 +51,9 @@ import { IScrollToParams } from './components/ng-scroll-view';
 import { PrerenderContainer } from './components/prerender-container/prerender-container.component';
 import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
-import { validateFocusAlignment, validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
-import { getSelectorByItemId } from './utils/get-selector-by-item-id';
+import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
 import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
+import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 
 /**
  * Virtual list component.
@@ -73,7 +73,7 @@ import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP }
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
-  providers: [NgVirtualListService],
+  providers: [NgVirtualListService, NgVirtualListPublicService],
 })
 export class NgVirtualListComponent implements OnDestroy {
   private static __nextId: number = 0;
@@ -1054,17 +1054,6 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   private _trackBox: TrackBox = new this._trackBoxClass(this.trackBy());
 
-  private _onTrackBoxChangeHandler = (v: number) => {
-    this._cacheVersion.set(v);
-  };
-
-  private _onTickHandler = () => {
-    this._onListResizeHandler();
-    this._onResizeHandler();
-  };
-
-  private _cacheVersion = signal<number>(-1);
-
   private _$update = new Subject<string>();
   protected readonly $update = this._$update.asObservable();
 
@@ -1136,7 +1125,21 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._service.animationParams = this.animationParams();
 
-    this._trackBox.addEventListener(TrackBoxEvents.TICK, this._onTickHandler);
+    this._service.$tick.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this._onListResizeHandler();
+        this._onResizeHandler();
+      }),
+    ).subscribe();
+
+    const $trackBy = toObservable(this.trackBy);
+    $trackBy.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.trackBy = v;
+      }),
+    ).subscribe();
 
     this._trackBox.displayComponents = this._displayComponents;
 
@@ -1258,6 +1261,15 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       tap(options => {
         this.scrollToStart(null, options);
+      }),
+    ).subscribe();
+
+    this._service.$scrollTo.pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      tap(params => {
+        const { id, cb, options } = params
+        this.scrollTo(id, cb, options);
       }),
     ).subscribe();
 
@@ -1545,7 +1557,6 @@ export class NgVirtualListComponent implements OnDestroy {
     ).subscribe();
 
     const $defaultItemValue = toObservable(this.defaultItemValue),
-      $trackBy = toObservable(this.trackBy),
       $selectByClick = toObservable(this.selectByClick),
       $collapseByClick = toObservable(this.collapseByClick),
       $isScrollStart = toObservable(this._isScrollStart),
@@ -1695,7 +1706,7 @@ export class NgVirtualListComponent implements OnDestroy {
       ),
       $screenReaderMessage = toObservable(this.screenReaderMessage),
       $displayItems = this._service.$displayItems,
-      $cacheVersion = toObservable(this._cacheVersion);
+      $cacheVersion = this._service.$cacheVersion;
 
     combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
@@ -1819,15 +1830,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    $dynamicSize.pipe(
-      takeUntilDestroyed(),
-      tap(dynamicSize => {
-        this.listenCacheChangesIfNeed(dynamicSize);
-      })
-    ).subscribe();
-
     const $preventScrollSnapping = this.$preventScrollSnapping;
-
     $preventScrollSnapping.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
@@ -2389,7 +2392,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(v => {
-        this._service.setSelectedIds(v);
+        this._service.selectedIds = v;
       }),
     ).subscribe();
 
@@ -2417,7 +2420,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(v => {
-        this._service.setCollapsedIds(v);
+        this._service.collapsedIds = v;
       }),
     ).subscribe();
 
@@ -2489,18 +2492,6 @@ export class NgVirtualListComponent implements OnDestroy {
         this.onScrollEnd.emit(event);
       } else {
         this.onScroll.emit(event);
-      }
-    }
-  }
-
-  private listenCacheChangesIfNeed(value: boolean) {
-    if (value) {
-      if (!this._trackBox.hasEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler)) {
-        this._trackBox.addEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler);
-      }
-    } else {
-      if (this._trackBox.hasEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler)) {
-        this._trackBox.removeEventListener(TrackBoxEvents.CHANGE, this._onTrackBoxChangeHandler);
       }
     }
   }
@@ -2608,8 +2599,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * Returns the bounds of an element with a given id
    */
   getItemBounds(id: Id): ISize | null {
-    validateId(id);
-    return this._trackBox.getItemBounds(id) ?? null;
+    return this._service.getItemBounds(id);
   }
 
   /**
@@ -2617,23 +2607,7 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   focus(id: Id, align: FocusAlignment = FocusAlignments.NONE) {
     this._elementRef.nativeElement.focus();
-    validateId(id);
-    validateFocusAlignment(align);
-    const el = this.getFocusedElementById(id);
-    if (!!el) {
-      this._service.focus(el, align, this.scrollBehavior());
-    }
-  }
-
-  private getFocusedElementById(id: Id) {
-    const el = this._list()?.nativeElement.querySelector<HTMLDivElement>(getSelectorByItemId(id));
-    if (!!el) {
-      const focusedEl = el.querySelector<HTMLDivElement>(`.${ITEM_CONTAINER}`);
-      if (!!focusedEl) {
-        return focusedEl;
-      }
-    }
-    return null;
+    this._service.focusById(id, align, this.scrollBehavior());
   }
 
   /**
@@ -2732,7 +2706,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private scrollToFinalize(id: Id, focused: boolean, cb: (() => void) | null) {
     if (focused) {
-      const el = this.getFocusedElementById(id);
+      const el = this._service.getFocusedElementById(id);
       if (!!el) {
         this._service.focus(el, FocusAlignments.NONE);
       }
