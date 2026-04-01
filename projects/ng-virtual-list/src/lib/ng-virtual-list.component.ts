@@ -884,10 +884,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _isScrollEnd = signal<boolean>(false);
 
-  private _resizeObserver: ResizeObserver | null = null;
-
-  private _listResizeObserver: ResizeObserver | null = null;
-
   private _resizeSnappedComponentHandler = () => {
     const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snappedDisplayComponents;
     if (list && scroller && snappedComponents.length > 0) {
@@ -941,8 +937,12 @@ export class NgVirtualListComponent implements OnDestroy {
   });
 
   private _onResizeHandler = () => {
-    const bounds = this._scroller()?.nativeElement?.getBoundingClientRect();
-    if (bounds) {
+    const bounds = this._scroller()?.nativeElement?.getBoundingClientRect(), last = this._bounds();
+    if (bounds?.width === last?.width && bounds?.height === last?.height) {
+      return;
+    }
+
+    if (!!bounds) {
       this._bounds.set({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
     } else {
       this._bounds.set({ x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
@@ -960,8 +960,12 @@ export class NgVirtualListComponent implements OnDestroy {
   }
 
   private _onListResizeHandler = () => {
-    const bounds = this._list()?.nativeElement?.getBoundingClientRect();
-    if (bounds) {
+    const bounds = this._list()?.nativeElement?.getBoundingClientRect(), last = this._listBounds();
+    if (bounds?.width === last?.width && bounds?.height === last?.height) {
+      return;
+    }
+
+    if (!!bounds) {
       this._listBounds.set({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
     } else {
       this._listBounds.set({ x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
@@ -1049,6 +1053,11 @@ export class NgVirtualListComponent implements OnDestroy {
     this._cacheVersion.set(v);
   };
 
+  private _onTickHandler = () => {
+    this._onListResizeHandler();
+    this._onResizeHandler();
+  };
+
   private _cacheVersion = signal<number>(-1);
 
   private _$update = new Subject<string>();
@@ -1064,6 +1073,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _$scroll = new Subject<IScrollEvent>();
   readonly $scroll = this._$scroll.asObservable();
+
+  private _$tick = new Subject<void>();
+  readonly $tick = this._$tick.asObservable();
 
   private _$fireUpdate = new Subject<boolean>();
   protected readonly $fireUpdate = this._$fireUpdate.asObservable();
@@ -1116,6 +1128,8 @@ export class NgVirtualListComponent implements OnDestroy {
     this._service.initialize(this._id, this._trackBox);
 
     this._service.animationParams = this.animationParams();
+
+    this._trackBox.addEventListener(TrackBoxEvents.TICK, this._onTickHandler);
 
     this._trackBox.displayComponents = this._displayComponents;
 
@@ -2210,36 +2224,6 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    $scroller.pipe(
-      takeUntilDestroyed(),
-      distinctUntilChanged(),
-      tap(scroller => {
-        if (!!this._resizeObserver) {
-          this._resizeObserver.disconnect();
-        }
-
-        this._resizeObserver = new ResizeObserver(this._onResizeHandler);
-        this._resizeObserver.observe(scroller);
-
-        this._onResizeHandler();
-      }),
-    ).subscribe();
-
-    $list.pipe(
-      takeUntilDestroyed(),
-      distinctUntilChanged(),
-      tap(list => {
-        if (!!this._listResizeObserver) {
-          this._listResizeObserver.disconnect();
-        }
-
-        this._listResizeObserver = new ResizeObserver(this._onListResizeHandler);
-        this._listResizeObserver.observe(list);
-
-        this._onResizeHandler();
-      }),
-    ).subscribe();
-
     const $scrollTo = this.$scrollTo,
       $scrollToExecutor = this.$scrollToExecutor;
 
@@ -2831,14 +2815,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
     if (!!this._resizeSnappedObserver) {
       this._resizeSnappedObserver.disconnect();
-    }
-
-    if (!!this._resizeObserver) {
-      this._resizeObserver.disconnect();
-    }
-
-    if (!!this._listResizeObserver) {
-      this._listResizeObserver.disconnect();
     }
 
     if (!!this._snappedDisplayComponents) {
