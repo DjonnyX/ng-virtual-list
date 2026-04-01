@@ -1,7 +1,7 @@
-import { ScrollDirection } from "../models";
-import { debounce } from "./debounce";
-import { EventEmitter } from "./event-emitter";
-import { CMap } from "./cmap";
+import { ScrollDirection } from "../types";
+import { debounce } from "../utils";
+import { EventEmitter } from "../utils/event-emitter";
+import { CMap } from "../utils/cmap";
 
 export interface ICacheMap<I = any, B = any> {
     set: (id: I, bounds: B) => CMap<I, B>;
@@ -25,7 +25,7 @@ const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 10,
 /**
  * Cache map.
  * Emits a change event on each mutation.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/utils/cache-map.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/core/cache-map.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

@@ -1,0 +1,12 @@
+<div localeSensitive [langTextDir]="langTextDir()" [listDir]="direction()" class="ngvl__container"
+    [ngClass]="containerClasses()">
+    <div #scrollViewport part="scroller" class="ngvl__scroller">
+        <div #scrollContent part="list" class="ngvl__list" [ngClass]="actualClasses()">
+            <ng-content></ng-content>
+        </div>
+    </div>
+    <!-- @if (scrollbarEnabled()) {
+    <prerender-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()"
+        [theme]="scrollbarTheme()"></prerender-scroll-bar>
+    } -->
+</div>

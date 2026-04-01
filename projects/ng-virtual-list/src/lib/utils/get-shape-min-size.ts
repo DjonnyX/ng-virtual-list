@@ -6,7 +6,7 @@ import { RoundedCorner } from "../types/rounded-corner";
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export const getShapeMinSize = (roundedRectPath: RoundedCorner) => {
+export const getShapeMinSize = (roundedRectPath: RoundedCorner | null) => {
     if (!Array.isArray(roundedRectPath)) {
         return 0;
     }

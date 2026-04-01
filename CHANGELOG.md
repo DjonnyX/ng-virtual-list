@@ -1,7 +1,27 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [19.10.5] - 2026-03-19
+## [20.10.7] - 2026-03-31
+
+### Added
+- Implement the snapScrollToStart property.
+
+### Improved
+- Improved component performance.
+- Improved scrollbar theming.
+- The snapScrollToBottom property has been renamed to snapScrollToEnd.
+
+### Fixed
+- Fixed list initialization at startup.
+- Fixed a list positioning issue when displaying a new collection of items.
+- Fixed bugs in the scrollTo method.
+- Fixed bugs when navigating through elements using the keyboard.
+- Fixed some scrollbar positioning issues.
+- Fixed display bugs when collapsing groups.
+- Fixed display defects when loading new list items.
+- Fixed issues with scrollbar re-updating after excessive scrollbar updates.
+
+## [19.10.6] - 2026-03-19
 
 ### Fixed
 - Smooth scrolling has been implemented.
