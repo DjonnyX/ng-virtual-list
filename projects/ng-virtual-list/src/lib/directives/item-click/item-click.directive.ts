@@ -9,12 +9,13 @@ const DEFAULT_MAX_DISTANCE = 40;
  * ItemClickDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.directive.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.directive.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Directive({
     selector: '[itemClick]',
+    standalone: false,
 })
 export class ItemClickDirective {
     private _maxDistance = DEFAULT_MAX_DISTANCE;
