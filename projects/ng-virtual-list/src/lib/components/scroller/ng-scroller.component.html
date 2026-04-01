@@ -1,4 +1,4 @@
-<div localeSensitive [langTextDir]="langTextDir()!" [listDir]="direction()" class="ngvl__container"
+<div localeSensitive [langTextDir]="langTextDir()" [listDir]="direction()" class="ngvl__container"
     [ngClass]="containerClasses()">
     <div #scrollViewport cdkScrollable part="scroller" class="ngvl__scroller">
         <div #scrollContent [attr.aria-orientation]="direction()" [attr.aria-activedescendant]="focusedElement()"
@@ -6,10 +6,12 @@
             <ng-content></ng-content>
         </div>
     </div>
+    @if (scrollbarEnabled()) {
     <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
         [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="preparedSignal()"
-        [interactive]="scrollbarInteractive()" [show]="scrollbarShow() && scrollbarEnabled() && preparedSignal()"
+        [interactive]="scrollbarInteractive()" [show]="show()"
         [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
         [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
-        (onDrag)="onScrollBarDragHandler($event)"></ng-scroll-bar>
+        (onDrag)="onScrollBarDragHandler($event)" (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
+    }
 </div>
