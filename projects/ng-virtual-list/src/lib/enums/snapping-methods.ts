@@ -6,15 +6,11 @@
  */
 export enum SnappingMethods {
     /**
-     * Normal group rendering.
-     */
-    NORMAL = 'normal',
-    /**
-     * The group is rendered on a transparent background. List items below the group are not rendered.
-     */
-    ADVANCED = 'advanced',
-    /**
      * The group is rendered on a background.
      */
-    CHAT = 'chat',
+    STANDART = 'standart',
+    /**
+     * A mask is applied to the viewport area so that the background is displayed underneath the attached group.
+     */
+    ADVANCED = 'advanced',
 }

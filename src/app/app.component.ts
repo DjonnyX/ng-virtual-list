@@ -293,7 +293,7 @@ export class AppComponent {
 
   onButtonScrollToIdClickHandler = (e: Event) => {
     const list = this._listContainerRef(), id = this.itemId;
-    if (list && id !== undefined) {
+    if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);
         console.info(`scrollTo finished. id: ${id}`);
@@ -305,7 +305,7 @@ export class AppComponent {
 
   onButtonScrollDLToIdClickHandler = (e: Event) => {
     const list = this._dynamicListContainerRef(), id = this.dlItemId;
-    if (list && id !== undefined) {
+    if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);
         console.info(`scrollTo finished. id: ${id}`);
@@ -315,7 +315,7 @@ export class AppComponent {
     }
   }
 
-  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | undefined) {
+  onItemClick(item: IRenderVirtualListItem<ICollectionItem> | null) {
     if (item) {
       console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
     }
@@ -336,7 +336,7 @@ export class AppComponent {
     this.dynamicShortItems = generateDynamicShortItems(len);
   }
 
-  onSelectHandler(data: Array<Id> | Id | undefined) {
+  onSelectHandler(data: Array<Id> | Id | null) {
     console.info(`Select: ${JSON.stringify(data)}`);
   }
 
