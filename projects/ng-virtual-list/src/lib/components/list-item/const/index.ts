@@ -1,0 +1,18 @@
+export const ID = 'id',
+    TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)',
+    ATTR_AREA_SELECTED = 'area-selected',
+    POSITION = 'position',
+    POSITION_ZERO = '0',
+    ITEM_ID = 'item-id',
+    KEY_SPACE = ' ',
+    KEY_ARR_LEFT = 'ArrowLeft',
+    KEY_ARR_UP = 'ArrowUp',
+    KEY_ARR_RIGHT = 'ArrowRight',
+    KEY_ARR_DOWN = 'ArrowDown',
+    EVENT_FOCUS_IN = 'focusin',
+    EVENT_FOCUS_OUT = 'focusout',
+    EVENT_KEY_DOWN = 'keydown',
+    CLASS_NAME_SNAPPED = 'snapped',
+    CLASS_NAME_SNAPPED_OUT = 'snapped-out',
+    CLASS_NAME_FOCUS = 'focus';
+
