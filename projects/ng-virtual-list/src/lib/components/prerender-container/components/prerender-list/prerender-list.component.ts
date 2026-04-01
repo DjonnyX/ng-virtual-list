@@ -18,7 +18,7 @@ import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
 import { PrerenderVirtualListItemComponent } from "../../components/prerender-list-item/prerender-list-item.component";
 import { Direction } from "../../../../enums";
-import { DisposableComponent } from "projects/ng-virtual-list/src/lib/utils/disposable-component";
+import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
  * PrerenderList.
