@@ -1,31 +1,20 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
 import { GradientColor } from '../../types/gradient-color';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { RoundedCorner } from '../../types/rounded-corner';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, fromEvent, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, Subject, tap } from 'rxjs';
 import { ScrollBarTheme } from '../../types';
 import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from './interfaces';
 import { DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_THEME } from '../../const';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-const DEFAULT_THICKNESS = 6,
-  DEFAULT_SIZE = 6,
-  DEFAULT_ROUNDED_CORNER: RoundedCorner = [3, 3, 3, 3],
-  DEFAULT_STROKE_ANIMATION_DURATION = 500,
-  DEFAULT_RIPPLE_ENABLED = true,
-  DEFAULT_RIPPLE_COLOR = 'rgba(0,0,0,0.5)',
-  PX = 'px',
-  WIDTH = 'width',
-  HEIGHT = 'height',
-  OPACITY = 'opacity',
-  OPACITY_0 = '0',
-  OPACITY_1 = '1',
-  TRANSITION = 'transition',
-  NONE = 'none',
-  TRANSITION_FADE_IN = `${OPACITY} 500ms ease-out`;
+import {
+  DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
+  DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
+} from './const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
 
 /**
  * ScrollBar component.
@@ -37,16 +26,14 @@ const DEFAULT_THICKNESS = 6,
  */
 @Component({
   selector: 'ng-scroll-bar',
-  templateUrl: './ng-scroll-bar.component.html',
-  styleUrls: ['./ng-scroll-bar.component.scss'],
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
+    { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './ng-scroll-bar.component.html',
+  styleUrls: ['./ng-scroll-bar.component.scss']
 })
 export class NgScrollBarComponent extends NgScrollView {
-  @ViewChild('substrate', { read: SubstrateComponent })
-  substrate: SubstrateComponent | undefined;
   private _$loading = new BehaviorSubject<boolean>(false);
   readonly $loading = this._$loading.asObservable();
 
@@ -58,6 +45,9 @@ export class NgScrollBarComponent extends NgScrollView {
 
   @Output()
   onDrag = new EventEmitter<IScrollBarDragEvent>();
+
+  @Output()
+  onDragEnd = new EventEmitter<IScrollBarDragEvent>();
 
   private _$thumbGradientPositions = new BehaviorSubject<GradientColorPositions>([0, 0]);
   readonly $thumbGradientPositions = this._$thumbGradientPositions.asObservable();
@@ -92,27 +82,6 @@ export class NgScrollBarComponent extends NgScrollView {
   }
   get theme() { return this._$theme.getValue(); }
 
-  private _$startOffset = new BehaviorSubject<number>(0);
-  readonly $startOffset = this._$startOffset.asObservable();
-
-  @Input()
-  set startOffset(v: number) {
-    if (this._$startOffset.getValue() !== v) {
-      this._$startOffset.next(v);
-    }
-  }
-  get startOffset() { return this._$startOffset.getValue(); }
-
-  private _$endOffset = new BehaviorSubject<number>(0);
-  readonly $endOffset = this._$endOffset.asObservable();
-
-  @Input()
-  set endOffset(v: number) {
-    if (this._$endOffset.getValue() !== v) {
-      this._$endOffset.next(v);
-    }
-  }
-  get endOffset() { return this._$endOffset.getValue(); }
 
   private _$scrollbarMinSize = new BehaviorSubject<number>(0);
   readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
@@ -161,19 +130,19 @@ export class NgScrollBarComponent extends NgScrollView {
   private _$thickness = new BehaviorSubject<number>(DEFAULT_THICKNESS);
   readonly $thickness = this._$thickness.asObservable();
 
-  private _$fill = new BehaviorSubject<string | GradientColor | undefined>(undefined);
+  private _$fill = new BehaviorSubject<Color | GradientColor | null>(null);
   readonly $fill = this._$fill.asObservable();
 
-  private _$thumbGradientFill = new BehaviorSubject<string | GradientColor | undefined>(undefined);
+  private _$thumbGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
   readonly $thumbGradientFill = this._$thumbGradientFill.asObservable();
 
-  private _$thumbHoverGradientFill = new BehaviorSubject<string | GradientColor | undefined>(undefined);
+  private _$thumbHoverGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
   readonly $thumbHoverGradientFill = this._$thumbHoverGradientFill.asObservable();
 
-  private _$thumbPressedGradientFill = new BehaviorSubject<string | GradientColor | undefined>(undefined);
+  private _$thumbPressedGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
   readonly $thumbPressedGradientFill = this._$thumbPressedGradientFill.asObservable();
 
-  private _$strokeGradientColor = new BehaviorSubject<string | GradientColor | undefined>(undefined);
+  private _$strokeGradientColor = new BehaviorSubject<Color | GradientColor | null>(null);
   readonly $strokeGradientColor = this._$strokeGradientColor.asObservable();
 
   private _$strokeAnimationDuration = new BehaviorSubject<number>(DEFAULT_STROKE_ANIMATION_DURATION);
@@ -182,7 +151,7 @@ export class NgScrollBarComponent extends NgScrollView {
   private _$roundCorner = new BehaviorSubject<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
   readonly $roundCorner = this._$roundCorner.asObservable();
 
-  private _$rippleColor = new BehaviorSubject<Color | undefined>(DEFAULT_RIPPLE_COLOR);
+  private _$rippleColor = new BehaviorSubject<Color | null>(DEFAULT_RIPPLE_COLOR);
   readonly $rippleColor = this._$rippleColor.asObservable();
 
   private _$rippleEnabled = new BehaviorSubject<boolean>(DEFAULT_RIPPLE_ENABLED);
@@ -212,60 +181,23 @@ export class NgScrollBarComponent extends NgScrollView {
   private _$scrollingCancel = new Subject<void>();
   readonly $scrollingCancel = this._$scrollingCancel.asObservable();
 
-  constructor(private _elementRef: ElementRef) {
+  private _elementRef = inject(ElementRef);
+
+  constructor() {
     super();
 
-    this.$size.pipe(
+    const $prepared = this.$prepared;
+    $prepared.pipe(
       takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this.totalSize = v;
+      filter(v => !!v),
+      tap(() => {
+        this.scrollLimits();
+        this.refreshX(this._x);
+        this.refreshY(this._y);
+        this.fireScrollEvent(false);
       }),
     ).subscribe();
 
-    this.$interactive.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this.interactive = v;
-      }),
-    ).subscribe();
-
-    this.$loading.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
-      }),
-    ).subscribe();
-
-    this.$theme.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(theme => {
-        if (!!theme) {
-          this._$thumbGradientFill.next(theme.fill);
-          this._$thumbHoverGradientFill.next(theme.hoverFill);
-          this._$thumbPressedGradientFill.next(theme.pressedFill);
-          this._$strokeGradientColor.next(theme.strokeGradientColor);
-          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
-          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
-          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
-          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
-          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
-        }
-      }),
-    ).subscribe();
-
-    const $grabbing = this.$grabbing;
-
-    $grabbing.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$classes.next({ grabbing: v });
-      }),
-    ).subscribe();
 
     combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
       takeUntilDestroyed(this._destroyRef),
@@ -279,16 +211,6 @@ export class NgScrollBarComponent extends NgScrollView {
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
-    const $isVertical = this.$isVertical.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-    ), $thickness = this.$thickness.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      distinctUntilChanged(),
-    ), $size = this.$size.pipe(
-      distinctUntilChanged(),
-      takeUntilDestroyed(this._destroyRef),
-    );
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntilDestroyed(this._destroyRef),
@@ -346,6 +268,7 @@ export class NgScrollBarComponent extends NgScrollView {
       $pressedState, $hoverState, $thumbPressedGradientFill, $thumbHoverGradientFill, $thumbGradientFill,
     ]).pipe(
       takeUntilDestroyed(this._destroyRef),
+      debounceTime(0),
       distinctUntilChanged(),
       tap(([pressedState, hoverState, thumbPressedGradientFill, thumbHoverGradientFill, thumbGradientFill]) => {
         if (pressedState) {
@@ -358,7 +281,32 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    combineLatest([this.$show, $isVertical, $thickness]).pipe(
+    this.$size.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this.totalSize = v;
+      }),
+    ).subscribe();
+
+    this.$interactive.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      distinctUntilChanged(),
+      tap(v => {
+        this.interactive = v;
+      }),
+    ).subscribe();
+
+    this.$loading.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      debounceTime(0),
+      distinctUntilChanged(),
+      tap(v => {
+        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
+      }),
+    ).subscribe();
+
+    combineLatest([this.$show, this.$isVertical, this.$thickness]).pipe(
       takeUntilDestroyed(this._destroyRef),
       distinctUntilChanged(),
       tap(([show, isVertical, thickness]) => {
@@ -368,37 +316,65 @@ export class NgScrollBarComponent extends NgScrollView {
         });
       }),
     ).subscribe();
+
     this.$scroll.pipe(
       takeUntilDestroyed(this._destroyRef),
-      debounceTime(0),
       tap(v => {
-        const isVertical = this._$isVertical.getValue(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-          scrollContent = this.scrollContent?.nativeElement as HTMLElement,
-          scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement;
-        if (!!scrollViewport && !!scrollContent) {
-          const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
-            viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
-          this.onDrag.emit({
-            position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
-            min: scrollSize !== 0 ? (this._$startOffset.getValue() / scrollSize) : 0,
-            max: scrollSize !== 0 ? ((viewportSize - this._$endOffset.getValue() - contentSize) / scrollSize) : 0,
-            animation: !this._isMoving,
-            userAction: v,
-          });
+        const event = this.createDragEvent(v);
+        if (!!event) {
+          this.onDrag.emit(event);
         }
       }),
     ).subscribe();
 
-    const content = this.scrollContent!.nativeElement;
-
-    fromEvent<PointerEvent>(content, 'pointerdown').pipe(
+    const $scrollEnd = this.$scrollEnd;
+    $scrollEnd.pipe(
       takeUntilDestroyed(this._destroyRef),
-      tap(e => {
-        if (!!this.substrate) {
-          this.ripple(this.substrate, e);
+      tap(() => {
+        const event = this.createDragEvent(false);
+        if (!!event) {
+          this.onDragEnd.emit(event);
         }
       }),
     ).subscribe();
+
+    this.$theme.pipe(
+      takeUntilDestroyed(this._destroyRef),
+      debounceTime(0),
+      distinctUntilChanged(),
+      tap(theme => {
+        if (!!theme) {
+          this._$thumbGradientFill.next(theme.fill);
+          this._$thumbHoverGradientFill.next(theme.hoverFill);
+          this._$thumbPressedGradientFill.next(theme.pressedFill);
+          this._$strokeGradientColor.next(theme.strokeGradientColor);
+          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
+          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
+          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
+          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
+          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
+        }
+      }),
+    ).subscribe();
+  }
+
+  private createDragEvent(userAction: boolean) {
+    const isVertical = this._$isVertical.getValue(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+      scrollContent = this.scrollContent?.nativeElement as HTMLElement,
+      scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement;
+    if (!!scrollViewport && !!scrollContent) {
+      const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
+        viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
+      const event: IScrollBarDragEvent = {
+        position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
+        min: scrollSize !== 0 ? (this._$startOffset.getValue() / scrollSize) : 0,
+        max: scrollSize !== 0 ? ((viewportSize - this._$endOffset.getValue() - contentSize) / scrollSize) : 0,
+        animation: !this._isMoving,
+        userAction,
+      };
+      return event;
+    }
+    return null;
   }
 
   private thumbHit(x: number, y: number): boolean {
@@ -410,22 +386,6 @@ export class NgScrollBarComponent extends NgScrollView {
       }
     }
     return false;
-  }
-
-  protected override normalizeAnimatedValue(value: number) {
-    const isVertical = this._$isVertical.getValue(), scrollContent = this.scrollContent?.nativeElement as HTMLElement,
-      scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement;
-    if (!!scrollContent && !!scrollViewport) {
-      const startOffset = this._$startOffset.getValue(), endOffset = this._$endOffset.getValue();
-      if (isVertical) {
-        const maxY = scrollViewport.offsetHeight - endOffset - scrollContent.offsetHeight;
-        return value < startOffset ? startOffset : value > maxY ? maxY : value;
-      } else {
-        const maxX = scrollViewport.offsetWidth - endOffset - scrollContent.offsetWidth;
-        return value < startOffset ? startOffset : value > maxX ? maxX : value;
-      }
-    }
-    return value;
   }
 
   ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {

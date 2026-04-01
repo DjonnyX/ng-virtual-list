@@ -1,0 +1,15 @@
+:host {
+    display: block;
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    pointer-events: none;
+    user-select: none;
+    text-rendering: optimizeSpeed;
+    image-rendering: pixelated;
+}
