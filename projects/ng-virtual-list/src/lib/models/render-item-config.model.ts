@@ -62,4 +62,8 @@ export interface IRenderVirtualListItemConfig {
      * z-index
      */
     zIndex: string;
+    /**
+     * Determines whether an element is a stub.
+     */
+    isStub?: boolean;
 }
