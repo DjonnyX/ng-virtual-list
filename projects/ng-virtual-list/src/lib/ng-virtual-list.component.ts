@@ -948,20 +948,7 @@ export class NgVirtualListComponent implements OnDestroy {
       this._bounds.set({ x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
     }
 
-    this.snappingHandler(0);
-
-    if (this._isSnappingMethodAdvanced) {
-      this.updateRegularRenderer();
-    }
-
-    const scroller = this._scrollerComponent();
-    if (!!scroller) {
-      const updatebale = this._readyForShow;
-      if (updatebale) {
-        this._$fireUpdate.next(true);
-      }
-      scroller.refresh(updatebale, updatebale);
-    }
+    this.onAfterResize();
   }
 
   private _onListResizeHandler = () => {
@@ -974,6 +961,35 @@ export class NgVirtualListComponent implements OnDestroy {
       this._listBounds.set({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
     } else {
       this._listBounds.set({ x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE });
+    }
+
+    this.onAfterResize();
+  }
+
+  private onAfterResize() {
+    this.snappingHandler(0);
+
+    if (this._isSnappingMethodAdvanced) {
+      this.updateRegularRenderer();
+    }
+
+    const scroller = this._scrollerComponent();
+    if (!!scroller) {
+      const updatebale = this._readyForShow, isVertical = this.isVertical;
+      if (this.snapScrollToEnd() && this._trackBox.isSnappedToEnd) {
+        const scrollSize = isVertical ? scroller.scrollHeight : scroller.scrollWidth,
+          params: IScrollToParams = {
+            [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollSize,
+            fireUpdate: true, behavior: BEHAVIOR_INSTANT, userAction: true,
+            blending: false, duration: this.animationParams().scrollToItem,
+          };
+        scroller?.scrollTo?.(params);
+      }
+      if (updatebale) {
+        this._$fireUpdate.next(true);
+        this._$fireUpdateNextFrame.next(true);
+      }
+      scroller.refresh(updatebale, updatebale);
     }
   }
 
@@ -1834,7 +1850,6 @@ export class NgVirtualListComponent implements OnDestroy {
     $preventScrollSnapping.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
-      debounceTime(0),
       tap(() => {
         if (this._readyForShow) {
           this._trackBox.isScrollStart = this._trackBox.isScrollEnd = false;
