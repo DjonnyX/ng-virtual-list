@@ -53,6 +53,7 @@ import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
 import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
 import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
+import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 
 /**
  * Virtual list component.
@@ -72,7 +73,7 @@ import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP }
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
-  providers: [NgVirtualListService],
+  providers: [NgVirtualListService, NgVirtualListPublicService],
 })
 export class NgVirtualListComponent implements OnDestroy {
   private static __nextId: number = 0;
@@ -976,7 +977,7 @@ export class NgVirtualListComponent implements OnDestroy {
       this.updateRegularRenderer();
     }
 
-    if (update) {
+    if (this._readyForShow && update) {
       const scroller = this._scrollerComponent();
       if (!!scroller) {
         const updatebale = this._readyForShow;
