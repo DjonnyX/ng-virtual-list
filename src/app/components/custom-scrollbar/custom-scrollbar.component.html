@@ -1,0 +1,5 @@
+@let p = params();
+<x-substrate #substrate mode="rounded-rectangle" class="shape" [type]="type()" [width]="width()" [height]="height()"
+    [roundCorner]="p.roundCorner" [strokeWidth]="8" [rippleColor]="p.rippleColor"
+    [fillPositions]="fillPositions()" [fillColors]="fillColors()" [strokeColors]="p.strokeGradientColor"
+    [strokeAnimationDuration]="p.strokeAnimationDuration"></x-substrate>

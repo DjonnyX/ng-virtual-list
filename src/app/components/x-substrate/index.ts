@@ -1,11 +1,11 @@
-import { SubstrateComponent } from "./substrate.component";
+import { XSubstrateComponent } from "./x-substrate.component";
 import { SubstarateMode } from "./types";
 import { SubstarateModes } from "./enums";
 import { SubstarateStyle } from "./types";
 import { SubstarateStyles } from "./enums";
 
 export {
-    SubstrateComponent,
+    XSubstrateComponent,
     SubstarateModes,
     SubstarateStyles,
 }

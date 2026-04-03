@@ -1,4 +1,4 @@
-import { RoundedCorner } from "../types/rounded-corner";
+import { RoundedCorner } from "../interfaces";
 
 /**
  * getShapeMinSize

@@ -1,12 +1,12 @@
-import { Component, computed, effect, inject, input, OnDestroy, output, Signal, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, inject, input, OnDestroy, output, Signal, signal, TemplateRef, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { debounceTime, filter, from, Subject, tap } from 'rxjs';
 import { ScrollBox } from './utils';
-import { Id, ScrollBarTheme } from '../../types';
+import { Id } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, LEFT_PROP_NAME,
+  BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, LEFT_PROP_NAME,
   SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
 import { TextDirection, TextDirections } from '../../enums';
@@ -58,9 +58,13 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   readonly classes = input<{ [cName: string]: boolean }>({});
 
-  readonly scrollbarTheme = input<ScrollBarTheme | null>(null);
-
   readonly scrollbarMinSize = input<number>(DEFAULT_SCROLLBAR_MIN_SIZE);
+
+  readonly scrollbarThickness = input<number>(DEFAULT_SCROLLBAR_THICKNESS);
+
+  readonly scrollbarThumbRenderer = input<TemplateRef<any> | null>(null);
+
+  readonly scrollbarThumbParams = input<{ [propName: string]: any } | null>(null);
 
   public readonly actualClasses: Signal<{ [cName: string]: boolean }>;
 
@@ -150,7 +154,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this._service.$langTextDir.pipe(
       tap(v => {
         takeUntilDestroyed(this._destroyRef),
-        this.langTextDir.set(v);
+          this.langTextDir.set(v);
       })
     ).subscribe();
 

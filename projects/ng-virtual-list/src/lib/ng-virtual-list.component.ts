@@ -14,12 +14,13 @@ import {
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, FOCUS, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
   DEFAULT_SCREEN_READER_MESSAGE, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_END, MIN_PIXELS_FOR_PREVENT_SNAPPING,
-  MOUSE_DOWN, TOUCH_START, DEFAULT_LANG_TEXT_DIR, DEFAULT_SCROLLBAR_THEME, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION,
+  MOUSE_DOWN, TOUCH_START, DEFAULT_LANG_TEXT_DIR, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION,
   DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
   DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
   PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
+  DEFAULT_SCROLLBAR_THICKNESS,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -27,7 +28,7 @@ import {
 import {
   IScrollEvent, IScrollOptions, IAnimationParams, IRect, ISize, IRenderStabilizerOptions,
 } from './interfaces';
-import { FocusAlignment, Id, ScrollBarTheme } from './types';
+import { FocusAlignment, Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
@@ -144,22 +145,22 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$show = new BehaviorSubject<boolean>(false);
   readonly $show = this._$show.asObservable();
 
-  private _scrollbarTheme = {
-    transform: (v: ScrollBarTheme) => {
-      const valid = validateObject(v);
+  private _scrollbarThickness = {
+    transform: (v: number) => {
+      const valid = validateInt(v);
 
       if (!valid) {
-        console.error('The "scrollbarTheme" parameter must be of type `object`.');
-        return DEFAULT_SCROLLBAR_THEME;
+        console.error('The "scrollbarThickness" parameter must be of type `number`.');
+        return DEFAULT_SCROLLBAR_THICKNESS;
       }
       return v;
     },
   } as any;
 
   /**
-   * Scrollbar theme.
+   * Scrollbar thickness.
    */
-  scrollbarTheme = input<ScrollBarTheme>(DEFAULT_SCROLLBAR_THEME, { ...this._scrollbarTheme });
+  scrollbarThickness = input<number>(DEFAULT_SCROLLBAR_THICKNESS, { ...this._scrollbarThickness });
 
   private _scrollbarMinSize = {
     transform: (v: number) => {
@@ -177,6 +178,40 @@ export class NgVirtualListComponent implements OnDestroy {
    * Minimum scrollbar size.
    */
   scrollbarMinSize = input<number>(DEFAULT_SCROLLBAR_MIN_SIZE, { ...this._scrollbarMinSize });
+
+  private _scrollbarThumbRenderer = {
+    transform: (v: TemplateRef<any> | null) => {
+      const valid = validateObject(v, true, true);
+
+      if (!valid) {
+        console.error('The "scrollbarThumbRenderer" parameter must be of type `object`.');
+        return null;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Scrollbar customization template.
+   */
+  scrollbarThumbRenderer = input<TemplateRef<any> | null>(null, { ...this._scrollbarThumbRenderer });
+
+  private _scrollbarThumbParams = {
+    transform: (v: { [propName: string]: any } | null) => {
+      const valid = validateObject(v, true, true);
+
+      if (!valid) {
+        console.error('The "scrollbarThumbParams" parameter must be of type `object`.');
+        return null;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Additional options for the scrollbar.
+   */
+  scrollbarThumbParams = input<{ [propName: string]: any } | null>({}, { ...this._scrollbarThumbParams });
 
   private _loading = {
     transform: (v: boolean) => {
@@ -909,7 +944,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
           const { width: sWidth, height: sHeight } = snappedComponent.getBounds() ?? { width: 0, height: 0 },
             scrollerElement = scroller.nativeElement, delta = snappedComponent.item?.measures.delta ?? 0,
-            scrollBarSize = this.scrollbarTheme().thickness;
+            scrollBarSize = this.scrollbarThickness();
 
           let left: number, right: number, top: number, bottom: number;
           if (isVertical) {
@@ -1230,13 +1265,12 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    const $scrollbarTheme = toObservable(this.scrollbarTheme);
-    $scrollbarTheme.pipe(
+    const $scrollbarThickness = toObservable(this.scrollbarThickness);
+    $scrollbarThickness.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
-      tap(theme => {
-        const { thickness = 0 } = theme;
-        this._service.scrollBarSize = thickness;
+      tap(scrollbarThickness => {
+        this._service.scrollBarSize = scrollbarThickness;
       }),
     ).subscribe();
 

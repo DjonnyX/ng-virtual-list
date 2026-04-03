@@ -1,20 +1,18 @@
-import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal } from '@angular/core';
-import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
-import { GradientColor } from '../../types/gradient-color';
-import { GradientColorPositions } from '../../types/gradient-color-positions';
-import { RoundedCorner } from '../../types/rounded-corner';
+import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef } from '@angular/core';
 import { combineLatest, filter, fromEvent, Subject, tap } from 'rxjs';
-import { ScrollBarTheme } from '../../types';
-import { Color } from '../../types/color';
+import { SubstarateStyle, SubstarateStyles } from '../../../../../../src/app/components/x-substrate';
+import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { IScrollBarDragEvent } from './interfaces';
+import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
 import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 import {
-  DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
-  DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
+  DEFAULT_SIZE, DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { NgScrollBarService } from './ng-scroll-bar.service';
+import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
+import { ScrollbarStates } from './enums';
 
 /**
  * ScrollBar component.
@@ -29,12 +27,18 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
     { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
+    NgScrollBarService,
+    NgScrollBarPublicService,
   ],
   standalone: false,
   templateUrl: './ng-scroll-bar.component.html',
   styleUrl: './ng-scroll-bar.component.scss'
 })
 export class NgScrollBarComponent extends NgScrollView {
+  protected _service = inject(NgScrollBarService);
+
+  private _apiService = inject(NgScrollBarPublicService);
+
   readonly loading = input<boolean>(false);
 
   readonly onDrag = output<IScrollBarDragEvent>();
@@ -45,7 +49,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
   readonly size = input<number>(DEFAULT_SIZE);
 
-  readonly theme = input<ScrollBarTheme | null>(null);
+  readonly thickness = input<number>(DEFAULT_THICKNESS);
 
   readonly scrollbarMinSize = input<number>(0);
 
@@ -55,29 +59,15 @@ export class NgScrollBarComponent extends NgScrollView {
 
   readonly show = input<boolean>(false);
 
-  protected readonly thickness = signal<number>(DEFAULT_THICKNESS);
+  readonly params = input<{ [propName: string]: any } | null>({});
 
-  protected readonly fill: Signal<Color | GradientColor | null>;
-
-  protected readonly thumbGradientFill = signal<Color | GradientColor | null>(null);
-
-  protected readonly thumbHoverGradientFill = signal<Color | GradientColor | null>(null);
-
-  protected readonly thumbPressedGradientFill = signal<Color | GradientColor | null>(null);
-
-  protected readonly strokeGradientColor = signal<Color | GradientColor | null>(null);
-
-  protected readonly strokeAnimationDuration = signal<number>(DEFAULT_STROKE_ANIMATION_DURATION);
-
-  protected readonly roundCorner = signal<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
-
-  protected readonly rippleColor = signal<Color | null>(DEFAULT_RIPPLE_COLOR);
-
-  protected readonly rippleEnabled = signal<boolean>(DEFAULT_RIPPLE_ENABLED);
+  readonly renderer = input<TemplateRef<any> | null>(null);
 
   protected readonly hoverState = signal<boolean>(false);
 
   protected readonly pressedState = signal<boolean>(false);
+
+  protected readonly templateContext!: Signal<IScrollBarTemplateContext>;
 
   protected readonly type: Signal<SubstarateStyle>;
 
@@ -94,6 +84,17 @@ export class NgScrollBarComponent extends NgScrollView {
 
   constructor() {
     super();
+
+    this.templateContext = computed(() => {
+      const context: IScrollBarTemplateContext = {
+        api: this._apiService,
+        width: this.thumbWidth(),
+        height: this.thumbHeight(),
+        fillPositions: this.thumbGradientPositions(),
+        params: this.params() ?? {},
+      };
+      return context;
+    });
 
     const $prepared = toObservable(this.prepared);
     $prepared.pipe(
@@ -155,14 +156,17 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    this.fill = computed(() => {
+    effect(() => {
       const pressed = this.pressedState(), hover = this.hoverState();
       if (pressed) {
-        return this.thumbPressedGradientFill();
+        this._service.state = ScrollbarStates.PRESSED;
+        return;
       } else if (hover) {
-        return this.thumbHoverGradientFill();
+        this._service.state = ScrollbarStates.HOVER;
+        return;
       }
-      return this.thumbGradientFill();
+      this._service.state = ScrollbarStates.NORMAL;
+      return;
     });
 
     effect(() => {
@@ -205,23 +209,6 @@ export class NgScrollBarComponent extends NgScrollView {
         }
       }),
     ).subscribe();
-
-    effect(() => {
-      const theme = this.theme();
-      if (theme) {
-        if (theme) {
-          this.thumbGradientFill.set(theme.fill);
-          this.thumbHoverGradientFill.set(theme.hoverFill);
-          this.thumbPressedGradientFill.set(theme.pressedFill);
-          this.strokeGradientColor.set(theme.strokeGradientColor);
-          this.strokeAnimationDuration.set(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
-          this.roundCorner.set(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
-          this.thickness.set(theme.thickness ?? DEFAULT_THICKNESS);
-          this.rippleColor.set(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
-          this.rippleEnabled.set(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
-        }
-      }
-    });
   }
 
   private createDragEvent(userAction: boolean) {
@@ -254,9 +241,7 @@ export class NgScrollBarComponent extends NgScrollView {
     return false;
   }
 
-  ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {
-    if (this.rippleEnabled() && !!substrate) {
-      substrate.ripple(event);
-    }
+  click(event: PointerEvent | MouseEvent) {
+    this._service.click(event);
   }
 }

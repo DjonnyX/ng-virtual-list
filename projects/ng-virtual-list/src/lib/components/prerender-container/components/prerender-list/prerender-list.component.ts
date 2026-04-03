@@ -11,7 +11,6 @@ import {
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
-import { ScrollBarTheme } from "../../../../types";
 import { PrerenderCache } from "../../types/cache";
 import { BaseVirtualListItemComponent } from "../../../list-item/base";
 import { Component$1 } from "../../../../models/component.model";
@@ -52,8 +51,6 @@ export class PrerenderList implements OnDestroy {
     items = input.required<IVirtualListCollection>();
 
     scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
-
-    scrollbarTheme = input<ScrollBarTheme | null>(null);
 
     startOffset = input<number>(0);
 

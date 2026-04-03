@@ -16,7 +16,7 @@ import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.serv
 
 /**
  * BaseVirtualListItemComponent
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/list-item/base//base-virtual-list-item-component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/list-item/base/base-virtual-list-item-component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
