@@ -1,10 +1,9 @@
 import { Component, computed, input, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, filter, switchMap, tap } from 'rxjs';
-import { NgScrollBarPublicService, GradientColorPositions } from '../../../../projects/ng-virtual-list/src/public-api';
+import { NgScrollBarPublicService, GradientColorPositions, ScrollbarStates } from '../../../../projects/ng-virtual-list/src/public-api';
 import { CustomScrollBarTheme } from './interfaces/custom-scrollbar-theme';
 import { DEFAULT_SCROLLBAR_THEME } from './const';
-import { ScrollbarStates } from '../../../../projects/ng-virtual-list/src/lib/components/ng-scroll-bar/enums';
 import { Color, GradientColor } from '../interfaces';
 import { SubstarateStyle, SubstarateStyles, XSubstrateComponent } from '../x-substrate';
 
