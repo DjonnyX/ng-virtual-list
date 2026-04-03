@@ -1,9 +1,8 @@
 import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef } from '@angular/core';
 import { combineLatest, filter, fromEvent, Subject, tap } from 'rxjs';
-import { SubstarateStyle, SubstarateStyles } from '../../../../../../src/app/components/x-substrate';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
 import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 import {
@@ -68,8 +67,6 @@ export class NgScrollBarComponent extends NgScrollView {
   protected readonly pressedState = signal<boolean>(false);
 
   protected readonly templateContext!: Signal<IScrollBarTemplateContext>;
-
-  protected readonly type: Signal<SubstarateStyle>;
 
   protected readonly styles: Signal<{ [sName: string]: any }>;
 
@@ -175,10 +172,6 @@ export class NgScrollBarComponent extends NgScrollView {
 
     effect(() => {
       this._interactive = this.interactive();
-    });
-
-    this.type = computed(() => {
-      return this.loading() ? SubstarateStyles.STROKE : SubstarateStyles.NONE;
     });
 
     this.styles = computed(() => {
