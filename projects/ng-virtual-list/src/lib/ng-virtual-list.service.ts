@@ -228,8 +228,8 @@ export class NgVirtualListService {
     }
   }
 
-  update(immediately: boolean = false) {
-    this._trackBox?.changes(immediately);
+  update(immediately: boolean = false, force: boolean = false) {
+    this._trackBox?.changes(immediately, force);
   }
 
   private getItemConfig(id: Id) {

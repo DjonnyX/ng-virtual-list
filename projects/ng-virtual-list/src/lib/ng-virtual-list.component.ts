@@ -967,25 +967,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _resizeSnappedObserver: ResizeObserver | null = null;
 
-  // private onAfterResize(update = false) {
-  //   this.snappingHandler();
-
-  //   if (this._isSnappingMethodAdvanced) {
-  //     this.updateRegularRenderer();
-  //   }
-
-  //   if (this._readyForShow && update) {
-  //     const scroller = this._scrollerComponent();
-  //     if (!!scroller) {
-  //       const updatebale = this._readyForShow;
-  //       if (updatebale) {
-  //         this._$fireUpdate.next(false);
-  //       }
-  //       scroller.refresh(updatebale, updatebale);
-  //     }
-  //   }
-  // }
-
   private focusItem = (element: HTMLElement, position: number, align: FocusAlignment = FocusAlignments.CENTER,
     behavior: ScrollBehavior = BEHAVIOR_AUTO) => {
     if (!this._readyForShow) {
@@ -1144,7 +1125,7 @@ export class NgVirtualListComponent implements OnDestroy {
     this._service.$tick.pipe(
       takeUntilDestroyed(),
       tap(() => {
-        this._trackBox.changes();
+        this.checkBoundsOfElements();
         this._scrollerComponent()?.tick();
       }),
     ).subscribe();
@@ -1166,6 +1147,7 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(v => !!v),
       tap(v => {
         this._bounds.set(v);
+        this.onAfterResize(true);
       }),
     ).subscribe();
 
@@ -1174,6 +1156,7 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(v => !!v),
       tap(v => {
         this._listBounds.set(v);
+        this.onAfterResize();
       }),
     ).subscribe();
 
@@ -2477,6 +2460,32 @@ export class NgVirtualListComponent implements OnDestroy {
     this._$viewInit.next(true);
 
     this._$fireUpdate.next(false);
+  }
+
+  private onAfterResize(update = false) {
+    this.snappingHandler();
+
+    if (this._isSnappingMethodAdvanced) {
+      this.updateRegularRenderer();
+    }
+
+    if (this._readyForShow && update) {
+      const scroller = this._scrollerComponent();
+      if (!!scroller) {
+        const updatebale = this._readyForShow;
+        if (updatebale) {
+          this._$fireUpdate.next(false);
+        }
+        scroller.refresh(updatebale, updatebale);
+      }
+    }
+  }
+
+  private checkBoundsOfElements() {
+    const changed = this._trackBox.checkBoundsOfElements();
+    if (changed) {
+      this._trackBox.changes(true, true);
+    }
   }
 
   private snappingHandler = () => {

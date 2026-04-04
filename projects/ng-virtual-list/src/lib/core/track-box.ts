@@ -869,16 +869,46 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    changes(immediately: boolean = false): void {
+    changes(immediately: boolean = false, force: boolean = false): void {
         if (immediately) {
+            if (force) {
+                this.bumpVersion();
+            }
             this._previousVersion = this._version;
             this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as CacheMapEvents, this.version);
         } else {
+            if (force) {
+                this.bumpVersion();
+                return;
+            }
             if (this.changesDetected()) {
                 return;
             }
             this.bumpVersion();
         }
+    }
+
+    /**
+     * Returns true if the bounds of at least one screen object have changed.
+     */
+    checkBoundsOfElements(): boolean {
+        if (!this._displayComponents) {
+            return false;
+        }
+
+        for (let i = 0, l = this._displayComponents.length; i < l; i++) {
+            const component = this._displayComponents[i], itemId = component.instance.itemId;
+            if (itemId === undefined) {
+                continue;
+            }
+            const bounds = component.instance.getBounds(), cache = this.get(itemId);
+            if (!!bounds && !!cache) {
+                if (bounds.width !== cache.width || bounds.height !== cache.height) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
