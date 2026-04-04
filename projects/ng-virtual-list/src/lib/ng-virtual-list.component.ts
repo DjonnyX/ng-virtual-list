@@ -1742,10 +1742,7 @@ export class NgVirtualListComponent implements OnDestroy {
       ),
       $screenReaderMessage = toObservable(this.screenReaderMessage),
       $displayItems = this._service.$displayItems,
-      $cacheVersion = this._service.$cacheVersion.pipe(
-        takeUntilDestroyed(),
-        distinctUntilChanged(),
-      );
+      $cacheVersion = this._service.$cacheVersion;
 
     combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
