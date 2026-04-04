@@ -48,8 +48,6 @@ export class PrerenderList implements OnDestroy {
 
     isVertical = input<boolean>(true);
 
-    items = input.required<IVirtualListCollection>();
-
     scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
 
     startOffset = input<number>(0);
@@ -67,6 +65,8 @@ export class PrerenderList implements OnDestroy {
     itemRenderer = input<TemplateRef<any>>();
 
     itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(PrerenderVirtualListItemComponent);
+
+    protected _items = signal<IVirtualListCollection | null>(null);
 
     protected readonly classes = signal<{ [cName: string]: boolean }>({ prepared: true });
 
@@ -86,7 +86,7 @@ export class PrerenderList implements OnDestroy {
 
     protected $isVertical: Observable<boolean>;
 
-    protected $items: Observable<IVirtualListCollection>;
+    protected $items: Observable<IVirtualListCollection | null>;
 
     protected $bounds: Observable<ISize>;
 
@@ -100,7 +100,7 @@ export class PrerenderList implements OnDestroy {
 
     constructor() {
         this.$isVertical = toObservable(this.isVertical);
-        this.$items = toObservable(this.items);
+        this.$items = toObservable(this._items);
         this.$bounds = toObservable(this.bounds);
 
         effect(() => {
@@ -143,7 +143,7 @@ export class PrerenderList implements OnDestroy {
             takeUntilDestroyed(this._destroyRef),
             filter(([b, i]) => !!b && !!i),
             tap(([bounds, items]) => {
-                if (this.active && !!this._trackBox) {
+                if (this.active && !!this._trackBox && !!items) {
                     this._trackBox.reset(this.itemComponentClass(), items, bounds, {
                         itemRenderer: this.itemRenderer(),
                         dynamic: this.dynamic(),
@@ -191,9 +191,10 @@ export class PrerenderList implements OnDestroy {
         }
     }
 
-    on() {
+    on(items: IVirtualListCollection | null = null) {
         if (!!this._trackBox) {
             this._trackBox.on();
+            this._items.set(items);
         }
     }
 

@@ -1,8 +1,7 @@
 import {
-    Component, computed, DestroyRef, ElementRef, inject, input, OnDestroy, Signal, signal, viewChild,
+    Component, computed, DestroyRef, ElementRef, inject, input, Signal, signal, viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { filter, map, Subject, tap } from 'rxjs';
+import { Subject } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
 import { SCROLL_VIEW_INVERSION } from '../const';
@@ -19,7 +18,7 @@ import { SCROLL_VIEW_INVERSION } from '../const';
     selector: 'base-scroll-view',
     template: '',
 })
-export class BaseScrollView implements OnDestroy {
+export class BaseScrollView {
     readonly scrollContent = viewChild<ElementRef<HTMLDivElement>>('scrollContent');
 
     readonly scrollViewport = viewChild<ElementRef<HTMLDivElement>>('scrollViewport');
@@ -144,85 +143,51 @@ export class BaseScrollView implements OnDestroy {
 
     readonly contentBounds = signal<ISize>({ width: 0, height: 0 });
 
-    protected _viewportResizeObserver: ResizeObserver;
+    protected _inversion = inject(SCROLL_VIEW_INVERSION);
 
-    protected _onResizeViewportHandler = () => {
+    constructor() {
+        this.isVertical = computed(() => {
+            return this.direction() === ScrollerDirection.VERTICAL;
+        });
+    }
+
+    tick() {
+        this.onResizeContent();
+        this.onResizeViewport();
+    }
+
+    protected onResizeViewport() {
         const viewport = this.scrollViewport()?.nativeElement;
         if (viewport) {
             const isVertical = this.isVertical(),
                 startOffset = this.startOffset(),
-                endOffset = this.endOffset();
-            this.viewportBounds.set({
-                width: isVertical ? viewport.offsetWidth : viewport.offsetWidth - startOffset - endOffset,
-                height: isVertical ? viewport.offsetHeight - startOffset - endOffset : viewport.offsetHeight
-            });
+                endOffset = this.endOffset(),
+                w = viewport.offsetWidth,
+                h = viewport.offsetHeight,
+                width = isVertical ? w : w - startOffset - endOffset,
+                height = isVertical ? h - startOffset - endOffset : h,
+                bounds = this.viewportBounds();
+            if (bounds.width === width && bounds.height === height) {
+                return;
+            }
+            this.viewportBounds.set({ width, height });
         }
-        this.onResizeViewport();
     }
 
-    protected _contentResizeObserver: ResizeObserver;
-
-    protected _onResizeContentHandler = () => {
+    protected onResizeContent() {
         const content = this.scrollContent()?.nativeElement;
         if (content) {
             const isVertical = this.isVertical(),
-                startOffset = this.startOffset();
-            this.contentBounds.set({
-                width:
-                    isVertical ? content.offsetWidth : content.offsetWidth - startOffset,
-                height: isVertical ? content.offsetHeight - startOffset : content.offsetHeight,
-            });
-        }
-        this.onResizeContent();
-    }
-
-    protected _inversion = inject(SCROLL_VIEW_INVERSION);
-
-    constructor() {
-        this._viewportResizeObserver = new ResizeObserver(this._onResizeViewportHandler);
-        this._contentResizeObserver = new ResizeObserver(this._onResizeContentHandler);
-
-        this.isVertical = computed(() => {
-            return this.direction() === ScrollerDirection.VERTICAL;
-        });
-
-        const $viewport = toObservable(this.scrollViewport).pipe(
-            takeUntilDestroyed(this._destroyRef),
-            filter(v => !!v),
-            map(v => v.nativeElement),
-        ), $content = toObservable(this.scrollContent).pipe(
-            takeUntilDestroyed(this._destroyRef),
-            filter(v => !!v),
-            map(v => v.nativeElement),
-        );
-
-        $viewport.pipe(
-            takeUntilDestroyed(this._destroyRef),
-            tap(viewport => {
-                this._viewportResizeObserver.observe(viewport);
-                this._onResizeViewportHandler();
-            }),
-        ).subscribe();
-
-        $content.pipe(
-            takeUntilDestroyed(this._destroyRef),
-            tap(content => {
-                this._contentResizeObserver.observe(content);
-                this._onResizeContentHandler();
-            }),
-        ).subscribe();
-    }
-
-    protected onResizeViewport() { }
-
-    protected onResizeContent() { }
-
-    ngOnDestroy(): void {
-        if (this._viewportResizeObserver) {
-            this._viewportResizeObserver.disconnect();
-        }
-        if (this._contentResizeObserver) {
-            this._contentResizeObserver.disconnect();
+                startOffset = this.startOffset(),
+                w = content.offsetWidth,
+                h = content.offsetHeight,
+                width = isVertical ? w : w - startOffset,
+                height = isVertical ? h - startOffset : h,
+                bounds = this.contentBounds();
+            if (bounds.width === width && bounds.height === height) {
+                return;
+            }
+            this.contentBounds.set({ width, height });
         }
     }
 }

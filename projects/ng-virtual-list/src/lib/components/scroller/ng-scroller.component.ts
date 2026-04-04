@@ -15,6 +15,7 @@ import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scro
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
 import { MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MEASURE_VELOCITY_TIMER } from './const';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { ISize } from '../../interfaces';
 
 const TOP = 'top',
   LEFT = 'left',
@@ -148,6 +149,12 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this.measureVelocityExecutor();
   }
 
+  protected _$resizeViewport = new Subject<ISize>();
+  readonly $resizeViewport = this._$resizeViewport.asObservable();
+
+  protected _$resizeContent = new Subject<ISize>();
+  readonly $resizeContent = this._$resizeContent.asObservable();
+
   constructor() {
     super();
 
@@ -216,16 +223,26 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   protected override onResizeViewport() {
     const viewport = this.scrollViewport()?.nativeElement;
     if (viewport) {
-      this.viewportBounds.set({ width: viewport.offsetWidth, height: viewport.offsetHeight });
+      const bounds: ISize = { width: viewport.offsetWidth, height: viewport.offsetHeight }, b = this.viewportBounds();
+      if (bounds.width === b.width && bounds.height === b.height) {
+        return;
+      }
+      this.viewportBounds.set(bounds);
       this.updateScrollBar();
+      this._$resizeViewport.next(bounds);
     }
   }
 
   protected override onResizeContent() {
     const content = this.scrollContent()?.nativeElement;
     if (content) {
-      this.contentBounds.set({ width: content.offsetWidth, height: content.offsetHeight });
+      const bounds: ISize = { width: content.offsetWidth, height: content.offsetHeight }, b = this.contentBounds();
+      if (bounds.width === b.width && bounds.height === b.height) {
+        return;
+      }
+      this.contentBounds.set(bounds);
       this.updateScrollBar();
+      this._$resizeContent.next(bounds);
     }
   }
 
@@ -286,8 +303,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         thumbGradientPositions,
       } = this._scrollBox.calculateScroll({
         direction,
-        viewportWidth: viewportBounds.width, viewportHeight: viewportBounds.height,
-        contentWidth: contentBounds.width, contentHeight: contentBounds.height,
+        viewportWidth: viewportBounds.width,
+        viewportHeight: viewportBounds.height,
+        contentWidth: contentBounds.width,
+        contentHeight: contentBounds.height,
         startOffset,
         endOffset,
         positionX: this._x,
@@ -310,6 +329,12 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   ngAfterViewInit() {
     this.viewInitialized.set(true);
     this.runMeasureVelocity();
+  }
+
+  override tick() {
+    super.tick();
+
+    this.scrollBar?.tick();
   }
 
   private updateScrollBar() {

@@ -2,7 +2,7 @@
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [items]="items()"
+<prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
   [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
   [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />

@@ -24,8 +24,6 @@ export interface IMetrics {
     delta: number;
     normalizedItemWidth: number;
     normalizedItemHeight: number;
-    offsetX: number;
-    offsetY: number;
     width: number;
     height: number;
     dynamicSize: boolean;
@@ -57,7 +55,7 @@ export interface IMetrics {
 }
 
 export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
-    bounds: IRect;
+    bounds: ISize;
     collection: C;
     isVertical: boolean;
     itemSize: number;
@@ -822,8 +820,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             delta,
             normalizedItemWidth: w,
             normalizedItemHeight: h,
-            offsetX: bounds.x,
-            offsetY: bounds.y,
             width,
             height,
             dynamicSize,
@@ -888,8 +884,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         metrics: IMetrics): IRenderVirtualListCollection {
         const {
-            offsetY,
-            offsetX,
             width,
             height,
             normalizedItemWidth,
@@ -914,8 +908,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const trackBy = this._trackingPropertyName, actualSnippedPosition = snipedPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
-                boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset,
-                positionOffset = isVertical ? offsetY : offsetX;
+                boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
             let pos = startPosition,
                 renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
@@ -945,7 +938,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: isVertical ? size : normalizedItemHeight,
                                 size,
                                 position: pos,
-                                positionOffset,
                                 boundsSize,
                                 scrollSize,
                                 absoluteStartPosition,
@@ -1012,7 +1004,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 size,
                                 position: pos,
                                 boundsSize,
-                                positionOffset,
                                 scrollSize,
                                 absoluteStartPosition,
                                 absoluteStartPositionPercent,
@@ -1083,7 +1074,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             size,
                             position: pos,
                             boundsSize,
-                            positionOffset,
                             scrollSize,
                             absoluteStartPosition,
                             absoluteStartPositionPercent,
