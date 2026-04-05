@@ -1,11 +1,11 @@
 import { Component, computed, input, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, filter, switchMap, tap } from 'rxjs';
-import { NgScrollBarPublicService, GradientColorPositions, ScrollbarStates } from '../../../../projects/ng-virtual-list/src/public-api';
 import { CustomScrollBarTheme } from './interfaces/custom-scrollbar-theme';
 import { DEFAULT_SCROLLBAR_THEME } from './const';
 import { Color, GradientColor } from '../interfaces';
 import { SubstarateStyle, SubstarateStyles, XSubstrateComponent } from '../x-substrate';
+import { GradientColorPositions, NgScrollBarPublicService, ScrollbarStates } from '../../../../projects/ng-virtual-list/src/public-api';
 
 /**
  * ScrollBar component.
@@ -19,6 +19,7 @@ import { SubstarateStyle, SubstarateStyles, XSubstrateComponent } from '../x-sub
     selector: 'custom-scrollbar',
     standalone: false,
     templateUrl: './custom-scrollbar.component.html',
+    styleUrls: ['./custom-scrollbar.component.scss'],
 })
 export class CustomScrollbarComponent {
     readonly substrate = viewChild(XSubstrateComponent);
