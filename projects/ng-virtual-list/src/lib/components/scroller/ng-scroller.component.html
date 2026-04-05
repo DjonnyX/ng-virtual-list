@@ -7,11 +7,12 @@
         </div>
     </div>
     @if (scrollbarEnabled()) {
-    <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [theme]="scrollbarTheme()"
-        [thumbGradientPositions]="thumbGradientPositions()" [loading]="loading()" [prepared]="preparedSignal()"
-        [interactive]="scrollbarInteractive()" [show]="show()"
-        [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
-        [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
-        (onDrag)="onScrollBarDragHandler($event)" (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
+        <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
+            [thickness]="scrollbarThickness()" [params]="scrollbarThumbParams()" [loading]="loading()"
+            [thumbGradientPositions]="thumbGradientPositions()" [prepared]="preparedSignal()"
+            [interactive]="scrollbarInteractive()" [show]="scrollbarShow() && scrollbarEnabled() && preparedSignal()"
+            [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
+            [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
+            (onDrag)="onScrollBarDragHandler($event)" (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
     }
 </div>
