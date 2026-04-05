@@ -1,7 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [20.10.7] - 2026-03-31
+## [19.11.0] - 2026-04-05
+
+### Added
+- Implemented an API inside the list item to manage the list.
+- The ability to customize the scroll bar has been implemented.
+- Added custom scrollbar example.
+
+### Improved
+- Improved overall performance.
+
+### Fixed
+- Display defects have been fixed.
+- Overall component stability has been improved.
+
+## [19.10.7] - 2026-03-31
 
 ### Added
 - Implement the snapScrollToStart property.

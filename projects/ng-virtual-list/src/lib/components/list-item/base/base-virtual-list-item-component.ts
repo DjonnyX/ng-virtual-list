@@ -12,16 +12,17 @@ import {
   CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
-
-const EMPTY_HANDLER = () => { };
+import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
 
 /**
  * BaseVirtualListItemComponent
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/list-item/base//base-virtual-list-item-component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/list-item/base/base-virtual-list-item-component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export class BaseVirtualListItemComponent {
+  private _apiService = inject(NgVirtualListPublicService);
+
   protected _id!: number;
   get id() {
     return this._id;
@@ -134,7 +135,7 @@ export class BaseVirtualListItemComponent {
       const data = this.data(), measures = this.measures(), config = this.config();
       return {
         data: data?.data, prevData: data?.previouseData, nextData: data?.nextData, measures,
-        config, reseted: false, index: data?.index ?? - 1,
+        config, reseted: false, index: data?.index ?? - 1, api: this._apiService,
       };
     });
   }
@@ -146,7 +147,6 @@ export class BaseVirtualListItemComponent {
   protected updateConfig(v: IRenderVirtualListItem<any> | null) {
     this.config.set({
       ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(),
-      collapse: EMPTY_HANDLER, select: EMPTY_HANDLER, focus: EMPTY_HANDLER,
     });
   }
 
