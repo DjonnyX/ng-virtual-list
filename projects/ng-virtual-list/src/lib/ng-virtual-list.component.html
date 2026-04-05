@@ -2,20 +2,22 @@
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [items]="items()"
+<prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
   [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
   [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (snap()) {
-<div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container" [ngClass]="classes()">
-  <div #snapped part="snapped-item" class="ngvl__list-snapper">
-    <ng-container #snapRendererContainer></ng-container>
+  <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
+    [ngClass]="classes()">
+    <div #snapped part="snapped-item" class="ngvl__list-snapper">
+      <ng-container #snapRendererContainer></ng-container>
+    </div>
   </div>
-</div>
 }
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
-  [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarTheme]="scrollbarTheme()"
+  [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
+  [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
   [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()"
   [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()"
   [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()">
