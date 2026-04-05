@@ -242,12 +242,12 @@ export class AppComponent {
         collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
         this.dynamicItems = collection;
       }),
-      delay(250),
-      tap(() => {
-        const collection = [...this.dynamicItems];
-        collection.shift();
-        this.dynamicItems = collection;
-      }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicItems];
+      //   collection.shift();
+      //   this.dynamicItems = collection;
+      // }),
       delay(450),
       tap(() => {
         const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
@@ -272,12 +272,12 @@ export class AppComponent {
         collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
         this.dynamicShortItems = collection;
       }),
-      delay(250),
-      tap(() => {
-        const collection = [...this.dynamicShortItems];
-        collection.shift();
-        this.dynamicShortItems = collection;
-      }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicShortItems];
+      //   collection.shift();
+      //   this.dynamicShortItems = collection;
+      // }),
       delay(450),
       tap(() => {
         const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),

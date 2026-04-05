@@ -1,6 +1,6 @@
 import { Component, computed, input, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { distinctUntilChanged, filter, switchMap, tap } from 'rxjs';
+import { combineLatest, filter, switchMap, tap } from 'rxjs';
 import { NgScrollBarPublicService, GradientColorPositions, ScrollbarStates } from '../../../../projects/ng-virtual-list/src/public-api';
 import { CustomScrollBarTheme } from './interfaces/custom-scrollbar-theme';
 import { DEFAULT_SCROLLBAR_THEME } from './const';
@@ -47,7 +47,6 @@ export class CustomScrollbarComponent {
         const $api = toObservable(this.api),
             $state = $api.pipe(
                 takeUntilDestroyed(),
-                distinctUntilChanged(),
                 filter(v => !!v),
                 switchMap(v => {
                     return v.$state;
@@ -55,25 +54,25 @@ export class CustomScrollbarComponent {
             ),
             $click = $api.pipe(
                 takeUntilDestroyed(),
-                distinctUntilChanged(),
                 filter(v => !!v),
                 switchMap(v => {
                     return v.$click;
                 }),
             );
 
-        $state.pipe(
+        const $params = toObservable(this.params);
+        combineLatest([$state, $params]).pipe(
             takeUntilDestroyed(),
-            tap(v => {
-                const pressed = v === ScrollbarStates.PRESSED, hover = v === ScrollbarStates.HOVER;
+            tap(([state, params]) => {
+                const pressed = state === ScrollbarStates.PRESSED, hover = state === ScrollbarStates.HOVER;
                 if (pressed) {
-                    this.fillColors.set(this.params().pressedFill);
+                    this.fillColors.set(params.pressedFill);
                     return;
                 } else if (hover) {
-                    this.fillColors.set(this.params().hoverFill);
+                    this.fillColors.set(params.hoverFill);
                     return;
                 }
-                this.fillColors.set(this.params().fill);
+                this.fillColors.set(params.fill);
                 return;
             }),
         ).subscribe();
@@ -81,7 +80,7 @@ export class CustomScrollbarComponent {
         $click.pipe(
             takeUntilDestroyed(),
             tap(event => {
-                this.substrate()?.ripple(event);
+                this.substrate()?.ripple(event as PointerEvent);
             }),
         ).subscribe();
     }

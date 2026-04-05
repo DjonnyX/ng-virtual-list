@@ -1,5 +1,5 @@
-import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef } from '@angular/core';
-import { combineLatest, filter, fromEvent, Subject, tap } from 'rxjs';
+import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef, viewChild } from '@angular/core';
+import { combineLatest, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -34,6 +34,8 @@ import { ScrollbarStates } from './enums';
   styleUrl: './ng-scroll-bar.component.scss'
 })
 export class NgScrollBarComponent extends NgScrollView {
+  protected _defaultRenderer = viewChild<TemplateRef<any>>('defaultRenderer');
+
   protected _service = inject(NgScrollBarService);
 
   private _apiService = inject(NgScrollBarPublicService);
@@ -61,6 +63,8 @@ export class NgScrollBarComponent extends NgScrollView {
   readonly params = input<{ [propName: string]: any } | null>({});
 
   readonly renderer = input<TemplateRef<any> | null>(null);
+
+  readonly thumbRenderer = signal<TemplateRef<any> | null>(this._defaultRenderer() ?? null);
 
   protected readonly hoverState = signal<boolean>(false);
 
@@ -92,6 +96,21 @@ export class NgScrollBarComponent extends NgScrollView {
       };
       return context;
     });
+
+    const $renderer = toObservable(this.renderer).pipe(
+        startWith(null),
+      ),
+      $defaultRenderer = toObservable(this._defaultRenderer);
+
+    combineLatest([$renderer, $defaultRenderer]).pipe(
+      takeUntilDestroyed(),
+      switchMap(([renderer, defaultRenderer]) => {
+        return of((renderer ?? defaultRenderer) ?? null);
+      }),
+      tap(v => {
+        this.thumbRenderer.set(v);
+      }),
+    ).subscribe();
 
     const $prepared = toObservable(this.prepared);
     $prepared.pipe(
