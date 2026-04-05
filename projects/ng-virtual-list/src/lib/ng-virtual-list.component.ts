@@ -1404,18 +1404,12 @@ export class NgVirtualListComponent implements OnDestroy {
       debounceTime(0),
       switchMap(([, prerenderContainer, dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
         if (!!dynamicSize && !snapScrollToStart && !!snapScrollToEnd && !!waitForPreparation) {
-          prerenderContainer!.on(this.items());
-          this._$show.next(false);
-          this.cacheClean();
-          this._readyForShow = false;
-          const scrollerComponent = this._scrollerComponent();
-          if (scrollerComponent) {
-            scrollerComponent.prepared = false;
-            scrollerComponent.stopScrolling();
-          }
-          this.classes.set({ prepared: false });
           return $items.pipe(
             takeUntilDestroyed(this._destroyRef),
+            distinctUntilChanged((p, c) => {
+              const pLength = p?.length ?? 0, cLength = c?.length ?? 0;
+              return !((cLength > 0) || (pLength !== cLength && (pLength === 0 || cLength === 0)));
+            }),
             tap(items => {
               this._trackBox.resetCollection(items, this.itemSize());
             }),
@@ -2530,6 +2524,9 @@ export class NgVirtualListComponent implements OnDestroy {
   };
 
   private emitScrollEvent(isScrollEnd: boolean = false, update: boolean = true, userAction: boolean = false) {
+    if (!this._readyForShow) {
+      return;
+    }
     const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
     if (scrollerEl && scrollerComponent) {
       const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
@@ -2633,7 +2630,6 @@ export class NgVirtualListComponent implements OnDestroy {
         comp.instance.renderer = this._itemRenderer();
         doMap[id] = i;
         components.push(comp);
-        // this._componentsResizeObserver.observe(comp.instance.element);
         i++;
       }
       this._trackBox.setDisplayObjectIndexMapById(doMap);
@@ -2852,10 +2848,6 @@ export class NgVirtualListComponent implements OnDestroy {
     if (!!this._trackBox) {
       this._trackBox.dispose();
     }
-
-    // if (!!this._componentsResizeObserver) {
-    //   this._componentsResizeObserver.disconnect();
-    // }
 
     if (!!this._resizeSnappedObserver) {
       this._resizeSnappedObserver.disconnect();
