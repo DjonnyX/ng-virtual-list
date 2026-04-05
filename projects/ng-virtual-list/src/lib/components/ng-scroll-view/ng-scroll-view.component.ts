@@ -408,49 +408,40 @@ export class NgScrollView extends BaseScrollView {
             duration = params.duration ?? ANIMATION_DURATION,
             isVertical = this.direction() === ScrollerDirection.VERTICAL;
 
-        const limits = this.scrollLimits(),
-            x = this.normalizeValue(posX),
+        const x = this.normalizeValue(posX),
             y = this.normalizeValue(posY),
-            xx = x,
-            yy = y,
             prevX = this._x,
             prevY = this._y;
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
-                if (prevY !== yy) {
-                    this.animate(prevY, yy, duration, ease, userAction);
+                if (prevY !== y) {
+                    this.animate(prevY, y, duration, ease, userAction);
                 }
             } else {
-                if (prevX !== xx) {
-                    this.animate(prevX, xx, duration, ease, userAction);
+                if (prevX !== x) {
+                    this.animate(prevX, x, duration, ease, userAction);
                 }
             }
         } else {
-            if (!limits) {
-                this.x = xx;
-                this.y = yy;
-            }
             if (isVertical) {
-                if (prevY !== yy) {
-                    if (!blending) {
-                        this.stopScrolling();
-                    }
-                    this.refreshY(yy);
-                    this.emitScrollableEvent();
-                    if (fireUpdate) {
-                        this.fireScrollEvent(userAction);
-                    }
+                if (!blending) {
+                    this.stopScrolling();
+                }
+                this.refreshY(y);
+                this.y = y;
+                this.emitScrollableEvent();
+                if (fireUpdate) {
+                    this.fireScrollEvent(userAction);
                 }
             } else {
-                if (prevX !== xx) {
-                    if (!blending) {
-                        this.stopScrolling();
-                    }
-                    this.refreshX(xx);
-                    this.emitScrollableEvent();
-                    if (fireUpdate) {
-                        this.fireScrollEvent(userAction);
-                    }
+                if (!blending) {
+                    this.stopScrolling();
+                }
+                this.refreshX(x);
+                this.x = x;
+                this.emitScrollableEvent();
+                if (fireUpdate) {
+                    this.fireScrollEvent(userAction);
                 }
             }
         }
@@ -483,9 +474,7 @@ export class NgScrollView extends BaseScrollView {
         this.move(this.isVertical(), offset);
     }
 
-    override ngOnDestroy(): void {
-        super.ngOnDestroy();
-
+    ngOnDestroy(): void {
         if (this._animator) {
             this._animator.dispose();
         }
