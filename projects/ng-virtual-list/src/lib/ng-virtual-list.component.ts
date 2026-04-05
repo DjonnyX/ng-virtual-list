@@ -2484,7 +2484,7 @@ export class NgVirtualListComponent implements OnDestroy {
   private checkBoundsOfElements() {
     const changed = this._trackBox.checkBoundsOfElements();
     if (changed) {
-      this._trackBox.changes(true, true);
+      this._trackBox.changes(true, this._readyForShow);
     }
   }
 
