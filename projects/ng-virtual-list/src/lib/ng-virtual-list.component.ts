@@ -2041,12 +2041,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
           if (scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) {
             if (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate) {
-              if (roundedMaxPositionAfterUpdate <= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING) {
-                if (!snapScrollToStart && snapScrollToEnd) {
-                  this._trackBox.isScrollStart = false;
-                  this._trackBox.isScrollEnd = true;
-                }
-              }
               this._trackBox.clearDelta();
               if (this._readyForShow) {
                 this.emitScrollEvent(true, false, userAction);
@@ -2301,9 +2295,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
               this.tracking();
 
-              scrollSize = snapScrollToEnd && this._trackBox.isSnappedToEnd ?
-                (isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth) :
-                this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
+              this.snappingHandler();
+
+              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
               if (scrollSize === -1) {
                 return of([finished, { id, blending, iteration: nextIteration, scrollCalled, cb }]).pipe(delay(0));
               }
@@ -2484,11 +2478,13 @@ export class NgVirtualListComponent implements OnDestroy {
   private checkBoundsOfElements() {
     const changed = this._trackBox.checkBoundsOfElements();
     if (changed) {
-      this._trackBox.changes(true, this._readyForShow);
+      const readyForShow = this._readyForShow,
+        isScrolling = this._$scrollingTo.getValue();
+      this._trackBox.changes(true, readyForShow && !isScrolling);
     }
   }
 
-  private snappingHandler = () => {
+  private snappingHandler() {
     const scroller = this._scrollerComponent();
     if (!!scroller) {
       const isVertical = this.isVertical,
