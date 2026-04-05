@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.11.0] - 2026-04-05
+
+### Added
+- Implemented an API inside the list item to manage the list.
+- The ability to customize the scroll bar has been implemented.
+- Added custom scrollbar example.
+
+### Improved
+- Improved overall performance.
+
+### Fixed
+- Display defects have been fixed.
+- Overall component stability has been improved.
+
 ## [17.10.7] - 2026-04-01
 
 ### Added
@@ -39,7 +53,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Emit a scroll event after calling scrollTo and scrollToEnd.
-- Create modules for 17.x 20.x 21.x.
+- Create modules for 17.x 17.x 21.x.
 - Fix a bug in list initialization.
 - API optimization. Hiding unnecessary properties and methods.
 - If the scroll bar is pinned to the end of the list, moving the scroll bar does not reset this pinning.

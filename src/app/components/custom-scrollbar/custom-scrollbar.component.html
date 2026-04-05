@@ -1,0 +1,6 @@
+@if (params(); as p) {
+<x-substrate #substrate mode="rounded-rectangle" class="shape" [style.width.px]="width()" [style.height.px]="height()"
+    [type]="type()" [width]="width()" [height]="height()" [roundCorner]="p.roundCorner" [strokeWidth]="8"
+    [rippleColor]="p.rippleColor" [fillPositions]="fillPositions()" [fillColors]="fillColors()"
+    [strokeColors]="p.strokeGradientColor" [strokeAnimationDuration]="p.strokeAnimationDuration"></x-substrate>
+}
