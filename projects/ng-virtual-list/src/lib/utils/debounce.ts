@@ -18,9 +18,13 @@ export interface IDebounce {
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
+ * @param cb - Callback.
+ * @param debounceTime - Debounce trigger time. 
+ * @param maxSkips - Maximum numbers of skips.
+ * @returns 
  */
-export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0): IDebounce => {
-    let timeout: any = null;
+export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number = 0, maxSkips: number = 0): IDebounce => {
+    let timeout: any = null, throws = 0;
     const dispose = () => {
         if (timeout !== null) {
             clearTimeout(timeout);
@@ -28,11 +32,30 @@ export const debounce = (cb: (...args: Array<any>) => void, debounceTime: number
         }
     }
     const execute = (...args: Array<any>) => {
+        if (maxSkips > 0) {
+            if (timeout !== null) {
+                throws++;
+            } else {
+                throws = 0;
+            }
+        }
+
         dispose();
 
-        timeout = setTimeout(() => {
-            cb(...args);
-        }, debounceTime);
+        let called = false;
+        if (maxSkips > 0) {
+            if (throws === maxSkips) {
+                throws = 0;
+                called = true;
+                cb(...args);
+            }
+        }
+
+        if (!called) {
+            timeout = setTimeout(() => {
+                cb(...args);
+            }, debounceTime);
+        }
     };
     const getIsDisposed = () => {
         return timeout === null;

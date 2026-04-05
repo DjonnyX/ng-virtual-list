@@ -8,10 +8,6 @@ import { IRect } from "../interfaces";
  */
 export interface IDisplayObjectMeasures extends IRect {
   /**
-   * List position
-   */
-  positionOffset: number;
-  /**
    * Item position
    */
   position: number;

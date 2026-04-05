@@ -1,23 +1,24 @@
 import { Component, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  NgVirtualListModule, NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
-  ScrollBarTheme, RoundedCorner,
-} from '../../projects/ng-virtual-list/src/public-api';
-import { LOGO } from './const';
 import { delay, interval, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  NgVirtualListModule, NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
+} from '../../projects/ng-virtual-list/src/public-api';
+import { LOGO } from './const';
+import { GradientColor, RoundedCorner } from './components/interfaces';
+import { CustomScrollBarTheme } from './components/custom-scrollbar/interfaces/custom-scrollbar-theme';
+import { CustomScrollbarModule } from './components/custom-scrollbar/custom-scrollbar.module';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
-  SCROLLBAR_GRADIENT: ScrollBarTheme = {
+  CUSTOM_SCROLLBAR_THEME: CustomScrollBarTheme = {
     fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
     hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
     pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
-    thickness: 6,
     roundCorner: ROUND_CORNER,
     rippleColor: 'rgba(255,255,255,0.5)',
     rippleEnabled: true,
@@ -171,7 +172,7 @@ const generateDynamicShortItems = (len: number, startWith: number = 0) => {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, NgVirtualListModule],
+  imports: [CommonModule, FormsModule, NgVirtualListModule, CustomScrollbarModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -184,7 +185,7 @@ export class AppComponent {
 
   protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
 
-  scrollbarTheme = SCROLLBAR_GRADIENT;
+  customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
 
   items = ITEMS;
 
@@ -241,12 +242,12 @@ export class AppComponent {
         collection.unshift(...generateDynamicItems(1, this.dynamicItems.length));
         this.dynamicItems = collection;
       }),
-      delay(250),
-      tap(() => {
-        const collection = [...this.dynamicItems];
-        collection.shift();
-        this.dynamicItems = collection;
-      }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicItems];
+      //   collection.shift();
+      //   this.dynamicItems = collection;
+      // }),
       delay(450),
       tap(() => {
         const collection = [...this.dynamicItems], len = collection.length, insertIndex = Math.floor(len * .5),
@@ -271,12 +272,12 @@ export class AppComponent {
         collection.unshift(...generateDynamicShortItems(1, this.dynamicShortItems.length));
         this.dynamicShortItems = collection;
       }),
-      delay(250),
-      tap(() => {
-        const collection = [...this.dynamicShortItems];
-        collection.shift();
-        this.dynamicShortItems = collection;
-      }),
+      // delay(250),
+      // tap(() => {
+      //   const collection = [...this.dynamicShortItems];
+      //   collection.shift();
+      //   this.dynamicShortItems = collection;
+      // }),
       delay(450),
       tap(() => {
         const collection = [...this.dynamicShortItems], len = collection.length, insertIndex = Math.floor(len * .5),

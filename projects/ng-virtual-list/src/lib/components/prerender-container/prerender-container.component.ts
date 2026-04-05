@@ -6,7 +6,6 @@ import {
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
-import { ScrollBarTheme } from "../../types";
 import { Direction } from "../../enums";
 import { PrerenderList } from "./components/prerender-list/prerender-list.component";
 import { filter, Observable, switchMap } from "rxjs";
@@ -41,11 +40,7 @@ export class PrerenderContainer {
 
     isVertical = input<boolean>(true);
 
-    items = input.required<IVirtualListCollection>();
-
     scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
-
-    scrollbarTheme = input<ScrollBarTheme | null>(null);
 
     startOffset = input<number>(0);
 
@@ -84,10 +79,10 @@ export class PrerenderContainer {
         }
     }
 
-    on() {
+    on(items: IVirtualListCollection | null = null) {
         const list = this._list();
         if (!!list) {
-            list.on();
+            list.on(items);
         }
     }
 
