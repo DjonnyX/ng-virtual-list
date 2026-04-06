@@ -1,5 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [21.11.0] - 2026-04-06
+
+### Added
+- Implemented an API inside the list item to manage the list.
+- The ability to customize the scroll bar has been implemented.
+- Added custom scrollbar example.
+
+### Improved
+- Improved overall performance.
+
+### Fixed
+- Display defects have been fixed.
+- Overall component stability has been improved.
 
 ## [20.10.10] - 2026-03-30
 

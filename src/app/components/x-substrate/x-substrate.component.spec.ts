@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SubstrateComponent } from './substrate.component';
+import { XSubstrateComponent } from './x-substrate.component';
 
-describe('SubstrateComponent', () => {
-  let component: SubstrateComponent;
-  let fixture: ComponentFixture<SubstrateComponent>;
+describe('XSubstrateComponent', () => {
+  let component: XSubstrateComponent;
+  let fixture: ComponentFixture<XSubstrateComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubstrateComponent]
+      imports: [XSubstrateComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(SubstrateComponent);
+    fixture = TestBed.createComponent(XSubstrateComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
