@@ -64,7 +64,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
     }
     override get y() { return this._y; }
 
-    protected override onResizeViewport = () => {
+    protected override onResizeViewport() {
         const viewport = this.scrollViewport()?.nativeElement;
         if (viewport) {
             this.viewportBounds.set({ width: viewport.offsetWidth, height: viewport.offsetHeight });
@@ -72,7 +72,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
         }
     }
 
-    protected override onResizeContent = () => {
+    protected override onResizeContent() {
         const content = this.scrollContent()?.nativeElement;
         if (content) {
             this.contentBounds.set({ width: content.offsetWidth, height: content.offsetHeight });
