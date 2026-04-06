@@ -1,14 +1,13 @@
-import { Color } from "./color";
-import { GradientColor } from "./gradient-color";
-import { RoundedCorner } from "./rounded-corner";
+import { Color } from "../../interfaces/color";
+import { GradientColor, RoundedCorner } from "../../interfaces";
 
 /**
  * ScrollBarTheme
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/src/app/components/custom-scrollbar/interfaces/custom-scrollbar-theme.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export type ScrollBarTheme = {
+export type CustomScrollBarTheme = {
     /**
      * Fill color or gradient in normal state.
      */
@@ -29,10 +28,6 @@ export type ScrollBarTheme = {
      * Stroke animation duration.
      */
     strokeAnimationDuration: number;
-    /**
-     * Scrollbar thickness.
-     */
-    thickness: number;
     /**
      * An array of edge roundings where ['top-left', 'top-right', 'bottom-right', 'bottom-left']
      */
