@@ -1,20 +1,20 @@
 import { Component, ViewChild } from '@angular/core';
 import {
-  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, GradientColor, Id,
-  ScrollBarTheme, RoundedCorner,
+  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 import { delay, interval, tap } from 'rxjs';
+import { GradientColor, RoundedCorner } from './components/interfaces';
+import { CustomScrollBarTheme } from './components/custom-scrollbar/interfaces/custom-scrollbar-theme';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
-  SCROLLBAR_GRADIENT: ScrollBarTheme = {
+  CUSTOM_SCROLLBAR_THEME: CustomScrollBarTheme = {
     fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
     hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
     pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
     strokeAnimationDuration: 1000,
-    thickness: 6,
     roundCorner: ROUND_CORNER,
     rippleColor: 'rgba(255,255,255,0.5)',
     rippleEnabled: true,
@@ -183,7 +183,7 @@ export class AppComponent {
   protected _dynamicListContainerRef!: NgVirtualListComponent;
   readonly logo = LOGO;
 
-  scrollbarTheme = SCROLLBAR_GRADIENT;
+  customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
 
   items = ITEMS;
 

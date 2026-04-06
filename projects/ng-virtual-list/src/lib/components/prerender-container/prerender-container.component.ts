@@ -1,15 +1,14 @@
 import {
     ChangeDetectionStrategy, Component, Input, TemplateRef, ViewChild, ViewEncapsulation,
 } from "@angular/core";
+import { filter, Observable, of, switchMap, takeUntil } from "rxjs";
 import {
     DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
-import { ScrollBarTheme } from "../../types";
 import { Direction } from "../../enums";
 import { PrerenderList } from "./components/prerender-list/prerender-list.component";
-import { filter, Observable, of, switchMap, takeUntil } from "rxjs";
 import { PrerenderCache } from "./types";
 import { DisposableComponent } from "../../utils/disposable-component";
 
@@ -45,13 +44,7 @@ export class PrerenderContainer extends DisposableComponent {
     isVertical: boolean = true;
 
     @Input()
-    items: IVirtualListCollection = [];
-
-    @Input()
     scrollbarEnabled: boolean = DEFAULT_SCROLLBAR_ENABLED;
-
-    @Input()
-    scrollbarTheme: ScrollBarTheme | null = null;
 
     @Input()
     startOffset: number = 0;
@@ -101,10 +94,10 @@ export class PrerenderContainer extends DisposableComponent {
         }
     }
 
-    on() {
+    on(items: IVirtualListCollection | null = null) {
         const list = this._list;
         if (!!list) {
-            list.on();
+            list.on(items);
         }
     }
 

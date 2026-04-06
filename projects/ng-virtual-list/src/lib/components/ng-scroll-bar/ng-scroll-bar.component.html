@@ -1,10 +1,12 @@
 <div #scrollViewport class="track" part="scrollbar-track" [ngStyle]="$styles | async" [ngClass]="($classes | async)!">
-    <div #scrollContent class="thumb" part="scrollbar-thumb" [class.horizontal]="($isVertical | async)! == false">
-        <substrate #substrate mode="rounded-rectangle" class="shape" [type]="($type | async)!"
-            [width]="($thumbWidth | async)!" [height]="($thumbHeight | async)!" [roundCorner]="($roundCorner | async)!"
-            [strokeWidth]="8" [rippleColor]="($rippleColor | async)!"
-            [fillPositions]="($thumbGradientPositions | async)!" [fillColors]="($thumbGradientFill | async)!"
-            [strokeColors]="($strokeGradientColor | async)!"
-            [strokeAnimationDuration]="($strokeAnimationDuration | async)!"></substrate>
+    <div #scrollContent class="thumb" part="scrollbar-thumb" [class.horizontal]="($isVertical | async)! == false"
+        (pointerdown)="click($event)">
+        <ng-container [ngTemplateOutlet]="($thumbRenderer | async)!"
+            [ngTemplateOutletContext]="($templateContext | async)!"></ng-container>
     </div>
 </div>
+
+<ng-template #defaultRenderer let-api="api" let-width="width" let-height="height" let-fillPositions="fillPositions"
+    let-params="params">
+    <div class="shape" part="scrollbar-thumb__shape" [style.width.px]="width" [style.height.px]="height"></div>
+</ng-template>

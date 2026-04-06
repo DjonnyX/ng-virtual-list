@@ -12,7 +12,7 @@ export const validateScrollIteration = (value: number) => {
             throw Error('The "id" parameter must be of type `Id`.');
         }
     },
-    validateScrollBehavior = (behavior: ScrollBehavior | string) => {
+    validateScrollBehavior = (behavior: ScrollBehavior | 'auto' | 'instant' | 'smooth') => {
         const valid = validateString(behavior as string) && (behavior === 'auto' || behavior === 'instant' || behavior === 'smooth');
         if (!valid) {
             throw Error('The "behavior" parameter must have the value `auto`, `instant` or `smooth`.');
