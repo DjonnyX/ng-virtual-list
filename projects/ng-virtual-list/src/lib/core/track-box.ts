@@ -17,14 +17,13 @@ import { PrerenderCache } from "../components/prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
+    TICK = 'tick',
 }
 
 export interface IMetrics {
     delta: number;
     normalizedItemWidth: number;
     normalizedItemHeight: number;
-    offsetX: number;
-    offsetY: number;
     width: number;
     height: number;
     dynamicSize: boolean;
@@ -56,7 +55,7 @@ export interface IMetrics {
 }
 
 export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
-    bounds: IRect;
+    bounds: ISize;
     collection: C;
     isVertical: boolean;
     itemSize: number;
@@ -82,7 +81,9 @@ export type CacheMapEvents = TrackBoxEvents;
 
 export type OnChangeEventListener = (version: number) => void;
 
-export type CacheMapListeners = OnChangeEventListener;
+export type OnTickEventListener = () => void;
+
+export type CacheMapListeners = OnChangeEventListener | OnTickEventListener;
 
 export enum ItemDisplayMethods {
     CREATE,
@@ -270,6 +271,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    protected fireTick() {
+        this.dispatch(TrackBoxEvents.TICK);
+    }
+
     protected _previousTotalSize = 0;
 
     protected _deltaOfNewItems: number = 0;
@@ -300,6 +305,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected override lifeCircle() {
         this.fireChangeIfNeed();
+
+        this.fireTick();
 
         this.lifeCircleDo();
     }
@@ -813,8 +820,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             delta,
             normalizedItemWidth: w,
             normalizedItemHeight: h,
-            offsetX: bounds.x,
-            offsetY: bounds.y,
             width,
             height,
             dynamicSize,
@@ -864,11 +869,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    changes(immediately: boolean = false): void {
+    changes(immediately: boolean = false, force: boolean = false): void {
         if (immediately) {
+            if (force) {
+                this.bumpVersion();
+            }
             this._previousVersion = this._version;
             this.dispatch(CACHE_BOX_CHANGE_EVENT_NAME as CacheMapEvents, this.version);
         } else {
+            if (force) {
+                this.bumpVersion();
+                return;
+            }
             if (this.changesDetected()) {
                 return;
             }
@@ -876,11 +888,32 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    /**
+     * Returns true if the bounds of at least one screen object have changed.
+     */
+    checkBoundsOfElements(): boolean {
+        if (!this._displayComponents) {
+            return false;
+        }
+
+        for (let i = 0, l = this._displayComponents.length; i < l; i++) {
+            const component = this._displayComponents[i], itemId = component.instance.itemId;
+            if (itemId === undefined) {
+                continue;
+            }
+            const bounds = component.instance.getBounds(), cache = this.get(itemId);
+            if (!!bounds && !!cache) {
+                if (bounds.width !== cache.width || bounds.height !== cache.height) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
         metrics: IMetrics): IRenderVirtualListCollection {
         const {
-            offsetY,
-            offsetX,
             width,
             height,
             normalizedItemWidth,
@@ -905,8 +938,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const trackBy = this._trackingPropertyName, actualSnippedPosition = snipedPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
-                boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset,
-                positionOffset = isVertical ? offsetY : offsetX;
+                boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
             let pos = startPosition,
                 renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
@@ -936,7 +968,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 height: isVertical ? size : normalizedItemHeight,
                                 size,
                                 position: pos,
-                                positionOffset,
                                 boundsSize,
                                 scrollSize,
                                 absoluteStartPosition,
@@ -1003,7 +1034,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 size,
                                 position: pos,
                                 boundsSize,
-                                positionOffset,
                                 scrollSize,
                                 absoluteStartPosition,
                                 absoluteStartPositionPercent,
@@ -1074,7 +1104,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             size,
                             position: pos,
                             boundsSize,
-                            positionOffset,
                             scrollSize,
                             absoluteStartPosition,
                             absoluteStartPositionPercent,

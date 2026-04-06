@@ -1,7 +1,6 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
 import { IAnimationParams } from '../interfaces';
-import { GradientColor, ScrollBarTheme } from "../types";
 
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
@@ -67,19 +66,7 @@ export const DEFAULT_SCREEN_READER_MESSAGE = 'Showing items $1 to $2';
 
 export const DEFAULT_LANG_TEXT_DIR = TextDirections.LTR;
 
-const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(126, 219, 255)"];;
-
-export const DEFAULT_SCROLLBAR_THEME: ScrollBarTheme = {
-    fill: ["rgba(198, 172, 248, 1)", "rgba(168, 229, 250, 1)"],
-    hoverFill: ["rgba(165, 136, 220, 1)", "rgba(132, 195, 217, 1)"],
-    pressedFill: ["rgba(132, 104, 185, 1)", "rgba(107, 171, 193, 1)"],
-    strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
-    strokeAnimationDuration: 1000,
-    thickness: 12,
-    roundCorner: [3, 3, 3, 3],
-    rippleColor: 'rgba(0,0,0,0.5)',
-    rippleEnabled: true,
-}
+export const DEFAULT_SCROLLBAR_THICKNESS: number = 6;
 
 export const DEFAULT_SCROLLBAR_MIN_SIZE: number = 80;
 
@@ -212,6 +199,8 @@ export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10;
 export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1 = 74;
 
 export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 = 500;
+
+export const MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1 = 4;
 
 export const RANGE_DISPLAY_ITEMS_END_OFFSET = 20;
 

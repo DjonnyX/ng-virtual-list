@@ -3,7 +3,7 @@
 </div>
 
 <prerender-container #prerender [bounds]="($bounds | async)!" [direction]="($direction | async)!"
-  [items]="items" [dynamic]="($dynamicSize | async)!" [isVertical]="($isVertical | async)!"
+  [dynamic]="($dynamicSize | async)!" [isVertical]="($isVertical | async)!"
   [itemSize]="($itemSize | async)!" [trackBy]="($trackBy | async)!" [itemRenderer]="($itemRenderer | async)!"
   [startOffset]="($scrollStartOffset | async)!" [endOffset]="($scrollEndOffset | async)!"
   [scrollbarEnabled]="(scroller.$scrollbarShow | async)!"
@@ -19,7 +19,8 @@
 </ng-container>
 <ng-scroller class="ngvl__list-scroller" #scroller [classes]="($classes | async)!"
   [startOffset]="($scrollStartOffset | async)!" [direction]="($direction | async)!"
-  [endOffset]="($scrollEndOffset | async)!" [scrollbarTheme]="($scrollbarTheme | async)!"
+  [endOffset]="($scrollEndOffset | async)!" [scrollbarThumbRenderer]="($scrollbarThumbRenderer | async)!"
+  [scrollbarThickness]="($scrollbarThickness | async)!" [scrollbarThumbParams]="($scrollbarThumbParams | async)"
   [focusedElement]="($focusedElement | async)!" [loading]="($loading | async)!"
   [overscrollEnabled]="($overscrollEnabled | async)!" [scrollbarEnabled]="($scrollbarEnabled | async)!"
   [scrollbarInteractive]="($scrollbarInteractive | async)!" [scrollbarMinSize]="($scrollbarMinSize | async)!"

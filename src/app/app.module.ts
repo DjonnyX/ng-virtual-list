@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { NgVirtualListModule } from '../../projects/ng-virtual-list/src/lib/ng-virtual-list.module';
 import { CommonModule } from '@angular/common';
+import { CustomScrollbarModule } from './components/custom-scrollbar/custom-scrollbar.module';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { CommonModule } from '@angular/common';
     FormsModule,
     AppRoutingModule,
     NgVirtualListModule,
+    CustomScrollbarModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

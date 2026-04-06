@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
 import { BehaviorSubject, combineLatest, from, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TextDirection, TextDirections } from '../../../../enums';
-import { ScrollBarTheme } from '../../../../types';
 import { BaseScrollView } from '../../../ng-scroll-view/base/base-scroll-view.component';
 import { SCROLL_VIEW_INVERSION } from '../../../ng-scroll-view';
 import { BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, LEFT_PROP_NAME, TOP_PROP_NAME } from '../../../../const';
 import { NgScrollBarComponent } from '../../../ng-scroll-bar/ng-scroll-bar.component';
 import { ScrollBox } from '../../../scroller/utils';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/const';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * PrerenderScrollerComponent.
@@ -32,6 +31,9 @@ export class PrerenderScrollerComponent extends BaseScrollView {
     @ViewChild('scrollBar', { read: NgScrollBarComponent })
     scrollBar: NgScrollBarComponent | undefined;
 
+    protected _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
+    readonly $langTextDir = this._$langTextDir.asObservable();
+
     protected _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
     readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
     @Input()
@@ -42,16 +44,6 @@ export class PrerenderScrollerComponent extends BaseScrollView {
     }
     get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
-    protected _$scrollbarTheme = new BehaviorSubject<ScrollBarTheme | null>(null);
-    readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
-    @Input()
-    set scrollbarTheme(v: ScrollBarTheme | null) {
-        if (this._$scrollbarTheme.getValue() !== v) {
-            this._$scrollbarTheme.next(v);
-        }
-    }
-    get scrollbarTheme() { return this._$scrollbarTheme.getValue(); }
-
     protected _$classes = new BehaviorSubject<{ [cName: string]: boolean }>({});
     readonly $classes = this._$classes.asObservable();
     @Input()
@@ -61,9 +53,6 @@ export class PrerenderScrollerComponent extends BaseScrollView {
         }
     }
     get classes() { return this._$classes.getValue(); }
-
-    protected _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
-    readonly $langTextDir = this._$langTextDir.asObservable();
 
     protected _$actualClasses = new BehaviorSubject<{ [cName: string]: boolean }>({});
     readonly $actualClasses = this._$actualClasses.asObservable();
@@ -95,7 +84,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
     }
     override get y() { return this._y; }
 
-    protected override _onResizeViewportHandler = () => {
+    protected override onResizeViewport() {
         const viewport = this.scrollViewport?.nativeElement;
         if (viewport) {
             this._$viewportBounds.next({ width: viewport.offsetWidth, height: viewport.offsetHeight });
@@ -103,7 +92,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
         }
     }
 
-    protected override _onResizeContentHandler = () => {
+    protected override onResizeContent() {
         const content = this.scrollContent?.nativeElement;
         if (content) {
             this._$contentBounds.next({ width: content.offsetWidth, height: content.offsetHeight });
@@ -120,7 +109,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $direction = this.$direction;
 
         combineLatest(([$classes, $direction])).pipe(
-            takeUntilDestroyed(),
+            takeUntilDestroyed(this._destroyRef),
             tap(([classes, direction]) => {
                 this._$actualClasses.next({ ...classes, [direction]: true });
             }),
@@ -132,7 +121,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $scrollbarEnabled = this.$scrollbarEnabled;
 
         combineLatest([$direction, $scrollbarEnabled, $isVertical, $contentBounds, $viewportBounds]).pipe(
-            takeUntilDestroyed(),
+            takeUntilDestroyed(this._destroyRef),
             tap(([direction, scrollbarEnabled]) => {
                 this._$containerClasses.next({ [direction]: true, enabled: scrollbarEnabled, scrollable: scrollbarEnabled });
             }),
@@ -143,7 +132,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $thumbSize = this.$thumbSize;
 
         from([$endOffset, $startOffset, $thumbSize, $isVertical]).pipe(
-            takeUntilDestroyed(),
+            takeUntilDestroyed(this._destroyRef),
             tap(() => {
                 this.updateScrollBar();
             }),
@@ -152,7 +141,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
         const $updateScrollBar = this.$updateScrollBar;
 
         $updateScrollBar.pipe(
-            takeUntilDestroyed(),
+            takeUntilDestroyed(this._destroyRef),
             tap(() => {
                 this.updateScrollBarHandler(true);
             }),

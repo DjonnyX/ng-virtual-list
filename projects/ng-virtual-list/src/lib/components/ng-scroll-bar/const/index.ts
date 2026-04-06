@@ -1,11 +1,7 @@
-import { RoundedCorner } from "../../../types";
+import { IScrollBarTemplateContext } from "../interfaces";
 
 export const DEFAULT_THICKNESS = 6,
     DEFAULT_SIZE = 6,
-    DEFAULT_ROUNDED_CORNER: RoundedCorner = [3, 3, 3, 3],
-    DEFAULT_STROKE_ANIMATION_DURATION = 500,
-    DEFAULT_RIPPLE_ENABLED = true,
-    DEFAULT_RIPPLE_COLOR = 'rgba(0,0,0,0.5)',
     PX = 'px',
     WIDTH = 'width',
     HEIGHT = 'height',
@@ -15,3 +11,11 @@ export const DEFAULT_THICKNESS = 6,
     TRANSITION = 'transition',
     NONE = 'none',
     TRANSITION_FADE_IN = `${OPACITY} 500ms ease-out`;
+
+export const DEFAULT_SCROLLBAR_TEMPLATE_CONTEXT: IScrollBarTemplateContext = {
+    api: null,
+    width: 0,
+    height: 0,
+    fillPositions: [0, 1],
+    params: {}
+}
