@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.11.2] - 2026-04-06
+- Code refactoring
+
+## [20.11.1] - 2026-04-05
+
+### Fixed
+- Missing modules have been exported
+
 ## [20.11.0] - 2026-04-05
 
 ### Added

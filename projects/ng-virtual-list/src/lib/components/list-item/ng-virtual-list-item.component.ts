@@ -267,17 +267,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     return -1;
   }
 
-  private focus(align: FocusAlignment = FocusAlignments.CENTER, index: number = -1) {
-    if (this._service.listElement) {
-      const tabIndex = index > -1 ? index : this._data?.config?.tabIndex ?? 0;
-      let i = tabIndex;
-      const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(i));
-      if (!!element) {
-        this._service.focus(element, align);
-      }
-    }
-  }
-
   protected override updateConfig(v: IRenderVirtualListItem<any> | null) {
     this.config.set({
       ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(),
