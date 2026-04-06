@@ -17,7 +17,6 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
         index,
         id,
         measures: {
-            positionOffset: 0,
             position: 0,
             scrollSize: 0,
             size: itemSize,

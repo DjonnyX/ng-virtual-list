@@ -1,41 +1,39 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BehaviorSubject, combineLatest, delay, filter, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Color } from '../../types/color';
-import { GradientColor } from '../../types/gradient-color';
-import { GradientColorPositions } from '../../types/gradient-color-positions';
-import { RoundedCorner } from '../../types/rounded-corner';
+import { GradientColorPositions } from '../../../../projects/ng-virtual-list/src/lib/types/gradient-color-positions';
+import { getShapeMinSize } from '../utils/get-shape-min-size';
+import { RoundedCorner, GradientColor, Color } from '../interfaces';
 import { SubstarateMode } from './types/substrate-mode';
 import { SubstarateModes } from './enums/substrate-modes';
 import { SubstarateStyle } from './types';
 import { SubstarateStyles } from './enums';
-import { getShapeMinSize } from '../../utils/get-shape-min-size';
 import { circlePath, roundedRectPath } from './utils';
 import {
-  CLIP_NAME, CLIP_PATH, CX, CY, D, DEFAULT_FILL_COLORS, DEFAULT_RIPPLE_COLOR, DEFAULT_STROKE_ANIMATION_DURATION,
-  DEFAULT_STROKE_WIDTH, DUR, FILL, FILL_GRADIENT_NAME, GRADIENT_COLOR_NAME, HREF, ID, MS, NONE, PX, R, RIPPLE_ANIMATE_CLASS,
-  SHAPE_NAME, STROKE, STROKE_GRADIENT_NAME, STROKE_WIDTH, VIEW_BOX, X1, X2,
+  CLIP_NAME, CLIP_PATH, CX, CY, D, DEFAULT_FILL_COLORS, DEFAULT_RIPPLE_COLOR, DEFAULT_STROKE_ANIMATION_DURATION, DEFAULT_STROKE_WIDTH,
+  DUR, FILL, FILL_GRADIENT_NAME, GRADIENT_COLOR_NAME, HREF, ID, MS, NONE, PX, R, RIPPLE_ANIMATE_CLASS, SHAPE_NAME, STROKE,
+  STROKE_GRADIENT_NAME, STROKE_WIDTH, VIEW_BOX, X1, X2,
 } from './const';
 
 /**
  * Substrate
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/substrate/substrate.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/src/app/components/x-substrate/x-substrate.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Component({
-  selector: 'substrate',
-  templateUrl: './substrate.component.html',
-  styleUrls: ['./substrate.component.scss'],
+  selector: 'x-substrate',
+  templateUrl: './x-substrate.component.html',
+  styleUrls: ['./x-substrate.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.Emulated,
 })
-export class SubstrateComponent {
+export class XSubstrateComponent {
   private static __id: number = 0;
   private static get nextId() {
-    const id = SubstrateComponent.__id = SubstrateComponent.__id + 1 === Number.MAX_SAFE_INTEGER ? 0 : SubstrateComponent.__id + 1;
+    const id = XSubstrateComponent.__id = XSubstrateComponent.__id + 1 === Number.MAX_SAFE_INTEGER ? 0 : XSubstrateComponent.__id + 1;
     return id;
   }
 
@@ -196,7 +194,7 @@ export class SubstrateComponent {
   protected _destroyRef = inject(DestroyRef);
 
   constructor(private _elementRef: ElementRef<HTMLDivElement>) {
-    this._id = SubstrateComponent.nextId;
+    this._id = XSubstrateComponent.nextId;
   }
 
   ngAfterViewInit(): void {

@@ -3,14 +3,13 @@ import {
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { toggleClassName } from "../../../../utils";
-import { BehaviorSubject, combineLatest, filter, Subject, Subscription, takeUntil, tap } from "rxjs";
+import { BehaviorSubject, combineLatest, filter, Subject, Subscription, tap } from "rxjs";
 import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
-import { ScrollBarTheme } from "../../../../types";
 import { PrerenderCache } from "../../types/cache";
 import { BaseVirtualListItemComponent } from "../../../list-item/base";
 import { Component$1 } from "../../../../models/component.model";
@@ -92,16 +91,6 @@ export class PrerenderList implements OnDestroy {
     }
     get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
-    protected _$scrollbarTheme = new BehaviorSubject<ScrollBarTheme | null>(null);
-    readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
-    @Input()
-    set scrollbarTheme(v: ScrollBarTheme | null) {
-        if (this._$scrollbarTheme.getValue() !== v) {
-            this._$scrollbarTheme.next(v);
-        }
-    }
-    get scrollbarTheme() { return this._$scrollbarTheme.getValue(); }
-
     protected _$startOffset = new BehaviorSubject<number>(0);
     readonly $startOffset = this._$startOffset.asObservable();
     @Input()
@@ -122,7 +111,7 @@ export class PrerenderList implements OnDestroy {
     }
     get endOffset() { return this._$endOffset.getValue(); }
 
-    protected _$bounds = new BehaviorSubject<ISize | null>(null);
+    protected _$bounds = new BehaviorSubject<ISize | null>({ width: 0, height: 0 });
     readonly $bounds = this._$bounds.asObservable();
     @Input()
     set bounds(v: ISize | null) {
@@ -208,10 +197,6 @@ export class PrerenderList implements OnDestroy {
     protected _destroyRef = inject(DestroyRef);
 
     constructor() {
-        this.$isVertical = this.$isVertical;
-        this.$items = this.$items;
-        this.$bounds = this.$bounds;
-
         const $enabled = this.$enabled;
         $enabled.pipe(
             takeUntilDestroyed(this._destroyRef),
@@ -304,9 +289,10 @@ export class PrerenderList implements OnDestroy {
         }
     }
 
-    on() {
+    on(items: IVirtualListCollection | null = null) {
         if (!!this._trackBox) {
             this._trackBox.on();
+            this._$items.next(items ?? []);
         }
     }
 

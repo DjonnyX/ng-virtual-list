@@ -1,6 +1,4 @@
-import { ChangeDetectorRef, ElementRef, inject, TemplateRef, DestroyRef } from '@angular/core';
-import { BehaviorSubject, combineLatest, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectorRef, DestroyRef, ElementRef, inject, TemplateRef } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -14,18 +12,21 @@ import {
   CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, DEFAULT_TEMPLATE_CONTEXT, ID, ITEM_ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
-
-const EMPTY_HANDLER = () => { };
+import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
+import { BehaviorSubject, combineLatest, tap } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * BaseVirtualListItemComponent
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/list-item/base//base-virtual-list-item-component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/list-item/base/base-virtual-list-item-component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export class BaseVirtualListItemComponent {
+  private _apiService = inject(NgVirtualListPublicService);
+
   protected _cdr = inject(ChangeDetectorRef);
-  
+
   protected _destroyRef = inject(DestroyRef);
 
   protected _id!: number;
@@ -115,7 +116,8 @@ export class BaseVirtualListItemComponent {
   get itemId() {
     return this._data?.id;
   }
-  itemRenderer: TemplateRef<any> | undefined;
+
+  protected itemRenderer: TemplateRef<any> | undefined;
 
   set renderer(v: TemplateRef<any> | undefined) {
     if (this.itemRenderer === v) {
@@ -160,7 +162,7 @@ export class BaseVirtualListItemComponent {
       tap(([data, config, measures]) => {
         this._$templateContext.next({
           data: data?.data, prevData: data?.previouseData, nextData: data?.nextData, measures,
-          config, reseted: false, index: data?.index ?? - 1,
+          config, reseted: false, index: data?.index ?? - 1, api: this._apiService,
         });
       }),
     ).subscribe();
@@ -173,7 +175,6 @@ export class BaseVirtualListItemComponent {
   protected updateConfig(v: IRenderVirtualListItem<any> | null) {
     this._$config.next({
       ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
-      collapse: EMPTY_HANDLER, select: EMPTY_HANDLER, focus: EMPTY_HANDLER,
     });
   }
 

@@ -3,7 +3,6 @@ import {
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { BehaviorSubject, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ScrollerDirection } from './enums';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
@@ -17,6 +16,7 @@ import {
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * NgScrollView
@@ -78,9 +78,7 @@ export class NgScrollView extends BaseScrollView {
         super();
     }
 
-    override ngAfterViewInit() {
-        super.ngAfterViewInit();
-
+    ngAfterViewInit() {
         const $viewport = of(this.scrollViewport).pipe(
             takeUntilDestroyed(this._destroyRef),
             filter(v => !!v),
@@ -429,45 +427,40 @@ export class NgScrollView extends BaseScrollView {
             duration = params.duration ?? ANIMATION_DURATION,
             isVertical = this._$direction.getValue() === ScrollerDirection.VERTICAL;
 
-        const limits = this.scrollLimits(),
-            x = this.normalizeValue(posX),
+        const x = this.normalizeValue(posX),
             y = this.normalizeValue(posY),
-            xx = x,
-            yy = y,
             prevX = this._x,
             prevY = this._y;
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
-                if (prevY !== yy) {
-                    this.animate(prevY, yy, duration, ease, userAction);
+                if (prevY !== y) {
+                    this.animate(prevY, y, duration, ease, userAction);
                 }
             } else {
-                if (prevX !== xx) {
-                    this.animate(prevX, xx, duration, ease, userAction);
+                if (prevX !== x) {
+                    this.animate(prevX, x, duration, ease, userAction);
                 }
             }
         } else {
-            if (!limits) {
-                this.x = xx;
-                this.y = yy;
-            }
-            if (isVertical) {
-                if (prevY !== yy) {
+            if (this._y !== y) {
+                if (isVertical) {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    this.refreshY(yy);
+                    this.refreshY(y);
+                    this.y = y;
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
                 }
             } else {
-                if (prevX !== xx) {
+                if (this._x !== x) {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    this.refreshX(xx);
+                    this.refreshX(x);
+                    this.x = x;
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
@@ -504,8 +497,7 @@ export class NgScrollView extends BaseScrollView {
         this.move(this._$isVertical.getValue(), offset);
     }
 
-    override ngOnDestroy(): void {
-        super.ngOnDestroy();
+    ngOnDestroy(): void {
 
         if (this._animator) {
             this._animator.dispose();

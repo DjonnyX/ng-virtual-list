@@ -7,7 +7,7 @@ import { Id } from "../types";
  */
 export interface IScrollParams {
     id: Id;
-    behavior?: ScrollBehavior;
+    behavior?: ScrollBehavior | "auto" | "instant" | "smooth";
     blending?: boolean;
     iteration?: number;
     isLastIteration?: boolean;
