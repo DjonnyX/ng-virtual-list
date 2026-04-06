@@ -8,7 +8,6 @@ import {
 import { BaseVirtualListItemComponent } from './base';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
-import { validateBoolean } from '../../utils/validation';
 import { FocusAlignments } from '../../enums';
 import { IDisplayObjectConfig } from '../../models';
 import { createDisplayId, getListElementByIndex } from './utils';
@@ -38,44 +37,8 @@ import {
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent implements OnInit {
   protected readonly _service = inject(NgVirtualListService);
 
-
   private _$maxClickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
   $maxClickDistance = this._$maxClickDistance.asObservable();
-  private _selectHandler = (data: IRenderVirtualListItem<any> | null) =>
-    /**
-     * Selects a list item
-     * @param selected - If the value is undefined, then the toggle method is executed, if false or true, then the selection/deselection is performed.
-     */
-    (selected: boolean | undefined = undefined) => {
-      const valid = validateBoolean(selected, true);
-      if (!valid) {
-        console.error('The "selected" parameter must be of type `boolean` or `undefined`.');
-        return;
-      }
-      this._service.select(data, selected);
-    };
-
-  private _collapseHandler = (data: IRenderVirtualListItem<any> | null) =>
-    /**
-    * Collapse list items
-    * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
-    */
-    (collapsed: boolean | undefined = undefined) => {
-      const valid = validateBoolean(collapsed, true);
-      if (!valid) {
-        console.error('The "collapsed" parameter must be of type `boolean` or `undefined`.');
-        return;
-      }
-      this._service.collapse(data, collapsed);
-    };
-
-  private _focusHandler = () =>
-    /**
-    * Focus a list item
-    */
-    (align: FocusAlignment = FocusAlignments.CENTER) => {
-      this.focus(align);
-    };
 
   protected _injector = inject(Injector);
 
@@ -197,8 +160,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
           case KEY_SPACE: {
             e.stopImmediatePropagation();
             e.preventDefault();
-            this._service.select(this._data);
-            this._service.collapse(this._data);
+            if (!!this._data) {
+              this._service.select(this._data!.id!);
+              this._service.collapse(this._data!.id!);
+            }
             break;
           }
           case KEY_ARR_LEFT:
@@ -315,7 +280,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   protected override updateConfig(v: IRenderVirtualListItem<any> | null) {
     this._$config.next({
       ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
-      collapse: this._collapseHandler(v), select: this._selectHandler(v), focus: this._focusHandler(),
     });
   }
 
