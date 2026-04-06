@@ -424,24 +424,28 @@ export class NgScrollView extends BaseScrollView {
             }
         } else {
             if (isVertical) {
-                if (!blending) {
-                    this.stopScrolling();
-                }
-                this.refreshY(y);
-                this.y = y;
-                this.emitScrollableEvent();
-                if (fireUpdate) {
-                    this.fireScrollEvent(userAction);
+                if (this._y !== y) {
+                    if (!blending) {
+                        this.stopScrolling();
+                    }
+                    this.refreshY(y);
+                    this.y = y;
+                    this.emitScrollableEvent();
+                    if (fireUpdate) {
+                        this.fireScrollEvent(userAction);
+                    }
                 }
             } else {
-                if (!blending) {
-                    this.stopScrolling();
-                }
-                this.refreshX(x);
-                this.x = x;
-                this.emitScrollableEvent();
-                if (fireUpdate) {
-                    this.fireScrollEvent(userAction);
+                if (this._x !== x) {
+                    if (!blending) {
+                        this.stopScrolling();
+                    }
+                    this.refreshX(x);
+                    this.x = x;
+                    this.emitScrollableEvent();
+                    if (fireUpdate) {
+                        this.fireScrollEvent(userAction);
+                    }
                 }
             }
         }
