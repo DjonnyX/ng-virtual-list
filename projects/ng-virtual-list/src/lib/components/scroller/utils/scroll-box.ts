@@ -71,7 +71,7 @@ export class ScrollBox {
     private getMetrics(inputPosition: number, viewportSize: number, contentSize: number, startOffset: number, endOffset: number,
         minSize: number): ICalculateScrollMetrics {
         let thumbPosition = 0, thumbSize = 0;
-        const vh = viewportSize - startOffset - endOffset, msh = vh + startOffset, ch = contentSize - startOffset - endOffset,
+        const vh = viewportSize - startOffset - endOffset, ch = contentSize - startOffset - endOffset,
             ratio = ch > 0 ? vh / ch : 1, ts = vh * ratio, ats = Math.max(ts, minSize), atsDelta = ats - ts,
             rh = (ch !== 0 ? (inputPosition / ch) : 0),
             pos = startOffset + ((vh - atsDelta) * rh),
@@ -79,11 +79,11 @@ export class ScrollBox {
             aspp = -(vh !== 0 ? asp / vh : 0) * bRatio, aep = vh - (aspp + size),
             aepp = (aspp + (vh !== 0 ? (aep + size) / vh : 0) * bRatio);
         thumbSize = ats;
-        thumbPosition = pos < startOffset ? pos : pos > msh ? msh : pos;
+        thumbPosition = pos;
         return {
             gradientPos: [aspp, aepp],
             size,
-            pos: pos < startOffset ? pos : pos > msh ? msh : pos,
+            pos,
         };
     }
 

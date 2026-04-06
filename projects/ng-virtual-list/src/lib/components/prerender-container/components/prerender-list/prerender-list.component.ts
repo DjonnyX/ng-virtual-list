@@ -10,7 +10,6 @@ import {
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
-import { ScrollBarTheme } from "../../../../types";
 import { PrerenderCache } from "../../types/cache";
 import { BaseVirtualListItemComponent } from "../../../list-item/base";
 import { Component$1 } from "../../../../models/component.model";
@@ -92,16 +91,6 @@ export class PrerenderList extends DisposableComponent implements OnDestroy {
     }
     get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
-    protected _$scrollbarTheme = new BehaviorSubject<ScrollBarTheme | null>(null);
-    readonly $scrollbarTheme = this._$scrollbarTheme.asObservable();
-    @Input()
-    set scrollbarTheme(v: ScrollBarTheme | null) {
-        if (this._$scrollbarTheme.getValue() !== v) {
-            this._$scrollbarTheme.next(v);
-        }
-    }
-    get scrollbarTheme() { return this._$scrollbarTheme.getValue(); }
-
     protected _$startOffset = new BehaviorSubject<number>(0);
     readonly $startOffset = this._$startOffset.asObservable();
     @Input()
@@ -122,7 +111,7 @@ export class PrerenderList extends DisposableComponent implements OnDestroy {
     }
     get endOffset() { return this._$endOffset.getValue(); }
 
-    protected _$bounds = new BehaviorSubject<ISize | null>(null);
+    protected _$bounds = new BehaviorSubject<ISize | null>({ width: 0, height: 0 });
     readonly $bounds = this._$bounds.asObservable();
     @Input()
     set bounds(v: ISize | null) {
@@ -207,10 +196,6 @@ export class PrerenderList extends DisposableComponent implements OnDestroy {
 
     constructor() {
         super();
-
-        this.$isVertical = this.$isVertical;
-        this.$items = this.$items;
-        this.$bounds = this.$bounds;
 
         const $enabled = this.$enabled;
         $enabled.pipe(
@@ -304,9 +289,10 @@ export class PrerenderList extends DisposableComponent implements OnDestroy {
         }
     }
 
-    on() {
+    on(items: IVirtualListCollection | null = null) {
         if (!!this._trackBox) {
             this._trackBox.on();
+            this._$items.next(items ?? []);
         }
     }
 
