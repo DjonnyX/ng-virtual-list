@@ -1,4 +1,4 @@
-import { GradientColor } from "../../../types";
+import { GradientColor } from "../../interfaces";
 
 export const DEFAULT_STROKE_ANIMATION_DURATION = 1000,
     DEFAULT_FILL_COLORS: GradientColor = ["rgba(0, 0, 0, .1)", "rgba(0, 0, 0, .1)"],
