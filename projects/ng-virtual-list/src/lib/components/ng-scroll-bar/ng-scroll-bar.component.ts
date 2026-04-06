@@ -1,19 +1,17 @@
-import { Component, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
-import { SubstarateStyle, SubstarateStyles, SubstrateComponent } from '../substrate';
-import { GradientColor } from '../../types/gradient-color';
+import { Component, ElementRef, EventEmitter, inject, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, of, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
-import { RoundedCorner } from '../../types/rounded-corner';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, Subject, takeUntil, tap } from 'rxjs';
-import { ScrollBarTheme } from '../../types';
-import { Color } from '../../types/color';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
-import { IScrollBarDragEvent } from './interfaces';
-import { DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_THEME } from '../../const';
+import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
+import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 import {
-  DEFAULT_RIPPLE_COLOR, DEFAULT_RIPPLE_ENABLED, DEFAULT_ROUNDED_CORNER, DEFAULT_SIZE, DEFAULT_STROKE_ANIMATION_DURATION,
-  DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
+  DEFAULT_SCROLLBAR_TEMPLATE_CONTEXT,
+  DEFAULT_SIZE, DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { NgScrollBarService } from './ng-scroll-bar.service';
+import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
+import { ScrollbarStates } from './enums';
 
 /**
  * ScrollBar component.
@@ -28,11 +26,20 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
     { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
+    NgScrollBarService,
+    NgScrollBarPublicService,
   ],
   templateUrl: './ng-scroll-bar.component.html',
-  styleUrls: ['./ng-scroll-bar.component.scss']
+  styleUrls: ['./ng-scroll-bar.component.scss'],
 })
 export class NgScrollBarComponent extends NgScrollView {
+  @ViewChild('defaultRenderer', { read: TemplateRef<any> })
+  protected _defaultRenderer: TemplateRef<any> | undefined;
+
+  protected _service = inject(NgScrollBarService);
+
+  private _apiService = inject(NgScrollBarPublicService);
+
   private _$loading = new BehaviorSubject<boolean>(false);
   readonly $loading = this._$loading.asObservable();
 
@@ -70,17 +77,16 @@ export class NgScrollBarComponent extends NgScrollView {
   }
   get size() { return this._$size.getValue(); }
 
-  private _$theme = new BehaviorSubject<ScrollBarTheme | undefined>(DEFAULT_SCROLLBAR_THEME);
-  readonly $theme = this._$theme.asObservable();
+  private _$thickness = new BehaviorSubject<number>(DEFAULT_THICKNESS);
+  readonly $thickness = this._$thickness.asObservable();
 
   @Input()
-  set theme(v: ScrollBarTheme | undefined) {
-    if (this._$theme.getValue() !== v) {
-      this._$theme.next(v);
+  set thickness(v: number) {
+    if (this._$thickness.getValue() !== v) {
+      this._$thickness.next(v);
     }
   }
-  get theme() { return this._$theme.getValue(); }
-
+  get thickness() { return this._$thickness.getValue(); }
 
   private _$scrollbarMinSize = new BehaviorSubject<number>(0);
   readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
@@ -126,35 +132,30 @@ export class NgScrollBarComponent extends NgScrollView {
   }
   get show() { return this._$show.getValue(); }
 
-  private _$thickness = new BehaviorSubject<number>(DEFAULT_THICKNESS);
-  readonly $thickness = this._$thickness.asObservable();
+  private _$params = new BehaviorSubject<{ [propName: string]: any } | null>({});
+  readonly $params = this._$params.asObservable();
 
-  private _$fill = new BehaviorSubject<Color | GradientColor | null>(null);
-  readonly $fill = this._$fill.asObservable();
+  @Input()
+  set params(v: { [propName: string]: any } | null) {
+    if (this._$params.getValue() !== v) {
+      this._$params.next(v);
+    }
+  }
+  get params() { return this._$params.getValue(); }
 
-  private _$thumbGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
-  readonly $thumbGradientFill = this._$thumbGradientFill.asObservable();
+  private _$renderer = new BehaviorSubject<TemplateRef<any> | null>(null);
+  readonly $renderer = this._$renderer.asObservable();
 
-  private _$thumbHoverGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
-  readonly $thumbHoverGradientFill = this._$thumbHoverGradientFill.asObservable();
+  @Input()
+  set renderer(v: TemplateRef<any> | null) {
+    if (this._$renderer.getValue() !== v) {
+      this._$renderer.next(v);
+    }
+  }
+  get renderer() { return this._$renderer.getValue(); }
 
-  private _$thumbPressedGradientFill = new BehaviorSubject<Color | GradientColor | null>(null);
-  readonly $thumbPressedGradientFill = this._$thumbPressedGradientFill.asObservable();
-
-  private _$strokeGradientColor = new BehaviorSubject<Color | GradientColor | null>(null);
-  readonly $strokeGradientColor = this._$strokeGradientColor.asObservable();
-
-  private _$strokeAnimationDuration = new BehaviorSubject<number>(DEFAULT_STROKE_ANIMATION_DURATION);
-  readonly $strokeAnimationDuration = this._$strokeAnimationDuration.asObservable();
-
-  private _$roundCorner = new BehaviorSubject<RoundedCorner>(DEFAULT_ROUNDED_CORNER);
-  readonly $roundCorner = this._$roundCorner.asObservable();
-
-  private _$rippleColor = new BehaviorSubject<Color | null>(DEFAULT_RIPPLE_COLOR);
-  readonly $rippleColor = this._$rippleColor.asObservable();
-
-  private _$rippleEnabled = new BehaviorSubject<boolean>(DEFAULT_RIPPLE_ENABLED);
-  readonly $rippleEnabled = this._$rippleEnabled.asObservable();
+  private _$thumbRenderer = new BehaviorSubject<TemplateRef<any> | null>(null);
+  readonly $thumbRenderer = this._$thumbRenderer.asObservable();
 
   private _$hoverState = new BehaviorSubject<boolean>(false);
   readonly $hoverState = this._$hoverState.asObservable();
@@ -164,9 +165,8 @@ export class NgScrollBarComponent extends NgScrollView {
 
   private _$classes = new BehaviorSubject<{ [className: string]: boolean }>({});
   readonly $classes = this._$classes.asObservable();
-
-  private _$type = new BehaviorSubject<SubstarateStyle>(SubstarateStyles.STROKE);
-  readonly $type = this._$type.asObservable();
+  private _$templateContext = new BehaviorSubject<IScrollBarTemplateContext>(DEFAULT_SCROLLBAR_TEMPLATE_CONTEXT);
+  readonly $templateContext = this._$templateContext.asObservable();
 
   private _$styles = new BehaviorSubject<{ [styleName: string]: any }>({});
   readonly $styles = this._$styles.asObservable();
@@ -178,12 +178,31 @@ export class NgScrollBarComponent extends NgScrollView {
   readonly $thumbHeight = this._$thumbHeight.asObservable();
 
   private _$scrollingCancel = new Subject<void>();
-  readonly $scrollingCancel = this._$scrollingCancel.asObservable();
+  protected readonly $scrollingCancel = this._$scrollingCancel.asObservable();
 
   private _elementRef = inject(ElementRef);
 
   constructor() {
     super();
+
+    const $thumbWidth = this.$thumbWidth,
+      $thumbHeight = this.$thumbHeight,
+      $thumbGradientPositions = this.$thumbGradientPositions,
+      $params = this.$params;
+
+    combineLatest([$thumbWidth, $thumbHeight, $thumbGradientPositions, $params]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([thumbWidth, thumbHeight, thumbGradientPositions, params]) => {
+        const context: IScrollBarTemplateContext = {
+          api: this._apiService,
+          width: thumbWidth,
+          height: thumbHeight,
+          fillPositions: thumbGradientPositions,
+          params: params ?? {},
+        };
+        this._$templateContext.next(context);
+      }),
+    ).subscribe();
 
     const $prepared = this.$prepared;
     $prepared.pipe(
@@ -197,7 +216,6 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-
     combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -210,6 +228,22 @@ export class NgScrollBarComponent extends NgScrollView {
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
+
+    const $renderer = this.$renderer.pipe(
+      startWith(null),
+    );
+
+    $renderer.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      debounceTime(0),
+      switchMap(renderer => {
+        return of((renderer ?? this._defaultRenderer) ?? null);
+      }),
+      tap(v => {
+        this._$thumbRenderer.next(v);
+      }),
+    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntil(this._$unsubscribe),
@@ -255,28 +289,24 @@ export class NgScrollBarComponent extends NgScrollView {
       takeUntil(this._$unsubscribe),
     ), $hoverState = this.$hoverState.pipe(
       takeUntil(this._$unsubscribe),
-    ), $thumbPressedGradientFill = this.$thumbPressedGradientFill.pipe(
-      takeUntil(this._$unsubscribe),
-    ), $thumbHoverGradientFill = this.$thumbHoverGradientFill.pipe(
-      takeUntil(this._$unsubscribe),
-    ), $thumbGradientFill = this.$thumbGradientFill.pipe(
-      takeUntil(this._$unsubscribe),
     );
 
     combineLatest([
-      $pressedState, $hoverState, $thumbPressedGradientFill, $thumbHoverGradientFill, $thumbGradientFill,
+      $pressedState, $hoverState,
     ]).pipe(
       takeUntil(this._$unsubscribe),
       debounceTime(0),
       distinctUntilChanged(),
-      tap(([pressedState, hoverState, thumbPressedGradientFill, thumbHoverGradientFill, thumbGradientFill]) => {
-        if (pressedState) {
-          this._$fill.next(thumbPressedGradientFill);
-        } else if (hoverState) {
-          this._$fill.next(thumbHoverGradientFill);
-        } else {
-          this._$fill.next(thumbGradientFill);
+      tap(([pressed, hover]) => {
+        if (pressed) {
+          this._service.state = ScrollbarStates.PRESSED;
+          return;
+        } else if (hover) {
+          this._service.state = ScrollbarStates.HOVER;
+          return;
         }
+        this._service.state = ScrollbarStates.NORMAL;
+        return;
       }),
     ).subscribe();
 
@@ -296,21 +326,13 @@ export class NgScrollBarComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    this.$loading.pipe(
-      takeUntil(this._$unsubscribe),
-      debounceTime(0),
-      distinctUntilChanged(),
-      tap(v => {
-        this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
-      }),
-    ).subscribe();
-
     combineLatest([this.$show, this.$isVertical, this.$thickness]).pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(([show, isVertical, thickness]) => {
+        const sizePropName = isVertical ? WIDTH : HEIGHT;
         this._$styles.next({
-          [isVertical ? WIDTH : HEIGHT]: `${thickness}${PX}`,
+          [sizePropName]: `${show ? thickness : 0}${PX}`,
           [OPACITY]: show ? OPACITY_1 : OPACITY_0, [TRANSITION]: show ? TRANSITION_FADE_IN : NONE,
         });
       }),
@@ -333,25 +355,6 @@ export class NgScrollBarComponent extends NgScrollView {
         const event = this.createDragEvent(false);
         if (!!event) {
           this.onDragEnd.emit(event);
-        }
-      }),
-    ).subscribe();
-
-    this.$theme.pipe(
-      takeUntil(this._$unsubscribe),
-      debounceTime(0),
-      distinctUntilChanged(),
-      tap(theme => {
-        if (!!theme) {
-          this._$thumbGradientFill.next(theme.fill);
-          this._$thumbHoverGradientFill.next(theme.hoverFill);
-          this._$thumbPressedGradientFill.next(theme.pressedFill);
-          this._$strokeGradientColor.next(theme.strokeGradientColor);
-          this._$strokeAnimationDuration.next(theme.strokeAnimationDuration ?? DEFAULT_STROKE_ANIMATION_DURATION);
-          this._$roundCorner.next(theme.roundCorner ?? DEFAULT_ROUNDED_CORNER);
-          this._$thickness.next(theme.thickness ?? DEFAULT_THICKNESS);
-          this._$rippleColor.next(theme.rippleColor ?? DEFAULT_RIPPLE_COLOR);
-          this._$rippleEnabled.next(theme.rippleEnabled ?? DEFAULT_RIPPLE_ENABLED)
         }
       }),
     ).subscribe();
@@ -387,9 +390,7 @@ export class NgScrollBarComponent extends NgScrollView {
     return false;
   }
 
-  ripple(substrate: SubstrateComponent, event: PointerEvent | MouseEvent) {
-    if (this._$rippleEnabled.getValue() && !!substrate) {
-      substrate.ripple(event);
-    }
+  click(event: PointerEvent | MouseEvent) {
+    this._service.click(event);
   }
 }

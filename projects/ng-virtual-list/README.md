@@ -288,6 +288,7 @@ Template:
       <span>{{data.name}}</span>
     </div>
   </ng-container>
+</ng-template>
 ```
 
 #### With snapping
@@ -478,94 +479,32 @@ export class AppComponent {
 
 ## 🖼️ Stylization
 
-- Scrollbar theme
-```ts
-import { NgVirtualListComponent, GradientColor, RoundedCorner, ScrollBarTheme } from 'ng-virtual-list';
-
-const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
-  ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
-  SCROLLBAR_GRADIENT: ScrollBarTheme = {
-    fill: "rgba(51, 0, 97, 1)",
-    hoverFill: "rgba(73, 6, 133, 1)",
-    pressedFill: "rgba(73, 6, 150, 1)",
-    strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
-    strokeAnimationDuration: 1000,
-    thickness: 6,
-    roundCorner: ROUND_CORNER,
-    rippleColor: 'rgba(255,255,255,0.5)',
-    rippleEnabled: true,
-  };
-
-@Component({
-  selector: 'app-root',
-  imports: [FormsModule, NgVirtualListComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
-})
-export class AppComponent {
-  scrollbarTheme = SCROLLBAR_GRADIENT;
-
-  items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` }));
-}
-
-```
+### Scrollbar stylization
 
 ```scss
-
-.list {
-    &::part(scrollbar-track) {
-        margin-right: 2px;
-        overflow: initial;
-    }
-
-    &::part(scrollbar-thumb) {
-        border: 1px solid #8738c3;
-        border-radius: 4px;
-    }
+.list::part(scrollbar-thumb__shape) {
+    background-color: rgba(51, 0, 97, 1);
+    border-radius: 3px;
 }
 ```
 
 ```html
-<ng-virtual-list class="list" [scrollbarTheme]="scrollbarTheme" [items]="items" [itemRenderer]="itemRenderer"></ng-virtual-list>
+<ng-virtual-list class="list" [scrollbarThickness]="12" [items]="items" [itemRenderer]="itemRenderer"></ng-virtual-list>
 
-<ng-template #horizontalItemRenderer let-data="data" let-config="config">
-  <div *ngIf="data" [ngClass]="{'list__h-container': true, 'selected': config.selected}">
-    <span>{{data.name}}</span>
-  </div>
+<ng-template #itemRenderer let-data="data" let-config="config">
+  <span>{{data.name}}</span>
 </ng-template>
 ```
+
+### Scrollbar castomization
+
+[Examples](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/src/app/app.component.html)
+[CustomScrollbarComponent](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/src/app/components/custom-scrollbar/custom-scrollbar.component.ts)
 
 List items are encapsulated in shadowDOM, so to override default styles you need to use ::part access
 
 - Customize a scroll area of list
 ```css
-.list::part(scroller) {
-    scroll-behavior: auto;
-
-    /* custom scrollbar */
-    &::-webkit-scrollbar {
-        width: 16px;
-        height: 16px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: #ffffff;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #d6dee1;
-        border-radius: 20px;
-        border: 6px solid transparent;
-        background-clip: content-box;
-        min-width: 60px;
-        min-height: 60px;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        background-color: #a8bbbf;
-    }
-}
-
 .list {
     border-radius: 3px;
     box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.075);
@@ -597,7 +536,7 @@ List items are encapsulated in shadowDOM, so to override default styles you need
 Selecting even elements:
 
 ```html
-<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1"
+<ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
   [itemRenderer]="horizontalItemRenderer" [itemSize]="54"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
@@ -647,7 +586,6 @@ Inputs
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts) \| null | Sets the selected items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
-| scrollbarTheme | [ScrollBarTheme?](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/scrollbar-theme.ts) | Scrollbar theme.  |
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
 | waitForPreparation | boolean? = true | If true, it will wait until the list items are fully prepared before displaying them.. The default value is `true`. |
 | scrollStartOffset | number? = 0 | Sets the scroll start offset value; Default value is "0". |
@@ -656,9 +594,12 @@ Inputs
 | snapScrollToStart | boolean? = true | Determines whether the scroll will be anchored to the start of the list. Default value is "true". This property takes precedence over the snapScrollToEnd property. That is, if snapScrollToStart and snapScrollToEnd are enabled, the list will initially snap to the beginning; if you move the scroll bar to the end, the list will snap to the end. If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; if you move the scroll bar to the beginning, the list will snap to the beginning. If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end. |
 | snapScrollToEnd | boolean? = true | Determines whether the scroll will be anchored to the утв of the list. Default value is "true". That is, if snapScrollToStart and snapScrollToEnd are enabled, the list will initially snap to the beginning; if you move the scroll bar to the end, the list will snap to the end. If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; if you move the scroll bar to the beginning, the list will snap to the beginning. If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end. |
 | snapToEndTransitionInstantOffset | number? = 0 | Sets the offset value; if the scroll area value is exceeded, the scroll animation will be disabled. Default value is "0". |
-| scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
 | scrollbarEnabled | boolean? = true | Determines whether the scrollbar is shown or not. The default value is "true". |
 | scrollbarInteractive | boolean? = true | Determines whether scrolling using the scrollbar will be possible. The default value is "true". |
+| scrollbarMinSize | number? = 80 | Minimum scrollbar size. |
+| scrollbarThickness | number? = 6 | Scrollbar thickness. |
+| scrollbarThumbRenderer | TemplateRef<any> \| null = null | Scrollbar customization template. |
+| scrollbarThumbParams | {[propName: string]: any;} \| null | Additional options for the scrollbar. |
 | scrollBehavior | ScrollBehavior? = 'smooth' | Defines the scrolling behavior for any element on the page. The default value is "smooth". |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 
@@ -695,7 +636,7 @@ Methods
 ### Template API
 
 ```html
-<ng-template #itemRenderer let-data="data" let-config="config" let-measures="measures">
+<ng-template #itemRenderer let-data="data" let-config="config" let-measures="measures" let-api="api">
   <!-- content -->
 </ng-template>
 ```
@@ -704,6 +645,7 @@ Properties
 
 | Property | Type | Description |
 |--|--|--|
+| api | [NgVirtualListPublicService](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-virtual-list-public.service.ts) | List API Provider. |
 | data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
 | config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
 | measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| null | Display object metrics. |

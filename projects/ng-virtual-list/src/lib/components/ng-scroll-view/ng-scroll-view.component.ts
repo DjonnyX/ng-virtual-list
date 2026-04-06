@@ -77,9 +77,7 @@ export class NgScrollView extends BaseScrollView {
         super();
     }
 
-    override ngAfterViewInit() {
-        super.ngAfterViewInit();
-
+    ngAfterViewInit() {
         const $viewport = of(this.scrollViewport).pipe(
             takeUntil(this._$unsubscribe),
             filter(v => !!v),
@@ -428,45 +426,40 @@ export class NgScrollView extends BaseScrollView {
             duration = params.duration ?? ANIMATION_DURATION,
             isVertical = this._$direction.getValue() === ScrollerDirection.VERTICAL;
 
-        const limits = this.scrollLimits(),
-            x = this.normalizeValue(posX),
+        const x = this.normalizeValue(posX),
             y = this.normalizeValue(posY),
-            xx = x,
-            yy = y,
             prevX = this._x,
             prevY = this._y;
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
-                if (prevY !== yy) {
-                    this.animate(prevY, yy, duration, ease, userAction);
+                if (prevY !== y) {
+                    this.animate(prevY, y, duration, ease, userAction);
                 }
             } else {
-                if (prevX !== xx) {
-                    this.animate(prevX, xx, duration, ease, userAction);
+                if (prevX !== x) {
+                    this.animate(prevX, x, duration, ease, userAction);
                 }
             }
         } else {
-            if (!limits) {
-                this.x = xx;
-                this.y = yy;
-            }
-            if (isVertical) {
-                if (prevY !== yy) {
+            if (this._y !== y) {
+                if (isVertical) {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    this.refreshY(yy);
+                    this.refreshY(y);
+                    this.y = y;
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
                     }
                 }
             } else {
-                if (prevX !== xx) {
+                if (this._x !== x) {
                     if (!blending) {
                         this.stopScrolling();
                     }
-                    this.refreshX(xx);
+                    this.refreshX(x);
+                    this.x = x;
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
