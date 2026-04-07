@@ -14,7 +14,7 @@ import {
   TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { FocusAlignment, Id } from './types';
-import { getListElements, NGVL_INDEX } from './components/list-item/utils';
+import { getListElements, NGVL_INDEX } from './components/ng-list-item/utils';
 import { FocusItemParams } from './types/focus-item-params';
 import { validateFocusAlignment, validateId } from './utils/list-validators';
 import { getSelectorByItemId } from './utils/get-selector-by-item-id';
