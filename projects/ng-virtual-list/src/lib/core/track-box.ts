@@ -1273,6 +1273,20 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
+    resetCacheFlags(): void {
+        const cache = this._map.toObject();
+        if (!!cache) {
+            for (const id in cache) {
+                const cacheItem = cache[id];
+                if (!!cacheItem) {
+                    const { width, height, method } = cacheItem;
+                    this.set(id, { width, height, method });
+                }
+            }
+            this._prerenderedCache = null;
+        }
+    }
+
     cacheClean() {
         this._map.clear();
         this._snapshot.clear();

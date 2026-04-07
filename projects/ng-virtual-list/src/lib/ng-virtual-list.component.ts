@@ -19,13 +19,13 @@ import {
   DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
-  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
+  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
 } from './models';
 import {
-  IScrollEvent, IScrollOptions, IAnimationParams, IRect, ISize, IRenderStabilizerOptions,
+  IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions,
 } from './interfaces';
 import { FocusAlignment, Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -46,7 +46,7 @@ import { CMap } from './utils/cmap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/is-collection-mode';
-import { NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { NgScrollerComponent } from './components/ng-scroller/ng-scroller.component';
 import { IScrollToParams } from './components/ng-scroll-view';
 import { NgPrerenderContainer } from './components/ng-prerender-container/ng-prerender-container.component';
 import { IScrollParams } from './interfaces';
@@ -1386,6 +1386,10 @@ export class NgVirtualListComponent implements OnDestroy {
         prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
         prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
       }),
+      $chunkLoadingRenderStabilizer = renderStabilizer({
+        prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
+        prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
+      }),
       $collapseItemsRenderStabilizer = renderStabilizer({
         prepareIterations: PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS,
         prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
@@ -1753,50 +1757,6 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     );
 
-    $itemsComposition.pipe(
-      takeUntilDestroyed(),
-      switchMap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
-        if (items.length === 0 || !this._readyForShow || !(this.cachable && !this._cached &&
-          !this._trackBox.isSnappedToStart && this._trackBox.isSnappedToEnd)) {
-          return of({ items, collapsedIds, itemConfigMap, trackBy });
-        }
-        return $updateItemsRenderStabilizer.pipe(
-          takeUntilDestroyed(this._destroyRef),
-          take(1),
-          debounceTime(0),
-          switchMap(() => {
-            return of({ items, collapsedIds, itemConfigMap, trackBy });
-          }),
-        );
-      }),
-      tap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
-        const hiddenItems = new CMap<Id, boolean>();
-
-        let isCollapsed = false;
-        for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item[trackBy], group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
-          if (group) {
-            isCollapsed = collapsed;
-          } else {
-            if (isCollapsed) {
-              hiddenItems.set(id, true);
-            }
-          }
-        }
-
-        const actualItems: IVirtualListCollection = [];
-        for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item[trackBy];
-          if (hiddenItems.has(id)) {
-            continue;
-          }
-          actualItems.push(item);
-        }
-
-        this._actualItems.set(actualItems);
-      }),
-    ).subscribe();
-
     $isVertical.pipe(
       takeUntilDestroyed(),
       tap(v => {
@@ -1881,6 +1841,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    let chunkLoaded = false;
     const $loading = toObservable(this.loading);
     $loading.pipe(
       takeUntilDestroyed(),
@@ -1888,14 +1849,69 @@ export class NgVirtualListComponent implements OnDestroy {
       skip(1),
       filter(v => !v),
       switchMap(() => {
-        return $actualItems.pipe(
+        chunkLoaded = true;
+        const scrollbar = this._scrollerComponent();
+        if (!!scrollbar) {
+          scrollbar.stopScrollbar();
+          scrollbar.refreshScrollbar();
+        }
+        return $chunkLoadingRenderStabilizer.pipe(
           takeUntilDestroyed(this._destroyRef),
-          debounceTime(100),
           take(1),
           tap(() => {
-            this._scrollerComponent()?.refreshScrollbar();
+            const scrollbar = this._scrollerComponent();
+            if (!!scrollbar) {
+              scrollbar.stopScrollbar();
+              scrollbar.refreshScrollbar();
+            }
+            chunkLoaded = false;
+            this._trackBox.resetCacheFlags();
           }),
         )
+      }),
+    ).subscribe();
+
+    $itemsComposition.pipe(
+      takeUntilDestroyed(),
+      switchMap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
+        if (chunkLoaded || items.length === 0 || !this._readyForShow || !(this.cachable && !this._cached &&
+          !this._trackBox.isSnappedToStart && this._trackBox.isSnappedToEnd)) {
+          return of({ items, collapsedIds, itemConfigMap, trackBy });
+        }
+        return $updateItemsRenderStabilizer.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          take(1),
+          debounceTime(0),
+          switchMap(() => {
+            return of({ items, collapsedIds, itemConfigMap, trackBy });
+          }),
+        );
+      }),
+      tap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
+        const hiddenItems = new CMap<Id, boolean>();
+
+        let isCollapsed = false;
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy], group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
+          if (group) {
+            isCollapsed = collapsed;
+          } else {
+            if (isCollapsed) {
+              hiddenItems.set(id, true);
+            }
+          }
+        }
+
+        const actualItems: IVirtualListCollection = [];
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy];
+          if (hiddenItems.has(id)) {
+            continue;
+          }
+          actualItems.push(item);
+        }
+
+        this._actualItems.set(actualItems);
       }),
     ).subscribe();
 
@@ -2057,7 +2073,7 @@ export class NgVirtualListComponent implements OnDestroy {
     };
 
     let prevItems: IVirtualListCollection = [];
-    const debouncedUpdate = debounce(update, 0);
+    const debouncedUpdate = debounce(update, 0, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1);
     $viewInit.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
