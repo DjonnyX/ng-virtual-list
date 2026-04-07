@@ -4,7 +4,7 @@ import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
-import { IRect, ISize } from "../interfaces";
+import { ISize } from "../interfaces";
 import {
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
@@ -303,6 +303,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     private _prerenderedCache: PrerenderCache | null = null;
 
+    private _newItems: Array<Id> = [];
+
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
@@ -340,6 +342,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         itemSize: number): void {
         const trackBy = this._trackingPropertyName;
         let crudDetected = false;
+        this._newItems = [];
 
         if (!currentCollection || currentCollection.length === 0) {
             if (previousCollection) {
@@ -410,6 +413,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const item = currentCollection[i], id = item[trackBy];
             if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
                 !notChangedMap.hasOwnProperty(id)) {
+                this._newItems.push(id);
                 // added
                 crudDetected = true;
                 this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
@@ -650,7 +654,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const cache = map.get(id);
                     componentSize = cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize;
                     itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
-                    const isItemNew = (cache satisfies Cache)?.[IS_NEW] ?? (this._isLazy && isStart && !this._isReseted);
+                    const isItemNew = this._newItems.indexOf(id) > -1 || (this._isLazy && isStart && !this._isReseted);
                     isNew = isItemNew;
                     if (isNew) {
                         isUpdating = true;
@@ -660,7 +664,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     componentSizeDelta = componentSnapshotSize;
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
-                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, [IS_NEW]: isNew });
+                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED });
                             if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 deltaFromStartCreation += componentSizeDelta;
                                 componentSizeDelta = 0;
@@ -1273,18 +1277,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    resetCacheFlags(): void {
-        const cache = this._map.toObject();
-        if (!!cache) {
-            for (const id in cache) {
-                const cacheItem = cache[id];
-                if (!!cacheItem) {
-                    const { width, height, method } = cacheItem;
-                    this.set(id, { width, height, method });
-                }
-            }
-            this._prerenderedCache = null;
-        }
+    resetCacheChunkInfo(): void {
+        this._newItems = [];
     }
 
     cacheClean() {

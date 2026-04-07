@@ -1757,6 +1757,50 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     );
 
+    $itemsComposition.pipe(
+      takeUntilDestroyed(),
+      switchMap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
+        if (items.length === 0 || !this._readyForShow || !(this.cachable && !this._cached &&
+          !this._trackBox.isSnappedToStart && this._trackBox.isSnappedToEnd)) {
+          return of({ items, collapsedIds, itemConfigMap, trackBy });
+        }
+        return $updateItemsRenderStabilizer.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          take(1),
+          debounceTime(0),
+          switchMap(() => {
+            return of({ items, collapsedIds, itemConfigMap, trackBy });
+          }),
+        );
+      }),
+      tap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
+        const hiddenItems = new CMap<Id, boolean>();
+
+        let isCollapsed = false;
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy], group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
+          if (group) {
+            isCollapsed = collapsed;
+          } else {
+            if (isCollapsed) {
+              hiddenItems.set(id, true);
+            }
+          }
+        }
+
+        const actualItems: IVirtualListCollection = [];
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy];
+          if (hiddenItems.has(id)) {
+            continue;
+          }
+          actualItems.push(item);
+        }
+
+        this._actualItems.set(actualItems);
+      }),
+    ).subscribe();
+
     $isVertical.pipe(
       takeUntilDestroyed(),
       tap(v => {
@@ -1841,7 +1885,6 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    let chunkLoaded = false;
     const $loading = toObservable(this.loading);
     $loading.pipe(
       takeUntilDestroyed(),
@@ -1849,69 +1892,28 @@ export class NgVirtualListComponent implements OnDestroy {
       skip(1),
       filter(v => !v),
       switchMap(() => {
-        chunkLoaded = true;
         const scrollbar = this._scrollerComponent();
         if (!!scrollbar) {
           scrollbar.stopScrollbar();
           scrollbar.refreshScrollbar();
         }
-        return $chunkLoadingRenderStabilizer.pipe(
+        return $actualItems.pipe(
           takeUntilDestroyed(this._destroyRef),
           take(1),
-          tap(() => {
-            const scrollbar = this._scrollerComponent();
-            if (!!scrollbar) {
-              scrollbar.stopScrollbar();
-              scrollbar.refreshScrollbar();
-            }
-            chunkLoaded = false;
-            this._trackBox.resetCacheFlags();
-          }),
-        )
-      }),
-    ).subscribe();
-
-    $itemsComposition.pipe(
-      takeUntilDestroyed(),
-      switchMap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
-        if (chunkLoaded || items.length === 0 || !this._readyForShow || !(this.cachable && !this._cached &&
-          !this._trackBox.isSnappedToStart && this._trackBox.isSnappedToEnd)) {
-          return of({ items, collapsedIds, itemConfigMap, trackBy });
-        }
-        return $updateItemsRenderStabilizer.pipe(
-          takeUntilDestroyed(this._destroyRef),
-          take(1),
-          debounceTime(0),
-          switchMap(() => {
-            return of({ items, collapsedIds, itemConfigMap, trackBy });
-          }),
+          switchMap(() => $chunkLoadingRenderStabilizer.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            take(1),
+            tap(() => {
+              console.log('reset')
+              this._trackBox.resetCacheChunkInfo();
+              const scrollbar = this._scrollerComponent();
+              if (!!scrollbar) {
+                scrollbar.stopScrollbar();
+                scrollbar.refreshScrollbar();
+              }
+            }),
+          )),
         );
-      }),
-      tap(({ items, collapsedIds, itemConfigMap, trackBy }) => {
-        const hiddenItems = new CMap<Id, boolean>();
-
-        let isCollapsed = false;
-        for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item[trackBy], group = (itemConfigMap[id]?.sticky ?? 0) > 0, collapsed = collapsedIds.includes(id);
-          if (group) {
-            isCollapsed = collapsed;
-          } else {
-            if (isCollapsed) {
-              hiddenItems.set(id, true);
-            }
-          }
-        }
-
-        const actualItems: IVirtualListCollection = [];
-        for (let i = 0, l = items.length; i < l; i++) {
-          const item = items[i], id = item[trackBy];
-          if (hiddenItems.has(id)) {
-            continue;
-          }
-          actualItems.push(item);
-        }
-
-        this._actualItems.set(actualItems);
       }),
     ).subscribe();
 
