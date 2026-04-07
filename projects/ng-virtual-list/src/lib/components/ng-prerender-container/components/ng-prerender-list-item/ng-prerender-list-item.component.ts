@@ -1,23 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NgVirtualListItemComponent } from '../../../list-item/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from '../../../ng-list-item/ng-virtual-list-item.component';
 import {
     DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PX, SIZE_100_PERSENT, SIZE_AUTO,
     VISIBILITY_HIDDEN, VISIBILITY_VISIBLE,
 } from '../../../../const';
-import { ID, POSITION, POSITION_ZERO } from '../../../list-item/const';
+import { ID, POSITION, POSITION_ZERO } from '../../../ng-list-item/const';
 
 /**
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/list-item/ng-virtual-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list-item.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-virtual-list-item',
-    templateUrl: '../../../list-item/ng-virtual-list-item.component.html',
-    styleUrls: ['../../../list-item/ng-virtual-list-item.component.scss', './prerender-list-item.component.scss'],
+    selector: 'ng-prerender-virtual-list-item',
+    templateUrl: '../../../ng-list-item/ng-virtual-list-item.component.html',
+    styleUrls: ['../../../ng-list-item/ng-virtual-list-item.component.scss', './ng-prerender-list-item.component.scss'],
     host: {
         'class': 'ngvl__item',
         'role': 'listitem',
@@ -25,7 +25,7 @@ import { ID, POSITION, POSITION_ZERO } from '../../../list-item/const';
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrerenderVirtualListItemComponent extends NgVirtualListItemComponent {
+export class NgPrerenderVirtualListItemComponent extends NgVirtualListItemComponent {
     protected override update() {
         const data = this._data, regular = this.regular, length = this._regularLength;
         if (data) {

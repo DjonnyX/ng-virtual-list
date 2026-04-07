@@ -2,7 +2,7 @@ import { Directive, ElementRef, inject, input } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, tap } from 'rxjs';
 import { TextDirection, TextDirections } from '../../enums';
-import { ScrollerDirection, ScrollerDirections } from '../../components/scroller/enums';
+import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
 import { isDirection } from '../../utils/is-direction';
 
 const RIGHT = 'right',

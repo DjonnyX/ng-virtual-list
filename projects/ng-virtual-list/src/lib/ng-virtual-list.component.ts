@@ -7,7 +7,7 @@ import {
   BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, fromEvent, map,
   of, skip, Subject, switchMap, take, takeUntil, tap,
 } from 'rxjs';
-import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from './components/ng-list-item/ng-virtual-list-item.component';
 import {
   BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
@@ -20,7 +20,6 @@ import {
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
   PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
-  MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -37,7 +36,7 @@ import {
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
-import { BaseVirtualListItemComponent } from './components/list-item/base';
+import { BaseVirtualListItemComponent } from './components/ng-list-item/base';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';
 import { NgVirtualListService } from './ng-virtual-list.service';
@@ -47,13 +46,13 @@ import { CMap } from './utils/cmap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/is-collection-mode';
-import { NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { NgScrollerComponent } from './components/ng-scroller/ng-scroller.component';
 import { IScrollToParams } from './components/ng-scroll-view';
-import { PrerenderContainer } from './components/prerender-container/prerender-container.component';
+import { NgPrerenderContainer } from './components/ng-prerender-container/ng-prerender-container.component';
 import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
 import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
-import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
+import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/ng-list-item/const';
 import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 
 /**
@@ -88,7 +87,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _service = inject(NgVirtualListService);
 
-  private _prerender = viewChild<PrerenderContainer>('prerender');
+  private _prerender = viewChild<NgPrerenderContainer>('prerender');
 
   @ViewChild('renderersContainer', { read: ViewContainerRef })
   private _listContainerRef: ViewContainerRef | undefined;
@@ -2058,7 +2057,7 @@ export class NgVirtualListComponent implements OnDestroy {
     };
 
     let prevItems: IVirtualListCollection = [];
-    const debouncedUpdate = debounce(update, 0, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1);
+    const debouncedUpdate = debounce(update, 0);
     $viewInit.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),

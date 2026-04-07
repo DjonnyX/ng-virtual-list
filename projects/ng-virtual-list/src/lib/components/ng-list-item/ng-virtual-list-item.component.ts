@@ -2,14 +2,13 @@ import { ChangeDetectionStrategy, Component, inject, Injector, OnInit, signal } 
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, filter, debounceTime } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
-import { FocusAlignment, Id } from '../../types';
+import { Id } from '../../types';
 import {
   DEFAULT_CLICK_DISTANCE, NAVIGATION_BY_KEYBOARD_TIMER, VISIBILITY_HIDDEN,
 } from '../../const';
 import { BaseVirtualListItemComponent } from './base';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
-import { FocusAlignments } from '../../enums';
 import { IDisplayObjectConfig } from '../../models';
 import { createDisplayId, getListElementByIndex } from './utils';
 import {

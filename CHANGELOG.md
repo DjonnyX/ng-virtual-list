@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [19.11.1] - 2026-04-07
+
+### Added
+- Added a new example with a news feed
+
+### Fixed
+- Fixed jerking when scrolling
+
+### Improved
+- Code refactoring
+
 ## [19.11.0] - 2026-04-05
 
 ### Added
