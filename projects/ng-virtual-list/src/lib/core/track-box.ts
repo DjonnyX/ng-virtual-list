@@ -12,8 +12,8 @@ import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualL
 import { debounce } from "../utils";
 import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
-import { BaseVirtualListItemComponent } from "../components/list-item/base";
-import { PrerenderCache } from "../components/prerender-container/types/cache";
+import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
+import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',

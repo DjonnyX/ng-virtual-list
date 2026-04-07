@@ -18,8 +18,8 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/c
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-scroller',
-    templateUrl: './prerender-scroller.component.html',
+    selector: 'ng-prerender-scroller',
+    templateUrl: './ng-prerender-scroller.component.html',
     styleUrl: '../../../scroller/ng-scroller.component.scss',
     providers: [
         { provide: SCROLL_VIEW_INVERSION, useValue: false },
@@ -28,7 +28,7 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/c
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrerenderScrollerComponent extends BaseScrollView {
+export class NgPrerenderScrollerComponent extends BaseScrollView {
     @ViewChild('scrollBar', { read: NgScrollBarComponent })
     scrollBar: NgScrollBarComponent | undefined;
 
