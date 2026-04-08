@@ -4,7 +4,7 @@ import { Id } from "../../../types";
 import { ISize } from '../../../interfaces';
 import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
-import { BaseVirtualListItemComponent } from "../../list-item/base";
+import { BaseVirtualListItemComponent } from "../../ng-list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
 import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";

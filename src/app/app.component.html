@@ -7,7 +7,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 17.11.0</span></div>
+    <div class="version"><span>v 17.11.1</span></div>
   </div>
 
   <div class="vl-section">
@@ -191,7 +191,9 @@
     }
   </ng-template>
 
-  <ng-template #customScrollBarThumb let-api="api" let-width="width" let-height="height" let-fillPositions="fillPositions" let-params="params">
-    <custom-scrollbar [api]="api" [width]="width" [height]="height" [fillPositions]="fillPositions" [params]="params"></custom-scrollbar>
-    </ng-template>
+  <ng-template #customScrollBarThumb let-api="api" let-width="width" let-height="height"
+    let-fillPositions="fillPositions" let-params="params">
+    <custom-scrollbar [api]="api" [width]="width" [height]="height" [fillPositions]="fillPositions"
+      [params]="params"></custom-scrollbar>
+  </ng-template>
 </div>

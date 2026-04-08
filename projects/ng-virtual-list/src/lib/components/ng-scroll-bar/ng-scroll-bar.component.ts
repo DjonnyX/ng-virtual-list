@@ -98,8 +98,8 @@ export class NgScrollBarComponent extends NgScrollView {
     });
 
     const $renderer = toObservable(this.renderer).pipe(
-      startWith(null),
-    ),
+        startWith(null),
+      ),
       $defaultRenderer = toObservable(this._defaultRenderer);
 
     combineLatest([$renderer, $defaultRenderer]).pipe(
