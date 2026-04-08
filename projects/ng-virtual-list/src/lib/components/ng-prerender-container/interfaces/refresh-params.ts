@@ -4,7 +4,7 @@ import { TemplateRef } from "@angular/core";
  * IPrerenderTrackBoxRefreshParams.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/prerender-container/interfaces/refresh-params.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-prerender-container/interfaces/refresh-params.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

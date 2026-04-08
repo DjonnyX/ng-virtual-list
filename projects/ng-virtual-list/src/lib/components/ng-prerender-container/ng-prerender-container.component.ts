@@ -8,7 +8,7 @@ import {
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
 import { Direction } from "../../enums";
-import { PrerenderList } from "./components/ng-prerender-list/ng-prerender-list.component";
+import { NgPrerenderList } from "./components/ng-prerender-list/ng-prerender-list.component";
 import { PrerenderCache } from "./types";
 import { DisposableComponent } from "../../utils/disposable-component";
 
@@ -16,7 +16,7 @@ import { DisposableComponent } from "../../utils/disposable-component";
  * Prerender container.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/prerender-container/prerender-container.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/ng-prerender-container/ng-prerender-container.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -31,8 +31,8 @@ import { DisposableComponent } from "../../utils/disposable-component";
     encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class NgPrerenderContainer extends DisposableComponent {
-    @ViewChild('list', { read: PrerenderList })
-    private _list: PrerenderList | null = null;
+    @ViewChild('list', { read: NgPrerenderList })
+    private _list: NgPrerenderList | null = null;
 
     @Input()
     enabled: boolean = false;

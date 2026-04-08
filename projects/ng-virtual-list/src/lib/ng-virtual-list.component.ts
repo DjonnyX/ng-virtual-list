@@ -7,7 +7,7 @@ import {
   Observable,
   of, skip, Subject, switchMap, take, takeUntil, tap,
 } from 'rxjs';
-import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from './components/ng-list-item/ng-virtual-list-item.component';
 import {
   BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
@@ -37,7 +37,7 @@ import {
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
-import { BaseVirtualListItemComponent } from './components/list-item/base';
+import { BaseVirtualListItemComponent } from './components/ng-list-item/base';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';
 import { NgVirtualListService } from './ng-virtual-list.service';
@@ -47,13 +47,13 @@ import { CMap } from './utils/cmap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/is-collection-mode';
-import { NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { NgScrollerComponent } from './components/ng-scroller/ng-scroller.component';
 import { IScrollToParams } from './components/ng-scroll-view';
-import { PrerenderContainer } from './components/prerender-container/prerender-container.component';
+import { NgPrerenderContainer } from './components/ng-prerender-container/ng-prerender-container.component';
 import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
 import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
-import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
+import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/ng-list-item/const';
 import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 import { DisposableComponent } from './utils/disposable-component';
 
@@ -88,8 +88,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
   private _service = inject(NgVirtualListService);
 
-  @ViewChild('prerender', { read: PrerenderContainer })
-  private _prerender: PrerenderContainer | undefined;
+  @ViewChild('prerender', { read: NgPrerenderContainer })
+  private _prerender: NgPrerenderContainer | undefined;
 
   @ViewChild('renderersContainer', { read: ViewContainerRef })
   private _listContainerRef: ViewContainerRef | undefined;
@@ -1787,10 +1787,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       }),
     ).subscribe();
 
-    let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
-      renderStabilizerUpdateIterations = 0;
     const $update = this.$update,
       renderStabilizer = (options?: IRenderStabilizerOptions) => {
+        let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
+          renderStabilizerUpdateIterations = 0;
         const prepareIterations = options?.prepareIterations ?? PREPARE_ITERATIONS,
           prepareReupdateLength = options?.prepareReupdateLength ?? PREPARATION_REUPDATE_LENGTH;
         return of(null).pipe(
@@ -1832,6 +1832,10 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       prepareReupdateLength: PREPARATION_REUPDATE_LENGTH,
     }),
       $updateItemsRenderStabilizer = renderStabilizer({
+        prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
+        prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
+      }),
+      $chunkLoadingRenderStabilizer = renderStabilizer({
         prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
         prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
       }),
@@ -2330,6 +2334,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       }),
     ).subscribe();
 
+
+    let isChunkLoading = false;
     const $loading = this.$loading;
     $loading.pipe(
       takeUntil(this._$unsubscribe),
@@ -2337,16 +2343,35 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       skip(1),
       filter(v => !v),
       switchMap(() => {
+        isChunkLoading = true;
+        const scrollbar = this._scrollerComponent;
+        if (!!scrollbar) {
+          scrollbar.stopScrollbar();
+          scrollbar.refreshScrollbar();
+        }
         return $actualItems.pipe(
           takeUntil(this._$unsubscribe),
-          debounceTime(100),
           take(1),
           tap(() => {
-            this._scrollerComponent?.refreshScrollbar();
+            this._$fireUpdateNextFrame.next(true);
           }),
-        )
+          switchMap(() => $chunkLoadingRenderStabilizer.pipe(
+            takeUntil(this._$unsubscribe),
+            take(1),
+            tap(() => {
+              isChunkLoading = false;
+              this._trackBox.resetCacheChunkInfo();
+              const scrollbar = this._scrollerComponent;
+              if (!!scrollbar) {
+                scrollbar.stopScrollbar();
+                scrollbar.refreshScrollbar();
+              }
+            }),
+          )),
+        );
       }),
     ).subscribe();
+
 
     $loading.pipe(
       takeUntil(this._$unsubscribe),
@@ -2383,7 +2408,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       let totalSize = 0;
       if (scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
-          emitUpdate = !this._readyForShow || waitingCache || collapsable;
+          emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading;
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
             fireUpdate = emitUpdate || reupdate || (!optimization && !userAction) || this._$scrollingTo.getValue();
@@ -2481,23 +2506,22 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             return;
           }
 
-          if (scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) {
-            if (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate) {
-              this._trackBox.clearDelta();
-              if (this._readyForShow) {
-                this.emitScrollEvent(true, false, userAction);
-              }
-              const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams.scrollToItem,
-              };
-              scroller.scrollTo(params);
-              if (emitUpdate) {
-                this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-              }
+          if ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
+            (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate)) {
+            this._trackBox.clearDelta();
+            if (this._readyForShow) {
+              this.emitScrollEvent(true, false, userAction);
             }
-            return;
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
+              fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams.scrollToItem,
+            };
+            scroller.scrollTo(params);
+            if (emitUpdate) {
+              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            }
           }
+          return;
         }
         if (emitUpdate) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
