@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Subject, tap } from 'rxjs';
+import { Subject, takeUntil, tap } from 'rxjs';
 import { TrackBox, TrackBoxEvents } from './core/track-box';
 import { IRenderVirtualListItem, IVirtualListItem } from './models';
 import { IAnimationParams, IScrollOptions, ISize } from './interfaces';
@@ -13,12 +13,11 @@ import {
   TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { FocusAlignment, Id } from './types';
-import { getListElements, NGVL_INDEX } from './components/list-item/utils';
+import { getListElements, NGVL_INDEX } from './components/ng-list-item/utils';
 import { FocusItemParams } from './types/focus-item-params';
 import { validateFocusAlignment, validateId } from './utils/list-validators';
 import { getSelectorByItemId } from './utils/get-selector-by-item-id';
 import { IScrollToParams } from './interfaces/scroll-to-params';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * NgVirtualListService
@@ -32,6 +31,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   providedIn: 'root'
 })
 export class NgVirtualListService {
+  protected _$unsubscribe = new Subject<void>();
+
   private _id: number = 0;
   get id() { return this._id; }
 
@@ -190,7 +191,7 @@ export class NgVirtualListService {
 
   constructor() {
     this._$methodOfSelecting.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         switch (v) {
           case MethodsForSelectingTypes.SELECT: {
@@ -429,5 +430,12 @@ export class NgVirtualListService {
    */
   scrollToEnd(options?: IScrollOptions) {
     this._$scrollToEnd.next(options);
+  }
+
+  dispose(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
   }
 }

@@ -4,7 +4,7 @@ import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
-import { IRect, ISize } from "../interfaces";
+import { ISize } from "../interfaces";
 import {
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
@@ -12,8 +12,8 @@ import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualL
 import { debounce } from "../utils";
 import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
-import { BaseVirtualListItemComponent } from "../components/list-item/base";
-import { PrerenderCache } from "../components/prerender-container/types/cache";
+import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
+import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -118,7 +118,7 @@ type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/core/track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/core/track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -303,6 +303,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     private _prerenderedCache: PrerenderCache | null = null;
 
+    private _newItems: Array<Id> = [];
+
     protected override lifeCircle() {
         this.fireChangeIfNeed();
 
@@ -340,6 +342,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         itemSize: number): void {
         const trackBy = this._trackingPropertyName;
         let crudDetected = false;
+        this._newItems = [];
 
         if (!currentCollection || currentCollection.length === 0) {
             if (previousCollection) {
@@ -410,6 +413,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const item = currentCollection[i], id = item[trackBy];
             if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
                 !notChangedMap.hasOwnProperty(id)) {
+                this._newItems.push(id);
                 // added
                 crudDetected = true;
                 this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
@@ -641,7 +645,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let y = this._scrollStartOffset, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
+            let y = this._scrollStartOffset, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
@@ -650,7 +654,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     const cache = map.get(id);
                     componentSize = cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize;
                     itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
-                    const isItemNew = (cache as Cache)?.[IS_NEW] ?? (this._isLazy && isStart && !this._isReseted);
+                    const isItemNew = this._newItems.indexOf(id) > -1 || (this._isLazy && isStart && !this._isReseted);
                     isNew = isItemNew;
                     if (isNew) {
                         isUpdating = true;
@@ -692,7 +696,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (itemById === undefined) {
                         if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
                             stickyComponentSize = componentSize;
-                            stickyCollectionItem = collectionItem;
                             y -= stickyComponentSize;
                         }
 
@@ -855,10 +858,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     refreshCache(cache: PrerenderCache) {
         this._prerenderedCache = cache;
-    }
-
-    clearDeltaDirection() {
-        this.clearScrollDirectionCache();
     }
 
     clearDelta(clearDirectionDetector = false): void {
@@ -1271,6 +1270,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             }
             this._prerenderedCache = null;
         }
+    }
+
+    resetCacheChunkInfo(): void {
+        this._newItems = [];
     }
 
     cacheClean() {

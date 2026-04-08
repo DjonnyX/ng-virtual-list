@@ -4,7 +4,7 @@ import { Id } from "../../../types";
 import { ISize } from '../../../interfaces';
 import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
-import { BaseVirtualListItemComponent } from "../../list-item/base";
+import { BaseVirtualListItemComponent } from "../../ng-list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
 import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";
@@ -57,7 +57,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
  * PrerenderTrackBox
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/prerender-container/core/prerender-track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/ng-prerender-container/core/prerender-track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

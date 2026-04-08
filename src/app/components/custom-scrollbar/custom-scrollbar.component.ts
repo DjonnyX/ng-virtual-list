@@ -1,11 +1,11 @@
-import { Component, DestroyRef, inject, Input, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, filter, switchMap, tap } from 'rxjs';
+import { Component, Input, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, filter, switchMap, takeUntil, tap } from 'rxjs';
 import { CustomScrollBarTheme } from './interfaces/custom-scrollbar-theme';
 import { DEFAULT_SCROLLBAR_THEME } from './const';
 import { Color, GradientColor } from '../interfaces';
 import { SubstarateStyle, SubstarateStyles, XSubstrateComponent } from '../x-substrate';
 import { GradientColorPositions, NgScrollBarPublicService, ScrollbarStates } from '../../../../projects/ng-virtual-list/src/public-api';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DisposableComponent } from '../../../../projects/ng-virtual-list/src/lib/utils/disposable-component';
 
 /**
  * ScrollBar component.
@@ -20,7 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     templateUrl: './custom-scrollbar.component.html',
     styleUrls: ['./custom-scrollbar.component.scss'],
 })
-export class CustomScrollbarComponent {
+export class CustomScrollbarComponent extends DisposableComponent {
     @ViewChild('substrate', { read: XSubstrateComponent })
     readonly substrate: XSubstrateComponent | null = null;
 
@@ -72,12 +72,12 @@ export class CustomScrollbarComponent {
     private _$fillColors = new BehaviorSubject<Color | GradientColor>(DEFAULT_SCROLLBAR_THEME.fill);
     protected readonly $fillColors = this._$fillColors.asObservable();
 
-    protected _destroyRef = inject(DestroyRef);
-
     constructor() {
+        super();
+
         const $loading = this.$loading;
         $loading.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(v => {
                 this._$type.next(v ? SubstarateStyles.STROKE : SubstarateStyles.NONE);
             })
@@ -85,14 +85,14 @@ export class CustomScrollbarComponent {
 
         const $api = this.$api,
             $state = $api.pipe(
-                takeUntilDestroyed(this._destroyRef),
+                takeUntil(this._$unsubscribe),
                 filter(v => !!v),
                 switchMap(v => {
                     return v!.$state;
                 }),
             ),
             $click = $api.pipe(
-                takeUntilDestroyed(this._destroyRef),
+                takeUntil(this._$unsubscribe),
                 filter(v => !!v),
                 switchMap(v => {
                     return v!.$click;
@@ -101,7 +101,7 @@ export class CustomScrollbarComponent {
 
         const $params = this.$params;
         combineLatest([$state, $params]).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(([state, params]) => {
                 const pressed = state === ScrollbarStates.PRESSED, hover = state === ScrollbarStates.HOVER;
                 if (pressed) {
@@ -117,7 +117,7 @@ export class CustomScrollbarComponent {
         ).subscribe();
 
         $click.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(event => {
                 this.substrate?.ripple(event as PointerEvent);
             }),

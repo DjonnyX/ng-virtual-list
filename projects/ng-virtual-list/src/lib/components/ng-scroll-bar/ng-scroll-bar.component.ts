@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, inject, Input, Output, TemplateRef, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, of, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
@@ -12,7 +12,6 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
 import { NgScrollBarService } from './ng-scroll-bar.service';
 import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
 import { ScrollbarStates } from './enums';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * ScrollBar component.
@@ -192,7 +191,7 @@ export class NgScrollBarComponent extends NgScrollView {
       $params = this.$params;
 
     combineLatest([$thumbWidth, $thumbHeight, $thumbGradientPositions, $params]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(([thumbWidth, thumbHeight, thumbGradientPositions, params]) => {
         const context: IScrollBarTemplateContext = {
           api: this._apiService,
@@ -207,7 +206,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
     const $prepared = this.$prepared;
     $prepared.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       tap(() => {
         this.scrollLimits();
@@ -218,7 +217,7 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(([isVertical, thickness, size]) => {
         this._$thumbWidth.next(isVertical ? thickness : size);
@@ -235,7 +234,7 @@ export class NgScrollBarComponent extends NgScrollView {
     );
 
     $renderer.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       debounceTime(0),
       switchMap(renderer => {
@@ -247,55 +246,55 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     ), $pointerUp = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerup').pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     ), $docPointerUp = fromEvent<PointerEvent>(document, 'pointerup').pipe(
-      takeUntilDestroyed(this._destroyRef)
+      takeUntil(this._$unsubscribe)
     ), $pointerEnter = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerenter').pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     ), $pointerLeave = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerleave').pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     );
 
     $pointerDown.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(e => {
         this._$pressedState.next(this.thumbHit(e.clientX, e.clientY));
       }),
     ).subscribe();
 
     combineLatest([$docPointerUp, $pointerUp]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(() => {
         this._$pressedState.next(false);
       }),
     ).subscribe();
 
     $pointerEnter.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(() => {
         this._$hoverState.next(true);
       }),
     ).subscribe();
 
     $pointerLeave.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(() => {
         this._$hoverState.next(false);
       }),
     ).subscribe();
 
     const $pressedState = this.$pressedState.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     ), $hoverState = this.$hoverState.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
     );
 
     combineLatest([
       $pressedState, $hoverState,
     ]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       distinctUntilChanged(),
       tap(([pressed, hover]) => {
@@ -312,7 +311,7 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     this.$size.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(v => {
         this.totalSize = v;
@@ -320,7 +319,7 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     this.$interactive.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(v => {
         this.interactive = v;
@@ -328,7 +327,7 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     combineLatest([this.$show, this.$isVertical, this.$thickness]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       tap(([show, isVertical, thickness]) => {
         const sizePropName = isVertical ? WIDTH : HEIGHT;
@@ -340,7 +339,7 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
 
     this.$scroll.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         const event = this.createDragEvent(v);
         if (!!event) {
@@ -351,7 +350,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
     const $scrollEnd = this.$scrollEnd;
     $scrollEnd.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(() => {
         const event = this.createDragEvent(false);
         if (!!event) {

@@ -1,11 +1,11 @@
 import {
-    Component, DestroyRef, ElementRef, inject, Input, ViewChild,
+    Component, ElementRef, inject, Input, ViewChild,
 } from '@angular/core';
 import { BehaviorSubject, distinctUntilChanged, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
 import { SCROLL_VIEW_INVERSION } from '../const';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DisposableComponent } from '../../../utils/disposable-component';
 
 /**
  * BaseScrollView
@@ -19,14 +19,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     selector: 'base-scroll-view',
     template: '',
 })
-export class BaseScrollView {
+export class BaseScrollView extends DisposableComponent {
     @ViewChild('scrollContent')
     scrollContent: ElementRef<HTMLDivElement> | undefined;
 
     @ViewChild('scrollViewport')
     scrollViewport: ElementRef<HTMLDivElement> | undefined;
-
-    protected _destroyRef = inject(DestroyRef);
 
     protected _$direction = new BehaviorSubject<ScrollerDirections>(ScrollerDirection.VERTICAL);
     readonly $direction = this._$direction.asObservable();
@@ -178,10 +176,11 @@ export class BaseScrollView {
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
 
     constructor() {
+        super();
 
         const $direction = this.$direction;
         $direction.pipe(
-            takeUntilDestroyed(),
+            takeUntil(this._$unsubscribe),
             distinctUntilChanged(),
             tap(v => {
                 this._$isVertical.next(v === ScrollerDirection.VERTICAL);

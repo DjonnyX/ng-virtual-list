@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, Injector, OnInit } from '@angular/core';
-import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, filter, debounceTime, BehaviorSubject } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, filter, debounceTime, BehaviorSubject, takeUntil } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
-import { Id } from '../../types';
+import { FocusAlignment, Id } from '../../types';
 import {
   DEFAULT_CLICK_DISTANCE, NAVIGATION_BY_KEYBOARD_TIMER, VISIBILITY_HIDDEN,
 } from '../../const';
@@ -21,7 +20,7 @@ import {
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/list-item/ng-virtual-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-list-item/ng-virtual-list-item.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -53,21 +52,21 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   ngOnInit(): void {
     this._service.$clickDistance.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._$maxClickDistance.next(v);
       }),
     ).subscribe();
 
     this._service.$langTextDir.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._langTextDir = v;
       }),
     ).subscribe();
 
     this._service.$scrollBarSize.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._scrollBarSize = v;
       }),
@@ -77,14 +76,14 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       $focused = this.$focused;
 
     $focused.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
       }),
     ).subscribe();
 
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(e => {
         this._$focused.next(true);
 
@@ -95,7 +94,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     ).subscribe(),
 
       fromEvent(this.element, EVENT_FOCUS_OUT).pipe(
-        takeUntilDestroyed(this._destroyRef),
+        takeUntil(this._$unsubscribe),
         tap(e => {
           this._$focused.next(false);
 
@@ -106,7 +105,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       ).subscribe();
 
     $focused.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
       switchMap(v => {
         if (v) {
@@ -117,7 +116,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     ).subscribe();
 
     combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       map(([, m, selectedIds, collapsedIds]) => ({ method: m, selectedIds, collapsedIds })),
       tap(({ method, selectedIds, collapsedIds }) => {
         switch (method) {
@@ -155,7 +154,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   private keyKode() {
     return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       switchMap(e => {
         switch (e.key) {
           case KEY_SPACE: {
@@ -204,7 +203,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       this._service.lastFocusedItemId = index;
     }
     return of(e).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
       switchMap(() => {
@@ -224,7 +223,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       this._service.lastFocusedItemId = index;
     }
     return of(e).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
       switchMap(() => {
@@ -265,6 +264,17 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       }
     }
     return -1;
+  }
+
+  private focus(align: FocusAlignment = FocusAlignments.CENTER, index: number = -1) {
+    if (this._service.listElement) {
+      const tabIndex = index > -1 ? index : this._data?.config?.tabIndex ?? 0;
+      let i = tabIndex;
+      const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(i));
+      if (!!element) {
+        this._service.focus(element, align);
+      }
+    }
   }
 
   protected override updateConfig(v: IRenderVirtualListItem<any> | null) {

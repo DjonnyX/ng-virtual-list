@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, ViewChild, ViewEncapsulation } from '@angular/core';
-import { BehaviorSubject, combineLatest, delay, filter, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation } from '@angular/core';
+import { BehaviorSubject, combineLatest, delay, filter, takeUntil, tap } from 'rxjs';
 import { GradientColorPositions } from '../../../../projects/ng-virtual-list/src/lib/types/gradient-color-positions';
 import { getShapeMinSize } from '../utils/get-shape-min-size';
 import { RoundedCorner, GradientColor, Color } from '../interfaces';
@@ -14,6 +13,7 @@ import {
   DUR, FILL, FILL_GRADIENT_NAME, GRADIENT_COLOR_NAME, HREF, ID, MS, NONE, PX, R, RIPPLE_ANIMATE_CLASS, SHAPE_NAME, STROKE,
   STROKE_GRADIENT_NAME, STROKE_WIDTH, VIEW_BOX, X1, X2,
 } from './const';
+import { DisposableComponent } from '../../../../projects/ng-virtual-list/src/lib/utils/disposable-component';
 
 /**
  * Substrate
@@ -30,7 +30,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.Emulated,
 })
-export class XSubstrateComponent {
+export class XSubstrateComponent extends DisposableComponent {
   private static __id: number = 0;
   private static get nextId() {
     const id = XSubstrateComponent.__id = XSubstrateComponent.__id + 1 === Number.MAX_SAFE_INTEGER ? 0 : XSubstrateComponent.__id + 1;
@@ -191,9 +191,8 @@ export class XSubstrateComponent {
   }
   get rippleEnabled() { return this._$rippleEnabled.getValue(); }
 
-  protected _destroyRef = inject(DestroyRef);
-
   constructor(private _elementRef: ElementRef<HTMLDivElement>) {
+    super();
     this._id = XSubstrateComponent.nextId;
   }
 
@@ -241,7 +240,7 @@ export class XSubstrateComponent {
     }
 
     this.$fillColors.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(fillColors => {
         const color1: Color = Array.isArray(fillColors) && fillColors.length > 0 ?
           fillColors[0] : typeof fillColors === 'string' ? fillColors as Color : DEFAULT_FILL_COLORS[0];
@@ -261,7 +260,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     this.$strokeWidth.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(strokeWidth => {
         const shape = this.shape?.nativeElement, path = this.path?.nativeElement, hilight = this.hilight?.nativeElement;
         if (shape) {
@@ -277,7 +276,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     this.$strokeAnimationDuration.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(strokeAnimationDuration => {
         const strokeAnimation = this.strokeAnimation?.nativeElement;
         if (strokeAnimation) {
@@ -287,7 +286,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     this.$fillPositions.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(fillPositions => {
         if (Array.isArray(fillPositions) && fillPositions.length === 2) {
           const fillGradient = this.fillGradient;
@@ -300,7 +299,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     this.$strokeColors.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(strokeColors => {
         if (Array.isArray(strokeColors) && strokeColors.length === 2) {
           const strokeGradientColor1 = this.strokeGradientColor1, strokeGradientColor2 = this.strokeGradientColor2;
@@ -313,7 +312,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     combineLatest(([this.$width, this.$height, this.$roundCorner, this.$mode])).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(([width, height, roundCorner, mode]) => {
         const svg = this.svg?.nativeElement, path = this.path?.nativeElement, minSize = getShapeMinSize(roundCorner),
           ww = (width || minSize), w = ww >= minSize ? ww : minSize,
@@ -346,7 +345,7 @@ export class XSubstrateComponent {
     ).subscribe();
 
     this.$type.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(type => {
         const shape = this.shape?.nativeElement, hilight = this.hilight?.nativeElement;
         if (shape) {
@@ -379,7 +378,7 @@ export class XSubstrateComponent {
     const $rippleEnabled = this.$rippleEnabled;
 
     $rippleEnabled.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       tap(() => {
         if (rippleShape) {
@@ -387,7 +386,7 @@ export class XSubstrateComponent {
         }
       }),
       delay(800),
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(() => {
         if (rippleShape) {
           rippleShape.nativeElement.classList.remove(RIPPLE_ANIMATE_CLASS);
