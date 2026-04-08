@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [15.11.2] - 2026-04-08
+
+### Added
+- Added a new example with a news feed
+
 ## [15.11.1] - 2026-04-08
 
 ### Fixed
