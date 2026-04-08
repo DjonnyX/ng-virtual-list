@@ -1,5 +1,5 @@
 import { Tracker } from './tracker';
-import { BaseVirtualListItemComponent } from '../components/list-item/base';
+import { BaseVirtualListItemComponent } from '../components/ng-list-item/base';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../interfaces';

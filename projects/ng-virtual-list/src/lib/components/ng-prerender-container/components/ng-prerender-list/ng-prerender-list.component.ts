@@ -12,11 +12,11 @@ import {
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
 import { PrerenderCache } from "../../types/cache";
-import { BaseVirtualListItemComponent } from "../../../list-item/base";
+import { BaseVirtualListItemComponent } from "../../../ng-list-item/base";
 import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
-import { PrerenderVirtualListItemComponent } from "../../components/prerender-list-item/prerender-list-item.component";
+import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
 import { Direction } from "../../../../enums";
 
 /**
@@ -28,9 +28,9 @@ import { Direction } from "../../../../enums";
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-list',
-    templateUrl: './prerender-list.component.html',
-    styleUrls: ['../../../../ng-virtual-list.component.scss', './prerender-list.component.scss'],
+    selector: 'ng-prerender-list',
+    templateUrl: './ng-prerender-list.component.html',
+    styleUrls: ['../../../../ng-virtual-list.component.scss', './ng-prerender-list.component.scss'],
     host: {
         'style': 'position: relative;'
     },
@@ -38,7 +38,7 @@ import { Direction } from "../../../../enums";
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class PrerenderList implements OnDestroy {
+export class NgPrerenderList implements OnDestroy {
     @ViewChild('renderersContainer', { read: ViewContainerRef })
     private _listContainerRef: ViewContainerRef | undefined;
 
@@ -64,7 +64,7 @@ export class PrerenderList implements OnDestroy {
 
     itemRenderer = input<TemplateRef<any>>();
 
-    itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(PrerenderVirtualListItemComponent);
+    itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(NgPrerenderVirtualListItemComponent);
 
     protected _items = signal<IVirtualListCollection | null>(null);
 
