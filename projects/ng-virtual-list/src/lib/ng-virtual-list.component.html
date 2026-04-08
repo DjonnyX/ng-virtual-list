@@ -2,12 +2,12 @@
   {{ $screenReaderFormattedMessage | async }}
 </div>
 
-<prerender-container #prerender [bounds]="($bounds | async)!" [direction]="($direction | async)!"
+<ng-prerender-container #prerender [bounds]="($bounds | async)!" [direction]="($direction | async)!"
   [dynamic]="($dynamicSize | async)!" [isVertical]="($isVertical | async)!"
   [itemSize]="($itemSize | async)!" [trackBy]="($trackBy | async)!" [itemRenderer]="($itemRenderer | async)!"
   [startOffset]="($scrollStartOffset | async)!" [endOffset]="($scrollEndOffset | async)!"
   [scrollbarEnabled]="(scroller.$scrollbarShow | async)!"
-  [enabled]="($prerenderEnabled | async)!"></prerender-container>
+  [enabled]="($prerenderEnabled | async)!"></ng-prerender-container>
 
 <ng-container *ngIf="$snap | async">
   <div localeSensitive [langTextDir]="($langTextDir | async)!" #snappedContainer class="ngvl__snapped-container"
