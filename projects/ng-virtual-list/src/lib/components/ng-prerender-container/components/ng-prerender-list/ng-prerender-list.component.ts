@@ -11,33 +11,33 @@ import {
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
 import { PrerenderCache } from "../../types/cache";
-import { BaseVirtualListItemComponent } from "../../../list-item/base";
+import { BaseVirtualListItemComponent } from "../../../ng-list-item/base";
 import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
-import { PrerenderVirtualListItemComponent } from "../../components/prerender-list-item/prerender-list-item.component";
+import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
 import { Direction } from "../../../../enums";
 import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
- * PrerenderList.
+ * NgPrerenderList.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/prerender-container/components/prerender-list/prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-list',
-    templateUrl: './prerender-list.component.html',
-    styleUrls: ['../../../../ng-virtual-list.component.scss', './prerender-list.component.scss'],
+    selector: 'ng-prerender-list',
+    templateUrl: './ng-prerender-list.component.html',
+    styleUrls: ['../../../../ng-virtual-list.component.scss', './ng-prerender-list.component.scss'],
     host: {
         'style': 'position: relative;'
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class PrerenderList extends DisposableComponent implements OnDestroy {
+export class NgPrerenderList extends DisposableComponent implements OnDestroy {
     @ViewChild('renderersContainer', { read: ViewContainerRef })
     private _listContainerRef: ViewContainerRef | undefined;
 
@@ -161,7 +161,7 @@ export class PrerenderList extends DisposableComponent implements OnDestroy {
     }
     get itemRenderer() { return this._$itemRenderer.getValue(); }
 
-    protected _$itemComponentClass = new BehaviorSubject<Component$1<BaseVirtualListItemComponent>>(PrerenderVirtualListItemComponent);
+    protected _$itemComponentClass = new BehaviorSubject<Component$1<BaseVirtualListItemComponent>>(NgPrerenderVirtualListItemComponent);
     readonly $itemComponentClass = this._$itemComponentClass.asObservable();
     @Input()
     set itemComponentClass(v: Component$1<BaseVirtualListItemComponent>) {
