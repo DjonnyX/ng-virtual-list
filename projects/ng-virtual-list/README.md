@@ -16,8 +16,11 @@ Works correctly in all browsers and platforms.
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
 ![npm total downloads](https://img.shields.io/npm/dt/ng-virtual-list)
 
-[Live Demo](https://chat-demo.eugene-grebennikov.pro/)
+[Chat Demo](https://chat-demo.eugene-grebennikov.pro/)
 [(Code)](https://github.com/DjonnyX/ng-virtual-list-chat-demo)
+
+[News Feed Demo](https://news-feed-demo.eugene-grebennikov.pro/)
+[(Code)](https://github.com/DjonnyX/ng-virtual-list-news-feed-demo)
 
 [Live Examples (Storybook)](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
 
