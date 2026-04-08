@@ -1,9 +1,9 @@
 import {
-    ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, Input, OnDestroy, TemplateRef, ViewChild,
+    ChangeDetectionStrategy, Component, ElementRef, inject, Input, OnDestroy, TemplateRef, ViewChild,
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { toggleClassName } from "../../../../utils";
-import { BehaviorSubject, combineLatest, filter, Subject, Subscription, tap } from "rxjs";
+import { BehaviorSubject, combineLatest, filter, Subject, Subscription, takeUntil, tap } from "rxjs";
 import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
@@ -11,33 +11,33 @@ import {
 import { ISize } from '../../../../interfaces';
 import { IVirtualListCollection } from "../../../../models";
 import { PrerenderCache } from "../../types/cache";
-import { BaseVirtualListItemComponent } from "../../../list-item/base";
+import { BaseVirtualListItemComponent } from "../../../ng-list-item/base";
 import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
-import { PrerenderVirtualListItemComponent } from "../../components/prerender-list-item/prerender-list-item.component";
+import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
 import { Direction } from "../../../../enums";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
- * PrerenderList.
+ * NgPrerenderList.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/prerender-container/components/prerender-list/prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-list',
-    templateUrl: './prerender-list.component.html',
-    styleUrls: ['../../../../ng-virtual-list.component.scss', './prerender-list.component.scss'],
+    selector: 'ng-prerender-list',
+    templateUrl: './ng-prerender-list.component.html',
+    styleUrls: ['../../../../ng-virtual-list.component.scss', './ng-prerender-list.component.scss'],
     host: {
         'style': 'position: relative;'
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class PrerenderList implements OnDestroy {
+export class NgPrerenderList extends DisposableComponent implements OnDestroy {
     @ViewChild('renderersContainer', { read: ViewContainerRef })
     private _listContainerRef: ViewContainerRef | undefined;
 
@@ -161,7 +161,7 @@ export class PrerenderList implements OnDestroy {
     }
     get itemRenderer() { return this._$itemRenderer.getValue(); }
 
-    protected _$itemComponentClass = new BehaviorSubject<Component$1<BaseVirtualListItemComponent>>(PrerenderVirtualListItemComponent);
+    protected _$itemComponentClass = new BehaviorSubject<Component$1<BaseVirtualListItemComponent>>(NgPrerenderVirtualListItemComponent);
     readonly $itemComponentClass = this._$itemComponentClass.asObservable();
     @Input()
     set itemComponentClass(v: Component$1<BaseVirtualListItemComponent>) {
@@ -194,12 +194,12 @@ export class PrerenderList implements OnDestroy {
 
     private _subscriptions = new Array<Subscription>();
 
-    protected _destroyRef = inject(DestroyRef);
-
     constructor() {
+        super();
+
         const $enabled = this.$enabled;
         $enabled.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(enabled => {
                 if (enabled) {
                     this.activate();
@@ -219,7 +219,7 @@ export class PrerenderList implements OnDestroy {
         this._trackBox!.addEventListener(PrerenderTrackBoxEvents.RESIZE, this._onTrackBoxResizeHandler);
 
         this._subscriptions.push(this.$isVertical.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(v => {
                 const el = this._elementRef.nativeElement;
                 toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
@@ -227,7 +227,7 @@ export class PrerenderList implements OnDestroy {
         ).subscribe());
 
         this._subscriptions.push(this.$bounds.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(v => !!v),
             tap(bounds => {
                 const { width, height } = bounds!;
@@ -238,7 +238,7 @@ export class PrerenderList implements OnDestroy {
         ).subscribe());
 
         this._subscriptions.push(combineLatest([this.$bounds, this.$items]).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(([b, i]) => !!b && !!i),
             tap(([bounds, items]) => {
                 if (this.active && !!this._trackBox) {
@@ -255,7 +255,7 @@ export class PrerenderList implements OnDestroy {
 
         const $componentResize = this.$componentResize;
         this._subscriptions.push($componentResize.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(cache => {
                 this._$render.next(cache);
             }),
@@ -306,7 +306,9 @@ export class PrerenderList implements OnDestroy {
         this._trackBox!.create(this._listContainerRef!);
     }
 
-    ngOnDestroy(): void {
+    override ngOnDestroy(): void {
+        super.ngOnDestroy();
+
         this.dispose();
     }
 

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, Output, TemplateRef, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, Subject, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
@@ -15,7 +15,6 @@ import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
 import { MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MEASURE_VELOCITY_TIMER } from './const';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
 import { ISize } from '../../interfaces';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 const TOP = 'top',
   LEFT = 'left',
@@ -27,7 +26,7 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
  * The scroller for the NgVirtualList item component
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/scroller/ng-scroller.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-scroller/ng-scroller.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -264,7 +263,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     super();
 
     this._service.$langTextDir.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(v => {
         this._$langTextDir.next(v);
@@ -272,7 +271,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     ).subscribe();
 
     this.$thumbGradientPositions.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(v => {
         this._$thumbColorPositions.next(v);
@@ -280,7 +279,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     ).subscribe();
 
     this.$thumbSize.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(v => {
         this._$actualThumbSize.next(v);
@@ -293,7 +292,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
     const $prepared = this.$preparedSignal;
     $prepared.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       tap(() => {
         this.updateScrollBarHandler(true, false, true);
@@ -304,7 +303,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       $scrollbarShow = this.$scrollbarShow;
 
     combineLatest([$scrollbarEnabled, $scrollbarShow, $prepared]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(([scrollbarEnabled, scrollbarShow, prepared]) => {
         this._$show.next(scrollbarEnabled && scrollbarShow && prepared);
       }),
@@ -317,7 +316,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       $thumbSize = this.$thumbSize;
 
     from([$endOffset, $startOffset, $thumbSize, $scrollbarMinSize, $isVertical]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(() => {
         this.updateScrollBar();
@@ -327,7 +326,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     const $updateScrollBar = this.$updateScrollBar;
 
     $updateScrollBar.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       debounceTime(0),
       tap(() => {
         this.updateScrollBarHandler(!this._isScrollbarUserAction);
@@ -335,7 +334,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     ).subscribe();
 
     combineLatest([this.$classes, this.$direction, this.$grabbing]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       debounceTime(0),
       tap(([classes, direction, grabbing]) => {
@@ -344,7 +343,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     ).subscribe();
 
     combineLatest([this.$contentBounds, this.$viewportBounds, this.$isVertical, this.$direction, this.$grabbing, this.$scrollbarEnabled]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
       debounceTime(0),
       tap(([contentBounds, viewportBounds, isVertical, direction, grabbing, scrollbarEnabled]) => {

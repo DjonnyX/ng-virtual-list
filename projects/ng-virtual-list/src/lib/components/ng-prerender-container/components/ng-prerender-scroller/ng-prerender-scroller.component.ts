@@ -1,33 +1,32 @@
 import { ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, from, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, takeUntil, tap } from 'rxjs';
 import { TextDirection, TextDirections } from '../../../../enums';
 import { BaseScrollView } from '../../../ng-scroll-view/base/base-scroll-view.component';
 import { SCROLL_VIEW_INVERSION } from '../../../ng-scroll-view';
 import { BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, LEFT_PROP_NAME, TOP_PROP_NAME } from '../../../../const';
 import { NgScrollBarComponent } from '../../../ng-scroll-bar/ng-scroll-bar.component';
-import { ScrollBox } from '../../../scroller/utils';
+import { ScrollBox } from '../../../ng-scroller/utils';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/const';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
- * PrerenderScrollerComponent.
+ * NgPrerenderScrollerComponent.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/prerender-container/prerender-scroller/prerender-scroller.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/ng-prerender-scroller/ng-prerender-scroller.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 @Component({
-    selector: 'prerender-scroller',
-    templateUrl: './prerender-scroller.component.html',
-    styleUrls: ['../../../scroller/ng-scroller.component.scss'],
+    selector: 'ng-prerender-scroller',
+    templateUrl: './ng-prerender-scroller.component.html',
+    styleUrls: ['../../../ng-scroller/ng-scroller.component.scss'],
     providers: [
         { provide: SCROLL_VIEW_INVERSION, useValue: false },
         { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrerenderScrollerComponent extends BaseScrollView {
+export class NgPrerenderScrollerComponent extends BaseScrollView {
     @ViewChild('scrollBar', { read: NgScrollBarComponent })
     scrollBar: NgScrollBarComponent | undefined;
 
@@ -109,7 +108,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $direction = this.$direction;
 
         combineLatest(([$classes, $direction])).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(([classes, direction]) => {
                 this._$actualClasses.next({ ...classes, [direction]: true });
             }),
@@ -121,7 +120,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $scrollbarEnabled = this.$scrollbarEnabled;
 
         combineLatest([$direction, $scrollbarEnabled, $isVertical, $contentBounds, $viewportBounds]).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(([direction, scrollbarEnabled]) => {
                 this._$containerClasses.next({ [direction]: true, enabled: scrollbarEnabled, scrollable: scrollbarEnabled });
             }),
@@ -132,7 +131,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
             $thumbSize = this.$thumbSize;
 
         from([$endOffset, $startOffset, $thumbSize, $isVertical]).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(() => {
                 this.updateScrollBar();
             }),
@@ -141,7 +140,7 @@ export class PrerenderScrollerComponent extends BaseScrollView {
         const $updateScrollBar = this.$updateScrollBar;
 
         $updateScrollBar.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(() => {
                 this.updateScrollBarHandler(true);
             }),

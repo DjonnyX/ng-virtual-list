@@ -16,7 +16,6 @@ import {
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * NgScrollView
@@ -80,21 +79,21 @@ export class NgScrollView extends BaseScrollView {
 
     ngAfterViewInit() {
         const $viewport = of(this.scrollViewport).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(v => !!v),
             map(v => v!.nativeElement),
         ), $content = of(this.scrollContent).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(v => !!v),
             map(v => v!.nativeElement),
         ), $wheelEmitter = this._inversion ? $viewport : $content;
 
         $wheelEmitter.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             switchMap(content => {
                 return fromEvent<WheelEvent>(content, WHEEL, { passive: false }).pipe(
                     filter(() => this._interactive),
-                    takeUntilDestroyed(this._destroyRef),
+                    takeUntil(this._$unsubscribe),
                     tap(e => {
                         const isVertical = this._$isVertical.getValue();
                         this.emitScrollableEvent();
@@ -110,10 +109,10 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
 
         const $mouseUp = fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
         ),
             $mouseDragCancel = $mouseUp.pipe(
-                takeUntilDestroyed(this._destroyRef),
+                takeUntil(this._$unsubscribe),
                 tap(() => {
                     this._isMoving = false;
                     this._$grabbing.next(false);
@@ -121,10 +120,10 @@ export class NgScrollView extends BaseScrollView {
             );
 
         $content.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             switchMap(content => {
                 return fromEvent<MouseEvent>(content, MOUSE_DOWN, { passive: false }).pipe(
-                    takeUntilDestroyed(this._destroyRef),
+                    takeUntil(this._$unsubscribe),
                     filter(v => this._interactive),
                     switchMap(e => {
                         this.cancelOverscroll();
@@ -144,7 +143,7 @@ export class NgScrollView extends BaseScrollView {
                             velocities = new Array<[number, number]>(),
                             startTime = Date.now();
                         return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
-                            takeUntilDestroyed(this._destroyRef),
+                            takeUntil(this._$unsubscribe),
                             takeUntil($mouseDragCancel),
                             tap(e => {
                                 this.checkOverscroll(e);
@@ -156,7 +155,7 @@ export class NgScrollView extends BaseScrollView {
                                 this.move(isVertical, position, true, true, true);
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
-                                    takeUntilDestroyed(this._destroyRef),
+                                    takeUntil(this._$unsubscribe),
                                     tap(e => {
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
@@ -179,10 +178,10 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
 
         const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
         ),
             $touchCanceler = $touchUp.pipe(
-                takeUntilDestroyed(this._destroyRef),
+                takeUntil(this._$unsubscribe),
                 tap(() => {
                     this._isMoving = false;
                     this._$grabbing.next(false);
@@ -190,10 +189,10 @@ export class NgScrollView extends BaseScrollView {
             );
 
         $content.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             switchMap(content => {
                 return fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
-                    takeUntilDestroyed(this._destroyRef),
+                    takeUntil(this._$unsubscribe),
                     filter(() => this._interactive),
                     switchMap(e => {
                         this.cancelOverscroll();
@@ -212,7 +211,7 @@ export class NgScrollView extends BaseScrollView {
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
                             startTime = Date.now();
                         return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
-                            takeUntilDestroyed(this._destroyRef),
+                            takeUntil(this._$unsubscribe),
                             takeUntil($touchCanceler),
                             tap(e => {
                                 this.checkOverscroll(e);
@@ -224,7 +223,7 @@ export class NgScrollView extends BaseScrollView {
                                 this.move(isVertical, position, true, true, true);
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
-                                    takeUntilDestroyed(this._destroyRef),
+                                    takeUntil(this._$unsubscribe),
                                     tap(e => {
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
@@ -497,7 +496,8 @@ export class NgScrollView extends BaseScrollView {
         this.move(this._$isVertical.getValue(), offset);
     }
 
-    ngOnDestroy(): void {
+    override ngOnDestroy(): void {
+        super.ngOnDestroy();
 
         if (this._animator) {
             this._animator.dispose();

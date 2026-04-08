@@ -1,7 +1,7 @@
 import { Directive, ElementRef, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, combineLatest, Subject, takeUntil, tap } from 'rxjs';
 import { TextDirection, TextDirections } from '../../enums';
-import { ScrollerDirection, ScrollerDirections } from '../../components/scroller/enums';
+import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
 import { isDirection } from '../../utils/is-direction';
 
 const RIGHT = 'right',

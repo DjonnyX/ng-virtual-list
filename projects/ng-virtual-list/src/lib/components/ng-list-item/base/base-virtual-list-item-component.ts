@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, DestroyRef, ElementRef, inject, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, inject, TemplateRef } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -13,8 +13,8 @@ import {
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
-import { BehaviorSubject, combineLatest, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, combineLatest, takeUntil, tap } from 'rxjs';
+import { DisposableComponent } from '../../../utils/disposable-component';
 
 /**
  * BaseVirtualListItemComponent
@@ -22,12 +22,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export class BaseVirtualListItemComponent {
+export class BaseVirtualListItemComponent extends DisposableComponent {
   private _apiService = inject(NgVirtualListPublicService);
 
   protected _cdr = inject(ChangeDetectorRef);
-
-  protected _destroyRef = inject(DestroyRef);
 
   protected _id!: number;
   get id() {
@@ -135,13 +133,15 @@ export class BaseVirtualListItemComponent {
   }
 
   constructor() {
+    super();
+
     const $data = this.$data,
       $config = this.$config,
       $measures = this.$measures,
       $focused = this.$focused;
 
     combineLatest([$data, $focused]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(([data, focused]) => {
         this._$classes.next({
           [CLASS_NAME_SNAPPED]: data?.config?.snapped ?? false, [CLASS_NAME_SNAPPED_OUT]: data?.config?.snappedOut ?? false,
@@ -151,14 +151,14 @@ export class BaseVirtualListItemComponent {
     ).subscribe();
 
     $config.pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(config => {
         this._$index.next(config?.tabIndex ?? -1);
       }),
     ).subscribe();
 
     combineLatest([$data, $config, $measures]).pipe(
-      takeUntilDestroyed(this._destroyRef),
+      takeUntil(this._$unsubscribe),
       tap(([data, config, measures]) => {
         this._$templateContext.next({
           data: data?.data, prevData: data?.previouseData, nextData: data?.nextData, measures,
