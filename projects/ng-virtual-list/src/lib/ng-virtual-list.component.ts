@@ -1338,10 +1338,10 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
-      renderStabilizerUpdateIterations = 0;
     const $update = this.$update,
       renderStabilizer = (options?: IRenderStabilizerOptions) => {
+        let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
+          renderStabilizerUpdateIterations = 0;
         const prepareIterations = options?.prepareIterations ?? PREPARE_ITERATIONS,
           prepareReupdateLength = options?.prepareReupdateLength ?? PREPARATION_REUPDATE_LENGTH;
         return of(null).pipe(
@@ -1885,6 +1885,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    let isChunkLoading = false;
     const $loading = toObservable(this.loading);
     $loading.pipe(
       takeUntilDestroyed(),
@@ -1892,6 +1893,7 @@ export class NgVirtualListComponent implements OnDestroy {
       skip(1),
       filter(v => !v),
       switchMap(() => {
+        isChunkLoading = true;
         const scrollbar = this._scrollerComponent();
         if (!!scrollbar) {
           scrollbar.stopScrollbar();
@@ -1900,11 +1902,14 @@ export class NgVirtualListComponent implements OnDestroy {
         return $actualItems.pipe(
           takeUntilDestroyed(this._destroyRef),
           take(1),
+          tap(() => {
+            this._$fireUpdateNextFrame.next(true);
+          }),
           switchMap(() => $chunkLoadingRenderStabilizer.pipe(
             takeUntilDestroyed(this._destroyRef),
             take(1),
             tap(() => {
-              console.log('reset')
+              isChunkLoading = false;
               this._trackBox.resetCacheChunkInfo();
               const scrollbar = this._scrollerComponent();
               if (!!scrollbar) {
@@ -1952,7 +1957,7 @@ export class NgVirtualListComponent implements OnDestroy {
       let totalSize = 0;
       if (scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
-          emitUpdate = !this._readyForShow || waitingCache || collapsable;
+          emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading;
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
             fireUpdate = emitUpdate || reupdate || (!optimization && !userAction) || this._$scrollingTo.getValue();
@@ -2050,23 +2055,23 @@ export class NgVirtualListComponent implements OnDestroy {
             return;
           }
 
-          if (scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) {
-            if (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate) {
-              this._trackBox.clearDelta();
-              if (this._readyForShow) {
-                this.emitScrollEvent(true, false, userAction);
-              }
-              const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
-              };
-              scroller.scrollTo(params);
-              if (emitUpdate) {
-                this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-              }
+          if ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
+            (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate)) {
+            this._trackBox.clearDelta();
+
+            if (this._readyForShow) {
+              this.emitScrollEvent(true, false, userAction);
             }
-            return;
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
+              fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+            };
+            scroller.scrollTo(params);
+            if (emitUpdate) {
+              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            }
           }
+          return;
         }
         if (emitUpdate) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
