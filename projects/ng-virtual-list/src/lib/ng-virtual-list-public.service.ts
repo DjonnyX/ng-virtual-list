@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { IRenderVirtualListItem } from './models';
+import { IRenderVirtualListItem, IVirtualListItem } from './models';
 import { IScrollOptions } from './interfaces';
 import { FocusAlignment, Id } from './types';
 import { FocusItemParams } from './types/focus-item-params';

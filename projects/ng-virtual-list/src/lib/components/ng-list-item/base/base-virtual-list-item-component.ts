@@ -1,4 +1,4 @@
-import { computed, ChangeDetectorRef, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
