@@ -19,13 +19,13 @@ import {
   DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
-  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS,
+  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
 } from './models';
 import {
-  IScrollEvent, IScrollOptions, IAnimationParams, IRect, ISize, IRenderStabilizerOptions,
+  IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions,
 } from './interfaces';
 import { FocusAlignment, Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -1338,10 +1338,10 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
-      renderStabilizerUpdateIterations = 0;
     const $update = this.$update,
       renderStabilizer = (options?: IRenderStabilizerOptions) => {
+        let renderStabilizerPrevScrollStateVersion = EMPTY_SCROLL_STATE_VERSION,
+          renderStabilizerUpdateIterations = 0;
         const prepareIterations = options?.prepareIterations ?? PREPARE_ITERATIONS,
           prepareReupdateLength = options?.prepareReupdateLength ?? PREPARATION_REUPDATE_LENGTH;
         return of(null).pipe(
@@ -1383,6 +1383,10 @@ export class NgVirtualListComponent implements OnDestroy {
       prepareReupdateLength: PREPARATION_REUPDATE_LENGTH,
     }),
       $updateItemsRenderStabilizer = renderStabilizer({
+        prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
+        prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
+      }),
+      $chunkLoadingRenderStabilizer = renderStabilizer({
         prepareIterations: PREPARE_ITERATIONS_FOR_UPDATE_ITEMS,
         prepareReupdateLength: PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
       }),
@@ -1881,6 +1885,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    let isChunkLoading = false;
     const $loading = toObservable(this.loading);
     $loading.pipe(
       takeUntilDestroyed(),
@@ -1888,14 +1893,32 @@ export class NgVirtualListComponent implements OnDestroy {
       skip(1),
       filter(v => !v),
       switchMap(() => {
+        isChunkLoading = true;
+        const scrollbar = this._scrollerComponent();
+        if (!!scrollbar) {
+          scrollbar.stopScrollbar();
+          scrollbar.refreshScrollbar();
+        }
         return $actualItems.pipe(
           takeUntilDestroyed(this._destroyRef),
-          debounceTime(100),
           take(1),
           tap(() => {
-            this._scrollerComponent()?.refreshScrollbar();
+            this._$fireUpdateNextFrame.next(true);
           }),
-        )
+          switchMap(() => $chunkLoadingRenderStabilizer.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            take(1),
+            tap(() => {
+              isChunkLoading = false;
+              this._trackBox.resetCacheChunkInfo();
+              const scrollbar = this._scrollerComponent();
+              if (!!scrollbar) {
+                scrollbar.stopScrollbar();
+                scrollbar.refreshScrollbar();
+              }
+            }),
+          )),
+        );
       }),
     ).subscribe();
 
@@ -1934,7 +1957,7 @@ export class NgVirtualListComponent implements OnDestroy {
       let totalSize = 0;
       if (scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
-          emitUpdate = !this._readyForShow || waitingCache || collapsable;
+          emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading;
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
             fireUpdate = emitUpdate || reupdate || (!optimization && !userAction) || this._$scrollingTo.getValue();
@@ -2032,23 +2055,23 @@ export class NgVirtualListComponent implements OnDestroy {
             return;
           }
 
-          if (scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) {
-            if (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate) {
-              this._trackBox.clearDelta();
-              if (this._readyForShow) {
-                this.emitScrollEvent(true, false, userAction);
-              }
-              const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
-              };
-              scroller.scrollTo(params);
-              if (emitUpdate) {
-                this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
-              }
+          if ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
+            (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate)) {
+            this._trackBox.clearDelta();
+
+            if (this._readyForShow) {
+              this.emitScrollEvent(true, false, userAction);
             }
-            return;
+            const params: IScrollToParams = {
+              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
+              fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+            };
+            scroller.scrollTo(params);
+            if (emitUpdate) {
+              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+            }
           }
+          return;
         }
         if (emitUpdate) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
@@ -2057,7 +2080,7 @@ export class NgVirtualListComponent implements OnDestroy {
     };
 
     let prevItems: IVirtualListCollection = [];
-    const debouncedUpdate = debounce(update, 0);
+    const debouncedUpdate = debounce(update, 0, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1);
     $viewInit.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
