@@ -1,4 +1,4 @@
-import { computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectorRef, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -21,6 +21,8 @@ import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.serv
  * @email djonnyx@gmail.com
  */
 export class BaseVirtualListItemComponent {
+  private _cdr = inject(ChangeDetectorRef);
+
   private _apiService = inject(NgVirtualListPublicService);
 
   protected _id!: number;
@@ -68,6 +70,8 @@ export class BaseVirtualListItemComponent {
     this.update();
 
     this.data.set(v);
+
+    this._cdr.markForCheck();
   }
 
   protected readonly classes!: Signal<{ [cName: string]: boolean; }>;
@@ -91,6 +95,8 @@ export class BaseVirtualListItemComponent {
     this._regularLength = v;
 
     this.update();
+
+    this._cdr.markForCheck();
   }
 
   get item() {
@@ -172,6 +178,8 @@ export class BaseVirtualListItemComponent {
     } else {
       el.removeAttribute(ID);
     }
+
+    this._cdr.markForCheck();
   }
 
   protected updatePartStr(v: IRenderVirtualListItem | null, isSelected: boolean, isCollapsed: boolean) {

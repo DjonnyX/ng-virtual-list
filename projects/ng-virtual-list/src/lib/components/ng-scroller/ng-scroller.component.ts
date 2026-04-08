@@ -222,7 +222,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   protected override onResizeViewport() {
     const viewport = this.scrollViewport()?.nativeElement;
-    if (!!viewport) {
+    if (viewport) {
       const bounds: ISize = { width: viewport.offsetWidth, height: viewport.offsetHeight }, b = this.viewportBounds();
       if (bounds.width === b.width && bounds.height === b.height) {
         return;
@@ -235,7 +235,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   protected override onResizeContent() {
     const content = this.scrollContent()?.nativeElement;
-    if (!!content) {
+    if (content) {
       const bounds: ISize = { width: content.offsetWidth, height: content.offsetHeight }, b = this.contentBounds();
       if (bounds.width === b.width && bounds.height === b.height) {
         return;

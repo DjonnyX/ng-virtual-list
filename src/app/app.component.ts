@@ -172,7 +172,8 @@ const generateDynamicShortItems = (len: number, startWith: number = 0) => {
 
 @Component({
   selector: 'app-root',
-  standalone: false,
+  imports: [CommonModule, FormsModule, NgVirtualListModule, CustomScrollbarModule],
+  standalone: true,
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
