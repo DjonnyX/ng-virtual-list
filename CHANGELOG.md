@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.11.7] - 2026-04-08
+
+### Fixed
+- Fixed jerking when scrolling
+
 ## [20.11.4] - 2026-04-06
 
 ### Added

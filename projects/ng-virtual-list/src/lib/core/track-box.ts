@@ -645,7 +645,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let y = this._scrollStartOffset, stickyCollectionItem: I | undefined = undefined, stickyComponentSize = 0;
+            let y = this._scrollStartOffset, stickyComponentSize = 0;
             for (let i = 0, l = collection.length; i < l; i++) {
                 const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
 
@@ -664,7 +664,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     componentSizeDelta = componentSnapshotSize;
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
-                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED });
+                            map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, [IS_NEW]: isNew });
                             if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 deltaFromStartCreation += componentSizeDelta;
                                 componentSizeDelta = 0;
@@ -696,7 +696,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (itemById === undefined) {
                         if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
                             stickyComponentSize = componentSize;
-                            stickyCollectionItem = collectionItem;
                             y -= stickyComponentSize;
                         }
 
@@ -859,10 +858,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     refreshCache(cache: PrerenderCache) {
         this._prerenderedCache = cache;
-    }
-
-    clearDeltaDirection() {
-        this.clearScrollDirectionCache();
     }
 
     clearDelta(clearDirectionDetector = false): void {
