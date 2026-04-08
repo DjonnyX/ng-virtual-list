@@ -7,7 +7,7 @@ import {
   Observable,
   of, skip, Subject, switchMap, take, takeUntil, tap,
 } from 'rxjs';
-import { NgVirtualListItemComponent } from './components/list-item/ng-virtual-list-item.component';
+import { NgVirtualListItemComponent } from './components/ng-list-item/ng-virtual-list-item.component';
 import {
   BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
@@ -37,7 +37,7 @@ import {
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
-import { BaseVirtualListItemComponent } from './components/list-item/base';
+import { BaseVirtualListItemComponent } from './components/ng-list-item/base';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';
 import { NgVirtualListService } from './ng-virtual-list.service';
@@ -47,13 +47,13 @@ import { CMap } from './utils/cmap';
 import { validateArray, validateBoolean, validateFloat, validateInt, validateObject, validateString } from './utils/validation';
 import { copyValueAsReadonly, objectAsReadonly } from './utils/object';
 import { isCollectionMode } from './utils/is-collection-mode';
-import { NgScrollerComponent } from './components/scroller/ng-scroller.component';
+import { NgScrollerComponent } from './components/ng-scroller/ng-scroller.component';
 import { IScrollToParams } from './components/ng-scroll-view';
-import { PrerenderContainer } from './components/prerender-container/prerender-container.component';
+import { NgPrerenderContainer } from './components/ng-prerender-container/ng-prerender-container.component';
 import { IScrollParams } from './interfaces';
 import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/screen-reader-formatter';
 import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
-import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/list-item/const';
+import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/ng-list-item/const';
 import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 import { DisposableComponent } from './utils/disposable-component';
 
@@ -88,8 +88,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
   private _service = inject(NgVirtualListService);
 
-  @ViewChild('prerender', { read: PrerenderContainer })
-  private _prerender: PrerenderContainer | undefined;
+  @ViewChild('prerender', { read: NgPrerenderContainer })
+  private _prerender: NgPrerenderContainer | undefined;
 
   @ViewChild('renderersContainer', { read: ViewContainerRef })
   private _listContainerRef: ViewContainerRef | undefined;
