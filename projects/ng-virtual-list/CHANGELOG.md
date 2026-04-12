@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.11.8] - 2026-04-13
+
+### Added
+- Added the scrollingSettings property, which defines scrolling parameters such as velocity, mass, etc.
+
 ## [20.11.7] - 2026-04-08
 
 ### Fixed
