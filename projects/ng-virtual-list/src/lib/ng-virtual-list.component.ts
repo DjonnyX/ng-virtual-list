@@ -572,7 +572,7 @@ export class NgVirtualListComponent implements OnDestroy {
     transform: (v: IScrollingSettings): IScrollingSettings | null => {
       let valid = validateObject(v, true, true);
       if (valid && !!v) {
-        const { frictionalForce, mass, maxDistance, maxDuration, speedScale } = v;
+        const { frictionalForce, mass, maxDistance, maxDuration, speedScale, optimization } = v;
         valid = validateFloat(frictionalForce, true);
         if (!valid) {
           console.error('The "frictionalForce" parameter must be of type `number` or `undefined`.');
@@ -598,6 +598,11 @@ export class NgVirtualListComponent implements OnDestroy {
           console.error('The "speedScale" parameter must be of type `number` or `undefined`.');
           return DEFAULT_SCROLLING_SETTINGS;
         }
+        valid = validateBoolean(optimization, true);
+        if (!valid) {
+          console.error('The "optimization" parameter must be of type `boolean` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
       }
       if (!valid) {
         console.error('The "scrollingSettings" parameter must be of type `object` or null.');
@@ -609,6 +614,7 @@ export class NgVirtualListComponent implements OnDestroy {
         maxDistance: v.maxDistance !== undefined && v.maxDistance > 0 ? v.maxDistance : DEFAULT_SCROLLING_SETTINGS.maxDistance,
         maxDuration: v.maxDuration !== undefined && v.maxDuration > 0 ? v.maxDuration : DEFAULT_SCROLLING_SETTINGS.maxDuration,
         speedScale: v.speedScale !== undefined && v.speedScale > 0 ? v.speedScale : DEFAULT_SCROLLING_SETTINGS.speedScale,
+        optimization: v.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
       };
     },
   } as any;
@@ -620,6 +626,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * - maxDistance - Maximum scrolling distance. Default value is 12500.
    * - maxDuration - Maximum animation duration. Default value is 4000.
    * - speedScale - Speed scale. Default value is 15.
+   * - optimization - Enables scrolling performance optimization. Default value is `true`.
    */
   scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS, { ...this._scrollingSettingsOptions });
 
@@ -2154,21 +2161,24 @@ export class NgVirtualListComponent implements OnDestroy {
               itemsChanged = true;
               prevItems = items;
             }
-            const scroller = this._scrollerComponent(), velocity = this._scrollerComponent()?.averageVelocity ?? 0,
+            const enabledOptimization = this.scrollingSettings()?.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
+              scroller = this._scrollerComponent(), velocity = this._scrollerComponent()?.averageVelocity ?? 0,
               maxScrollSize = isVertical ? (scroller?.scrollHeight || 0) : (scroller?.scrollWidth ?? 0),
               isEdges = scrollSize === 0 || scrollSize === maxScrollSize, isScrolling = this._$scrollingTo.getValue(),
               useDebouncedUpdate = dynamicSize && !itemsChanged && hasUserAction && !isScrolling && (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1),
-              rerenderOptimization = dynamicSize && !itemsChanged && (hasUserAction || hasScrollbarUserAction) && !isEdges && velocity > 0 &&
+              rerenderOptimization = enabledOptimization && dynamicSize && !itemsChanged && (hasUserAction || hasScrollbarUserAction) && !isEdges && velocity > 0 &&
                 (velocity > MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 || hasUserAction);
-            if (useDebouncedUpdate) {
-              debouncedUpdate.execute({
-                snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
-              }, rerenderOptimization, itemsChanged);
-              return;
-            }
+            if (enabledOptimization) {
+              if (useDebouncedUpdate) {
+                debouncedUpdate.execute({
+                  snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
+                  bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                }, rerenderOptimization, itemsChanged);
+                return;
+              }
 
-            debouncedUpdate.dispose();
+              debouncedUpdate.dispose();
+            }
 
             if (!isScrolling) {
               update({
