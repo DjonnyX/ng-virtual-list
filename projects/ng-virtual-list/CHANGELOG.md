@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.11.9] - 2026-04-13
+
+### Added
+- Added optimization parameter to scrollingSettings.
+
 ## [20.11.8] - 2026-04-13
 
 ### Added
