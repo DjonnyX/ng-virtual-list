@@ -13,6 +13,8 @@ import {
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
+import { createDisplayId } from '../utils';
+import { NgVirtualListService } from '../../../ng-virtual-list.service';
 
 /**
  * BaseVirtualListItemComponent
@@ -22,6 +24,8 @@ import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.serv
  */
 export class BaseVirtualListItemComponent {
   private _apiService = inject(NgVirtualListPublicService);
+
+  protected readonly _service = inject(NgVirtualListService);
 
   protected _id!: number;
   get id() {
@@ -119,6 +123,10 @@ export class BaseVirtualListItemComponent {
   protected _destroyRef = inject(DestroyRef);
 
   constructor() {
+    this._id = this._service.generateComponentId();
+    this._listId = this._service.id;
+    this._displayId = createDisplayId(this._listId, this._id);
+
     this.classes = computed(() => {
       const data = this.data(), focused = this.focused();
       return {
