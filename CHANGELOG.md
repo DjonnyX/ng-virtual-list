@@ -1,10 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [16.11.2] - 2026-04-13
+## [16.11.3] - 2026-04-13
 
 ### Fixed
 - Fixed an issue where the list would remain stuck to the edges when scrolling started.
+
+## [16.11.2] - 2026-04-13
+
+### Fixed
 - Fixed freezing when scrolling.
 
 ### Added
