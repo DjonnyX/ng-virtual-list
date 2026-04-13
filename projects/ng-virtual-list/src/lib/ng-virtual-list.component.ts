@@ -2660,23 +2660,12 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     const scrollHandler = (userAction: boolean = false) => {
       const scroller = this._scrollerComponent;
       if (!!scroller) {
-        const isVertical = this._isVertical, bounds = this._$bounds.getValue(), listBounds = this._$listBounds.getValue(),
-          scrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft),
-          maxScrollSize = isVertical ? (listBounds?.height ?? 0) - (bounds?.height ?? 0) : (listBounds?.width ?? 0) - (bounds?.width ?? 0),
+        const isVertical = this._isVertical, scrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft),
           actualScrollSize = scrollSize;
 
         if (this._readyForShow) {
           if (userAction) {
-            if (this._trackBox.isSnappedToStart) {
-              if (scrollSize > MIN_PIXELS_FOR_PREVENT_SNAPPING) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
-            if (this._trackBox.isSnappedToEnd) {
-              if (scrollSize < (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
+            this._$preventScrollSnapping.next(true);
           }
         }
 
