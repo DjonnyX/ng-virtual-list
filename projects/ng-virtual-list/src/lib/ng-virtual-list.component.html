@@ -2,10 +2,10 @@
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
-  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
-  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
-  [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
+<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [dynamic]="dynamicSize()"
+  [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()" [itemRenderer]="itemRenderer()"
+  [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()" [scrollbarEnabled]="scroller.scrollbarShow()"
+  [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (snap()) {
   <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
@@ -20,6 +20,6 @@
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
   [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()"
   [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()"
-  [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()">
+  [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()" [scrollingSettings]="scrollingSettings()">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>

@@ -36,18 +36,12 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent implements OnInit {
-  protected readonly _service = inject(NgVirtualListService);
-
   protected readonly maxClickDistance = signal<number>(DEFAULT_CLICK_DISTANCE);
 
   protected _injector = inject(Injector);
 
   constructor() {
     super();
-
-    this._id = this._service.generateComponentId();
-    this._listId = this._service.id;
-    this._displayId = createDisplayId(this._listId, this._id);
   }
 
   ngOnInit(): void {
