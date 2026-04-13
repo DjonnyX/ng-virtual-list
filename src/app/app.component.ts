@@ -183,7 +183,7 @@ export class AppComponent {
   scrollingSettings: IScrollingSettings = {
     frictionalForce: 0.05,
     mass: 0.005,
-    maxDistance: 500000,
+    maxDistance: 100000,
     maxDuration: 10000,
     speedScale: 10,
     optimization: false,
