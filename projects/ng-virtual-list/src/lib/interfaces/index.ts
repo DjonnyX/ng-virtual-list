@@ -6,6 +6,7 @@ import { IScrollEvent } from './scroll-event';
 import { IScrollOptions } from './scroll-options';
 import { IScrollParams } from './scroll-params';
 import { ISize } from './size';
+import { IScrollingSettings } from './scrolling-settings';
 
 export type {
     IAnimationParams,
@@ -16,4 +17,5 @@ export type {
     IScrollOptions,
     IScrollParams,
     ISize,
+    IScrollingSettings,
 }

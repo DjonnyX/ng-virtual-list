@@ -6,7 +6,7 @@ import { BehaviorSubject, filter, fromEvent, map, of, race, Subject, switchMap, 
 import { ScrollerDirection } from './enums';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP,
+    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_SETTINGS, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP,
     TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
@@ -16,6 +16,7 @@ import {
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
+import { IScrollingSettings } from '../../interfaces';
 
 /**
  * NgScrollView
@@ -52,6 +53,16 @@ export class NgScrollView extends BaseScrollView {
         }
     }
     get overscrollEnabled() { return this._$overscrollEnabled.getValue(); }
+
+    protected _$scrollingSettings = new BehaviorSubject<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS);
+    readonly $scrollingSettings = this._$scrollingSettings.asObservable();
+    @Input()
+    set scrollingSettings(v: IScrollingSettings) {
+        if (this._$scrollingSettings.getValue() !== v) {
+            this._$scrollingSettings.next(v);
+        }
+    }
+    get scrollingSettings() { return this._$scrollingSettings.getValue(); }
 
     protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
 
@@ -302,7 +313,8 @@ export class NgScrollView extends BaseScrollView {
     private calculateVelocity(offsets: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
         offsets.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
 
-        const len = offsets.length, startIndex = len > indexOffset ? len - indexOffset : 0, lastVSign = calculateDirection(offsets);
+        const len = offsets.length, startIndex = len > indexOffset ? len - indexOffset : 0, lastVSign = calculateDirection(offsets),
+            speedScale = this.scrollingSettings?.speedScale ?? SPEED_SCALE;
         let vSum = 0;
         for (let i = startIndex, l = offsets.length; i < l; i++) {
             const p0 = offsets[i];
@@ -310,7 +322,7 @@ export class NgScrollView extends BaseScrollView {
                 continue;
             }
 
-            const v0 = (p0[1] !== 0 ? lastVSign * Math.abs(p0[0] / p0[1]) * SPEED_SCALE : 0);
+            const v0 = (p0[1] !== 0 ? lastVSign * Math.abs(p0[0] / p0[1]) * speedScale : 0);
             vSum += Math.sign(v0) * Math.pow(v0, 4) * .003;
         }
 
@@ -322,6 +334,7 @@ export class NgScrollView extends BaseScrollView {
         velocities.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
         const len = velocities.length, startIndex = len > indexOffset ? len - indexOffset : 0;
         let aSum = 0, prevV0: [number, number] | undefined, iteration = 0, lastVSign = calculateDirection(velocities);
+        const mass = this.scrollingSettings?.mass ?? MASS;
         for (let i = startIndex, l = velocities.length; i < l; i++) {
             const v00 = prevV0, v01 = velocities[i];
             if (lastVSign !== Math.sign(v01[0])) {
@@ -329,14 +342,14 @@ export class NgScrollView extends BaseScrollView {
             }
             if (v00) {
                 const a0 = timestamp < MAX_VELOCITY_TIMESTAMP ? (v00[1] !== 0 ? (lastVSign * Math.abs(Math.abs(v01[0]) - Math.abs(v00[0]))) / Math.abs(v00[1]) : 0) : 0.1;
-                aSum = (aSum * MASS) + a0;
+                aSum = (aSum * mass) + a0;
                 prevV0 = v01;
             }
             prevV0 = v01;
             iteration++;
         }
 
-        const a0 = aSum * FRICTION_FORCE;
+        const a0 = aSum * (this.scrollingSettings?.frictionalForce ?? FRICTION_FORCE);
         return { a0 };
     }
 
@@ -351,11 +364,13 @@ export class NgScrollView extends BaseScrollView {
     protected moveWithAcceleration(isVertical: boolean, position: number, v0: number, v: number, a0: number, timestamp: number) {
         if (a0 !== 0 && timestamp < MAX_VELOCITY_TIMESTAMP) {
             const dvSign = Math.sign(v),
-                duration = DURATION, maxDuration = MAX_DURATION,
-                maxDistance = dvSign * MAX_DIST, s = (dvSign * Math.abs((a0 * Math.pow(duration, 2)) * .5) / 1000) / MASS,
-                distance = Math.abs(s) < MAX_DIST ? s : maxDistance, positionWithVelocity = position + (this._inversion ? -1 : 1) * distance,
+                mass = this.scrollingSettings?.mass ?? MASS,
+                duration = DURATION, maxDuration = this.scrollingSettings?.maxDuration ?? MAX_DURATION,
+                maxDist = this.scrollingSettings?.maxDistance ?? MAX_DIST,
+                maxDistance = dvSign * maxDist, s = (dvSign * Math.abs((a0 * Math.pow(duration, 2)) * .5) / 1000) / mass,
+                distance = Math.abs(s) < maxDist ? s : maxDistance, positionWithVelocity = position + (this._inversion ? -1 : 1) * distance,
                 vmax = Math.max(Math.abs(v0), Math.abs(v)),
-                ad = Math.abs(vmax !== 0 ? Math.sqrt(vmax) : 0) * 10 / MASS,
+                ad = Math.abs(vmax !== 0 ? Math.sqrt(vmax) : 0) * 10 / mass,
                 aDuration = ad < maxDuration ? ad : maxDuration,
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
