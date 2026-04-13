@@ -5,6 +5,7 @@ import { delay, interval, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NgVirtualListModule, NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
+  IScrollingSettings,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 import { GradientColor, RoundedCorner } from './components/interfaces';
@@ -178,6 +179,15 @@ const generateDynamicShortItems = (len: number, startWith: number = 0) => {
 })
 export class AppComponent {
   readonly logo = LOGO;
+
+  scrollingSettings: IScrollingSettings = {
+    frictionalForce: 0.05,
+    mass: 0.005,
+    maxDistance: 100000,
+    maxDuration: 10000,
+    speedScale: 10,
+    optimization: false,
+  }
 
   protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
 
