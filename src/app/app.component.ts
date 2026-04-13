@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import {
   NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
+  IScrollingSettings,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 import { delay, interval, tap } from 'rxjs';
@@ -182,6 +183,15 @@ export class AppComponent {
   @ViewChild('dynamicList', { read: NgVirtualListComponent })
   protected _dynamicListContainerRef!: NgVirtualListComponent;
   readonly logo = LOGO;
+
+  scrollingSettings: IScrollingSettings = {
+    frictionalForce: 0.05,
+    mass: 0.005,
+    maxDistance: 100000,
+    maxDuration: 10000,
+    speedScale: 10,
+    optimization: false,
+  }
 
   customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
 
