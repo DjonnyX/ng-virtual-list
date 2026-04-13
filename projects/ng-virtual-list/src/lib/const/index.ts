@@ -1,6 +1,6 @@
 import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
-import { IAnimationParams } from '../interfaces';
+import { IAnimationParams, IScrollingSettings } from '../interfaces';
 
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
@@ -28,6 +28,15 @@ export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,
     navigateToItem: 150,
     navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
+};
+
+export const DEFAULT_SCROLLING_SETTINGS: IScrollingSettings = {
+    frictionalForce: 0.035,
+    maxDuration: 4000,
+    mass: 0.005,
+    maxDistance: 12500,
+    speedScale: 15,
+    optimization: true,
 };
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;
