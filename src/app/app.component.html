@@ -7,7 +7,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 16.11.1</span></div>
+    <div class="version"><span>v 16.11.2</span></div>
   </div>
 
   <div class="vl-section">
@@ -90,7 +90,7 @@
         <button class="scroll-to__button" (click)="onButtonChangeDynamicItemsLengthHandler()">setup</button>
       </div>
       <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicItems" methodForSelecting="multi-select"
-        [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [snapScrollToStart]="false"
+        [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [snapScrollToStart]="true"
         (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
@@ -107,7 +107,7 @@
       </div>
       <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicShortItems" methodForSelecting="multi-select"
         [itemRenderer]="itemRenderer" [bufferSize]="1" [maxBufferSize]="5" [dynamicSize]="false" [itemSize]="40"
-        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"  [snapScrollToStart]="false"
+        (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"  [snapScrollToStart]="true"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
@@ -169,7 +169,7 @@
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
         [bufferSize]="1" [maxBufferSize]="5" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams"
-        [scrollbarThickness]="6" (onViewportChange)="onViewportChangeHandler($event)"
+        [scrollbarThickness]="6" [scrollingSettings]="scrollingSettings" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
