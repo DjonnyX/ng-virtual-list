@@ -6,11 +6,10 @@ import {
   DEFAULT_CLICK_DISTANCE, NAVIGATION_BY_KEYBOARD_TIMER, VISIBILITY_HIDDEN,
 } from '../../const';
 import { BaseVirtualListItemComponent } from './base';
-import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
 import { FocusAlignments } from '../../enums';
 import { IDisplayObjectConfig } from '../../models';
-import { createDisplayId, getListElementByIndex } from './utils';
+import { getListElementByIndex } from './utils';
 import {
   ATTR_AREA_SELECTED, EVENT_FOCUS_IN, EVENT_FOCUS_OUT, EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT,
   KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE,
@@ -35,8 +34,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NgVirtualListItemComponent extends BaseVirtualListItemComponent implements OnInit {
-  protected readonly _service = inject(NgVirtualListService);
-
   private _$maxClickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
   $maxClickDistance = this._$maxClickDistance.asObservable();
 
@@ -44,10 +41,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   constructor() {
     super();
-
-    this._id = this._service.generateComponentId();
-    this._listId = this._service.id;
-    this._displayId = createDisplayId(this._listId, this._id);
   }
 
   ngOnInit(): void {

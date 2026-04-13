@@ -15,6 +15,8 @@ import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
 import { BehaviorSubject, combineLatest, takeUntil, tap } from 'rxjs';
 import { DisposableComponent } from '../../../utils/disposable-component';
+import { NgVirtualListService } from '../../../ng-virtual-list.service';
+import { createDisplayId } from '../utils';
 
 /**
  * BaseVirtualListItemComponent
@@ -24,6 +26,8 @@ import { DisposableComponent } from '../../../utils/disposable-component';
  */
 export class BaseVirtualListItemComponent extends DisposableComponent {
   private _apiService = inject(NgVirtualListPublicService);
+
+  protected readonly _service = inject(NgVirtualListService);
 
   protected _cdr = inject(ChangeDetectorRef);
 
@@ -134,6 +138,9 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
 
   constructor() {
     super();
+    this._id = this._service.generateComponentId();
+    this._listId = this._service.id;
+    this._displayId = createDisplayId(this._listId, this._id);
 
     const $data = this.$data,
       $config = this.$config,
