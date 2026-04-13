@@ -1914,7 +1914,6 @@ export class NgVirtualListComponent implements OnDestroy {
     $preventScrollSnapping.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
-      debounceTime(0),
       tap(() => {
         if (this._readyForShow) {
           this._trackBox.isScrollEnd;
@@ -2057,6 +2056,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
           this.tracking();
 
+          this.snappingHandler();
+
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = Math.round(actualScrollSize + delta),
             roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
@@ -2067,8 +2068,6 @@ export class NgVirtualListComponent implements OnDestroy {
           }
 
           scroller.delta = delta;
-
-          this.snappingHandler();
 
           if ((snapScrollToStart && this._trackBox.isSnappedToStart) ||
             (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
@@ -2114,12 +2113,12 @@ export class NgVirtualListComponent implements OnDestroy {
             if (emitUpdate) {
               this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             }
-            this._trackBox.isScrollEnd;
             return;
           }
 
-          if ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
-            (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate)) {
+          if (scrollSize !== scrollPositionAfterUpdate &&
+            ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
+              (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate))) {
             this._trackBox.clearDelta();
 
             if (this._readyForShow) {
@@ -2133,8 +2132,8 @@ export class NgVirtualListComponent implements OnDestroy {
             if (emitUpdate) {
               this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             }
+            return;
           }
-          return;
         }
         if (emitUpdate) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
@@ -2219,23 +2218,13 @@ export class NgVirtualListComponent implements OnDestroy {
     const scrollHandler = (userAction: boolean = false) => {
       const scroller = this._scrollerComponent();
       if (!!scroller) {
-        const isVertical = this._isVertical, bounds = this._bounds(), listBounds = this._listBounds(),
+        const isVertical = this._isVertical,
           scrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft),
-          maxScrollSize = isVertical ? (listBounds?.height ?? 0) - (bounds?.height ?? 0) : (listBounds?.width ?? 0) - (bounds?.width ?? 0),
           actualScrollSize = scrollSize;
 
         if (this._readyForShow) {
           if (userAction) {
-            if (this._trackBox.isSnappedToStart) {
-              if (scrollSize > MIN_PIXELS_FOR_PREVENT_SNAPPING) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
-            if (this._trackBox.isSnappedToEnd) {
-              if (scrollSize < (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
+            this._$preventScrollSnapping.next(true);
           }
         }
 
