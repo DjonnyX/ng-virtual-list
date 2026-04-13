@@ -20,12 +20,14 @@ import {
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
   PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
+  DEFAULT_SCROLLING_SETTINGS,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
 } from './models';
 import {
   IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions,
+  IScrollingSettings,
 } from './interfaces';
 import { FocusAlignment, Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
@@ -566,6 +568,69 @@ export class NgVirtualListComponent implements OnDestroy {
    * Defines the scrolling behavior for any element on the page. The default value is "smooth".
    */
   scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR, { ...this._scrollBehaviorOptions });
+
+  private _scrollingSettingsOptions = {
+    transform: (v: IScrollingSettings): IScrollingSettings | null => {
+      let valid = validateObject(v, true, true);
+      if (valid && !!v) {
+        const { frictionalForce, mass, maxDistance, maxDuration, speedScale, optimization } = v;
+        valid = validateFloat(frictionalForce, true);
+        if (!valid) {
+          console.error('The "frictionalForce" parameter must be of type `number` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+        valid = validateFloat(mass, true);
+        if (!valid) {
+          console.error('The "mass" parameter must be of type `number` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+        valid = validateFloat(maxDistance, true);
+        if (!valid) {
+          console.error('The "maxDistance" parameter must be of type `number` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+        valid = validateFloat(maxDuration, true);
+        if (!valid) {
+          console.error('The "maxDuration" parameter must be of type `number` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+        valid = validateFloat(speedScale, true);
+        if (!valid) {
+          console.error('The "speedScale" parameter must be of type `number` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+        valid = validateBoolean(optimization, true);
+        if (!valid) {
+          console.error('The "optimization" parameter must be of type `boolean` or `undefined`.');
+          return DEFAULT_SCROLLING_SETTINGS;
+        }
+      }
+      if (!valid) {
+        console.error('The "scrollingSettings" parameter must be of type `object` or null.');
+        return DEFAULT_SCROLLING_SETTINGS;
+      }
+      return {
+        frictionalForce: v.frictionalForce !== undefined && v.frictionalForce > 0 ? v.frictionalForce : DEFAULT_SCROLLING_SETTINGS.frictionalForce,
+        mass: v.mass !== undefined && v.mass > 0 ? v.mass : DEFAULT_SCROLLING_SETTINGS.mass,
+        maxDistance: v.maxDistance !== undefined && v.maxDistance > 0 ? v.maxDistance : DEFAULT_SCROLLING_SETTINGS.maxDistance,
+        maxDuration: v.maxDuration !== undefined && v.maxDuration > 0 ? v.maxDuration : DEFAULT_SCROLLING_SETTINGS.maxDuration,
+        speedScale: v.speedScale !== undefined && v.speedScale > 0 ? v.speedScale : DEFAULT_SCROLLING_SETTINGS.speedScale,
+        optimization: v.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
+      };
+    },
+  } as any;
+
+  /**
+   * Scrolling settings.
+   * - frictionalForce - Frictional force. Default value is 0.035.
+   * - mass - Mass. Default value is 0.005.
+   * - maxDistance - Maximum scrolling distance. Default value is 12500.
+   * - maxDuration - Maximum animation duration. Default value is 4000.
+   * - speedScale - Speed scale. Default value is 15.
+   * - optimization - Enables scrolling performance optimization. Default value is `true`.
+   */
+  scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS, { ...this._scrollingSettingsOptions });
+
 
   private _animationParamsOptions = {
     transform: (v: IAnimationParams) => {
@@ -1851,7 +1916,6 @@ export class NgVirtualListComponent implements OnDestroy {
     $preventScrollSnapping.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
-      debounceTime(0),
       tap(() => {
         if (this._readyForShow) {
           this._trackBox.isScrollEnd;
@@ -1994,6 +2058,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
           this.tracking();
 
+          this.snappingHandler();
+
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = Math.round(actualScrollSize + delta),
             roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
@@ -2004,8 +2070,6 @@ export class NgVirtualListComponent implements OnDestroy {
           }
 
           scroller.delta = delta;
-
-          this.snappingHandler();
 
           if ((snapScrollToStart && this._trackBox.isSnappedToStart) ||
             (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
@@ -2051,12 +2115,12 @@ export class NgVirtualListComponent implements OnDestroy {
             if (emitUpdate) {
               this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             }
-            this._trackBox.isScrollEnd;
             return;
           }
 
-          if ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
-            (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate)) {
+          if (scrollSize !== scrollPositionAfterUpdate &&
+            ((scrollPositionAfterUpdate >= 0 && scrollPositionAfterUpdate < roundedMaxPositionAfterUpdate) ||
+              (scrollSize !== roundedMaxPositionAfterUpdate || currentScrollSize !== scrollPositionAfterUpdate))) {
             this._trackBox.clearDelta();
 
             if (this._readyForShow) {
@@ -2070,8 +2134,8 @@ export class NgVirtualListComponent implements OnDestroy {
             if (emitUpdate) {
               this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
             }
+            return;
           }
-          return;
         }
         if (emitUpdate) {
           this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
@@ -2098,21 +2162,24 @@ export class NgVirtualListComponent implements OnDestroy {
               itemsChanged = true;
               prevItems = items;
             }
-            const scroller = this._scrollerComponent(), velocity = this._scrollerComponent()?.averageVelocity ?? 0,
+            const enabledOptimization = this.scrollingSettings()?.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
+              scroller = this._scrollerComponent(), velocity = this._scrollerComponent()?.averageVelocity ?? 0,
               maxScrollSize = isVertical ? (scroller?.scrollHeight || 0) : (scroller?.scrollWidth ?? 0),
               isEdges = scrollSize === 0 || scrollSize === maxScrollSize, isScrolling = this._$scrollingTo.getValue(),
               useDebouncedUpdate = dynamicSize && !itemsChanged && hasUserAction && !isScrolling && (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1),
-              rerenderOptimization = dynamicSize && !itemsChanged && (hasUserAction || hasScrollbarUserAction) && !isEdges && velocity > 0 &&
+              rerenderOptimization = enabledOptimization && dynamicSize && !itemsChanged && (hasUserAction || hasScrollbarUserAction) && !isEdges && velocity > 0 &&
                 (velocity > MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 || hasUserAction);
-            if (useDebouncedUpdate) {
-              debouncedUpdate.execute({
-                snapScrollToStart, snapScrollToEnd, bounds: bounds!, listBounds: listBounds!, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
-              }, rerenderOptimization, itemsChanged);
-              return;
-            }
+            if (enabledOptimization) {
+              if (useDebouncedUpdate) {
+                debouncedUpdate.execute({
+                  snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
+                  bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                }, rerenderOptimization, itemsChanged);
+                return;
+              }
 
-            debouncedUpdate.dispose();
+              debouncedUpdate.dispose();
+            }
 
             if (!isScrolling) {
               update({
@@ -2153,23 +2220,12 @@ export class NgVirtualListComponent implements OnDestroy {
     const scrollHandler = (userAction: boolean = false) => {
       const scroller = this._scrollerComponent();
       if (!!scroller) {
-        const isVertical = this._isVertical, bounds = this._bounds(), listBounds = this._listBounds(),
-          scrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft),
-          maxScrollSize = isVertical ? (listBounds?.height ?? 0) - (bounds?.height ?? 0) : (listBounds?.width ?? 0) - (bounds?.width ?? 0),
+        const isVertical = this._isVertical, scrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft),
           actualScrollSize = scrollSize;
 
         if (this._readyForShow) {
           if (userAction) {
-            if (this._trackBox.isSnappedToStart) {
-              if (scrollSize > MIN_PIXELS_FOR_PREVENT_SNAPPING) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
-            if (this._trackBox.isSnappedToEnd) {
-              if (scrollSize < (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-                this._$preventScrollSnapping.next(true);
-              }
-            }
+            this._$preventScrollSnapping.next(true);
           }
         }
 

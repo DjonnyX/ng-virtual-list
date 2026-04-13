@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.11.2] - 2026-04-13
+
+### Fixed
+- Fixed an issue where the list would remain stuck to the edges when scrolling started.
+- Fixed freezing when scrolling.
+
+### Added
+- Added optimization parameter to scrollingSettings.
+- Added the scrollingSettings property, which defines scrolling parameters such as velocity, mass, etc.
+
 ## [17.11.1] - 2026-04-08
 
 ### Fixed

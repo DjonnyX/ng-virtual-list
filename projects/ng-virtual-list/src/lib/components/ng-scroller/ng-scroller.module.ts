@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgScrollerComponent } from './ng-scroller.component';
 import { LocaleSensitiveModule } from '../../directives';
@@ -9,6 +9,6 @@ import { CdkScrollableModule } from '@angular/cdk/scrolling';
   declarations: [NgScrollerComponent],
   exports: [NgScrollerComponent],
   imports: [CommonModule, NgScrollBarModule, LocaleSensitiveModule, CdkScrollableModule],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+  schemas: [NO_ERRORS_SCHEMA],
 })
 export class NgScrollerModule { }
