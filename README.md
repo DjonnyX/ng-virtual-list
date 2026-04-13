@@ -638,6 +638,7 @@ Inputs
 | scrollbarThumbRenderer | TemplateRef<any> \| null = null | Scrollbar customization template. |
 | scrollbarThumbParams | {[propName: string]: any;} \| null | Additional options for the scrollbar. |
 | scrollBehavior | ScrollBehavior? = 'smooth' | Defines the scrolling behavior for any element on the page. The default value is "smooth". |
+| scrollingSettings | [IScrollingSettings](https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/interfaces/scrolling-settings.ts) = {frictionalForce: 0.035, mass: 0.005, maxDistance: 12500, maxDuration: 4000, speedScale: 15, optimization: true} | Scrolling settings. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 
 <br/>
@@ -693,13 +694,13 @@ Properties
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 20.x | 20.11.7 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [20.11.7](https://www.npmjs.com/package/ng-virtual-list/v/20.11.7) |
-| 19.x | 19.11.2 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.11.2](https://www.npmjs.com/package/ng-virtual-list/v/19.11.2) |
-| 18.x | 18.11.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.11.1](https://www.npmjs.com/package/ng-virtual-list/v/18.11.1) |
-| 17.x | 17.11.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.11.1](https://www.npmjs.com/package/ng-virtual-list/v/17.11.1) |
-| 16.x | 16.11.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.11.1](https://www.npmjs.com/package/ng-virtual-list/v/16.11.1) |
-| 15.x | 15.11.2 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.11.2](https://www.npmjs.com/package/ng-virtual-list/v/15.11.2) |
-| 14.x | 14.11.2 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.11.2](https://www.npmjs.com/package/ng-virtual-list/v/14.11.2) |
+| 20.x | 20.11.10 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [20.11.10](https://www.npmjs.com/package/ng-virtual-list/v/20.11.10) |
+| 19.x | 19.11.3 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.11.3](https://www.npmjs.com/package/ng-virtual-list/v/19.11.3) |
+| 18.x | 18.11.2 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.11.2](https://www.npmjs.com/package/ng-virtual-list/v/18.11.2) |
+| 17.x | 17.11.2 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.11.2](https://www.npmjs.com/package/ng-virtual-list/v/17.11.2) |
+| 16.x | 16.11.3 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.11.3](https://www.npmjs.com/package/ng-virtual-list/v/16.11.3) |
+| 15.x | 15.11.4 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.11.4](https://www.npmjs.com/package/ng-virtual-list/v/15.11.4) |
+| 14.x | 14.11.4 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.11.4](https://www.npmjs.com/package/ng-virtual-list/v/14.11.4) |
 <br/>
 
 ## 🤝 Contributing
