@@ -30,7 +30,7 @@ export const DEFAULT_SCROLLING_ONE_BY_ONE = false;
 
 export const DEFAULT_MOTION_BLUR = 0.25;
 
-export const DEFAULT_MAX_MOTION_BLUR = 20;
+export const DEFAULT_MAX_MOTION_BLUR = 5;
 
 export const DEFAULT_SNAP_TO_ITEM_ALIGN: SnapToItemAlign = SnapToItemAligns.START;
 
