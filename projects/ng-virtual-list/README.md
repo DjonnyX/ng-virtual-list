@@ -618,8 +618,8 @@ Inputs
 | methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
-| motionBlur | number \| 'disabled' = 0.25 | Motion blur effect. The default value is `0.25`. |
-| maxMotionBlur | number = 500 | Maximum motion blur effect. The default value is `20`. |
+| motionBlur | number \| 'disabled' = 0.15 | Motion blur effect. The default value is `0.25`. |
+| maxMotionBlur | number = 0.5 | Maximum motion blur effect. The default value is `20`. |
 | motionBlurEnabled | boolean = false | Determines whether to apply motion blur or not. The default value is `false`. |
 | overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |

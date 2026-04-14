@@ -695,7 +695,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Motion blur effect. The default value is `0.25`.
+   * Motion blur effect. The default value is `0.15`.
    */
   motionBlur = input<number>(DEFAULT_MOTION_BLUR, { ...this._motionBlurOptions });
 
@@ -712,7 +712,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Maximum motion blur effect. The default value is `20`.
+   * Maximum motion blur effect. The default value is `0.5`.
    */
   maxMotionBlur = input<number>(DEFAULT_MAX_MOTION_BLUR, { ...this._maxMotionBlurOptions });
 
