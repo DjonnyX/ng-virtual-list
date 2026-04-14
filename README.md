@@ -620,6 +620,7 @@ Inputs
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
 | motionBlur | number \| 'disabled' = 0.25 | Motion blur effect. The default value is `0.25`. |
 | maxMotionBlur | number = 500 | Maximum motion blur effect. The default value is `20`. |
+| motionBlurEnabled | boolean = false | Determines whether to apply motion blur or not. The default value is `false`. |
 | overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
 | snap | boolean? = false | Determines whether elements will snap. Default value is "false". |

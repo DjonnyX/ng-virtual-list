@@ -71,7 +71,9 @@ export class NgScrollView extends BaseScrollView {
 
     private _overscrollIteration: number = 0;
 
+    protected _delta: number = 0;
     set delta(v: number) {
+        this._delta = 0;
         this._startPosition += v;
     }
 
@@ -479,7 +481,7 @@ export class NgScrollView extends BaseScrollView {
         if ((animated && position !== null && Math.round(position) !== Math.round(currentPosition))) {
             this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
         } else if (!animated && position !== null) {
-            this.move(isVertical, position, false, true, true);
+            this.move(isVertical, position, false, false, true);
         }
     }
 

@@ -4,10 +4,9 @@ All notable changes to this project will be documented in this file.
 ## [20.12.0] - 2026-XX-XX
 
 ### Added
-- Motion blur effect. Added motionBlur and maxMotionBlur properties.
+- Motion blur effect. Added motionBlur, maxMotionBlur and motionBlurEnabled properties.
 - Added `viewport` value to itemSize property.
-- Added snapToItem property.
-- Added snapToItemAlign property.
+- Added snapToItem and snapToItemAlign property.
 - Added snapToItem parameter to animationParams property.
 - Added scrollingOneByOne property.
 

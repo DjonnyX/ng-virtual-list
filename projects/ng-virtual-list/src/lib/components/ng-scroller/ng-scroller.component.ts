@@ -6,9 +6,8 @@ import { Id } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS,
-  DISABLED,
-  LEFT_PROP_NAME, SCROLLER_SCROLL, TOP_PROP_NAME,
+  BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE,
+  DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, DISABLED, LEFT_PROP_NAME, SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
 import { TextDirection, TextDirections } from '../../enums';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -74,7 +73,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   readonly maxMotionBlur = input<number>(DEFAULT_MAX_MOTION_BLUR);
 
-  public readonly motionBlurEnabled: Signal<boolean>;
+  readonly motionBlurEnabled = input<boolean>(DEFAULT_MOTION_BLUR_ENABLED);
 
   public readonly actualClasses: Signal<{ [cName: string]: boolean }>;
 
@@ -174,21 +173,17 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this._filterId = `${this._service.id}-${MOTION_BLUR}`;
     this._filter = `url(#${this._filterId})`;
 
-    this.motionBlurEnabled = computed(() => {
-      const motionBlur = this.motionBlur();
-      return motionBlur !== DISABLED && motionBlur !== 0;
-    });
-
     const $filter = toObservable(this.filter),
       $motionBlur = toObservable(this.motionBlur),
       $maxMotionBlur = toObservable(this.maxMotionBlur),
+      $motionBlurEnabled = toObservable(this.motionBlurEnabled),
       $isVertical = toObservable(this.isVertical);
 
     const $averageVelocity = this.$averageVelocity;
-    combineLatest([$isVertical, $averageVelocity, $filter, $motionBlur, $maxMotionBlur]).pipe(
+    combineLatest([$isVertical, $averageVelocity, $filter, $motionBlurEnabled, $motionBlur, $maxMotionBlur]).pipe(
       takeUntilDestroyed(),
-      filter(([, , f, mb]) => !!f && (mb !== DISABLED && mb !== 0)),
-      tap(([isVertical, v, filter, mb, mbMax]) => {
+      filter(([, , f, e, mb]) => !!f && (!!e && mb !== 0)),
+      tap(([isVertical, v, filter, , mb, mbMax]) => {
         const _v = v * (mb as number), value = _v > mbMax ? mbMax : _v;
         filter!.nativeElement.setStdDeviation(isVertical ? 0 : v * value, isVertical ? v * value : 0);
       }),
@@ -292,8 +287,11 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (timestamp === this._measureVelocityTimestamp) {
       return;
     }
-    const position = Math.abs(this.isVertical() ? this._y : this._x);
-    const timeDelta = timestamp - this._measureVelocityTimestamp,
+    if (this._delta !== 0) {
+      return;
+    }
+    const position = Math.abs(this.isVertical() ? this._y : this._x),
+      timeDelta = timestamp - this._measureVelocityTimestamp,
       positionDelta = Math.abs(position - this._measureVelocityLastPosition),
       velocity = timeDelta > 0 ? positionDelta / timeDelta : 0;
     let avgVelocity = this._velocities.length > 0 ? this._velocities.reduce((p, c) => p + c) : 0;
@@ -481,9 +479,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
     const { position, min, max, userAction } = event;
     this._isScrollbarUserAction = false;
-    this._velocities = [0];
-    this._$velocity.next(0);
-    this._$averageVelocity.next(0);
+    this.dropVelocity();
     const isEdge = this.fireUpdateIfEdgesDetected(position, min, max, true, true);
     if (isEdge) {
       this.refresh(true, true);
