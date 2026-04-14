@@ -191,8 +191,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       debounceTime(0),
       tap(([isVertical, v, filter, mb, mbMax]) => {
         const _v = v * (mb as number), value = _v > mbMax ? mbMax : _v;
-        filter!.nativeElement.setStdDeviation(isVertical ? 0 : v * (mb as number), isVertical ? v * (mb as number) : 0);
-      })
+        filter!.nativeElement.setStdDeviation(isVertical ? 0 : v * value, isVertical ? v * value : 0);
+      }),
     ).subscribe();
 
     this._service.$langTextDir.pipe(
@@ -434,13 +434,24 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   stopScrollbar() {
     if (!!this.scrollBar) {
       this.scrollBar.stopScrolling();
+      this.alignPosition();
+      this.dropVelocity();
     }
   }
 
-  protected override onAnimationComplete(position: number) {
+  private dropVelocity() {
     this._velocities = [0];
     this._$velocity.next(0);
     this._$averageVelocity.next(0);
+  }
+
+  protected override stopMoving() {
+    super.stopMoving();
+    this.dropVelocity();
+  }
+
+  protected override onAnimationComplete(position: number) {
+    this.dropVelocity();
     this._$scrollEnd.next(false);
   }
 

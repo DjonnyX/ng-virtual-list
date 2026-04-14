@@ -6,7 +6,7 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM,
+    BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_ONE_BY_ONE, DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM,
     DEFAULT_SNAP_TO_ITEM_ALIGN, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
@@ -45,6 +45,8 @@ export class NgScrollView extends BaseScrollView {
     readonly scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS);
 
     readonly snapToItem = input<boolean>(DEFAULT_SNAP_TO_ITEM);
+
+    readonly scrollingOneByOne = input<boolean>(DEFAULT_SCROLLING_ONE_BY_ONE);
 
     readonly snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN);
 
@@ -106,6 +108,7 @@ export class NgScrollView extends BaseScrollView {
             }),
         ).subscribe();
 
+        let mouseCanceled = false;
         const $mouseUp = fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }).pipe(
             takeUntilDestroyed(this._destroyRef),
         ),
@@ -114,6 +117,12 @@ export class NgScrollView extends BaseScrollView {
                 tap(() => {
                     this._isMoving = false;
                     this.grabbing.set(false);
+                    if (this.snapToItem() && this.scrollingOneByOne()) {
+                        this.alignPosition();
+                    }
+                    if (!mouseCanceled) {
+                        this.stopMoving();
+                    }
                 }),
             );
 
@@ -124,6 +133,7 @@ export class NgScrollView extends BaseScrollView {
                     takeUntilDestroyed(this._destroyRef),
                     filter(v => this._interactive),
                     switchMap(e => {
+                        mouseCanceled = false;
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
@@ -155,6 +165,7 @@ export class NgScrollView extends BaseScrollView {
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
                                     tap(e => {
+                                        mouseCanceled = true;
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
@@ -163,6 +174,10 @@ export class NgScrollView extends BaseScrollView {
                                         this._isMoving = false;
                                         this.grabbing.set(false);
                                         if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+                                        if (this.snapToItem() && this.scrollingOneByOne()) {
+                                            this.alignPosition();
                                             return;
                                         }
                                         this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
@@ -175,14 +190,22 @@ export class NgScrollView extends BaseScrollView {
             }),
         ).subscribe();
 
+        let touchCanceled = false;
         const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
             takeUntilDestroyed(this._destroyRef),
         ),
             $touchCanceler = $touchUp.pipe(
                 takeUntilDestroyed(this._destroyRef),
                 tap(() => {
+                    touchCanceled = true;
                     this._isMoving = false;
                     this.grabbing.set(false);
+                    if (this.snapToItem() && this.scrollingOneByOne()) {
+                        this.alignPosition(false);
+                    }
+                    if (!touchCanceled) {
+                        this.stopMoving();
+                    }
                 }),
             );
 
@@ -193,6 +216,7 @@ export class NgScrollView extends BaseScrollView {
                     takeUntilDestroyed(this._destroyRef),
                     filter(() => this._interactive),
                     switchMap(e => {
+                        touchCanceled = false;
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
@@ -223,6 +247,7 @@ export class NgScrollView extends BaseScrollView {
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
                                     tap(e => {
+                                        touchCanceled = true;
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
@@ -231,6 +256,10 @@ export class NgScrollView extends BaseScrollView {
                                         this._isMoving = false;
                                         this.grabbing.set(false);
                                         if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
+                                            return;
+                                        }
+                                        if (this.snapToItem() && this.scrollingOneByOne()) {
+                                            this.alignPosition(false);
                                             return;
                                         }
                                         this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
@@ -242,6 +271,10 @@ export class NgScrollView extends BaseScrollView {
                 );
             }),
         ).subscribe();
+    }
+
+    protected stopMoving() {
+        this.alignPosition(true);
     }
 
     private calculatePosition(isVertical: boolean, e: MouseEvent | TouchEvent | any, inversion: boolean, startClientPos: number, startTime: number,
@@ -362,7 +395,7 @@ export class NgScrollView extends BaseScrollView {
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
         } else {
-            this.alignPosition(false, false);
+            this.alignPosition(false);
         }
     }
 
@@ -389,13 +422,13 @@ export class NgScrollView extends BaseScrollView {
                 this._$scrollEnd.next(userAction);
                 this.onAnimationComplete(value);
                 if (alignmentAtComplete) {
-                    this.alignPosition(userAction);
+                    this.alignPosition();
                 }
             },
         });
     }
 
-    protected alignPosition(userAction: boolean = false, animated: boolean = true) {
+    protected alignPosition(animated: boolean = true) {
         if (!this.snapToItem()) {
             return;
         }
@@ -444,9 +477,9 @@ export class NgScrollView extends BaseScrollView {
         }
 
         if ((animated && position !== null && Math.round(position) !== Math.round(currentPosition))) {
-            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, userAction, false);
+            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
         } else if (!animated && position !== null) {
-            this.move(isVertical, position, false, userAction, true);
+            this.move(isVertical, position, false, true, true);
         }
     }
 

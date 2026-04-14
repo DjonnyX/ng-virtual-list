@@ -22,6 +22,7 @@ import {
   PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
   DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DISABLED,
   DEFAULT_MAX_MOTION_BLUR,
+  DEFAULT_SCROLLING_ONE_BY_ONE,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -664,6 +665,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Snap to item. The default value is `false`.
    */
   snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN, { ...this._snapToItemAlignOptions });
+
+  private _scrollingOneByOneOptions = {
+    transform: (v: any) => {
+      const valid = validateBoolean(v);
+
+      if (!valid) {
+        console.error('The "scrollingOneByOne" parameter must be of type `boolean`.');
+        return DEFAULT_SCROLLING_ONE_BY_ONE;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Specifies whether to scroll one item at a time if true and the scrollToItem property is set. The default value is `false`.
+   */
+  scrollingOneByOne = input<boolean>(DEFAULT_SCROLLING_ONE_BY_ONE, { ...this._scrollingOneByOneOptions });
 
   private _motionBlurOptions = {
     transform: (v: any) => {

@@ -94,6 +94,22 @@
     </div>
   </div>
 
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Vertical virtual list (Snapped to item; itemSize as viewport; Scrolling one by one)</h2>
+      <div class="scroll-to__controls">
+        <input type="number" class="scroll-to__input" [(ngModel)]="itemsLength" [required]="true" [min]="0"
+          [max]="100000">
+        <button class="scroll-to__button" (click)="onButtonChangeItemsLengthHandler()">setup</button>
+      </div>
+      <ng-virtual-list class="list" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" [bufferSize]="1" [maxBufferSize]="5"
+        [dynamicSize]="false" [itemSize]="'viewport'" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"
+        [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
+        [snapToItem]="true" snapToItemAlign="center" [scrollingOneByOne]="true" (onScrollReachStart)="onScrollReachStartHandler()"
+        (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
+    </div>
+  </div>
+
   <ng-template #itemRendererGallery let-data="data" let-config="config">
     @if (data) {
       <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected}">
