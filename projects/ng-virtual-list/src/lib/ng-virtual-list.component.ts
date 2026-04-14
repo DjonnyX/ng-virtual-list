@@ -624,9 +624,9 @@ export class NgVirtualListComponent implements OnDestroy {
    * Scrolling settings.
    * - frictionalForce - Frictional force. Default value is 0.035.
    * - mass - Mass. Default value is 0.005.
-   * - maxDistance - Maximum scrolling distance. Default value is 12500.
+   * - maxDistance - Maximum scrolling distance. Default value is 100000.
    * - maxDuration - Maximum animation duration. Default value is 4000.
-   * - speedScale - Speed scale. Default value is 15.
+   * - speedScale - Speed scale. Default value is 10.
    * - optimization - Enables scrolling performance optimization. Default value is `true`.
    */
   scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS, { ...this._scrollingSettingsOptions });

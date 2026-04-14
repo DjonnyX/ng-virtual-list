@@ -41,10 +41,10 @@ export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
 
 export const DEFAULT_SCROLLING_SETTINGS: IScrollingSettings = {
     frictionalForce: 0.035,
-    maxDuration: 4000,
     mass: 0.005,
-    maxDistance: 12500,
-    speedScale: 15,
+    maxDistance: 100000,
+    maxDuration: 4000,
+    speedScale: 10,
     optimization: true,
 };
 

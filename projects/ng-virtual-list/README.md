@@ -640,7 +640,7 @@ Inputs
 | scrollbarThumbRenderer | TemplateRef<any> \| null = null | Scrollbar customization template. |
 | scrollbarThumbParams | {[propName: string]: any;} \| null | Additional options for the scrollbar. |
 | scrollBehavior | ScrollBehavior? = 'smooth' | Defines the scrolling behavior for any element on the page. The default value is "smooth". |
-| scrollingSettings | [IScrollingSettings](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scrolling-settings.ts) = {frictionalForce: 0.035, mass: 0.005, maxDistance: 12500, maxDuration: 4000, speedScale: 15, optimization: true} | Scrolling settings. |
+| scrollingSettings | [IScrollingSettings](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scrolling-settings.ts) = {frictionalForce: 0.035, mass: 0.005, maxDistance: 100000, maxDuration: 4000, speedScale: 10, optimization: true} | Scrolling settings. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
 
 <br/>
