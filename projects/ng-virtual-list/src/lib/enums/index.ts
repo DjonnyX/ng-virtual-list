@@ -7,15 +7,18 @@ import { MethodForSelecting } from "./method-for-selecting";
 import { SnappingMethods } from "./snapping-methods";
 import { SnappingMethod } from "./snapping-method";
 import { FocusAlignments } from "./focus-alignments";
-import { TextDirections }  from './text-directions';
+import { TextDirections } from './text-directions';
 import { TextDirection } from "./text-direction";
+import { SnapToItemAlign } from './snap-to-item-align';
+import { SnapToItemAligns } from "./snap-to-item-aligns";
 
 export {
     CollectionModes,
     Directions,
+    FocusAlignments,
     MethodsForSelecting,
     SnappingMethods,
-    FocusAlignments,
+    SnapToItemAligns,
     TextDirections,
 };
 
@@ -24,5 +27,6 @@ export type {
     Direction,
     MethodForSelecting,
     SnappingMethod,
+    SnapToItemAlign,
     TextDirection,
 };

@@ -232,6 +232,28 @@ input {
         }
     }
 
+    &-gallery__container {
+        cursor: pointer;
+        user-select: none;
+        word-break: break-all;
+        height: 100%;
+        width: 100%;
+        padding: 6px 12px;
+        background-color: #370949;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.even {
+            background-color: #2e2e4e;
+        }
+
+        &>* {
+            height: auto;
+        }
+    }
+
     &__group-container {
         cursor: pointer;
         user-select: none;

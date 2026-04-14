@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.12.0] - 2026-XX-XX
+
+### Added
+- Motion blur effect. Added motionBlur and maxMotionBlur properties.
+- Added `viewport` value to itemSize property.
+- Added snapToItem property.
+- Added snapToItemAlign property.
+- Added snapToItem parameter to animationParams property.
+
 ## [20.11.10] - 2026-04-13
 
 ### Fixed

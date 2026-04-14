@@ -4,7 +4,7 @@ import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
-import { ISize } from "../interfaces";
+import { IRect, ISize } from "../interfaces";
 import {
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
@@ -1234,6 +1234,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     getItemBounds(id: Id): ISize | null {
         if (this.has(id)) {
             return this.get(id) ?? null;
+        }
+        return null;
+    }
+
+    getComponentBoundsByIntersectionPosition(position: number): IRect | null {
+        const components = this._displayComponents;
+        if (!!components) {
+            for (const comp of components) {
+                const isVertical = comp.instance.item?.config?.isVertical,
+                    x = comp.instance.item?.measures?.x ?? 0,
+                    y = comp.instance.item?.measures?.y ?? 0,
+                    { width, height } = comp.instance.getBounds();
+                if (isVertical && (position >= y && position <= y + height)) {
+                    return { x, y, width, height };
+                } else if (!isVertical && (position >= x && position <= x + width)) {
+                    return { x, y, width, height };
+                }
+            }
         }
         return null;
     }

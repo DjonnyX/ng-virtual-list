@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
 import { TrackBox, TrackBoxEvents } from './core/track-box';
 import { IRenderVirtualListItem, IVirtualListItem } from './models';
-import { IAnimationParams, IScrollOptions, ISize } from './interfaces';
+import { IAnimationParams, IRect, IScrollOptions, ISize } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
@@ -408,6 +408,10 @@ export class NgVirtualListService {
   generateComponentId() {
     return this._nextComponentId = this._nextComponentId === Number.MAX_SAFE_INTEGER
       ? 0 : this._nextComponentId + 1;
+  }
+
+  getComponentBoundsByIntersectionPosition(position: number): IRect | null {
+    return this._trackBox?.getComponentBoundsByIntersectionPosition(position) ?? null;
   }
 
   /**

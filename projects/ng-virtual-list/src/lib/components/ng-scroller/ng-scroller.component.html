@@ -1,11 +1,20 @@
 <div localeSensitive [langTextDir]="langTextDir()" [listDir]="direction()" class="ngvl__container"
     [ngClass]="containerClasses()">
-    <div #scrollViewport cdkScrollable part="scroller" class="ngvl__scroller">
-        <div #scrollContent [attr.aria-orientation]="direction()" [attr.aria-activedescendant]="focusedElement()"
-            tabindex="0" part="list" class="ngvl__list" [ngClass]="actualClasses()">
-            <ng-content></ng-content>
-        </div>
-    </div>
+    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <filter [id]="_filterId">
+            <feGaussianBlur #filter></feGaussianBlur>
+        </filter>
+        <foreignObject xmlns="http://www.w3.org/1999/xhtml" width="100%" height="100%">
+            <div #scrollViewport cdkScrollable part="scroller" class="ngvl__scroller"
+                [style.filter]="motionBlurEnabled()? _filter:'unset'">
+                <div #scrollContent [attr.aria-orientation]="direction()"
+                    [attr.aria-activedescendant]="focusedElement()" tabindex="0" part="list" class="ngvl__list"
+                    [ngClass]="actualClasses()">
+                    <ng-content></ng-content>
+                </div>
+            </div>
+        </foreignObject>
+    </svg>
     @if (scrollbarEnabled()) {
     @let prepared = preparedSignal();
     <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"

@@ -15,6 +15,7 @@ import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
 import { createDisplayId } from '../utils';
 import { NgVirtualListService } from '../../../ng-virtual-list.service';
+import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-list-item-component';
 
 /**
  * BaseVirtualListItemComponent
@@ -22,7 +23,7 @@ import { NgVirtualListService } from '../../../ng-virtual-list.service';
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export class BaseVirtualListItemComponent {
+export class BaseVirtualListItemComponent implements IBaseVirtualListItemComponent {
   private _apiService = inject(NgVirtualListPublicService);
 
   protected readonly _service = inject(NgVirtualListService);

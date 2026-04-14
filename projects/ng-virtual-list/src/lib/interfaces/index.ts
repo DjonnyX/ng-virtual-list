@@ -1,5 +1,4 @@
 import { IAnimationParams } from './animation-params';
-import { BaseVirtualListItemComponent } from './base-virtual-list-item-component';
 import { IRect } from './rect';
 import { IRenderStabilizerOptions } from './render-stabilizer-options';
 import { IScrollEvent } from './scroll-event';
@@ -10,7 +9,6 @@ import { IScrollingSettings } from './scrolling-settings';
 
 export type {
     IAnimationParams,
-    BaseVirtualListItemComponent,
     IRect,
     IRenderStabilizerOptions,
     IScrollEvent,

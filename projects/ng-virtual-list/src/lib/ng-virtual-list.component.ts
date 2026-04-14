@@ -20,7 +20,8 @@ import {
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
   MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
   PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
-  DEFAULT_SCROLLING_SETTINGS,
+  DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DISABLED,
+  DEFAULT_MAX_MOTION_BLUR,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -32,7 +33,7 @@ import { FocusAlignment, Id } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
-  SnappingMethod, SnappingMethods, TextDirection, TextDirections,
+  SnappingMethod, SnappingMethods, SnapToItemAlign, TextDirection, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
@@ -630,10 +631,94 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS, { ...this._scrollingSettingsOptions });
 
+  private _snapToItemOptions = {
+    transform: (v: boolean) => {
+      const valid = validateBoolean(v);
+
+      if (!valid) {
+        console.error('The "snapToItem" parameter must be of type `boolean`.');
+        return DEFAULT_SNAP_TO_ITEM;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Snap to item. The default value is `false`.
+   */
+  snapToItem = input<boolean>(DEFAULT_SNAP_TO_ITEM, { ...this._snapToItemOptions });
+
+  private _snapToItemAlignOptions = {
+    transform: (v: SnapToItemAlign) => {
+      const valid = validateString(v) && (v === 'start' || v === 'center' || v === 'end');
+
+      if (!valid) {
+        console.error('The "snapToItemAlign" parameter must be of type `start`, `center` or `end`.');
+        return DEFAULT_SNAP_TO_ITEM_ALIGN;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Snap to item. The default value is `false`.
+   */
+  snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN, { ...this._snapToItemAlignOptions });
+
+  private _motionBlurOptions = {
+    transform: (v: any) => {
+      const valid = validateFloat(v) || (v === DISABLED);
+
+      if (!valid) {
+        console.error('The "motionBlur" parameter must be of type `number` or `disabled`.');
+        return DEFAULT_MOTION_BLUR;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Motion blur effect. The default value is `0.25`.
+   */
+  motionBlur = input<number | 'disabled'>(DEFAULT_MOTION_BLUR, { ...this._motionBlurOptions });
+
+  private _maxMotionBlurOptions = {
+    transform: (v: number) => {
+      const valid = validateFloat(v);
+
+      if (!valid) {
+        console.error('The "maxMotionBlur" parameter must be of type `number`.');
+        return DEFAULT_MAX_MOTION_BLUR;
+      }
+      return v <= 0 ? DEFAULT_MAX_MOTION_BLUR : v;
+    },
+  } as any;
+
+  /**
+   * Maximum motion blur effect. The default value is `20`.
+   */
+  maxMotionBlur = input<number>(DEFAULT_MAX_MOTION_BLUR, { ...this._maxMotionBlurOptions });
+
   private _animationParamsOptions = {
     transform: (v: IAnimationParams) => {
       const valid = validateObject(v, true, true);
 
+      if (!validateFloat(v.scrollToItem)) {
+        console.error('The "scrollToItem" parameter must be of type `number`.');
+        return DEFAULT_ANIMATION_PARAMS;
+      }
+      if (!validateFloat(v.snapToItem)) {
+        console.error('The "snapToItem" parameter must be of type `number`.');
+        return DEFAULT_ANIMATION_PARAMS;
+      }
+      if (!validateFloat(v.navigateByKeyboard)) {
+        console.error('The "navigateByKeyboard" parameter must be of type `number`.');
+        return DEFAULT_ANIMATION_PARAMS;
+      }
+      if (!validateFloat(v.navigateToItem)) {
+        console.error('The "navigateToItem" parameter must be of type `number`.');
+        return DEFAULT_ANIMATION_PARAMS;
+      }
       if (!valid) {
         console.error('The "animationParams" parameter must be of type `object`.');
         return DEFAULT_ANIMATION_PARAMS;
@@ -643,7 +728,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Animation parameters. The default value is "{ scrollToItem: 50, navigateToItem: 150 }".
+   * Animation parameters. The default value is "{ scrollToItem: 50, snapToItem: 150, navigateToItem: 150, navigateByKeyboard: 50 }".
    */
   animationParams = input<IAnimationParams>(DEFAULT_ANIMATION_PARAMS, { ...this._animationParamsOptions });
 
@@ -745,10 +830,10 @@ export class NgVirtualListComponent implements OnDestroy {
   itemConfigMap = input<IVirtualListItemConfigMap>({}, { ...this._itemConfigMapOptions });
 
   private _itemSizeOptions = {
-    transform: (v: number) => {
-      const valid = validateFloat(v);
+    transform: (v: any) => {
+      const valid = validateFloat(v) || v === VIEWPORT;
       if (!valid) {
-        console.error('The "itemSize" parameter must be of type `number` or `undefined`.');
+        console.error('The "itemSize" parameter must be of type `number`, `viewport` or `undefined`.');
         return DEFAULT_ITEM_SIZE;
       }
       return v;
@@ -759,8 +844,9 @@ export class NgVirtualListComponent implements OnDestroy {
    * If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element.
    * If the dynamicSize property is true, the items in the list can have different sizes, and you must specify the itemSize property 
    * to adjust the sizes of the items in the unallocated area.
+   * If the value is 'viewport', the sizes of elements are automatically resized to fit the viewport size.
    */
-  itemSize = input<number>(DEFAULT_ITEM_SIZE, { ...this._itemSizeOptions });
+  itemSize = input<number | 'viewport'>(DEFAULT_ITEM_SIZE, { ...this._itemSizeOptions });
 
   private _dynamicSizeOptions = {
     transform: (v: boolean) => {
@@ -970,6 +1056,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _bounds = signal<ISize | null>(null);
   protected get bounds() { return this._bounds; }
+
+  private _actualItemSize = signal<number>(DEFAULT_ITEM_SIZE);
+  protected get actualItemSize() { return this._actualItemSize; }
 
   private _totalSize = signal<number>(0);
 
@@ -1234,6 +1323,30 @@ export class NgVirtualListComponent implements OnDestroy {
 
     let hasUserAction = false, hasScrollbarUserAction = false;
 
+    const $itemSize = toObservable(this.itemSize).pipe(
+      map(v => typeof v === 'number' && v <= 0 ? DEFAULT_ITEM_SIZE : v),
+    ), $bounds = toObservable(this._bounds).pipe(
+      filter(b => !!b),
+    );
+
+    combineLatest([$itemSize, $bounds]).pipe(
+      takeUntilDestroyed(),
+      switchMap(([v, bounds]) => {
+        if (v === VIEWPORT) {
+          const isVertical = this.isVertical, viewportBounds = bounds,
+            startOffset = this.scrollStartOffset(), endOffset = this.scrollEndOffset(),
+            result = (isVertical ? (viewportBounds?.height ?? 0) : (viewportBounds?.width ?? 0)) - startOffset - endOffset;
+          return of(result <= 0 ? 1 : result);
+        }
+        return of(v);
+      }),
+      tap(v => {
+        this._actualItemSize.set(v);
+      }),
+    ).subscribe();
+
+    const $actualItemSize = toObservable(this._actualItemSize);
+
     this._scroller = computed(() => {
       return this._scrollerComponent()?.scrollViewport();
     });
@@ -1477,7 +1590,7 @@ export class NgVirtualListComponent implements OnDestroy {
               return !((cLength > 0) || (pLength !== cLength && (pLength === 0 || cLength === 0)));
             }),
             tap(items => {
-              this._trackBox.resetCollection(items, this.itemSize());
+              this._trackBox.resetCollection(items, this._actualItemSize());
             }),
             switchMap(i => of((i ?? []).length > 0)),
             distinctUntilChanged(),
@@ -1571,7 +1684,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 this.classes.set({ prepared: false });
                 this._$show.next(false);
               }
-              this._trackBox.resetCollection(items, this.itemSize());
+              this._trackBox.resetCollection(items, this._actualItemSize());
             }),
             switchMap(i => of((i ?? []).length > 0)),
             distinctUntilChanged(),
@@ -1744,15 +1857,9 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    const $bounds = toObservable(this._bounds).pipe(
+    const $listBounds = toObservable(this._listBounds).pipe(
       filter(b => !!b),
-    ),
-      $listBounds = toObservable(this._listBounds).pipe(
-        filter(b => !!b),
-      ), $scrollSize = toObservable(this._scrollSize),
-      $itemSize = toObservable(this.itemSize).pipe(
-        map(v => v <= 0 ? DEFAULT_ITEM_SIZE : v),
-      ),
+    ), $scrollSize = toObservable(this._scrollSize),
       $bufferSize = toObservable(this.bufferSize).pipe(
         map(v => v < 0 ? DEFAULT_BUFFER_SIZE : v),
       ),
@@ -2147,7 +2254,7 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       filter(v => !!v),
       switchMap(() => {
-        return combineLatest([$snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $itemSize,
+        return combineLatest([$snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $actualItemSize,
           $collapsedItemIds, $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
         ]).pipe(
           takeUntilDestroyed(this._destroyRef),
@@ -2327,7 +2434,7 @@ export class NgVirtualListComponent implements OnDestroy {
         if (scrollerComponent) {
           const items = this._actualItems();
           if (items && items.length) {
-            const dynamicSize = this.dynamicSize(), itemSize = this.itemSize(), snapScrollToEnd = this.snapScrollToEnd();
+            const dynamicSize = this.dynamicSize(), itemSize = this._actualItemSize(), snapScrollToEnd = this.snapScrollToEnd();
 
             if (dynamicSize) {
               const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
@@ -2393,7 +2500,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (index > -1) {
                 const isVertical = this._isVertical,
                   currentScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-                  scrollSize = index * this.itemSize();
+                  scrollSize = index * this._actualItemSize();
                 if (currentScrollSize !== scrollSize) {
                   this._$preventScrollSnapping.next(true);
                   const params: IScrollToParams = {

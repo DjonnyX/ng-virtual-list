@@ -4,11 +4,10 @@ import {
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
-import { ScrollerDirection } from './enums';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    BEHAVIOR_INSTANT, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_SETTINGS, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP,
-    TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
+    BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM,
+    DEFAULT_SNAP_TO_ITEM_ALIGN, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import {
@@ -17,7 +16,9 @@ import {
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
-import { IScrollingSettings } from '../../interfaces';
+import { IAnimationParams, IRect, IScrollingSettings } from '../../interfaces';
+import { SnapToItemAlign, SnapToItemAligns } from '../../enums';
+import { NgVirtualListService } from '../../ng-virtual-list.service';
 
 /**
  * NgScrollView
@@ -35,13 +36,24 @@ export class NgScrollView extends BaseScrollView {
     @ViewChild('scrollViewport', { read: CdkScrollable })
     readonly cdkScrollable: CdkScrollable | undefined;
 
+    protected _service = inject(NgVirtualListService);
+
     readonly scrollBehavior = input<ScrollBehavior>(DEFAULT_SCROLL_BEHAVIOR);
 
     readonly overscrollEnabled = input<boolean>(DEFAULT_OVERSCROLL_ENABLED);
 
     readonly scrollingSettings = input<IScrollingSettings>(DEFAULT_SCROLLING_SETTINGS);
 
+    readonly snapToItem = input<boolean>(DEFAULT_SNAP_TO_ITEM);
+
+    readonly snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN);
+
+    readonly animationParams = input<IAnimationParams>(DEFAULT_ANIMATION_PARAMS);
+
     protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
+
+    protected _$wheel = new Subject<boolean>();
+    readonly $wheel = this._$wheel.asObservable();
 
     protected _$scroll = new Subject<boolean>();
     readonly $scroll = this._$scroll.asObservable();
@@ -88,6 +100,7 @@ export class NgScrollView extends BaseScrollView {
                             startPos = isVertical ? this.y : this.x,
                             delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
                         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
+                        this._$wheel.next(true);
                     }),
                 );
             }),
@@ -348,11 +361,13 @@ export class NgScrollView extends BaseScrollView {
                 aDuration = ad < maxDuration ? ad : maxDuration,
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
+        } else {
+            this.alignPosition();
         }
     }
 
     protected normalizeValue(value: number) {
-        const isVertical = this.direction() === ScrollerDirection.VERTICAL,
+        const isVertical = this.isVertical(),
             startOffset = this._normalizeValueFromZero ? 0 : this.startOffset(),
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
             result = value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value;
@@ -360,8 +375,8 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad,
-        userAction: boolean = false) {
-        const isVertical = this.direction() === ScrollerDirection.VERTICAL;
+        userAction: boolean = false, alignmentAtComplete: boolean = true) {
+        const isVertical = this.isVertical();
         this._animator.animate({
             startValue, endValue, duration,
             easingFunction,
@@ -373,8 +388,64 @@ export class NgScrollView extends BaseScrollView {
                 this.move(isVertical, value, false, userAction);
                 this._$scrollEnd.next(userAction);
                 this.onAnimationComplete(value);
+                if (alignmentAtComplete) {
+                    this.alignPosition(userAction);
+                }
             },
         });
+    }
+
+    protected alignPosition(userAction: boolean = false) {
+        if (!this.snapToItem()) {
+            return;
+        }
+        const align = this.snapToItemAlign(), isVertical = this.isVertical();
+        let position: number | null = null;
+        const currentPosition = isVertical ? this.scrollTop : this.scrollLeft;
+        switch (align) {
+            case SnapToItemAligns.START: {
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition);
+                if (!!componentBounds) {
+                    const { x, y } = componentBounds,
+                        componentPosition = isVertical ? y : x;
+                    position = componentPosition;
+                }
+                break;
+            }
+            case SnapToItemAligns.CENTER: {
+                const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
+                    startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    actualPos = currentPosition + startOffset + viewportSize * .5,
+                    maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
+                    pos = Math.min(actualPos, maxPos);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
+                if (!!componentBounds) {
+                    const { x, y, width, height } = componentBounds,
+                        size = isVertical ? height : width,
+                        componentPosition = isVertical ? y : x;
+                    position = componentPosition + size * .5 + endOffset - viewportSize * .5;
+                }
+                break;
+            }
+            case SnapToItemAligns.END: {
+                const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
+                    startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    actualPos = currentPosition + startOffset + viewportSize,
+                    maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
+                    pos = Math.min(actualPos, maxPos);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
+                if (!!componentBounds) {
+                    const { x, y } = componentBounds,
+                        componentPosition = isVertical ? y : x;
+                    position = componentPosition + endOffset - viewportSize;
+                }
+                break;
+            }
+        }
+
+        if (position !== null && Math.round(position) !== Math.round(currentPosition)) {
+            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, userAction, false);
+        }
     }
 
     protected onAnimationComplete(position: number) { }
@@ -413,7 +484,7 @@ export class NgScrollView extends BaseScrollView {
             behavior = params.behavior ?? INSTANT,
             blending = params.blending ?? true,
             duration = params.duration ?? ANIMATION_DURATION,
-            isVertical = this.direction() === ScrollerDirection.VERTICAL;
+            isVertical = this.isVertical();
 
         const x = this.normalizeValue(posX),
             y = this.normalizeValue(posY),

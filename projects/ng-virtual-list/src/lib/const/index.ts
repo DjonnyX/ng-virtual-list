@@ -1,4 +1,4 @@
-import { CollectionModes, MethodsForSelecting, SnappingMethods, TextDirections } from "../enums";
+import { CollectionModes, MethodsForSelecting, SnappingMethods, SnapToItemAlign, SnapToItemAligns, TextDirections } from "../enums";
 import { Directions } from "../enums/directions";
 import { IAnimationParams, IScrollingSettings } from '../interfaces';
 
@@ -24,8 +24,17 @@ export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
 
 export const NAVIGATION_BY_KEYBOARD_TIMER = 50;
 
+export const DEFAULT_SNAP_TO_ITEM = false;
+
+export const DEFAULT_MOTION_BLUR = 0.25;
+
+export const DEFAULT_MAX_MOTION_BLUR = 20;
+
+export const DEFAULT_SNAP_TO_ITEM_ALIGN: SnapToItemAlign = SnapToItemAligns.START;
+
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,
+    snapToItem: 150,
     navigateToItem: 150,
     navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
 };
@@ -86,6 +95,10 @@ export const BEHAVIOR_AUTO: ScrollBehavior = 'auto';
 export const BEHAVIOR_INSTANT: ScrollBehavior = 'instant';
 
 export const BEHAVIOR_SMOOTH: ScrollBehavior = 'smooth';
+
+export const DISABLED = 'disabled';
+
+export const VIEWPORT = 'viewport';
 
 export const DISPLAY_BLOCK = 'block';
 

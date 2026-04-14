@@ -3,7 +3,7 @@
 </div>
 
 <ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
-  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
+  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()"
   [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
@@ -17,9 +17,10 @@
 }
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
   [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
-  [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
+  [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()" [animationParams]="animationParams()"
   [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()"
-  [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()"
-  [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()" [scrollingSettings]="scrollingSettings()">
+  [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()" [snapToItem]="snapToItem()"
+  [snapToItemAlign]="snapToItemAlign()" [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()"
+  [scrollingSettings]="scrollingSettings()" [motionBlur]="motionBlur()" [maxMotionBlur]="maxMotionBlur()">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>

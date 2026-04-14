@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef, viewChild } from '@angular/core';
-import { combineLatest, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
+import { combineLatest, debounceTime, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -36,7 +36,7 @@ import { ScrollbarStates } from './enums';
 export class NgScrollBarComponent extends NgScrollView {
   protected _defaultRenderer = viewChild<TemplateRef<any>>('defaultRenderer');
 
-  protected _service = inject(NgScrollBarService);
+  protected _scrollBarService = inject(NgScrollBarService);
 
   private _apiService = inject(NgScrollBarPublicService);
 
@@ -98,8 +98,8 @@ export class NgScrollBarComponent extends NgScrollView {
     });
 
     const $renderer = toObservable(this.renderer).pipe(
-        startWith(null),
-      ),
+      startWith(null),
+    ),
       $defaultRenderer = toObservable(this._defaultRenderer);
 
     combineLatest([$renderer, $defaultRenderer]).pipe(
@@ -131,6 +131,18 @@ export class NgScrollBarComponent extends NgScrollView {
     this.thumbHeight = computed(() => {
       return this.isVertical() ? this.size() : this.thickness();
     });
+
+    const $wheel = this.$wheel;
+    $wheel.pipe(
+      takeUntilDestroyed(),
+      debounceTime(100),
+      tap(() => {
+        const event = this.createDragEvent(false);
+        if (!!event) {
+          this.onDragEnd.emit(event);
+        }
+      }),
+    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntilDestroyed(),
@@ -175,13 +187,13 @@ export class NgScrollBarComponent extends NgScrollView {
     effect(() => {
       const pressed = this.pressedState(), hover = this.hoverState();
       if (pressed) {
-        this._service.state = ScrollbarStates.PRESSED;
+        this._scrollBarService.state = ScrollbarStates.PRESSED;
         return;
       } else if (hover) {
-        this._service.state = ScrollbarStates.HOVER;
+        this._scrollBarService.state = ScrollbarStates.HOVER;
         return;
       }
-      this._service.state = ScrollbarStates.NORMAL;
+      this._scrollBarService.state = ScrollbarStates.NORMAL;
       return;
     });
 
@@ -254,6 +266,6 @@ export class NgScrollBarComponent extends NgScrollView {
   }
 
   click(event: PointerEvent | MouseEvent) {
-    this._service.click(event);
+    this._scrollBarService.click(event);
   }
 }
