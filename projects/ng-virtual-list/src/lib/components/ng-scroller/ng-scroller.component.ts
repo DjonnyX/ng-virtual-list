@@ -188,7 +188,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     combineLatest([$isVertical, $averageVelocity, $filter, $motionBlur, $maxMotionBlur]).pipe(
       takeUntilDestroyed(),
       filter(([, , f, mb]) => !!f && (mb !== DISABLED && mb !== 0)),
-      debounceTime(0),
       tap(([isVertical, v, filter, mb, mbMax]) => {
         const _v = v * (mb as number), value = _v > mbMax ? mbMax : _v;
         filter!.nativeElement.setStdDeviation(isVertical ? 0 : v * value, isVertical ? v * value : 0);
