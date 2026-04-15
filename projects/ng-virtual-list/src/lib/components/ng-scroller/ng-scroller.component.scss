@@ -28,10 +28,14 @@
 
         .ngvl__list {
             display: inline-flex;
+            margin-left: 50px;
+            margin-right: -100px;
         }
 
         .ngvl__scroller {
             /** For motion blur correction */
+            margin-left: -50px;
+            margin-right: 100px;
             overflow: unset;
         }
     }
@@ -46,8 +50,15 @@
             }
         }
 
+        .ngvl__list {
+            margin-top: 50px;
+            margin-bottom: -100px;
+        }
+
         .ngvl__scroller {
             /** For motion blur correction */
+            margin-top: -50px;
+            margin-bottom: 100px;
             overflow: unset;
         }
     }
