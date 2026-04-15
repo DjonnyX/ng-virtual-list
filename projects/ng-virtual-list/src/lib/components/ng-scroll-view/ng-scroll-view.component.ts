@@ -481,7 +481,7 @@ export class NgScrollView extends BaseScrollView {
         if ((animated && position !== null && Math.round(position) !== Math.round(currentPosition))) {
             this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
         } else if (!animated && position !== null) {
-            this.move(isVertical, position, false, false, true);
+            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
         }
     }
 
