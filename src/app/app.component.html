@@ -29,7 +29,7 @@
         methodForSelecting="select" [itemRenderer]="horizontalGalleryItemRenderer" [dynamicSize]="false" [itemSize]="'viewport'"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [motionBlurEnabled]="true"
         (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectByClick]="true" [scrollbarEnabled]="false" 
-        [scrollbarThickness]="6" [snapToItem]="true" snapToItemAlign="center" (onScrollReachStart)="onScrollReachStartHandler()"
+        [scrollbarThickness]="6" [snapToItem]="true" snapToItemAlign="start" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -89,7 +89,7 @@
       <ng-virtual-list class="list" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" [bufferSize]="1" [maxBufferSize]="5"
         [dynamicSize]="false" [itemSize]="'viewport'" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [snapToItem]="true" snapToItemAlign="center" [motionBlurEnabled]="true" (onScrollReachStart)="onScrollReachStartHandler()"
+        [snapToItem]="true" snapToItemAlign="start" [motionBlurEnabled]="true" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -105,7 +105,7 @@
       <ng-virtual-list class="list" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" [bufferSize]="1" [maxBufferSize]="5"
         [dynamicSize]="false" [itemSize]="'viewport'" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [motionBlurEnabled]="true"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [snapToItem]="true" snapToItemAlign="center" [scrollingOneByOne]="true" (onScrollReachStart)="onScrollReachStartHandler()"
+        [snapToItem]="true" snapToItemAlign="start" [scrollingOneByOne]="true" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
