@@ -31,7 +31,8 @@
         }
 
         .ngvl__scroller {
-            overflow: hidden;
+            /** For motion blur correction */
+            overflow: unset;
         }
     }
 
@@ -46,7 +47,8 @@
         }
 
         .ngvl__scroller {
-            overflow: hidden;
+            /** For motion blur correction */
+            overflow: unset;
         }
     }
 }
