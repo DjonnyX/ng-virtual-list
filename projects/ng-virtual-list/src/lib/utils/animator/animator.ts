@@ -54,7 +54,7 @@ export class Animator {
         easedProgress = easingFunction(progress),
         val = startPosDelta + start + diff * easedProgress,
         currentValue = val,
-        t = Date.now();
+        t = performance.now();
 
       isFinished = progress === 1;
 
