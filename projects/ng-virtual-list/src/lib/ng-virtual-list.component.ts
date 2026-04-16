@@ -18,10 +18,10 @@ import {
   DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
   DEFAULT_ANIMATION_PARAMS, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SNAP_SCROLLTO_START, EMPTY_SCROLL_STATE_VERSION, MAX_REGULAR_SNAPED_COMPONENTS,
   PREPARE_ITERATIONS, PREPARATION_REUPDATE_LENGTH, ROLE_LIST_BOX, ROLE_LIST, KEY_TAB, MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1,
-  MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2, PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS,
-  PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1,
-  DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DISABLED,
-  DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE, DEFAULT_MOTION_BLUR_ENABLED,
+  PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS, PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS,
+  PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
+  DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
+  DEFAULT_MOTION_BLUR_ENABLED,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -2151,7 +2151,7 @@ export class NgVirtualListComponent implements OnDestroy {
       items: IVirtualListCollection<Object>; itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number;
       bufferSize: number; maxBufferSize: number; snap: boolean; isVertical: boolean; dynamicSize: boolean;
       enabledBufferOptimization: boolean; cacheVersion: number; userAction: boolean; collapsedIds: Array<Id>;
-    }, optimization: boolean = false, reupdate: boolean = false) => {
+    }) => {
       const {
         snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction, collapsedIds,
@@ -2162,8 +2162,7 @@ export class NgVirtualListComponent implements OnDestroy {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
           emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading;
         if (this._readyForShow || (cachable && cached)) {
-          const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
-            fireUpdate = emitUpdate || reupdate || (!optimization && !userAction) || this._$scrollingTo.getValue();
+          const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
           let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
             (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
             displayItems: IRenderVirtualListCollection;
@@ -2267,7 +2266,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-              fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+              fireUpdate: true, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
             };
             scroller.scrollTo(params);
             if (emitUpdate) {
@@ -2302,18 +2301,16 @@ export class NgVirtualListComponent implements OnDestroy {
               prevItems = items;
             }
             const enabledOptimization = this.scrollingSettings()?.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
-              scroller = this._scrollerComponent(), velocity = this._scrollerComponent()?.averageVelocity ?? 0,
-              maxScrollSize = isVertical ? (scroller?.scrollHeight || 0) : (scroller?.scrollWidth ?? 0),
-              isEdges = scrollSize === 0 || scrollSize === maxScrollSize, isScrolling = this._$scrollingTo.getValue(),
-              useDebouncedUpdate = dynamicSize && !itemsChanged && hasUserAction && !isScrolling && (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1),
-              rerenderOptimization = enabledOptimization && dynamicSize && !itemsChanged && (hasUserAction || hasScrollbarUserAction) && !isEdges && velocity > 0 &&
-                (velocity > MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL2 || hasUserAction);
+              velocity = this._scrollerComponent()?.averageVelocity ?? 0,
+              isScrolling = this._$scrollingTo.getValue(),
+              useDebouncedUpdate = dynamicSize && !itemsChanged && hasUserAction && !isScrolling &&
+                (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1);
             if (enabledOptimization) {
               if (useDebouncedUpdate) {
                 debouncedUpdate.execute({
                   snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
                   bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
-                }, rerenderOptimization, itemsChanged);
+                });
                 return;
               }
 
@@ -2324,7 +2321,7 @@ export class NgVirtualListComponent implements OnDestroy {
               update({
                 snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
                 bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
-              }, rerenderOptimization, itemsChanged);
+              });
             }
           }),
         );
