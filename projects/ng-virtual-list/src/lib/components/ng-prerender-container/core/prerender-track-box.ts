@@ -20,6 +20,9 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             position: 0,
             scrollSize: 0,
             size: itemSize,
+            row: {
+                size: itemSize,
+            },
             boundsSize,
             absoluteStartPosition: 0,
             absoluteStartPositionPercent: 0,

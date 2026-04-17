@@ -1,4 +1,4 @@
-import { computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef, viewChild } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -23,7 +23,15 @@ import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
+@Component({
+  selector: 'ng-base-virtual-list-item',
+  template: '',
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
 export class BaseVirtualListItemComponent implements IBaseVirtualListItemComponent {
+  protected _item = viewChild<ElementRef<HTMLDivElement>>('item');
+
   private _apiService = inject(NgVirtualListPublicService);
 
   protected readonly _service = inject(NgVirtualListService);
@@ -174,10 +182,16 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
         styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
         el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
-        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX}, ${POSITION_ZERO})`;
+        styles.transform = `${TRANSLATE_3D}(${data.measures.x}${PX}, ${data.measures.y}${PX}, ${POSITION_ZERO})`;
       }
-      styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
-      styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
+      styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
+
+      const wrapperEl = this._item()?.nativeElement;
+      if (!!wrapperEl) {
+        wrapperEl.style.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        wrapperEl.style.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      }
     } else {
       el.removeAttribute(ID);
     }
@@ -210,9 +224,12 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   getBounds(): ISize {
-    const el: HTMLElement = this._elementRef.nativeElement,
-      { width, height } = el.getBoundingClientRect();
-    return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
+    const el = this._item()?.nativeElement;
+    if (!!el) {
+      const { width, height } = el.getBoundingClientRect();
+      return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
+    }
+    return { width: 1, height: 1 };
   }
 
   show() {

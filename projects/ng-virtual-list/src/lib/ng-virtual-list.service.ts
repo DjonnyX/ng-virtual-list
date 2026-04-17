@@ -373,6 +373,13 @@ export class NgVirtualListService {
     return false;
   }
 
+  focusList() {
+    const element = this.listElement;
+    if (!!element) {
+      element.focus({ preventScroll: true });
+    }
+  }
+
   focusFirstElement() {
     const elements = this.listElement?.querySelectorAll<HTMLDivElement>(getListElements()),
       elList = (elements ? Array.from(elements) : []).sort((a, b) => {

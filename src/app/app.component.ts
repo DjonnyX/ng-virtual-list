@@ -243,6 +243,8 @@ export class AppComponent {
 
   dynamicShortItemsLength: number = 0;
 
+  motionBlurEnabled = false;
+
   constructor() {
     interval(1000).pipe(
       takeUntilDestroyed(),
@@ -302,6 +304,16 @@ export class AppComponent {
         this.dynamicShortItems = collection;
       }),
     ).subscribe();
+
+    const bp: Promise<EventTarget & { level: number, charging: boolean; }> | null = (navigator as any).getBattery?.() ?? null;
+    if (!!bp) {
+      bp.then(battery => {
+        battery.addEventListener('levelchange', () => {
+          this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+        });
+        this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+      });
+    }
   }
 
   onButtonScrollToIdClickHandler = (e: Event) => {

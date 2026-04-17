@@ -20,6 +20,12 @@ export interface IRenderVirtualListItemMeasures extends IRect {
      */
     size: number;
     /**
+     * Row
+     */
+    row: {
+        size: number;
+    };
+    /**
      * Bounds size
      */
     boundsSize: number;

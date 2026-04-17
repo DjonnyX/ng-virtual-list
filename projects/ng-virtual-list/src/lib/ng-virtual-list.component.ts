@@ -22,6 +22,7 @@ import {
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
   DEFAULT_MOTION_BLUR_ENABLED,
+  DEFAULT_DIVIDES,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -661,7 +662,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Snap to item. The default value is `false`.
+   * Alignment for snapToItem. Available values ​​are start, center, and end. The default value is `center`.
    */
   snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN, { ...this._snapToItemAlignOptions });
 
@@ -681,6 +682,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Specifies whether to scroll one item at a time if true and the scrollToItem property is set. The default value is `false`.
    */
   scrollingOneByOne = input<boolean>(DEFAULT_SCROLLING_ONE_BY_ONE, { ...this._scrollingOneByOneOptions });
+
+  private _dividesOptions = {
+    transform: (v: number) => {
+      const valid = validateFloat(v);
+
+      if (!valid) {
+        console.error('The "divides" parameter must be of type `number`.');
+        return DEFAULT_DIVIDES;
+      }
+      return v <= 0 ? DEFAULT_DIVIDES : v;
+    },
+  } as any;
+
+  /**
+   * Column or row numbers. The default value is `1`.
+   */
+  divides = input<number>(DEFAULT_DIVIDES, { ...this._dividesOptions });
 
   private _motionBlurOptions = {
     transform: (v: number) => {
@@ -1891,6 +1909,14 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    const $divides = toObservable(this.divides);
+    $divides.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.divides = v;
+      }),
+    ).subscribe();
+
     const $listBounds = toObservable(this._listBounds).pipe(
       filter(b => !!b),
     ), $scrollSize = toObservable(this._scrollSize),
@@ -2149,11 +2175,11 @@ export class NgVirtualListComponent implements OnDestroy {
     const update = (params: {
       snapScrollToStart: boolean, snapScrollToEnd: boolean; bounds: ISize; listBounds: ISize; scrollEndOffset: number;
       items: IVirtualListCollection<Object>; itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number;
-      bufferSize: number; maxBufferSize: number; snap: boolean; isVertical: boolean; dynamicSize: boolean;
+      bufferSize: number; maxBufferSize: number; snap: boolean; isVertical: boolean; dynamicSize: boolean; divides: number;
       enabledBufferOptimization: boolean; cacheVersion: number; userAction: boolean; collapsedIds: Array<Id>;
     }) => {
       const {
-        snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
+        snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, divides,
         bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction, collapsedIds,
       } = params;
       const scroller = this._scrollerComponent();
@@ -2169,8 +2195,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
           const { width, height } = bounds, viewportSize = (isVertical ? height : width),
             opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-              bounds: { width, height }, dynamicSize, isVertical, itemSize,
-              bufferSize, maxBufferSize, scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+              bounds: { width, height }, dynamicSize, isVertical, itemSize, bufferSize, maxBufferSize,
+              scrollSize: actualScrollSize, snap, enabledBufferOptimization,
             };
 
           if (snapScrollToEnd && !this._readyForShow) {
@@ -2288,12 +2314,12 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(v => !!v),
       switchMap(() => {
         return combineLatest([$snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $actualItemSize,
-          $collapsedItemIds, $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
+          $collapsedItemIds, $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $divides, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
         ]).pipe(
           takeUntilDestroyed(this._destroyRef),
           tap(([
             snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-            collapsedIds, bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion,
+            collapsedIds, bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion,
           ]) => {
             let itemsChanged = false;
             if (prevItems !== items) {
@@ -2309,7 +2335,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (useDebouncedUpdate) {
                 debouncedUpdate.execute({
                   snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                  bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                  bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
                 });
                 return;
               }
@@ -2320,7 +2346,7 @@ export class NgVirtualListComponent implements OnDestroy {
             if (!isScrolling) {
               update({
                 snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
               });
             }
           }),
