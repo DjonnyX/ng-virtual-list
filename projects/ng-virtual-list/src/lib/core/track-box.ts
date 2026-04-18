@@ -849,7 +849,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             }
             actualScrollSize = isFromId ? itemByIdPos : scrollSize;
 
-            leftItemsOrRowsWeights.splice(0, leftItemsOrRowsWeights.length - leftItemsOffset);
+            leftItemsOrRowsWeights.splice(0, leftItemsOrRowsWeights.length - bufferSize);
             leftItemsOrRowsWeights.forEach(v => {
                 leftItemsWeight += v;
             });
