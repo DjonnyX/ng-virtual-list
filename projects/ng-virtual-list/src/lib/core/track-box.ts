@@ -858,6 +858,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
 
+            startIndex = Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides;
         } else
         // Buffer optimization does not work on fast linear algorithm
         {
@@ -872,11 +873,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftHiddenItemsWeight = Math.floor(itemsFromStartToScrollEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
             totalItemsToDisplayEndWeight = Math.floor(itemsFromStartToDisplayEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
             totalSize = (totalLength * dividedTypicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
-
+            startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
             const k = totalSize !== 0 ? previousTotalSize / totalSize : 0;
             actualScrollSize = scrollSize * k;
         }
-        startIndex = Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides;
 
         const itemsOnDisplayWeight = totalItemsToDisplayEndWeight - leftItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
