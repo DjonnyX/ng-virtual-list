@@ -250,4 +250,4 @@ export const ROLE_LIST_BOX = 'listbox';
 
 export const ITEM_ID = 'item-id';
 
-export const ITEM_CONTAINER = 'ngvl-item__container';
+export const ITEM_CONTAINER = 'ngvl-item';

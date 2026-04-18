@@ -1,8 +1,8 @@
 @let renderer = itemRenderer();
 @let class = classes();
-<div class="ngvl-item" [part]="part()" [ngClass]="class">
-    <div #item itemClick [maxClickDistance]="maxClickDistance()" [attr.ngvl-index]="index()" tabindex="-1"
-        class="ngvl-item__container" [ngClass]="class" (onClick)="onClickHandler()">
+<div class="ngvl-item" [part]="part()" [ngClass]="class" [attr.ngvl-index]="index()" tabindex="-1">
+    <div #item itemClick [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
+        (onClick)="onClickHandler()">
         @if (renderer) {
         <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />
         }
