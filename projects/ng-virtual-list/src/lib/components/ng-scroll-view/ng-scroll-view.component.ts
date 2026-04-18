@@ -217,10 +217,7 @@ export class NgScrollView extends BaseScrollView {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
-                                        if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
-                                            return;
-                                        }
-                                        if (!this.snapIfNeed(v0, false)) {
+                                        if (!this.snapIfNeed(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         }
                                     }),
@@ -298,10 +295,7 @@ export class NgScrollView extends BaseScrollView {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
-                                        if (this.scrollBehavior() === BEHAVIOR_INSTANT) {
-                                            return;
-                                        }
-                                        if (!this.snapIfNeed(v0, false)) {
+                                        if (!this.snapIfNeed(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         }
                                     }),
@@ -365,9 +359,7 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
-    protected stopMoving() {
-        this.alignPosition(true);
-    }
+    protected stopMoving() { }
 
     private snapIfNeed(v0: number, withInitialForce: boolean = true) {
         const snapToItem = this.snapToItem();
