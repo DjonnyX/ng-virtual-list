@@ -15,7 +15,7 @@ import { CustomScrollbarModule } from './components/custom-scrollbar/custom-scro
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   CUSTOM_SCROLLBAR_THEME: CustomScrollBarTheme = {
-    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    fill: ["rgba(101, 50, 147, 1)", "rgba(123, 50, 147, 1)"],
     hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
     pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
