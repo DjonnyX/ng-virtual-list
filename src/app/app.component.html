@@ -128,17 +128,18 @@
 
   <div class="vl-section">
     <div class="vl-section__container">
-      <h2>Vertical virtual list (Snapped to item; Dynamic size; 4 columns)</h2>
+      <h2>Vertical virtual list (Snapped to item; Dynamic size; 2 columns)</h2>
       <div class="scroll-to__controls">
-        <input type="number" class="scroll-to__input" [(ngModel)]="itemsLength" [required]="true" [min]="0"
-          [max]="100000">
-        <button class="scroll-to__button" (click)="onButtonChangeItemsLengthHandler()">setup</button>
+        <input type="number" class="scroll-to__input" [(ngModel)]="dl2ItemId" [required]="true" [min]="minDl2Id"
+          [max]="maxDl2Id">
+        <button class="scroll-to__button" (click)="onButtonScrollDL2ToIdClickHandler($event)">Scroll</button>
       </div>
-      <ng-virtual-list class="list list-gallery" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" 
-        [bufferSize]="1" [maxBufferSize]="1" [dynamicSize]="true" (onItemClick)="onItemClick($event)" [divides]="4"
+      <ng-virtual-list #dl2List class="list list-gallery" [items]="items2" methodForSelecting="multi-select" [itemRenderer]="itemRendererGallery" 
+        [bufferSize]="1" [maxBufferSize]="1" [dynamicSize]="true" (onItemClick)="onItemClick($event)" [divides]="2"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [snapToItem]="true" snapToItemAlign="center" [motionBlurEnabled]="motionBlurEnabled" (onSelect)="onSelectHandler($event)"
+        [motionBlurEnabled]="motionBlurEnabled" (onSelect)="onSelectHandler($event)"
         (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
+        <!-- [snapToItem]="true" snapToItemAlign="start" -->
     </div>
   </div>
 
@@ -258,7 +259,7 @@
         <button class="scroll-to__button" (click)="onButtonScrollDLToIdClickHandler($event)">Scroll</button>
       </div>
       <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [bufferSize]="3" [maxBufferSize]="3" [itemSize]="40" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
+        [bufferSize]="3" [maxBufferSize]="3" [itemConfigMap]="groupDynamicItemsStickyMap" [snap]="true"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams"
         [scrollbarThickness]="6" [scrollingSettings]="scrollingSettings" (onViewportChange)="onViewportChangeHandler($event)"
         (onItemClick)="onItemClick($event)" (onScrollReachStart)="onScrollReachStartHandler()"

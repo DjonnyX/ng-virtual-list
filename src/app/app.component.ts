@@ -193,6 +193,8 @@ export class AppComponent {
 
   protected _dynamicItemsListContainerRef = viewChild('dynamicItemsList', { read: NgVirtualListComponent });
 
+  protected _dl2ListContainerRef = viewChild('dl2List', { read: NgVirtualListComponent });
+
   protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
 
   customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
@@ -200,6 +202,8 @@ export class AppComponent {
   items = ITEMS;
 
   items1 = generateItems(1000);
+
+  items2 = generateDynamicItems(1000, 0);
 
   dynamicItems = generateDynamicItems(20, 0);
 
@@ -236,6 +240,14 @@ export class AppComponent {
   get maxDlId() { return this._maxDlId; };
 
   dlItemId: Id = this._minDlId;
+
+  private _minDl2Id: Id = this.items2.length > 0 ? this.items2[0].id : 0;
+  get minDl2Id() { return this._minDl2Id; };
+
+  private _maxDl2Id: Id = this.items2.length > 0 ? this.items2[this.items2.length - 1].id : 0;
+  get maxDl2Id() { return this._maxDl2Id; };
+
+  dl2ItemId: Id = this._minDl2Id;
 
   itemsLength: number = 0;
 
@@ -324,6 +336,18 @@ export class AppComponent {
         console.info(`scrollTo finished. id: ${id}`);
       }, {
         behavior: 'smooth',
+      });
+    }
+  }
+
+  onButtonScrollDL2ToIdClickHandler = (e: Event) => {
+    const list = this._dl2ListContainerRef(), id = this.dl2ItemId;
+    if (list && id !== null) {
+      list.scrollTo(id, () => {
+        list.focus(id);
+        console.info(`scrollTo finished. id: ${id}`);
+      }, {
+        behavior: 'instant',
       });
     }
   }
