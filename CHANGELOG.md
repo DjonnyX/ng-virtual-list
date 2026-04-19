@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
 - Added `snapToItem` parameter to `animationParams` property.
 - Added `scrollingOneByOne` property.
 
+## [20.11.11] - 2026-04-19
+
+### Fixed
+- Fixed a freeze when deleting a list.
+
 ## [20.11.10] - 2026-04-13
 
 ### Fixed
