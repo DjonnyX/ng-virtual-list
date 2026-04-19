@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.11.3] - 2026-04-19
+
+### Fixed
+- Fixed a freeze when deleting a list.
+
 ## [17.11.2] - 2026-04-13
 
 ### Fixed
