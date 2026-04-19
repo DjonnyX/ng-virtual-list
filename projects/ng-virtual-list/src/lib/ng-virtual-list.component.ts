@@ -2932,7 +2932,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
     if (!!this._snappedDisplayComponents) {
       while (this._snappedDisplayComponents.length > 0) {
-        const comp = this._displayComponents.shift();
+        const comp = this._snappedDisplayComponents.shift();
         comp?.destroy();
       }
     }
