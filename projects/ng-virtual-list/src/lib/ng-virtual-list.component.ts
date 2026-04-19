@@ -3372,7 +3372,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
     if (!!this._snappedDisplayComponents) {
       while (this._snappedDisplayComponents.length > 0) {
-        const comp = this._displayComponents.shift();
+        const comp = this._snappedDisplayComponents.shift();
         comp?.destroy();
       }
     }
