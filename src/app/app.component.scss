@@ -26,6 +26,53 @@ input {
     align-items: center;
 }
 
+.list-container {
+    display: grid;
+    height: calc(100%);
+    width: calc(100%);
+    overflow: hidden;
+}
+
+.viewer-container {
+    margin-top: 72px;
+    position: relative;
+    height: calc(100%);
+    width: calc(100%);
+    overflow: auto;
+
+    scroll-behavior: auto;
+
+    /* custom scrollbar */
+    &::-webkit-scrollbar {
+        width: 16px;
+        height: 16px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: #383844;
+        border-radius: 20px;
+        border: 6px solid transparent;
+        background-clip: content-box;
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: #3d3d4d;
+    }
+
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 72px;
+    }
+}
+
 .vl-section {
     padding: 0 20px;
     margin-bottom: 24px;
@@ -40,7 +87,7 @@ input {
         }
 
         .version {
-            color: #3b3b3b;
+            color: #342c4b;
             font-size: 10px;
             text-transform: uppercase;
             margin-bottom: 10px;
@@ -60,19 +107,19 @@ input {
         width: 100%;
 
         &>h2 {
-            color: #5a3e85;
+            color: #8280af;
             font-size: 12px;
             text-transform: uppercase;
             margin-bottom: 10px;
             letter-spacing: 0.5px;
-            font-weight: 800;
+            font-weight: bold;
         }
 
         margin-bottom: 18px;
     }
 
-    &>h1 {
-        background: -webkit-linear-gradient(0deg, #6f00e2 0%0%, #6f00e2 30%, #f90058 100%);
+    & h1 {
+        background: -webkit-linear-gradient(0deg, #6e30ff 0%0%, #a551ff 30%, #f90058 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-size: 19px;
@@ -83,15 +130,33 @@ input {
         letter-spacing: 0.5px;
         margin-bottom: 9px;
 
+        &.wr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &.lim {
+            display: inline-block;
+            width: auto;
+        }
+
         &.center {
-            width: 100%;
+            width: auto;
             text-align: center;
         }
     }
 
     &>p {
         &.l {
-            color: #505050;
+            display: inline-block;
+            width: auto;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 8.5px;
+            color: #63588a;
             background: unset;
             width: 100%;
             letter-spacing: 2px;
@@ -100,28 +165,25 @@ input {
             margin: 0;
             text-align: center;
             margin-bottom: 0px;
-            -webkit-background-clip: initial;
-            -webkit-text-fill-color: initial;
 
             &.m {
-                color: #3b3b3b;
+                color: rgb(69, 59, 97);
                 margin-bottom: 20px;
             }
         }
 
-        background: -webkit-linear-gradient(0deg, #6f00e2 0%0%, #6f00e2 30%, #f90058 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: bold;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin: 0;
         padding: 0;
+        font-size: 10px;
+        font-weight: bold;
     }
 
     &.block {
-        padding: 20px 20px 4px;
+        padding: 0px 20px 4px;
     }
 
     .scroll-to__controls {
@@ -171,16 +233,16 @@ input {
         background-color: #8129a3;
     }
     &::part(item-even) {
-        background-color: #5151a9;
+        background-color: #5c5cd9;
     }
 }
 
 .list-divided {
     &::part(item-odd) {
-        background-color: #3f3f3f;
+        background-color: #443b53;
     }
     &::part(item-even) {
-        background-color: #474747;
+        background-color: #494058;
     }
 }
 
@@ -196,8 +258,8 @@ input {
     }
 
     &::part(viewport) {
-        color: #b4b4ce;
-        background-color: #3f3f3f;
+        color: #e1dceb;
+        background-color: #443b53;
     }
 
     &__container {
@@ -207,17 +269,17 @@ input {
         height: 100%;
         width: 100%;
         padding: 6px 12px;
-        background-color: #3f3f3f;
+        background-color: #443b53;
         box-sizing: border-box;
         display: flex;
         align-items: center;
 
         &.even {
-            background-color: #474747;
+            background-color: #494058;
         }
 
         &:hover {
-            background-color: #524f4f;
+            background-color: #40374e;
         }
 
 
@@ -254,7 +316,7 @@ input {
         height: 100%;
         width: 100%;
         padding: 6px 12px;
-        background-color: #6a6a6f;
+        background-color: #605473;
         color: #d3d3e2;
         box-sizing: border-box;
         font-weight: 600;
@@ -274,7 +336,7 @@ input {
         word-break: break-all;
         height: 100%;
         padding: 0 8px;
-        background-color: #3f3f3f;
+        background-color: #443b53;
         box-sizing: border-box;
         font-weight: 600;
         font-size: 12px;
@@ -284,11 +346,11 @@ input {
         justify-content: center;
 
         &.even {
-            background-color: #474747;
+            background-color: #494058;
         }
 
         &:hover {
-            background-color: #524f4f;
+            background-color: #40374e;
         }
 
         &.selected {
@@ -306,7 +368,7 @@ input {
         word-break: break-all;
         height: 100%;
         padding: 0 8px;
-        background-color: #6a6a6f;
+        background-color: #605473;
         color: #d3d3e2;
         box-sizing: border-box;
         font-weight: 600;
