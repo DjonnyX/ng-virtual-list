@@ -56,7 +56,7 @@ export const DEFAULT_SCROLLING_SETTINGS: IScrollingSettings = {
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;
 
-export const DEFAULT_SNAP = false;
+export const DEFAULT_STICKY_ENABLED = false;
 
 export const DEFAULT_SELECT_BY_CLICK = true;
 

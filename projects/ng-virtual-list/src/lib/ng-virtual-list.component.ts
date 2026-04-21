@@ -10,7 +10,7 @@ import {
 import { NgVirtualListItemComponent } from './components/ng-list-item/ng-virtual-list-item.component';
 import {
   BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
-  DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_SNAP, DEFAULT_SNAPPING_METHOD,
+  DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_STICKY_ENABLED, DEFAULT_SNAPPING_METHOD,
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, FOCUS, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
   DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
   DEFAULT_SCREEN_READER_MESSAGE, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_END, MIN_PIXELS_FOR_PREVENT_SNAPPING,
@@ -396,20 +396,32 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _snapOptions = {
     transform: (v: boolean) => {
+      throw Error(`Property snap is deprecated. Use the \`stickyEnabled\` property instead.`);
+    },
+  } as any;
+
+  /**
+   * @deprecated
+   * Use the `stickyEnabled` property instead.
+   */
+  snap = input<boolean>(false, { ...this._snapOptions });
+
+  private _stickyEnabledOptions = {
+    transform: (v: boolean) => {
       const valid = validateBoolean(v);
 
       if (!valid) {
-        console.error('The "snap" parameter must be of type `boolean`.');
-        return DEFAULT_SNAP;
+        console.error('The "stickyEnabled" parameter must be of type `boolean`.');
+        return DEFAULT_STICKY_ENABLED;
       }
       return v;
     },
   } as any;
 
   /**
-   * Determines whether elements will snap. Default value is "true".
+   * Determines whether items with the given `sticky` in `itemConfigMap` will stick to the edges. Default value is "true".
    */
-  snap = input<boolean>(DEFAULT_SNAP, { ...this._snapOptions });
+  stickyEnabled = input<boolean>(DEFAULT_STICKY_ENABLED, { ...this._stickyEnabledOptions });
 
   private _snapToEndTransitionInstantOffsetOptions = {
     transform: (v: number) => {
@@ -1929,7 +1941,7 @@ export class NgVirtualListComponent implements OnDestroy {
       $itemConfigMap = toObservable(this.itemConfigMap).pipe(
         map(v => !v ? {} : v),
       ),
-      $snap = toObservable(this.snap),
+      $stickyEnabled = toObservable(this.stickyEnabled),
       $isLazy = toObservable(this.collectionMode).pipe(
         map(v => this.getIsLazy(v || DEFAULT_COLLECTION_MODE)),
       ),
@@ -2175,12 +2187,12 @@ export class NgVirtualListComponent implements OnDestroy {
     const update = (params: {
       snapScrollToStart: boolean, snapScrollToEnd: boolean; bounds: ISize; listBounds: ISize; scrollEndOffset: number;
       items: IVirtualListCollection<Object>; itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number;
-      bufferSize: number; maxBufferSize: number; snap: boolean; isVertical: boolean; dynamicSize: boolean; divides: number;
+      bufferSize: number; maxBufferSize: number; stickyEnabled: boolean; isVertical: boolean; dynamicSize: boolean; divides: number;
       enabledBufferOptimization: boolean; cacheVersion: number; userAction: boolean; collapsedIds: Array<Id>;
     }) => {
       const {
         snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, divides,
-        bufferSize, maxBufferSize, snap, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction, collapsedIds,
+        bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, cacheVersion, userAction, collapsedIds,
       } = params;
       const scroller = this._scrollerComponent();
       let totalSize = 0;
@@ -2196,7 +2208,7 @@ export class NgVirtualListComponent implements OnDestroy {
           const { width, height } = bounds, viewportSize = (isVertical ? height : width),
             opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
               bounds: { width, height }, dynamicSize, isVertical, itemSize, bufferSize, maxBufferSize,
-              scrollSize: actualScrollSize, snap, enabledBufferOptimization,
+              scrollSize: actualScrollSize, stickyEnabled, enabledBufferOptimization,
             };
 
           if (snapScrollToEnd && !this._readyForShow) {
@@ -2314,12 +2326,12 @@ export class NgVirtualListComponent implements OnDestroy {
       filter(v => !!v),
       switchMap(() => {
         return combineLatest([$snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize, $actualItemSize,
-          $collapsedItemIds, $bufferSize, $maxBufferSize, $snap, $isVertical, $dynamicSize, $divides, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
+          $collapsedItemIds, $bufferSize, $maxBufferSize, $stickyEnabled, $isVertical, $dynamicSize, $divides, $enabledBufferOptimization, $cacheVersion, this.$fireUpdate,
         ]).pipe(
           takeUntilDestroyed(this._destroyRef),
           tap(([
             snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize,
-            collapsedIds, bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion,
+            collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion,
           ]) => {
             let itemsChanged = false;
             if (prevItems !== items) {
@@ -2335,7 +2347,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (useDebouncedUpdate) {
                 debouncedUpdate.execute({
                   snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                  bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                  bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
                 });
                 return;
               }
@@ -2346,7 +2358,7 @@ export class NgVirtualListComponent implements OnDestroy {
             if (!isScrolling) {
               update({
                 snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, collapsedIds,
-                bufferSize, maxBufferSize, snap, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
+                bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, cacheVersion, userAction: hasUserAction,
               });
             }
           }),
@@ -2501,7 +2513,7 @@ export class NgVirtualListComponent implements OnDestroy {
                   bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize,
                   bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(),
                   scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-                  snap: this.snap(), fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization(),
+                  stickyEnabled: this.stickyEnabled(), fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization(),
                 };
 
               let scrollSize = snapScrollToEnd && this._trackBox.isSnappedToEnd ?
@@ -2834,7 +2846,7 @@ export class NgVirtualListComponent implements OnDestroy {
       return;
     }
 
-    if (this._isSnappingMethodAdvanced && this.snap()) {
+    if (this._isSnappingMethodAdvanced && this.stickyEnabled()) {
       if (this._snappedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS && this._snapContainerRef) {
         while (this._snappedDisplayComponents.length < MAX_REGULAR_SNAPED_COMPONENTS) {
           const comp = this._snapContainerRef.createComponent(this._itemComponentClass);

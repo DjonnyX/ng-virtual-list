@@ -177,8 +177,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [dynamicSize]="false" [itemSize]="54" [snap]="true"
-    methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [dynamicSize]="false" [itemSize]="54" [stickyEnabled]="true" methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
   @if (data) {
@@ -292,7 +291,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
-    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [snap]="false"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [stickyEnabled]="false"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -319,7 +318,7 @@ Template:
 Template (with snapping):
 ```html
 <ng-virtual-list class="list simple" [items]="groupItems" [bufferSize]="1" [maxBufferSize]="5" [itemRenderer]="groupItemRenderer"
-    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [snap]="true"></ng-virtual-list>
+    [itemConfigMap]="groupItemConfigMap" [dynamicSize]="false" [itemSize]="40" [stickyEnabled]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -438,7 +437,7 @@ Virtual list with height-adjustable elements.
 Template
 ```html
 <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [bufferSize]="1" [maxBufferSize]="5"
-      [itemConfigMap]="groupDynamicItemConfigMap" [snap]="true"></ng-virtual-list>
+      [itemConfigMap]="groupDynamicItemConfigMap" [stickyEnabled]="true"></ng-virtual-list>
 
 <ng-template #groupItemRenderer let-data="data">
   @if (data) {
@@ -624,7 +623,7 @@ Inputs
 | motionBlurEnabled | boolean = false | Determines whether to apply motion blur or not. The default value is `false`. |
 | overscrollEnabled | boolean? = true | Determines whether the overscroll (re-scroll) feature will work. The default value is "true". |
 | selectByClick | boolean? = true | If `false`, the element is selected using the config.select method passed to the template; if `true`, the element is selected by clicking on it. The default value is `true`. |
-| snap | boolean? = false | Determines whether elements will snap. Default value is "false". |
+| stickyEnabled | boolean? = false | Determines whether items with the given `sticky` in `itemConfigMap` will stick to the edges. Default value is "false". |
 | selectedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> \| [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \| null | Sets the selected items. |
 | screenReaderMessage | string? = "Showing items $1 to $2" | Message for screen reader. The message format is: "some text `$1` some text `$2`", where `$1` is the number of the first element of the screen collection, `$2` is the number of the last element of the screen collection. |
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |

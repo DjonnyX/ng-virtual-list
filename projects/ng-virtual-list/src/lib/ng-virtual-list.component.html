@@ -7,7 +7,7 @@
   [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
-@if (snap()) {
+@if (stickyEnabled()) {
   <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
     [ngClass]="classes()">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
@@ -15,6 +15,7 @@
     </div>
   </div>
 }
+
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
   [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()" [animationParams]="animationParams()"

@@ -44,8 +44,8 @@ export interface IMetrics {
     scrollSize: number;
     leftSizeOfAddedItems: number;
     sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
-    snap: boolean;
-    snipedPos: number;
+    stickyEnabled: boolean;
+    stickyPos: number;
     startIndex: number;
     startPosition: number;
     totalItemsToDisplayEndWeight: number;
@@ -65,7 +65,7 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     maxBufferSize: number;
     dynamicSize: boolean;
     scrollSize: number;
-    snap: boolean;
+    stickyEnabled: boolean;
     enabledBufferOptimization: boolean;
     fromItemId?: Id;
     previousTotalSize: number;
@@ -582,7 +582,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, bufferSize: minBufferSize,
-            scrollSize, snap, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
+            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
             deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
@@ -592,7 +592,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             size = isVertical ? height : width, totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
             map = this._map, snapshot = this._snapshot, divides = this._divides,
-            snipedPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsOrRowsWeights: Array<number> = [],
+            stickyPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsOrRowsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
                 || (typeof fromItemId === 'string' && fromItemId > '-1');
 
@@ -914,8 +914,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             scrollSize: actualScrollSize,
             leftSizeOfAddedItems,
             sizeProperty,
-            snap,
-            snipedPos,
+            stickyEnabled,
+            stickyPos,
             startIndex,
             startPosition,
             totalItemsToDisplayEndWeight,
@@ -998,8 +998,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             renderItems: renderItemsLength,
             scrollSize,
             sizeProperty,
-            snap,
-            snipedPos,
+            stickyEnabled,
+            stickyPos,
             startPosition,
             totalLength,
             startIndex,
@@ -1008,7 +1008,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             displayItems: IRenderVirtualListCollection = [];
 
         if (items.length) {
-            const trackBy = this._trackingPropertyName, actualSnippedPosition = snipedPos,
+            const trackBy = this._trackingPropertyName, actualSnippedPosition = stickyPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
@@ -1018,7 +1018,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
                 endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
 
-            if (snap) {
+            if (stickyEnabled) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
                     const collectionItem = items[i];
                     if (!collectionItem) {
@@ -1059,7 +1059,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 collapsable,
                                 selectable,
                                 sticky,
-                                snap,
+                                snap: stickyEnabled,
                                 snapped: true,
                                 snappedOut: false,
                                 dynamic: dynamicSize,
@@ -1085,7 +1085,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            if (snap) {
+            if (stickyEnabled) {
                 const si = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1, startIndex = si < 0 ? si : si;
                 for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
                     const collectionItem = items[i];
@@ -1129,7 +1129,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 collapsable,
                                 selectable,
                                 sticky,
-                                snap,
+                                snap: stickyEnabled,
                                 snapped: true,
                                 snappedOut: false,
                                 dynamic: dynamicSize,
@@ -1191,7 +1191,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
-                        snapped = snap && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
+                        snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
                         absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                         absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
@@ -1218,7 +1218,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             collapsable,
                             selectable,
                             sticky: sticky,
-                            snap,
+                            snap: stickyEnabled,
                             snapped: false,
                             snappedOut: false,
                             dynamic: dynamicSize,
