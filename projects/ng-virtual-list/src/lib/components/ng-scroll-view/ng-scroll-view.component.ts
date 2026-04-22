@@ -3,21 +3,22 @@ import {
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, debounceTime, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
-    BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_ONE_BY_ONE, DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM,
-    DEFAULT_SNAP_TO_ITEM_ALIGN, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END, TOUCH_MOVE, TOUCH_START, WHEEL,
+    BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_ONE_BY_ONE,
+    DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END,
+    TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import {
-    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, INSTANT_VELOCITY_SCALE, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MAX_VELOCITY_TIMESTAMP,
-    MEASURE_VELOCITY_TIMER,
-    OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, INSTANT_VELOCITY_SCALE, LEFT, MASS, MAX_DIST, MAX_DURATION,
+    MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MAX_VELOCITY_TIMESTAMP, MEASURE_VELOCITY_TIMER, OVERSCROLL_START_ITERATION, SCROLL_EVENT,
+    SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
-import { IAnimationParams, IRect, IScrollingSettings } from '../../interfaces';
+import { IAnimationParams, IScrollingSettings } from '../../interfaces';
 import { SnapToItemAlign, SnapToItemAligns } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 
@@ -55,7 +56,7 @@ export class NgScrollView extends BaseScrollView {
 
     protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
 
-    protected _$wheel = new Subject<boolean>();
+    protected _$wheel = new Subject<number>();
     readonly $wheel = this._$wheel.asObservable();
 
     protected _$scroll = new Subject<boolean>();
@@ -120,6 +121,16 @@ export class NgScrollView extends BaseScrollView {
 
     constructor() {
         super();
+        const $wheel = this.$wheel;
+        $wheel.pipe(
+            takeUntilDestroyed(),
+            switchMap(v => of(this.averageVelocity)),
+            debounceTime(100),
+            tap(v => {
+                this.snapWithInitialForceifNecessary(v);
+            }),
+        ).subscribe();
+
         const $viewport = toObservable(this.scrollViewport).pipe(
             takeUntilDestroyed(this._destroyRef),
             filter(v => !!v),
@@ -145,7 +156,7 @@ export class NgScrollView extends BaseScrollView {
                             startPos = isVertical ? this.y : this.x,
                             delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
                         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
-                        this._$wheel.next(true);
+                        this._$wheel.next(delta);
                     }),
                 );
             }),
@@ -217,7 +228,7 @@ export class NgScrollView extends BaseScrollView {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
-                                        if (!this.snapIfNeed(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
+                                        if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         }
                                     }),
@@ -295,7 +306,7 @@ export class NgScrollView extends BaseScrollView {
                                             { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
-                                        if (!this.snapIfNeed(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
+                                        if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         }
                                     }),
@@ -361,7 +372,7 @@ export class NgScrollView extends BaseScrollView {
 
     protected stopMoving() { }
 
-    private snapIfNeed(v0: number, withInitialForce: boolean = true) {
+    private snapIfNecessary(v0: number, withInitialForce: boolean = true) {
         const snapToItem = this.snapToItem();
         if (snapToItem) {
             const scrollingOneByOne = this.scrollingOneByOne();
@@ -369,12 +380,17 @@ export class NgScrollView extends BaseScrollView {
                 return this.alignPosition();
             }
             if (withInitialForce) {
-                const t = this.animationParams().snapToItem * .01, s = this.getSnappedComponentSize(),
-                    va = s !== null && t !== 0 ? (s / t) : 0;
-                if (va >= Math.abs(v0)) {
-                    return this.alignPosition();
-                }
+                return this.snapWithInitialForceifNecessary(v0);
             }
+        }
+        return false;
+    }
+
+    private snapWithInitialForceifNecessary(v0: number) {
+        const t = this.animationParams().snapToItem * .01, s = this.getSnappedComponentSize(),
+            va = s !== null && t !== 0 ? (s / t) : 0;
+        if (va >= Math.abs(v0)) {
+            return this.alignPosition();
         }
         return false;
     }
@@ -522,7 +538,7 @@ export class NgScrollView extends BaseScrollView {
                 const s = value - position, t = timestamp, v0 = t !== 0 ? (s / t) * INSTANT_VELOCITY_SCALE : 0;
                 position = value;
                 if (alignmentAtComplete) {
-                    if (iteration < MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS || !this.snapIfNeed(v0)) {
+                    if (iteration < MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS || !this.snapIfNecessary(v0)) {
                         this.move(isVertical, value, false, userAction);
                     }
                 } else {
@@ -555,7 +571,7 @@ export class NgScrollView extends BaseScrollView {
             }
             case SnapToItemAligns.CENTER: {
                 const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
-                    startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    startOffset = this.startOffset(),
                     actualPos = currentPosition + startOffset + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
@@ -568,7 +584,7 @@ export class NgScrollView extends BaseScrollView {
             }
             case SnapToItemAligns.END: {
                 const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
-                    startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    startOffset = this.startOffset(),
                     actualPos = currentPosition + startOffset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);

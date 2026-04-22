@@ -21,8 +21,7 @@ import {
   PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS, PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS,
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
-  DEFAULT_MOTION_BLUR_ENABLED,
-  DEFAULT_DIVIDES,
+  DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -657,7 +656,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Snap to item. The default value is `false`.
+   * Snap to an item. The default value is `false`.
    */
   snapToItem = input<boolean>(DEFAULT_SNAP_TO_ITEM, { ...this._snapToItemOptions });
 
@@ -666,7 +665,7 @@ export class NgVirtualListComponent implements OnDestroy {
       const valid = validateString(v) && (v === 'start' || v === 'center' || v === 'end');
 
       if (!valid) {
-        console.error('The "snapToItemAlign" parameter must be of type `start`, `center` or `end`.');
+        console.error('The "snapToItemAlign" parameter must be one of `start`, `center` or `end`.');
         return DEFAULT_SNAP_TO_ITEM_ALIGN;
       }
       return v;
@@ -674,7 +673,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Alignment for snapToItem. Available values ​​are start, center, and end. The default value is `center`.
+   * Alignment for snapToItem. Available values ​​are `start`, `center`, and `end`. The default value is `center`.
    */
   snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN, { ...this._snapToItemAlignOptions });
 
@@ -897,7 +896,7 @@ export class NgVirtualListComponent implements OnDestroy {
     transform: (v: any) => {
       const valid = validateFloat(v) || v === VIEWPORT;
       if (!valid) {
-        console.error('The "itemSize" parameter must be of type `number`, `viewport` or `undefined`.');
+        console.error('The "itemSize" parameter must be one of `number`, `viewport` or `undefined`.');
         return DEFAULT_ITEM_SIZE;
       }
       return v;
@@ -934,7 +933,7 @@ export class NgVirtualListComponent implements OnDestroy {
     transform: (v: Direction) => {
       const valid = validateString(v) && (v === 'horizontal' || v === 'vertical');
       if (!valid) {
-        console.error('The "direction" parameter must have the value `horizontal` or `vertical`.');
+        console.error('The "direction" parameter must be one of `horizontal` or `vertical`.');
         return DEFAULT_DIRECTION;
       }
       return v;
@@ -950,7 +949,7 @@ export class NgVirtualListComponent implements OnDestroy {
     transform: (v: CollectionMode) => {
       const valid = validateString(v) && (v === 'normal' || v === 'lazy');
       if (!valid) {
-        console.error('The "direction" parameter must have the value `normal` or `lazy`.');
+        console.error('The "direction" parameter must be one of `normal` or `lazy`.');
         return DEFAULT_COLLECTION_MODE;
       }
       return v;
@@ -1024,7 +1023,7 @@ export class NgVirtualListComponent implements OnDestroy {
     transform: (v: MethodForSelecting) => {
       const valid = validateString(v) && (v === 'none' || v === 'select' || v === 'multi-select');
       if (!valid) {
-        console.error('The "methodForSelecting" parameter must have the value `none`, `select` or `multi-select`.');
+        console.error('The "methodForSelecting" parameter must be one of `none`, `select` or `multi-select`.');
         return DEFAULT_SELECT_METHOD;
       }
       return v;
