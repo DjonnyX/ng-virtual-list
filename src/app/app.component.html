@@ -89,7 +89,7 @@
       <ng-virtual-list class="list list-gallery" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" [bufferSize]="1" [maxBufferSize]="5"
         [dynamicSize]="false" [itemSize]="'viewport'" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [snapToItem]="true" snapToItemAlign="center" [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()"
+        [snapToItem]="true" snapToItemAlign="start" [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -105,7 +105,7 @@
       <ng-virtual-list class="list list-gallery" [items]="items1" methodForSelecting="multi-select"  [itemRenderer]="itemRendererGallery" [bufferSize]="1" [maxBufferSize]="5"
         [dynamicSize]="false" [itemSize]="'viewport'" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [motionBlurEnabled]="motionBlurEnabled"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [snapToItem]="true" snapToItemAlign="center" [scrollingOneByOne]="true" (onScrollReachStart)="onScrollReachStartHandler()"
+        [snapToItem]="true" snapToItemAlign="start" [scrollingOneByOne]="true" (onScrollReachStart)="onScrollReachStartHandler()"
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
