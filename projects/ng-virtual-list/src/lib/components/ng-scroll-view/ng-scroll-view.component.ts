@@ -3,11 +3,11 @@ import {
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, debounceTime, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, debounceTime, delay, filter, fromEvent, map, of, race, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { ANIMATOR_MIN_TIMESTAMP, Animator, Easing, easeOutQuad } from '../../utils/animator';
 import {
     BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_OVERSCROLL_ENABLED, DEFAULT_SCROLL_BEHAVIOR, DEFAULT_SCROLLING_ONE_BY_ONE,
-    DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END,
+    DEFAULT_SCROLLING_SETTINGS, DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, DEFAULT_SNAPPING_DISTANCE, INTERACTIVE, MOUSE_DOWN, MOUSE_MOVE, MOUSE_UP, TOUCH_END,
     TOUCH_MOVE, TOUCH_START, WHEEL,
 } from '../../const';
 import { IScrollToParams } from './interfaces';
@@ -16,11 +16,15 @@ import {
     MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MAX_VELOCITY_TIMESTAMP, MEASURE_VELOCITY_TIMER, OVERSCROLL_START_ITERATION, SCROLL_EVENT,
     SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
-import { calculateDirection } from './utils';
+import { calculateDirection, getDir } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
 import { IAnimationParams, IScrollingSettings } from '../../interfaces';
 import { SnapToItemAlign, SnapToItemAligns } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
+import { SnappingDistance } from '../../types';
+import { parseAbsoluteOrPersentageValue } from '../../utils/parse-absolute-or-persentage-value';
+import { isPercentageValue } from '../../utils/is-persentage-value';
+import { ScrollingDirection } from '../../utils/scrolling-direction';
 
 /**
  * NgScrollView
@@ -52,9 +56,13 @@ export class NgScrollView extends BaseScrollView {
 
     readonly snapToItemAlign = input<SnapToItemAlign>(DEFAULT_SNAP_TO_ITEM_ALIGN);
 
+    readonly snappingDistance = input<SnappingDistance>(DEFAULT_SNAPPING_DISTANCE);
+
     readonly animationParams = input<IAnimationParams>(DEFAULT_ANIMATION_PARAMS);
 
     protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
+
+    protected _scrollingDirection = new ScrollingDirection();
 
     protected _$wheel = new Subject<number>();
     readonly $wheel = this._$wheel.asObservable();
@@ -128,6 +136,7 @@ export class NgScrollView extends BaseScrollView {
             debounceTime(100),
             tap(v => {
                 this.snapWithInitialForceifNecessary(v);
+                this._scrollingDirection.clear();
             }),
         ).subscribe();
 
@@ -155,6 +164,7 @@ export class NgScrollView extends BaseScrollView {
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this.y : this.x,
                             delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
+                        this._scrollingDirection.add(delta > 0 ? 1 : delta < 0 ? -1 : 0);
                         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
                         this._$wheel.next(delta);
                     }),
@@ -163,11 +173,18 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
 
         let mouseCanceled = false;
-        const $mouseUp = fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }).pipe(
-            takeUntilDestroyed(this._destroyRef),
-        ),
+        const $mouseUp = race([
+            fromEvent<MouseEvent>(window, MOUSE_UP, { passive: true }).pipe(
+                takeUntilDestroyed(this._destroyRef),
+            ),
+            $content.pipe(
+                takeUntilDestroyed(this._destroyRef),
+                switchMap(content => fromEvent<MouseEvent>(content, MOUSE_UP, { passive: true }))
+            ),
+        ]),
             $mouseDragCancel = $mouseUp.pipe(
                 takeUntilDestroyed(this._destroyRef),
+                delay(0),
                 tap(() => {
                     this._isMoving = false;
                     this.grabbing.set(false);
@@ -188,6 +205,7 @@ export class NgScrollView extends BaseScrollView {
                     filter(v => this._interactive),
                     switchMap(e => {
                         mouseCanceled = false;
+                        this._scrollingDirection.clear();
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
@@ -201,6 +219,7 @@ export class NgScrollView extends BaseScrollView {
                         this.grabbing.set(true);
                         this._startPosition = (isVertical ? this.y : this.x);
                         let prevClientPosition = 0,
+                            prevPosition = this._startPosition,
                             startClientPos = isVertical ? e.clientY : e.clientX,
                             offsets = new Array<[number, number]>(),
                             velocities = new Array<[number, number]>(),
@@ -214,11 +233,14 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
+                                this._scrollingDirection.add(getDir(prevPosition, position));
+                                prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
+                                    takeUntil($mouseDragCancel),
                                     tap(e => {
                                         mouseCanceled = true;
                                         this.cancelOverscroll();
@@ -241,11 +263,20 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
 
         let touchCanceled = false;
-        const $touchUp = fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
-            takeUntilDestroyed(this._destroyRef),
+        const $touchUp = race(
+            [
+                fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
+                    takeUntilDestroyed(this._destroyRef),
+                ),
+                $content.pipe(
+                    takeUntilDestroyed(this._destroyRef),
+                    switchMap(content => fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })),
+                ),
+            ]
         ),
             $touchCanceler = $touchUp.pipe(
                 takeUntilDestroyed(this._destroyRef),
+                delay(0),
                 tap(() => {
                     touchCanceled = true;
                     this._isMoving = false;
@@ -267,6 +298,7 @@ export class NgScrollView extends BaseScrollView {
                     filter(() => this._interactive),
                     switchMap(e => {
                         touchCanceled = false;
+                        this._scrollingDirection.clear();
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling();
@@ -280,6 +312,7 @@ export class NgScrollView extends BaseScrollView {
                         this.grabbing.set(true);
                         this._startPosition = (isVertical ? this.y : this.x);
                         let prevClientPosition = 0,
+                            prevPosition = this._startPosition,
                             startClientPos = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
                             startTime = Date.now();
@@ -292,11 +325,14 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
+                                this._scrollingDirection.add(getDir(prevPosition, position));
+                                prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
+                                    takeUntil($touchCanceler),
                                     tap(e => {
                                         touchCanceled = true;
                                         this.cancelOverscroll();
@@ -557,41 +593,50 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected getSnappedComponentSize() {
-        const align = this.snapToItemAlign(), isVertical = this.isVertical();
+        const align = this.snapToItemAlign(), isVertical = this.isVertical(), sd = this.snappingDistance(),
+            snappingDistance = parseAbsoluteOrPersentageValue(sd),
+            isPersentageSnappingDistance = isPercentageValue(sd);
         let size: number | null = null;
-        const currentPosition = isVertical ? this.scrollTop : this.scrollLeft;
+        const scrollingDirection = this._scrollingDirection.get(),
+            currentPosition = isVertical ? this.scrollTop : this.scrollLeft,
+            currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
+            currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0,
+            offset = ((scrollingDirection === 1 ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollingDirection;
         switch (align) {
             case SnapToItemAligns.START: {
-                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
                 if (!!componentBounds) {
-                    const { width, height } = componentBounds;
-                    size = isVertical ? height : width;
+                    const { width, height } = componentBounds,
+                        compSize = isVertical ? height : width;
+                    size = compSize;
                 }
                 break;
             }
             case SnapToItemAligns.CENTER: {
                 const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
                     startOffset = this.startOffset(),
-                    actualPos = currentPosition + startOffset + viewportSize * .5,
+                    actualPos = currentPosition + offset + startOffset + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
                 if (!!componentBounds) {
-                    const { width, height } = componentBounds;
-                    size = isVertical ? height : width;
+                    const { width, height } = componentBounds,
+                        compSize = isVertical ? height : width;
+                    size = compSize;
                 }
                 break;
             }
             case SnapToItemAligns.END: {
                 const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
                     startOffset = this.startOffset(),
-                    actualPos = currentPosition + startOffset + viewportSize,
+                    actualPos = currentPosition + offset + startOffset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
                 if (!!componentBounds) {
-                    const { width, height } = componentBounds;
-                    size = isVertical ? height : width;
+                    const { width, height } = componentBounds,
+                        compSize = isVertical ? height : width;
+                    size = compSize;
                 }
                 break;
             }
@@ -603,12 +648,20 @@ export class NgScrollView extends BaseScrollView {
         if (!this.snapToItem()) {
             return false;
         }
-        const align = this.snapToItemAlign(), isVertical = this.isVertical();
+        const align = this.snapToItemAlign(), isVertical = this.isVertical(),
+            viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
+            sd = this.snappingDistance(),
+            snappingDistance = parseAbsoluteOrPersentageValue(sd),
+            isPersentageSnappingDistance = isPercentageValue(sd);
         let position: number | null = null;
-        const currentPosition = isVertical ? this.scrollTop : this.scrollLeft;
+        const scrollingDirection = this._scrollingDirection.get(),
+            currentPosition = isVertical ? this.scrollTop : this.scrollLeft,
+            currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
+            currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0,
+            offset = ((scrollingDirection === 1 || align === SnapToItemAligns.CENTER ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollingDirection;
         switch (align) {
             case SnapToItemAligns.START: {
-                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
                 if (!!componentBounds) {
                     const { x, y } = componentBounds,
                         componentPosition = isVertical ? y : x;
@@ -617,9 +670,8 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.CENTER: {
-                const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
-                    startOffset = this.startOffset(), endOffset = this.endOffset(),
-                    actualPos = currentPosition + startOffset + viewportSize * .5,
+                const startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    actualPos = currentPosition + offset + startOffset + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
@@ -632,9 +684,8 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.END: {
-                const viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
-                    startOffset = this.startOffset(), endOffset = this.endOffset(),
-                    actualPos = currentPosition + startOffset + viewportSize,
+                const startOffset = this.startOffset(), endOffset = this.endOffset(),
+                    actualPos = currentPosition + offset + startOffset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
