@@ -9,11 +9,11 @@ import {
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
-  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
+  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO, MATRIX_3D_HIDDEN,
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
-import { createDisplayId } from '../utils';
+import { createDisplayId, matrix3d } from '../utils';
 import { NgVirtualListService } from '../../../ng-virtual-list.service';
 import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-list-item-component';
 
@@ -168,30 +168,30 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   protected update() {
-    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement;
-    if (data) {
+    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement, 
+    itemElement = this._item()?.nativeElement;
+    if (!!data && !!el && !!itemElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
-      const styles = el.style;
+      const styles = el.style, itemElementStyles = itemElement.style;
       styles.zIndex = data.config.zIndex;
-      styles.position = POSITION_ABSOLUTE;
       if (data.config.isStub === true) {
         el.style.visibility = VISIBILITY_HIDDEN;
       }
       if (regular) {
         el.setAttribute(POSITION, POSITION_ZERO);
-        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
+        itemElementStyles.transform = `${TRANSLATE_3D}(${data.config.isVertical ?
+          (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) :
+          data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
         el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
-        styles.transform = `${TRANSLATE_3D}(${data.measures.x}${PX}, ${data.measures.y}${PX}, ${POSITION_ZERO})`;
+        styles.transform = matrix3d(data.measures.x, data.measures.y, data.measures.z, data.measures.scaleX, data.measures.scaleY,
+          data.measures.scaleZ, data.measures.rotationX, data.measures.rotationY, data.measures.rotationZ);
       }
       styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
       styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
 
-      const wrapperEl = this._item()?.nativeElement;
-      if (!!wrapperEl) {
-        wrapperEl.style.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
-        wrapperEl.style.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
-      }
+        itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     } else {
       el.removeAttribute(ID);
     }
@@ -256,8 +256,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   hide() {
     const el = this._elementRef.nativeElement,
       styles = el.style;
-    styles.position = POSITION_ABSOLUTE;
-    styles.transform = TRANSLATE_3D_HIDDEN;
+    styles.transform = MATRIX_3D_HIDDEN;
     styles.zIndex = HIDDEN_ZINDEX;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {

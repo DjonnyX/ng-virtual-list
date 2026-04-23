@@ -15,6 +15,7 @@ import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
+import { ItemTransform } from "../types";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -54,6 +55,7 @@ export interface IMetrics {
     typicalItemSize: number;
     isFromItemIdFound: boolean;
     isUpdating: boolean;
+    itemTransform: ItemTransform | null;
 }
 
 export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
@@ -71,6 +73,7 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     previousTotalSize: number;
     crudDetected: boolean;
     deletedItemsMap: { [index: number]: ISize; };
+    itemTransform: ItemTransform | null;
 }
 
 export interface IGetItemPositionOptions<I extends IItem, C extends Array<I>>
@@ -583,7 +586,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, bufferSize: minBufferSize,
             scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
-            deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
+            deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
 
@@ -924,6 +927,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             typicalItemSize,
             isFromItemIdFound,
             isUpdating,
+            itemTransform,
         };
 
         return metrics;
@@ -1004,6 +1008,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalLength,
             startIndex,
             typicalItemSize,
+            itemTransform,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
 
@@ -1037,6 +1042,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             measures: IRenderVirtualListItemMeasures = {
                                 x: isVertical ? startPosition : actualSnippedPosition,
                                 y: isVertical ? actualSnippedPosition : startPosition,
+                                z: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                rotationZ: 0,
+                                scaleX: 1,
+                                scaleY: 1,
+                                scaleZ: 1,
                                 width: isVertical ? normalizedItemWidth : size,
                                 height: isVertical ? size : normalizedItemHeight,
                                 size,
@@ -1065,6 +1077,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 tabIndex: count,
+                                opacity: 1,
                                 zIndex: '1',
                             };
 
@@ -1107,6 +1120,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             measures: IRenderVirtualListItemMeasures = {
                                 x: isVertical ? 0 : actualEndSnippedPosition - w,
                                 y: isVertical ? actualEndSnippedPosition - h : 0,
+                                z: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                rotationZ: 0,
+                                scaleX: 1,
+                                scaleY: 1,
+                                scaleZ: 1,
                                 size,
                                 row: {
                                     size,
@@ -1135,6 +1155,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 tabIndex: items.length,
+                                opacity: 1,
                                 zIndex: '1',
                             };
 
@@ -1198,6 +1219,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         measures: IRenderVirtualListItemMeasures = {
                             x: isVertical ? divSize * ci : pos,
                             y: isVertical ? pos : divSize * ci,
+                            z: 0,
+                            rotationX: 0,
+                            rotationY: 0,
+                            rotationZ: 0,
+                            scaleX: 1,
+                            scaleY: 1,
+                            scaleZ: 1,
                             size,
                             row,
                             position: pos,
@@ -1225,6 +1253,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             isSnappingMethodAdvanced,
                             tabIndex: count,
                             isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
+                            opacity: 1,
                             zIndex: '0',
                         };
 
@@ -1297,6 +1326,26 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     nextEndSticky.measures[axis] = actualEndSnippedPosition - nextEndSticky.measures[sizeProperty];
                     nextEndSticky.measures.delta = (isVertical ? nextEndSticky.measures.y : nextEndSticky.measures.x) - scrollSize;
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
+                }
+            }
+
+            if (itemTransform !== null) {
+                for (let i = 0, l = displayItems.length; i < l; i++) {
+                    const item = displayItems[i];
+                    if (!!item) {
+                        const transformation = itemTransform(item.index, item.measures, item.config);
+                        item.measures.x = transformation.x;
+                        item.measures.y = transformation.y;
+                        item.measures.z = transformation.z;
+                        item.measures.rotationX = transformation.rotationX;
+                        item.measures.rotationY = transformation.rotationY;
+                        item.measures.rotationZ = transformation.rotationZ;
+                        item.measures.scaleX = transformation.scaleX;
+                        item.measures.scaleY = transformation.scaleY;
+                        item.measures.scaleZ = transformation.scaleZ;
+                        item.config.opacity = transformation.opacity;
+                        item.config.zIndex = String(transformation.zIndex);
+                    }
                 }
             }
         }

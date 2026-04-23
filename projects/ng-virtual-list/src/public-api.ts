@@ -9,6 +9,7 @@ export * from './lib/ng-virtual-list-public.service';
 export * from './lib/ng-virtual-list.service';
 export * from './lib/ng-virtual-list.component';
 export * from './lib/ng-virtual-list.module';
+export * from './lib/transformations';
 export * from './lib/interfaces';
 export * from './lib/enums';
 export * from './lib/models';

@@ -1,5 +1,7 @@
+import { matrix3d } from "../utils";
+
 export const ID = 'id',
-    TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)',
+    MATRIX_3D_HIDDEN = matrix3d(-1000, -1000, 0, 1, 1, 1, 0, 0, 0),
     ATTR_AREA_SELECTED = 'area-selected',
     POSITION = 'position',
     POSITION_ZERO = '0',

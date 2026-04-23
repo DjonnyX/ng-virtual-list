@@ -8,6 +8,34 @@ import { IRect } from "../interfaces";
  */
 export interface IRenderVirtualListItemMeasures extends IRect {
     /**
+     * Z Axis
+     */
+    z: number;
+    /**
+     * Rotation X
+     */
+    rotationX: number;
+    /**
+     * Rotation Y
+     */
+    rotationY: number;
+    /**
+     * Rotation Z
+     */
+    rotationZ: number;
+    /**
+     * Scale X
+     */
+    scaleX: number;
+    /**
+     * Scale Y
+     */
+    scaleY: number;
+    /**
+     * Scale Z
+     */
+    scaleZ: number;
+    /**
      * Item position
      */
     position: number;
