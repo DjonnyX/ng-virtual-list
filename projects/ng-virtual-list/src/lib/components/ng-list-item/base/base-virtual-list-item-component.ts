@@ -180,7 +180,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       }
       if (regular) {
         el.setAttribute(POSITION, POSITION_ZERO);
-        itemElementStyles.transform = `${TRANSLATE_3D}(${data.config.isVertical ?
+        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ?
           (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) :
           data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
@@ -225,8 +225,15 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   getBounds(): ISize {
-    const el = this._item()?.nativeElement;
-    if (!!el) {
+    const el = this._item()?.nativeElement, data = this.data();
+    if (!!el && !!data) {
+      if (!data.config.dynamic) {
+        return {
+          width: data.measures.width,
+          height: data.measures.height,
+        };
+      }
+
       const { width, height } = el.getBoundingClientRect();
       return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
     }
