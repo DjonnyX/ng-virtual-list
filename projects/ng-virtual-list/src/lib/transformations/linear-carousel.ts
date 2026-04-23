@@ -2,7 +2,7 @@ import { IItemTransformation } from '../interfaces';
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures } from '../models';
 import { ItemTransform } from '../types';
 
-export const carouselEventHorizon: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
+export const linearСarousel: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
     config: IRenderVirtualListItemConfig): IItemTransformation => {
     const result: IItemTransformation = {
         x: 0,
@@ -26,8 +26,8 @@ export const carouselEventHorizon: ItemTransform = (index: number, measures: IRe
         yy = isVertical ? (measures.y - itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
         pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
         pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
-    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * Math.pow(px, 2)));
-    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy / Math.pow(py, 2))) : yy;
+    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5 / Math.pow(py, 0.5)));
+    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5 / Math.pow(py, 2))) : yy;
     result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
     return result;
 }
