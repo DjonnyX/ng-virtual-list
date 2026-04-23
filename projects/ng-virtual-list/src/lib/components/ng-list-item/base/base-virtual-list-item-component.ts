@@ -168,8 +168,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   protected update() {
-    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement, 
-    itemElement = this._item()?.nativeElement;
+    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement,
+      itemElement = this._item()?.nativeElement;
     if (!!data && !!el && !!itemElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
       const styles = el.style, itemElementStyles = itemElement.style;
@@ -191,8 +191,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
       styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
 
-        itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
-        itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+      itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
     } else {
       el.removeAttribute(ID);
     }

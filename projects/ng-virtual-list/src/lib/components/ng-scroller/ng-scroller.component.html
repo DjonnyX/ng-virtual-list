@@ -10,7 +10,7 @@
                 <div #scrollViewport part="scroller" class="ngvl__scroller">
                     <div #scrollContent [attr.aria-orientation]="direction()"
                         [attr.aria-activedescendant]="focusedElement()" tabindex="0" part="list" class="ngvl__list"
-                        [ngClass]="actualClasses()">
+                        [ngClass]="actualClasses()" [ngStyle]="listStyles()">
                         <ng-content></ng-content>
                     </div>
                 </div>

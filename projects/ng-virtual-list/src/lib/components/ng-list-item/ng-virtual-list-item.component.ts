@@ -28,6 +28,7 @@ import {
   templateUrl: './ng-virtual-list-item.component.html',
   styleUrl: './ng-virtual-list-item.component.scss',
   host: {
+    'part': 'item-transformer',
     'class': 'ngvl__item',
     'role': 'listitem',
   },

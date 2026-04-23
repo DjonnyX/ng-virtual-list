@@ -1,4 +1,5 @@
 import { IAnimationParams } from './animation-params';
+import { IPoint } from './point';
 import { IRect } from './rect';
 import { IRenderStabilizerOptions } from './render-stabilizer-options';
 import { IScrollEvent } from './scroll-event';
@@ -11,6 +12,7 @@ import { IItemTransformation } from './item-transformation';
 export type {
     IAnimationParams,
     IItemTransformation,
+    IPoint,
     IRect,
     IRenderStabilizerOptions,
     IScrollEvent,

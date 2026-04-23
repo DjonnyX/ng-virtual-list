@@ -4,7 +4,7 @@
     <div #item itemClick [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
         (onClick)="onClickHandler()">
         @if (renderer) {
-        <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />
+            <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />
         }
     </div>
 </div>

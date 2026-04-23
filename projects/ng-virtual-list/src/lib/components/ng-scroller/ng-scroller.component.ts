@@ -7,7 +7,7 @@ import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
   BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_SCROLLBAR_ENABLED,
-  DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, LEFT_PROP_NAME, SCROLLER_SCROLL, TOP_PROP_NAME,
+  DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, LEFT_PROP_NAME, PX, SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
 import { TextDirection, TextDirections } from '../../enums';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
@@ -88,6 +88,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   public readonly langTextDir = signal<TextDirection>(TextDirections.LTR);
 
+  public readonly listStyles = signal<{ perspectiveOrigin: string }>({ perspectiveOrigin: 'center' });
+
   private _scrollBox = new ScrollBox();
 
   get host() {
@@ -112,6 +114,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.measureVelocity();
 
       this.updateScrollBar();
+
+      this.recalculatePerspective();
     }
   }
   override get x() { return this._x; }
@@ -123,6 +127,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.measureVelocity();
 
       this.updateScrollBar();
+
+      this.recalculatePerspective();
     }
   }
   override get y() { return this._y; }
@@ -224,6 +230,14 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       if (viewInitialized) {
         this.updateScrollBarHandler();
       }
+    });
+  }
+
+  private recalculatePerspective() {
+    const isVertical = this.isVertical(), sxrollSize = isVertical ? this.scrollTop : this.scrollLeft,
+      { width, height } = this.viewportBounds();
+    this.listStyles.set({
+      perspectiveOrigin: `${isVertical ? width * .5 : (sxrollSize + width * .5)}${PX} ${isVertical ? (sxrollSize + height * .5) : height * .5}${PX}`
     });
   }
 
