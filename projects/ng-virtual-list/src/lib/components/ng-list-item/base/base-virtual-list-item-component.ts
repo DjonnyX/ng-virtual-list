@@ -174,6 +174,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       el.setAttribute(ITEM_ID, `${data.id}`);
       const styles = el.style, itemElementStyles = itemElement.style;
       styles.zIndex = data.config.zIndex;
+      styles.opacity = String(data.config.opacity);
       if (data.config.isStub === true) {
         el.style.visibility = VISIBILITY_HIDDEN;
       }

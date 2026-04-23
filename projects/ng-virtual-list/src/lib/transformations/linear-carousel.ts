@@ -26,8 +26,8 @@ export const linearСarousel: ItemTransform = (index: number, measures: IRenderV
         yy = isVertical ? (measures.y - itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
         pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
         pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
-    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5 / Math.pow(py, 0.5)));
-    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5 / Math.pow(py, 2))) : yy;
+    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5));
+    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5)) : yy;
     result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
     return result;
 }
