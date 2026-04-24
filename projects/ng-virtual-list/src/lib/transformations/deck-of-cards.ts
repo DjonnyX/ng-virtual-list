@@ -2,7 +2,13 @@ import { IItemTransformation } from '../interfaces';
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures } from '../models';
 import { ItemTransform } from '../types';
 
-export const carouselDeckOfCards3D: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
+/**
+ * deckOfCards
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/transformations/deck-of-cards.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
+export const deckOfCards: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
     config: IRenderVirtualListItemConfig): IItemTransformation => {
     const result: IItemTransformation = {
         x: 0,
@@ -27,12 +33,10 @@ export const carouselDeckOfCards3D: ItemTransform = (index: number, measures: IR
         yy = isVertical ? (measures.y - itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
         pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
         pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
-    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5 * Math.abs(Math.sin(px))));
-    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5 * Math.abs(Math.sin(py)))) : yy;
-    const scale = Math.pow(1 - ((isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize) * .15, 4);
-    result.z = scale;
-    result.scaleX = result.scaleY = scale;
-    result.rotationX = (isVertical ? py : px) * 200;
+    result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5) * Math.abs(Math.sin(px)));
+    result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5)) : yy;
+    const scale = Math.pow(1 - ((isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize) * .05, 4);
+    result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
     result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
     return result;
 }

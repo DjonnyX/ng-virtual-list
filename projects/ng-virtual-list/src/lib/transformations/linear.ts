@@ -2,7 +2,13 @@ import { IItemTransformation } from '../interfaces';
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures } from '../models';
 import { ItemTransform } from '../types';
 
-export const linearСarousel: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
+/**
+ * linear
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/transformations/linear.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
+export const linear: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
     config: IRenderVirtualListItemConfig): IItemTransformation => {
     const result: IItemTransformation = {
         x: 0,
