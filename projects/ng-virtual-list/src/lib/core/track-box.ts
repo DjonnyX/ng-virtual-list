@@ -1401,18 +1401,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return null;
     }
 
-    getComponentBoundsByIntersectionPosition(position: number): IRect | null {
+    getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null }) | null {
         const components = this._displayComponents;
         if (!!components) {
             for (const comp of components) {
-                const isVertical = comp.instance.item?.config?.isVertical,
+                const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
                     x = comp.instance.item?.measures?.x ?? 0,
                     y = comp.instance.item?.measures?.y ?? 0,
                     { width, height } = comp.instance.getBounds();
                 if (isVertical && (position >= y && position <= y + height)) {
-                    return { x, y, width, height };
+                    return { id, x, y, width, height };
                 } else if (!isVertical && (position >= x && position <= x + width)) {
-                    return { x, y, width, height };
+                    return { id, x, y, width, height };
                 }
             }
         }

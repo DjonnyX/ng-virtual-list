@@ -149,6 +149,9 @@ export class NgVirtualListService {
   private _$scrollBarSize = new BehaviorSubject<number>(this._scrollBarSize);
   readonly $scrollBarSize = this._$scrollBarSize.asObservable();
 
+  private _$intersectionElementBySnapToItemAlign = new BehaviorSubject<Id | null>(null);
+  readonly $intersectionElementBySnapToItemAlign = this._$intersectionElementBySnapToItemAlign.asObservable();
+
   private _$clickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
   readonly $clickDistance = this._$clickDistance.asObservable();
   get clickDistance() { return this._$clickDistance.getValue(); }
@@ -417,8 +420,12 @@ export class NgVirtualListService {
       ? 0 : this._nextComponentId + 1;
   }
 
-  getComponentBoundsByIntersectionPosition(position: number): IRect | null {
+  getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null }) | null {
     return this._trackBox?.getComponentBoundsByIntersectionPosition(position) ?? null;
+  }
+
+  setIntersectionElementBySnapToItemAlign(id: Id | null) {
+    this._$intersectionElementBySnapToItemAlign.next(id);
   }
 
   /**

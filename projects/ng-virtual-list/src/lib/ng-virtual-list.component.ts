@@ -119,6 +119,11 @@ export class NgVirtualListComponent implements OnDestroy {
   onViewportChange = output<ISize>();
 
   /**
+   * Emit the component ID when an element crosses the alignment line specified by the snapToItemAlign property.
+   */
+  onSnapItem = output<Id>();
+
+  /**
    * Fires when an element is clicked.
    */
   onItemClick = output<IRenderVirtualListItem<any> | null>();
@@ -1362,6 +1367,14 @@ export class NgVirtualListComponent implements OnDestroy {
     this._service.initialize(this._id, this._trackBox);
 
     this._service.animationParams = this.animationParams();
+
+    this._service.$intersectionElementBySnapToItemAlign.pipe(
+      takeUntilDestroyed(),
+      filter(v => v !== null),
+      tap(id => {
+        this.onSnapItem.emit(id);
+      }),
+    ).subscribe();
 
     this._service.$tick.pipe(
       takeUntilDestroyed(),
