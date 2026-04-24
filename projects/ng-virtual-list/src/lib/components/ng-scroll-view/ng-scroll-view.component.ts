@@ -136,7 +136,7 @@ export class NgScrollView extends BaseScrollView {
             switchMap(v => of(this.averageVelocity)),
             debounceTime(100),
             tap(v => {
-                this.snapWithInitialForceifNecessary(v);
+                this.snapWithInitialForceIfNecessary(v);
                 this._scrollingDirection.clear();
             }),
         ).subscribe();
@@ -420,13 +420,13 @@ export class NgScrollView extends BaseScrollView {
                 return this.alignPosition();
             }
             if (withInitialForce) {
-                return this.snapWithInitialForceifNecessary(v0);
+                return this.snapWithInitialForceIfNecessary(v0);
             }
         }
         return false;
     }
 
-    private snapWithInitialForceifNecessary(v0: number) {
+    private snapWithInitialForceIfNecessary(v0: number) {
         const t = this.animationParams().snapToItem * .01, s = this.getSnappedComponentSize(),
             va = s !== null && t !== 0 ? (s / t) : 0;
         if (va >= Math.abs(v0)) {
