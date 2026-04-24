@@ -185,7 +185,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
           data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
         el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
-        styles.transform = matrix3d(data.measures.x, data.measures.y, data.measures.z, data.measures.scaleX, data.measures.scaleY,
+        styles.transform = matrix3d(data.measures.transformedX, data.measures.transformedY, data.measures.z, data.measures.scaleX, data.measures.scaleY,
           data.measures.scaleZ, data.measures.rotationX, data.measures.rotationY, data.measures.rotationZ);
       }
       styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;

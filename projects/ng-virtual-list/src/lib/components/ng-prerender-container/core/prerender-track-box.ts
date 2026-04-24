@@ -31,6 +31,8 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             delta: 0,
             x: 0,
             y: 0,
+            transformedX: 0,
+            transformedY: 0,
             z: 0,
             rotationX: 0,
             rotationY: 0,

@@ -16,6 +16,7 @@ import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 import { ItemTransform } from "../types";
+import { objectAsReadonly } from "../utils/object";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -1036,12 +1037,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         absoluteStartPosition = pos - (scrollSize - size) - size,
                         ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
-                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio);
+                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                        x = isVertical ? startPosition : actualSnippedPosition,
+                        y = isVertical ? actualSnippedPosition : startPosition;
                     if (sticky === 1) {
                         const isOdd = i % 2 != 0,
                             measures: IRenderVirtualListItemMeasures = {
-                                x: isVertical ? startPosition : actualSnippedPosition,
-                                y: isVertical ? actualSnippedPosition : startPosition,
+                                x,
+                                y,
+                                transformedX: x,
+                                transformedY: y,
                                 z: 0,
                                 rotationX: 0,
                                 rotationY: 0,
@@ -1117,9 +1122,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             absoluteStartPosition = pos - (scrollSize - size) - size, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                             absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                            x = isVertical ? 0 : actualEndSnippedPosition - w,
+                            y = isVertical ? actualEndSnippedPosition - h : 0,
                             measures: IRenderVirtualListItemMeasures = {
-                                x: isVertical ? 0 : actualEndSnippedPosition - w,
-                                y: isVertical ? actualEndSnippedPosition - h : 0,
+                                x,
+                                y,
+                                transformedX: x,
+                                transformedY: y,
                                 z: 0,
                                 rotationX: 0,
                                 rotationY: 0,
@@ -1216,9 +1225,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                         absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                        x = isVertical ? divSize * ci : pos,
+                        y = isVertical ? pos : divSize * ci,
                         measures: IRenderVirtualListItemMeasures = {
-                            x: isVertical ? divSize * ci : pos,
-                            y: isVertical ? pos : divSize * ci,
+                            x,
+                            y,
+                            transformedX: x,
+                            transformedY: y,
                             z: 0,
                             rotationX: 0,
                             rotationY: 0,
@@ -1333,9 +1346,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 for (let i = 0, l = displayItems.length; i < l; i++) {
                     const item = displayItems[i];
                     if (!!item) {
-                        const transformation = itemTransform(item.index, item.measures, item.config);
-                        item.measures.x = transformation.x;
-                        item.measures.y = transformation.y;
+                        const transformation = itemTransform(item.index, objectAsReadonly(item.measures), objectAsReadonly(item.config));
+                        item.measures.transformedX = transformation.x;
+                        item.measures.transformedY = transformation.y;
                         item.measures.z = transformation.z;
                         item.measures.rotationX = transformation.rotationX;
                         item.measures.rotationY = transformation.rotationY;

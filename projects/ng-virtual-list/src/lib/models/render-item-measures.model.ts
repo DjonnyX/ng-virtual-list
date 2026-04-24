@@ -8,7 +8,15 @@ import { IRect } from "../interfaces";
  */
 export interface IRenderVirtualListItemMeasures extends IRect {
     /**
-     * Z Axis
+     * The X coordinate after transformation.
+     */
+    transformedX: number;
+    /**
+     * The Y coordinate after transformation.
+     */
+    transformedY: number;
+    /**
+     * The Z coordinate.
      */
     z: number;
     /**
