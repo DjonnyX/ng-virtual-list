@@ -2,7 +2,7 @@ import { IItemTransformation } from '../interfaces';
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures } from '../models';
 import { ItemTransform } from '../types';
 
-export const carouselLinearFading: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
+export const carouselDeckOfCards: ItemTransform = (index: number, measures: IRenderVirtualListItemMeasures,
     config: IRenderVirtualListItemConfig): IItemTransformation => {
     const result: IItemTransformation = {
         x: 0,
@@ -29,8 +29,8 @@ export const carouselLinearFading: ItemTransform = (index: number, measures: IRe
         pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
     result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5) * Math.abs(Math.sin(px)));
     result.y = isVertical ? (scrollSize + boundsSizeHalf + itemSizeHalf + (yy * .5)) : yy;
-    const scale = 1 - ((isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize) * .25;
-    result.scaleX = result.scaleY = scale > 1 ? 1 : Math.pow(scale, 2);
+    const scale = Math.pow(1 - ((isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize) * .05, 4);
+    result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
     result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
     return result;
 }

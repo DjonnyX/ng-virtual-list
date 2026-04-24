@@ -265,7 +265,7 @@ export class NgScrollBarComponent extends NgScrollView {
   private thumbHit(x: number, y: number): boolean {
     const thumb = this.scrollContent()?.nativeElement;
     if (!!thumb) {
-      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect()
+      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect();
       if ((x >= tX && x <= tX + tWidth) && (y >= tY && y <= tY + tHeight)) {
         return true;
       }
