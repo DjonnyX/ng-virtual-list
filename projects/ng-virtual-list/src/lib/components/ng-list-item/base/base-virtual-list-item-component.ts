@@ -16,6 +16,7 @@ import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.serv
 import { createDisplayId, matrix3d } from '../utils';
 import { NgVirtualListService } from '../../../ng-virtual-list.service';
 import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-list-item-component';
+import { Color } from '../../../types';
 
 /**
  * BaseVirtualListItemComponent
@@ -31,6 +32,8 @@ import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-
 })
 export class BaseVirtualListItemComponent implements IBaseVirtualListItemComponent {
   protected _item = viewChild<ElementRef<HTMLDivElement>>('item');
+
+  protected _container = viewChild<ElementRef<HTMLDivElement>>('container');
 
   private _apiService = inject(NgVirtualListPublicService);
 
@@ -90,6 +93,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   protected readonly templateContext!: Signal<ITemplateContext>;
 
   public regular: boolean = false;
+
+  protected _blendColor: Color | null = null;
 
   protected _scrollBarSize: number = 0;
 
@@ -169,12 +174,18 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
 
   protected update() {
     const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement,
-      itemElement = this._item()?.nativeElement;
+      itemElement = this._item()?.nativeElement, containerElement = this._container()?.nativeElement;
     if (!!data && !!el && !!itemElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
       const styles = el.style, itemElementStyles = itemElement.style;
       styles.zIndex = data.config.zIndex;
-      styles.opacity = String(data.config.opacity);
+      this._blendColor = data.config.blendColor ?? null;
+      if (!!containerElement && !!data.config.blendColor) {
+        containerElement.style.opacity = String(data.config.opacity);
+      }
+      if (!!data.config.filter) {
+        styles.filter = data.config.filter;
+      }
       if (data.config.isStub === true) {
         el.style.visibility = VISIBILITY_HIDDEN;
       }

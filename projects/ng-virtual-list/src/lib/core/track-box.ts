@@ -1357,6 +1357,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         item.measures.scaleY = transformation.scaleY;
                         item.measures.scaleZ = transformation.scaleZ;
                         item.config.opacity = transformation.opacity;
+                        item.config.filter = transformation.filter;
+                        item.config.blendColor = transformation.blendColor;
                         item.config.zIndex = String(transformation.zIndex);
                     }
                 }

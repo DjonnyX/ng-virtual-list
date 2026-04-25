@@ -1,3 +1,5 @@
+import { Color } from "../types";
+
 /**
  * IItemTransformation
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/prerender-container/interfaces/item-transformation.ts
@@ -15,5 +17,7 @@ export interface IItemTransformation {
     scaleY: number;
     scaleZ: number;
     opacity: number;
+    filter?: string;
+    blendColor?: Color | null;
     zIndex: number;
 }

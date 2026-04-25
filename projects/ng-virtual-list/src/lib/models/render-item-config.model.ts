@@ -1,3 +1,5 @@
+import { Color } from "../types";
+
 /**
  * Object with configuration parameters for IRenderVirtualListItem
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/render-item-config.model.ts
@@ -66,6 +68,14 @@ export interface IRenderVirtualListItemConfig {
      * Opacity.
      */
     opacity: number;
+    /**
+     * Filter.
+     */
+    filter?: string;
+    /**
+     * Blend color.
+     */
+    blendColor?: Color | null;
     /**
      * Determines whether an element is a stub.
      */

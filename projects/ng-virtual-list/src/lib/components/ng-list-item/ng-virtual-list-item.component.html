@@ -1,7 +1,10 @@
 @let renderer = itemRenderer();
 @let class = classes();
-<div #item class="ngvl-item" [part]="part()" [ngClass]="class" [attr.ngvl-index]="index()" tabindex="-1">
-    <div itemClick [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
+<div #item class="ngvl-item" [ngClass]="class" [attr.ngvl-index]="index()" tabindex="-1">
+    @if (_blendColor) {
+        <div class="ngvl-item__blend-color" [style.--blend-color]="_blendColor"></div>
+    }
+    <div #container itemClick [part]="part()" [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
         (onClick)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />

@@ -16,6 +16,12 @@ const calculate = (exp: string, reference: number, operator: -1 | 1 = 1) => {
     return result;
 }
 
+/**
+ * parseArithmeticExpression
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/utils/parse-arithmetic-expression.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
 export const parseArithmeticExpression = (value: ArithmeticExpression, reference: number): number => {
     if (typeof value === 'number') {
         return value;
