@@ -51,7 +51,7 @@ export const linear = (options?: ILintearOptions): ItemTransform => {
             result.filter = `blur(${s * dof}${PX})`;
         }
         if (!!fogColor) {
-            result.opacity = !!fogWeight ? (scale * fogWeight) : scale;
+            result.opacity = fogWeight ? Math.pow(scale, fogWeight) : scale;
             result.blendColor = fogColor;
         }
         return result;

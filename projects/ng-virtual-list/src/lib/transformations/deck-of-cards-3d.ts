@@ -55,7 +55,8 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
             result.filter = `blur(${s * dof}${PX})`;
         }
         if (!!fogColor) {
-            result.opacity = !!fogWeight ? (scale * fogWeight) : scale;
+            result.opacity = fogWeight ? Math.pow(scale, fogWeight) : scale;
+            console.log(fogWeight)
             result.blendColor = fogColor;
         }
         return result;
