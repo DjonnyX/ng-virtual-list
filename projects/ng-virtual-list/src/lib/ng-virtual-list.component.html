@@ -1,11 +1,14 @@
+@let scrollStartOffset = _actualScrollStartOffset();
+@let scrollEndOffset = _actualScrollEndOffset();
+
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
-  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()"
-  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
-  [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
+<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [dynamic]="dynamicSize()"
+  [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()" [itemRenderer]="itemRenderer()"
+  [startOffset]="scrollStartOffset" [endOffset]="scrollEndOffset" [scrollbarEnabled]="scroller.scrollbarShow()"
+  [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (stickyEnabled()) {
   <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
@@ -16,10 +19,11 @@
   </div>
 }
 
-<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
-  [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
-  [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()" [animationParams]="animationParams()"
-  [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()"
+<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset"
+  [endOffset]="scrollEndOffset" [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
+  [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
+  [animationParams]="animationParams()" [focusedElement]="focusedElement()" [loading]="loading()"
+  [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()"
   [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()" [snapToItem]="snapToItem()"
   [snapToItemAlign]="snapToItemAlign()" [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()"
   [scrollingSettings]="scrollingSettings()" [scrollingOneByOne]="scrollingOneByOne()" [motionBlur]="motionBlur()"

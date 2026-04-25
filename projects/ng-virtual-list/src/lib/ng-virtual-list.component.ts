@@ -29,7 +29,7 @@ import {
 import {
   IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions, IScrollingSettings,
 } from './interfaces';
-import { FocusAlignment, Id, ItemTransform, SnappingDistance } from './types';
+import { ArithmeticExpression, FloatOrPersentageValue, FocusAlignment, Id, ItemTransform, SnappingDistance } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
@@ -56,6 +56,9 @@ import { formatActualDisplayItems, formatScreenReaderMessage } from './utils/scr
 import { validateId, validateIteration, validateScrollBehavior, validateScrollIteration } from './utils/list-validators';
 import { EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT, KEY_ARR_RIGHT, KEY_ARR_UP } from './components/ng-list-item/const';
 import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
+import { isPercentageValue } from './utils/is-persentage-value';
+import { parseFloatOrPersentageValue } from './utils/parse-float-or-persentage-value';
+import { parseArithmeticExpression } from './utils/parse-arithmetic-expression';
 
 /**
  * Virtual list component.
@@ -446,10 +449,10 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _scrollStartOffsetOptions = {
     transform: (v: number) => {
-      const valid = validateFloat(v, true);
+      const valid = validateFloat(v, true) || isPercentageValue(v);
 
       if (!valid) {
-        console.error('The "scrollStartOffset" parameter must be of type `number`.');
+        console.error('The "scrollStartOffset" parameter must be one of type `number` or `string`.');
         return 0;
       }
       return v;
@@ -457,16 +460,17 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Sets the scroll start offset value; Default value is "0".
+   * Sets the scroll start offset value. Can be specified in absolute or percentage values.
+   * Supports arithmetic expressions of addition `50% + 25` or subtraction `50% - 25`. Default value is "0".
    */
-  scrollStartOffset = input<number>(0, { ...this._scrollStartOffsetOptions });
+  scrollStartOffset = input<ArithmeticExpression>(0, { ...this._scrollStartOffsetOptions });
 
   private _scrollEndOffsetOptions = {
     transform: (v: number) => {
-      const valid = validateFloat(v, true);
+      const valid = validateFloat(v, true) || isPercentageValue(v);
 
       if (!valid) {
-        console.error('The "scrollEndOffset" parameter must be of type `number`.');
+        console.error('The "scrollEndOffset" parameter must be one of type `number` or `string`.');
         return 0;
       }
       return v;
@@ -474,9 +478,10 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * Sets the scroll end offset value; Default value is "0".
+   * Sets the scroll end offset value. Can be specified in absolute or percentage values.
+   * Supports arithmetic expressions of addition `50% + 25` or subtraction `50% - 25`. Default value is "0".
    */
-  scrollEndOffset = input<number>(0, { ...this._scrollEndOffsetOptions });
+  scrollEndOffset = input<ArithmeticExpression>(0, { ...this._scrollEndOffsetOptions });
 
   private _snapScrollToStartOptions = {
     transform: (v: boolean) => {
@@ -1172,6 +1177,10 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _isScrollEnd = signal<boolean>(false);
 
+  protected _actualScrollStartOffset = signal<number>(0);
+
+  protected _actualScrollEndOffset = signal<number>(0);
+
   private _resizeSnappedComponentHandler = () => {
     const list = this._list(), scroller = this._scroller(), bounds = this._bounds(), snappedComponents = this._snappedDisplayComponents;
     if (list && scroller && snappedComponents.length > 0) {
@@ -1368,6 +1377,28 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._service.animationParams = this.animationParams();
 
+    const $bounds = toObservable(this._bounds).pipe(
+      filter(b => !!b),
+    ),
+      $rawScrollStartOffset = toObservable(this.scrollStartOffset),
+      $rawScrollEndOffset = toObservable(this.scrollEndOffset);
+
+    combineLatest([$bounds, $rawScrollStartOffset]).pipe(
+      takeUntilDestroyed(),
+      tap(([bounds, value]) => {
+        const val = parseArithmeticExpression(value, this.isVertical ? bounds.height : bounds.width);
+        this._actualScrollStartOffset.set(val);
+      }),
+    ).subscribe();
+
+    combineLatest([$bounds, $rawScrollEndOffset]).pipe(
+      takeUntilDestroyed(),
+      tap(([bounds, value]) => {
+        const val = parseArithmeticExpression(value, this.isVertical ? bounds.height : bounds.width);
+        this._actualScrollEndOffset.set(val);
+      }),
+    ).subscribe();
+
     this._service.$intersectionElementBySnapToItemAlign.pipe(
       takeUntilDestroyed(),
       filter(v => v !== null),
@@ -1435,8 +1466,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
     const $itemSize = toObservable(this.itemSize).pipe(
       map(v => typeof v === 'number' && v <= 0 ? DEFAULT_ITEM_SIZE : v),
-    ), $bounds = toObservable(this._bounds).pipe(
-      filter(b => !!b),
     );
 
     combineLatest([$itemSize, $bounds]).pipe(
@@ -1444,7 +1473,7 @@ export class NgVirtualListComponent implements OnDestroy {
       switchMap(([v, bounds]) => {
         if (v === VIEWPORT) {
           const isVertical = this.isVertical, viewportBounds = bounds,
-            startOffset = this.scrollStartOffset(), endOffset = this.scrollEndOffset(),
+            startOffset = this._actualScrollStartOffset(), endOffset = this._actualScrollEndOffset(),
             result = (isVertical ? (viewportBounds?.height ?? 0) : (viewportBounds?.width ?? 0)) - startOffset - endOffset;
           return of(result <= 0 ? 1 : result);
         }
@@ -1483,7 +1512,7 @@ export class NgVirtualListComponent implements OnDestroy {
     const preventKeyboardEvent = (event: KeyboardEvent, isVertical: boolean) => {
       const scroller = this._scrollerComponent();
       if (!!scroller) {
-        const scrollStartOffset = this.scrollStartOffset(), scrollable = scroller.scrollable ?? false,
+        const scrollStartOffset = this._actualScrollStartOffset(), scrollable = scroller.scrollable ?? false,
           scrollSize = isVertical ? scroller.scrollTop : scroller.scrollLeft,
           scrollWeight = isVertical ? scroller.scrollHeight : scroller.scrollWidth;
         if (scrollable || scrollSize <= scrollStartOffset || scrollSize >= scrollWeight) {
@@ -1863,8 +1892,8 @@ export class NgVirtualListComponent implements OnDestroy {
       $collapseByClick = toObservable(this.collapseByClick),
       $isScrollStart = toObservable(this._isScrollStart),
       $isScrollFinished = toObservable(this._isScrollEnd),
-      $scrollStartOffset = toObservable(this.scrollStartOffset),
-      $scrollEndOffset = toObservable(this.scrollEndOffset),
+      $scrollStartOffset = toObservable(this._actualScrollStartOffset),
+      $scrollEndOffset = toObservable(this._actualScrollEndOffset),
       $isVertical = toObservable(this.direction).pipe(
         map(v => this.getIsVertical(v || DEFAULT_DIRECTION)),
       );
@@ -2839,7 +2868,7 @@ export class NgVirtualListComponent implements OnDestroy {
         bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
         currentScrollSize = this._scrollSize();
       this._trackBox.deltaDirection = currentScrollSize > scrollSize ? -1 : currentScrollSize < scrollSize ? 1 : 0;
-      const itemsRange = formatActualDisplayItems(this._service.displayItems, this.scrollStartOffset(), this.scrollEndOffset(),
+      const itemsRange = formatActualDisplayItems(this._service.displayItems, this._actualScrollStartOffset(), this._actualScrollEndOffset(),
         scrollSize, isVertical, bounds),
         event = new ScrollEvent({
           direction: this._trackBox.scrollDirection, container: scrollerEl,

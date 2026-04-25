@@ -5,7 +5,7 @@ const PERSENTS_100 = 100,
     SIZE_PERSENT = '%',
     CHAR_NONE = '';
 
-export const parseAbsoluteOrPersentageValue = (value: number | `${number}%`): number => {
+export const parseFloatOrPersentageValue = (value: number | `${number}%` | string): number => {
     const isPercentage = isPercentageValue(value);
     if (isPercentage) {
         const v = parseFloat(String(value).replace(SIZE_PERSENT, CHAR_NONE));
