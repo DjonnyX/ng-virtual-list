@@ -4,7 +4,9 @@ import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN,
-  PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, PX, SIZE_100_PERSENT,
+  PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
+  PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
+  PX, SIZE_100_PERSENT,
   SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
@@ -65,6 +67,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   protected readonly focused = signal<boolean>(false);
 
   protected readonly part = signal<string>(PART_DEFAULT_ITEM);
+
+  protected readonly fxPart = signal<string>(PART_DEFAULT_ITEM_FX);
 
   protected readonly data = signal<IRenderVirtualListItem | null>(null);
   protected _data: IRenderVirtualListItem | null = null;
@@ -175,9 +179,9 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   protected update() {
     const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement,
       itemElement = this._item()?.nativeElement, containerElement = this._container()?.nativeElement;
-    if (!!data && !!el && !!itemElement) {
+    if (!!data && !!el && !!itemElement && !!containerElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
-      const styles = el.style, itemElementStyles = itemElement.style;
+      const styles = el.style, itemElementStyles = itemElement.style, containerElementStyles = containerElement.style;
       styles.zIndex = data.config.zIndex;
       this._blendColor = data.config.blendColor ?? null;
       if (!!containerElement && !!data.config.blendColor) {
@@ -215,24 +219,31 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       odd = v.index % 2 === 0;
     }
 
-    let part = PART_DEFAULT_ITEM;
+    let part = PART_DEFAULT_ITEM, fxPart = PART_DEFAULT_ITEM_FX;
     part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
+    fxPart += odd ? PART_ITEM_FX_ODD : PART_ITEM_FX_EVEN;
     if (v ? v.config.snapped : false) {
       part += PART_ITEM_SNAPPED;
+      fxPart += PART_ITEM_FX_SNAPPED;
     }
     if (isSelected) {
       part += PART_ITEM_SELECTED;
+      fxPart += PART_ITEM_FX_SELECTED;
     }
     if (isCollapsed) {
       part += PART_ITEM_COLLAPSED;
+      fxPart += PART_ITEM_FX_COLLAPSED;
     }
     if (v ? v.config.new : false) {
       part += PART_ITEM_NEW;
+      fxPart += PART_ITEM_FX_NEW;
     }
     if (this.focused()) {
       part += PART_ITEM_FOCUSED;
+      fxPart += PART_ITEM_FX_FOCUSED;
     }
     this.part.set(part);
+    this.fxPart.set(fxPart);
   }
 
   getBounds(): ISize {

@@ -225,6 +225,22 @@ export const PART_ITEM_COLLAPSED = ' item-collapsed';
 
 export const PART_ITEM_FOCUSED = ' item-focused';
 
+export const PART_DEFAULT_ITEM_FX = 'item-fx';
+
+export const PART_ITEM_FX_NEW = ' item-fx-new';
+
+export const PART_ITEM_FX_ODD = ' item-fx-odd';
+
+export const PART_ITEM_FX_EVEN = ' item-fx-even';
+
+export const PART_ITEM_FX_SNAPPED = ' item-fx-snapped';
+
+export const PART_ITEM_FX_SELECTED = ' item-fx-selected';
+
+export const PART_ITEM_FX_COLLAPSED = ' item-fx-collapsed';
+
+export const PART_ITEM_FX_FOCUSED = ' item-fx-focused';
+
 export const MIN_PIXELS_FOR_PREVENT_SNAPPING = 10;
 
 export const MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1 = 74;
