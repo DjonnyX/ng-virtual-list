@@ -10,6 +10,8 @@
 
 💻 Works correctly in all browsers and platforms.
 
+💪 The software portion of the project was completed without a single line of code written using AI (artificial intelligence)!
+
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
 <b>Angular version 20.X.X</b>.
