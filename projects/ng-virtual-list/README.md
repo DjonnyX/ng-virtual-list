@@ -2,11 +2,13 @@
 
 🚀 High-performance virtual scrolling for Angular apps. Render 100,000+ items in Angular without breaking a sweat. Smooth, customizable, and developer-friendly.
 
-Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
+⚡A powerful API for implementing lists of varying functionality and complexity.
 
-The main advantage of this solution is the elimination of the "empty spaces" effect during fast scrolling, which occurs in the classic implementation of virtualized lists. Visualization is as close as possible to native lists.
+✨Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions, lists with scrolling bindings for elements, galleries of varying complexity, including 3D transformations of elements and effects such as DOF ​​(Depth Of Field) and Fog. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
 
-Works correctly in all browsers and platforms.
+🧬The main advantage of this solution is the elimination of the "empty spaces" effect during fast scrolling, which occurs in the classic implementation of virtualized lists. Visualization is as close as possible to native lists.
+
+💻 Works correctly in all browsers and platforms.
 
 <img width="1033" height="171" alt="logo" src="https://github.com/user-attachments/assets/b559cfde-405a-4361-b71b-6715478d997d" />
 
