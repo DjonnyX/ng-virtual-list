@@ -4,7 +4,6 @@ import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures } from '..
 import { Color, ItemTransform } from '../types';
 
 const UNSET = 'unset',
-    R_LIMIT = 0.2,
     B_LIMIT = 0.5;
 
 interface IDeckOfCards3DOptions {
@@ -56,9 +55,10 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
             result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5 * Math.abs(Math.sin(px))));
             result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * .5 * Math.abs(Math.sin(py)))) : yy;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .15, 4);
-            result.z = scale;
+            const z = scale + .1;
+            result.z = z > 1 ? 1 : z;
             result.scaleX = result.scaleY = scale;
-            result.rotationX = (isVertical ? (py < R_LIMIT && py > -R_LIMIT ? 0 : py) : (px < R_LIMIT && px > -R_LIMIT ? 0 : px)) * 200;
+            result.rotationX = (isVertical ? py : px) * 200;
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
                 const blur = (s * dof) - B_LIMIT,
