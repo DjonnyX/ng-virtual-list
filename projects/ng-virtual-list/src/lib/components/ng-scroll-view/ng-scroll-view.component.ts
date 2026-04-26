@@ -106,6 +106,8 @@ export class NgScrollView extends BaseScrollView {
 
     override set x(v: number) {
         if (v !== undefined && !Number.isNaN(v)) {
+            this.updateDirection(v, this._x);
+
             this._x = this._actualX = v;
 
             this.measureVelocity();
@@ -115,6 +117,8 @@ export class NgScrollView extends BaseScrollView {
 
     override set y(v: number) {
         if (v !== undefined && !Number.isNaN(v)) {
+            this.updateDirection(v, this._y);
+
             this._y = this._actualY = v;
 
             this.measureVelocity();
@@ -167,7 +171,6 @@ export class NgScrollView extends BaseScrollView {
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this.y : this.x,
                             delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
-                        this._scrollingDirection.add(delta > 0 ? 1 : delta < 0 ? -1 : 0);
                         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
                         this._$wheel.next(delta);
                     }),
@@ -236,7 +239,6 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                this._scrollingDirection.add(getDir(prevPosition, position));
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
@@ -328,7 +330,6 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                this._scrollingDirection.add(getDir(prevPosition, position));
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
@@ -360,6 +361,11 @@ export class NgScrollView extends BaseScrollView {
 
     ngAfterViewInit() {
         this.runMeasureVelocity();
+    }
+
+    protected updateDirection(position: number, prePosition: number) {
+        const delta = (position - this._delta) - prePosition;
+        this._scrollingDirection.add(delta > 0 ? 1 : delta < 0 ? -1 : 0);
     }
 
     protected measureVelocity() {

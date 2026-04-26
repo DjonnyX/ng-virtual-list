@@ -109,6 +109,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   override set x(v: number) {
     if (v !== undefined && !Number.isNaN(v)) {
+      this.updateDirection(v, this._x);
+
       this._x = this._actualX = v;
 
       this.measureVelocity();
@@ -122,6 +124,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
   override set y(v: number) {
     if (v !== undefined && !Number.isNaN(v)) {
+      this.updateDirection(v, this._y);
+
       this._y = this._actualY = v;
 
       this.measureVelocity();
