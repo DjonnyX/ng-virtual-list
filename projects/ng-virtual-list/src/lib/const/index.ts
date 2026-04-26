@@ -1,4 +1,6 @@
-import { CollectionModes, MethodsForSelecting, SnappingMethods, SnapToItemAlign, SnapToItemAligns, TextDirections } from "../enums";
+import {
+    CollectionModes, DividesMode, DividesModes, MethodsForSelecting, SnappingMethods, SnapToItemAlign, SnapToItemAligns, TextDirections,
+} from "../enums";
 import { Directions } from "../enums/directions";
 import { IAnimationParams, IScrollingSettings } from '../interfaces';
 import { SnappingDistance } from "../types";
@@ -6,6 +8,10 @@ import { SnappingDistance } from "../types";
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
 export const DEFAULT_ITEM_SIZE = 24;
+
+export const DEFAULT_MIN_ITEM_SIZE = 1;
+
+export const DEFAULT_MAX_ITEM_SIZE = Number.MAX_SAFE_INTEGER;
 
 export const DEFAULT_BUFFER_SIZE = 2;
 
@@ -30,6 +36,8 @@ export const DEFAULT_SNAP_TO_ITEM = false;
 export const DEFAULT_SNAPPING_DISTANCE: SnappingDistance = '25%';
 
 export const DEFAULT_SCROLLING_ONE_BY_ONE = false;
+
+export const DEFAULT_DIVIDES_MODE: DividesMode = DividesModes.GRID;
 
 export const DEFAULT_DIVIDES = 1;
 

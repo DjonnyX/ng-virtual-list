@@ -7,6 +7,7 @@ import { Tracker } from "./tracker";
 import { IRect, ISize } from "../interfaces";
 import {
     DEFAULT_DIVIDES,
+    DEFAULT_DIVIDES_MODE,
     HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
@@ -17,6 +18,7 @@ import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 import { ItemTransform } from "../types";
 import { objectAsReadonly } from "../utils/object";
+import { DividesMode } from "../enums";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -32,6 +34,8 @@ export interface IMetrics {
     dynamicSize: boolean;
     divides: number;
     itemSize: number;
+    minItemSize: number;
+    maxItemSize: number;
     itemsFromStartToScrollEnd: number;
     itemsFromStartToDisplayEnd: number;
     itemsOnDisplayWeight: number;
@@ -64,6 +68,8 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     collection: C;
     isVertical: boolean;
     itemSize: number;
+    minItemSize: number;
+    maxItemSize: number;
     bufferSize: number;
     maxBufferSize: number;
     dynamicSize: boolean;
@@ -161,6 +167,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
 
         this._snappedDisplayComponents = v;
+    }
+
+    protected _dividesMode: DividesMode = DEFAULT_DIVIDES_MODE;
+
+    set dividesMode(v: DividesMode) {
+        if (this._dividesMode === v) {
+            return;
+        }
+
+        this._dividesMode = v;
     }
 
     protected _divides: number = DEFAULT_DIVIDES;
@@ -585,7 +601,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      * Calculates list metrics
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
-        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, bufferSize: minBufferSize,
+        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
             scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
             deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
@@ -904,6 +920,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             dynamicSize,
             divides,
             itemSize,
+            minItemSize,
+            maxItemSize,
             itemsFromStartToScrollEnd,
             itemsFromStartToDisplayEnd,
             itemsOnDisplayWeight,
@@ -1009,6 +1027,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalLength,
             startIndex,
             typicalItemSize,
+            minItemSize,
+            maxItemSize,
             itemTransform,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
@@ -1056,6 +1076,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scaleZ: 1,
                                 width: isVertical ? normalizedItemWidth : size,
                                 height: isVertical ? size : normalizedItemHeight,
+                                minWidth: minItemSize,
+                                minHeight: minItemSize,
+                                maxWidth: maxItemSize,
+                                maxHeight: maxItemSize,
                                 size,
                                 row: {
                                     size,
@@ -1084,6 +1108,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 tabIndex: count,
+                                divides,
                                 opacity: 1,
                                 zIndex: '1',
                             };
@@ -1153,6 +1178,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteEndPositionPercent,
                                 width: w,
                                 height: h,
+                                minWidth: minItemSize,
+                                minHeight: minItemSize,
+                                maxWidth: maxItemSize,
+                                maxHeight: maxItemSize,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1168,6 +1197,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 tabIndex: items.length,
+                                divides,
                                 opacity: 1,
                                 zIndex: '1',
                             };
@@ -1261,6 +1291,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             absoluteEndPositionPercent,
                             width: isVertical ? normalizedItemWidth / divides : size,
                             height: isVertical ? size : normalizedItemHeight / divides,
+                            minWidth: minItemSize,
+                            minHeight: minItemSize,
+                            maxWidth: maxItemSize,
+                            maxHeight: maxItemSize,
                             delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                         }, config: IRenderVirtualListItemConfig = {
                             new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1277,6 +1311,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             isSnappingMethodAdvanced,
                             tabIndex: count,
                             isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
+                            divides,
                             opacity: 1,
                             zIndex: '0',
                         };

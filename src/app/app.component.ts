@@ -25,7 +25,7 @@ const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "r
     rippleEnabled: true,
   };
 
-const MAX_ITEMS = 10000;
+const MAX_ITEMS = 1000;
 
 interface ICollectionItem {
   id: Id;

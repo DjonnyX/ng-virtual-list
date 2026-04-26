@@ -80,4 +80,8 @@ export interface IRenderVirtualListItemConfig {
      * Determines whether an element is a stub.
      */
     isStub?: boolean;
+    /**
+     * Division number.
+     */
+    divides: number;
 }

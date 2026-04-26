@@ -44,6 +44,22 @@ export interface IRenderVirtualListItemMeasures extends IRect {
      */
     scaleZ: number;
     /**
+     * Minimal width.
+     */
+    minWidth: number;
+    /**
+     * Minimal height.
+     */
+    minHeight: number;
+    /**
+     * Maximum width.
+     */
+    maxWidth: number;
+    /**
+     * Maximum height.
+     */
+    maxHeight: number;
+    /**
      * Item position
      */
     position: number;

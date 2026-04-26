@@ -186,7 +186,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       itemElement = this._item()?.nativeElement, containerElement = this._container()?.nativeElement;
     if (!!data && !!el && !!itemElement && !!containerElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
-      const styles = el.style, itemElementStyles = itemElement.style, containerElementStyles = containerElement.style;
+      const styles = el.style, itemElementStyles = itemElement.style;
       styles.zIndex = data.config.zIndex;
       this._blendColor = data.config.blendColor ?? null;
       if (!!containerElement && !!data.config.blendColor) {
@@ -208,11 +208,24 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
         styles.transform = matrix3d(data.measures.transformedX, data.measures.transformedY, data.measures.z, data.measures.scaleX, data.measures.scaleY,
           data.measures.scaleZ, data.measures.rotationX, data.measures.rotationY, data.measures.rotationZ);
       }
-      styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
-      styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
+      if (data.config.divides > 1) {
+        styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
+        styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
+        itemElementStyles.minWidth = styles.minWidth = `${data.measures.minWidth}${PX}`;
+        itemElementStyles.maxWidth = styles.maxWidth = `${data.measures.maxWidth}${PX}`;
+        itemElementStyles.minHeight = styles.minHeight = `${data.measures.minHeight}${PX}`;
+        itemElementStyles.maxHeight = styles.maxHeight = `${data.measures.maxHeight}${PX}`;
 
-      itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
-      itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+        itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      } else {
+        styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        styles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+        styles.minWidth = `${data.measures.minWidth}${PX}`;
+        styles.maxWidth = `${data.measures.maxWidth}${PX}`;
+        styles.minHeight = `${data.measures.minHeight}${PX}`;
+        styles.maxHeight = `${data.measures.maxHeight}${PX}`;
+      }
     } else {
       el.removeAttribute(ID);
     }
@@ -260,7 +273,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
         };
       }
 
-      const { width, height } = el.getBoundingClientRect();
+      const width = el.offsetWidth, height = el.offsetHeight;
       return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
     }
     return { width: 1, height: 1 };

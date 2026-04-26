@@ -13,6 +13,8 @@ import { PrerenderTrackBoxEvents, PrerenderTrackBoxHandlers } from "../events";
 
 const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISize, boundsSize: number,
     dynamic: boolean, itemSize: number, id: Id, index: number): IRenderVirtualListItem => {
+    const w = (isVertical ? bounds.width : itemSize) as any,
+        h = (isVertical ? itemSize : bounds.height) as any;
     return {
         index,
         id,
@@ -42,8 +44,12 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             scaleX: 0,
             scaleY: 0,
             scaleZ: 0,
-            width: (isVertical ? bounds.width : itemSize) as any,
-            height: (isVertical ? itemSize : bounds.height) as any,
+            width: w,
+            height: h,
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: Number.MAX_SAFE_INTEGER,
+            maxHeight: Number.MAX_SAFE_INTEGER,
         },
         data,
         previouseData: data,
@@ -61,6 +67,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             isVertical,
             dynamic,
             isSnappingMethodAdvanced: false,
+            divides: 1,
             tabIndex: 0,
             opacity: 1,
             zIndex: "0",

@@ -37,7 +37,8 @@ export const linear = (options?: ILintearOptions): ItemTransform => {
             isVertical = config.isVertical,
             boundsSize = measures.boundsSize,
             scrollSize = measures.scrollSize,
-            itemSizeHalf = measures.size * .5,
+            itemSize = isVertical ? measures.height : measures.width,
+            itemSizeHalf = itemSize * .5,
             boundsSizeHalf = boundsSize * .5,
             xx = isVertical ? measures.x : (measures.x - itemSizeHalf - boundsSizeHalf - scrollSize),
             yy = isVertical ? (measures.y - itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
@@ -48,7 +49,9 @@ export const linear = (options?: ILintearOptions): ItemTransform => {
         const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .15, 4);
         result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
         if (!!dof) {
-            result.filter = `blur(${s * dof}${PX})`;
+            const blur = s * dof,
+                actualBlur = blur > 1 ? blur : 0;
+            result.filter = `blur(${actualBlur}${PX})`;
         }
         if (!!fogColor) {
             result.opacity = fogWeight ? Math.pow(scale, fogWeight) : scale;

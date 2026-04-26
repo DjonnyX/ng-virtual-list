@@ -19,5 +19,5 @@ export interface IItemTransformation {
     opacity: number;
     filter?: string;
     blendColor?: Color | null;
-    zIndex: number;
+    zIndex: number | string;
 }
