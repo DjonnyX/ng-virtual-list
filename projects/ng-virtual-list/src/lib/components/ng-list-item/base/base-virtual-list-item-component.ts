@@ -6,8 +6,8 @@ import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN,
   PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
   PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
-  PX, SIZE_100_PERSENT,
-  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE,
+  PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, PART_ITEM_ROW_ODD, PART_ITEM_ROW_EVEN,
+  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
@@ -219,14 +219,13 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   protected updatePartStr(v: IRenderVirtualListItem | null, isSelected: boolean, isCollapsed: boolean) {
-    let odd = false;
-    if (v?.index !== undefined) {
-      odd = v.index % 2 === 0;
-    }
+    const odd = v?.config.odd, rowOdd = v?.measures.row.odd;
 
     let part = PART_DEFAULT_ITEM, fxPart = PART_DEFAULT_ITEM_FX;
     part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
+    part += rowOdd ? PART_ITEM_ROW_ODD : PART_ITEM_ROW_EVEN;
     fxPart += odd ? PART_ITEM_FX_ODD : PART_ITEM_FX_EVEN;
+    fxPart += rowOdd ? PART_ITEM_ROW_FX_ODD : PART_ITEM_ROW_FX_EVEN;
     if (v ? v.config.snapped : false) {
       part += PART_ITEM_SNAPPED;
       fxPart += PART_ITEM_FX_SNAPPED;

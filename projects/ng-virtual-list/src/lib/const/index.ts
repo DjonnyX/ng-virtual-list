@@ -217,6 +217,10 @@ export const PART_ITEM_ODD = ' item-odd';
 
 export const PART_ITEM_EVEN = ' item-even';
 
+export const PART_ITEM_ROW_ODD = ' item-row-odd';
+
+export const PART_ITEM_ROW_EVEN = ' item-row-even';
+
 export const PART_ITEM_SNAPPED = ' item-snapped';
 
 export const PART_ITEM_SELECTED = ' item-selected';
@@ -232,6 +236,10 @@ export const PART_ITEM_FX_NEW = ' item-fx-new';
 export const PART_ITEM_FX_ODD = ' item-fx-odd';
 
 export const PART_ITEM_FX_EVEN = ' item-fx-even';
+
+export const PART_ITEM_ROW_FX_ODD = ' item-row-fx-odd';
+
+export const PART_ITEM_ROW_FX_EVEN = ' item-row-fx-even';
 
 export const PART_ITEM_FX_SNAPPED = ' item-fx-snapped';
 

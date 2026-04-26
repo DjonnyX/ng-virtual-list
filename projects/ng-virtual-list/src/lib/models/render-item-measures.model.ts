@@ -60,6 +60,14 @@ export interface IRenderVirtualListItemMeasures extends IRect {
      */
     row: {
         size: number;
+        /**
+         * Indicates that the element is odd.
+         */
+        odd: boolean;
+        /**
+         * Indicates that the element is even.
+         */
+        even: boolean;
     };
     /**
      * Bounds size

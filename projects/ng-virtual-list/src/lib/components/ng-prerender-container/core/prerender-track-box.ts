@@ -22,6 +22,8 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             size: itemSize,
             row: {
                 size: itemSize,
+                odd: false,
+                even: false
             },
             boundsSize,
             absoluteStartPosition: 0,

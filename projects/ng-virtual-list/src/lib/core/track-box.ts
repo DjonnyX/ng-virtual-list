@@ -1030,7 +1030,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!collectionItem) {
                         continue;
                     }
-                    const id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const rowIndex = Math.floor((i + 1) / divides), id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? cache?.[sizeProperty] > 0 ? cache?.[sizeProperty] : typicalItemSize : typicalItemSize,
@@ -1059,6 +1059,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 size,
                                 row: {
                                     size,
+                                    odd: rowIndex % 2 != 0,
+                                    even: rowIndex % 2 == 0,
                                 },
                                 position: pos,
                                 boundsSize,
@@ -1105,7 +1107,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             if (stickyEnabled) {
                 const si = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1, startIndex = si < 0 ? si : si;
-                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
+                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), rowIndex = Math.floor((i + 1) / divides), l = totalLength; i < l; i++) {
                     const collectionItem = items[i];
                     if (!collectionItem) {
                         continue;
@@ -1139,6 +1141,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 size,
                                 row: {
                                     size,
+                                    odd: rowIndex % 2 != 0,
+                                    even: rowIndex % 2 == 0,
                                 },
                                 position: pos,
                                 boundsSize,
@@ -1188,8 +1192,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 iterations = 0,
                 row: {
                     size: number;
+                    odd: boolean;
+                    even: boolean;
                 } = {
                     size: 0,
+                    odd: false,
+                    even: false,
                 };
             while (renderItems > 0) {
                 iterations++;
@@ -1202,6 +1210,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 const ii = i + 1,
+                    rowIndex = Math.floor(ii / divides),
                     id = collectionItem[trackBy],
                     cache = this.get(id)!,
                     size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize,
@@ -1211,6 +1220,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     ci = 0;
                     row = {
                         size,
+                        odd: rowIndex % 2 !== 0,
+                        even: rowIndex % 2 === 0,
                     };
                 } else {
                     row.size = Math.max(row.size, size);
