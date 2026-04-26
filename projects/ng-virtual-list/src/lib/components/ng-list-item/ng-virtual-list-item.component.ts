@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, Injector, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Injector, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, filter, debounceTime } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
@@ -41,11 +41,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   constructor() {
     super();
-
-    effect(() => {
-      const part = this.part();
-      this._elementRef.nativeElement.setAttribute('part', part);
-    });
   }
 
   ngOnInit(): void {

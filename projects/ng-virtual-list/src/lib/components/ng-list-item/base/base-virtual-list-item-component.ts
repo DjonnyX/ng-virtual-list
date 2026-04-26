@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, Signal, signal, TemplateRef, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Signal, signal, TemplateRef, viewChild } from '@angular/core';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -144,6 +144,11 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this._id = this._service.generateComponentId();
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
+
+    effect(() => {
+      const part = this.part();
+      this._elementRef.nativeElement.setAttribute('part', part);
+    });
 
     this.classes = computed(() => {
       const data = this.data(), focused = this.focused();
