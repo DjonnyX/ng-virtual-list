@@ -172,7 +172,9 @@ export class NgVirtualListService {
   };
 
   private _onTrackBoxChangeHandler = (v: number) => {
-    this._$cacheVersion.next(v);
+    if (this.dynamic) {
+      this._$cacheVersion.next(v);
+    }
   };
 
   set selectedIds(ids: Array<Id> | Id | null) {

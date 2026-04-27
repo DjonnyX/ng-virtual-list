@@ -264,15 +264,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   getBounds(): ISize {
-    const el = this._item()?.nativeElement, data = this.data();
-    if (!!el && !!data) {
-      if (!data.config.dynamic) {
-        return {
-          width: data.measures.width,
-          height: data.measures.height,
-        };
-      }
-
+    const el = this._item()?.nativeElement;
+    if (!!el) {
       const width = el.offsetWidth, height = el.offsetHeight;
       return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
     }

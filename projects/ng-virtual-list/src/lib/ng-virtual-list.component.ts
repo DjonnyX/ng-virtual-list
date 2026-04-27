@@ -1519,7 +1519,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._trackBox.displayComponents = this._displayComponents;
 
-    let hasUserAction = false, hasScrollbarUserAction = false;
+    let hasUserAction = false;
 
     const $itemSize = toObservable(this.itemSize).pipe(
       map(v => typeof v === 'number' && v <= 0 ? DEFAULT_ITEM_SIZE : v),
@@ -2604,7 +2604,6 @@ export class NgVirtualListComponent implements OnDestroy {
         return $scrollbarScroll.pipe(
           takeUntilDestroyed(this._destroyRef),
           tap(userAction => {
-            hasScrollbarUserAction = userAction;
             const scrollerEl = this._scroller()?.nativeElement, scrollerComponent = this._scrollerComponent();
             if (scrollerEl && scrollerComponent) {
               this.emitScrollEvent(false, this._readyForShow, hasUserAction);
