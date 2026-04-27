@@ -4,7 +4,7 @@
 
 ⚡A powerful API for implementing lists of varying functionality and complexity.
 
-✨Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions, lists with scrolling bindings for elements, galleries of varying complexity, including 3D transformations of elements and effects such as DOF ​​(Depth Of Field) and Fog. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–20) compatibility.
+✨Flexible, and actively maintained Angular library that excels with high-performance, feature-rich virtualized lists—including grouping, sticky headers, snapping, animations, collapsing group elements, single and multiple selection of elements and both scroll directions, lists with scrolling bindings for elements, galleries of varying complexity, including 3D transformations of elements and effects such as MotionBlur, DOF ​​(Depth Of Field) and Fog. Whether you're rendering millions of items or building interactive list components, it delivers scalability and customization. Angular (14–21) compatibility.
 
 🧬The main advantage of this solution is the elimination of the "empty spaces" effect during fast scrolling, which occurs in the classic implementation of virtualized lists. Visualization is as close as possible to native lists.
 
