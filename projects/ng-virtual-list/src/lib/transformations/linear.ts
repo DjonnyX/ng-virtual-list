@@ -6,9 +6,22 @@ import { Color, ItemTransform } from '../types';
 const UNSET = 'unset';
 
 interface ILintearOptions {
+    /**
+     * Depth Of Field. Default value is `null`.
+     */
     dof?: number;
+    /**
+     * Fog color. Default value is `null`.
+     */
     fogColor?: Color;
+    /**
+     * Fog weight. Default value is `null`.
+     */
     fogWeight?: number;
+    /**
+     * Spacing between items. Default value is `0.5`.
+     */
+    spacingBetweenItems?: number;
 }
 
 /**
@@ -20,7 +33,8 @@ interface ILintearOptions {
 export const linear = (options?: ILintearOptions): ItemTransform => {
     const dof = options?.dof ?? null,
         fogColor = options?.fogColor ?? null,
-        fogWeight = options?.fogWeight ?? null;
+        fogWeight = options?.fogWeight ?? null,
+        spacingBetweenItems = options?.spacingBetweenItems ?? .5;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
@@ -52,8 +66,8 @@ export const linear = (options?: ILintearOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * .5));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * .5)) : yy;
+            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems));
+            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems)) : yy;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .15, 4);
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {

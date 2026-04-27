@@ -6,9 +6,22 @@ import { Color, ItemTransform } from '../types';
 const UNSET = 'unset';
 
 interface IEventHorizonOptions {
+    /**
+     * Depth Of Field. Default value is `null`.
+     */
     dof?: number;
+    /**
+     * Fog color. Default value is `null`.
+     */
     fogColor?: Color;
+    /**
+     * Fog weight. Default value is `null`.
+     */
     fogWeight?: number;
+    /**
+     * Spacing between items. Default value is `0.5`.
+     */
+    spacingBetweenItems?: number;
 }
 
 /**
@@ -20,7 +33,8 @@ interface IEventHorizonOptions {
 export const eventHorizon = (options?: IEventHorizonOptions): ItemTransform => {
     const dof = options?.dof ?? null,
         fogColor = options?.fogColor ?? null,
-        fogWeight = options?.fogWeight ?? null;
+        fogWeight = options?.fogWeight ?? null,
+        spacingBetweenItems = options?.spacingBetweenItems ?? .025;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
@@ -52,8 +66,8 @@ export const eventHorizon = (options?: IEventHorizonOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * Math.pow(px, 2) * .025));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * Math.pow(py, 2) * .025)) : yy;
+            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * Math.pow(px, 2) * spacingBetweenItems));
+            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * Math.pow(py, 2) * spacingBetweenItems)) : yy;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .15, 4);
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
