@@ -2358,7 +2358,8 @@ export class NgVirtualListComponent implements OnDestroy {
       let totalSize = 0;
       if (scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
-          emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading;
+          emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading,
+          fireUpdate = emitUpdate || this._$scrollingTo.getValue();
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
           let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
@@ -2418,7 +2419,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._trackBox.isScrollEnd;
               const params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate: true, behavior: BEHAVIOR_INSTANT,
+                fireUpdate, behavior: BEHAVIOR_INSTANT,
                 blending: false, duration: this.animationParams().scrollToItem,
               };
               scroller?.scrollTo?.(params);
@@ -2444,7 +2445,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: true, behavior: BEHAVIOR_INSTANT, userAction: false,
+              fireUpdate, behavior: BEHAVIOR_INSTANT, userAction: false,
               blending: false, duration: this.animationParams().scrollToItem,
             };
             scroller?.scrollTo?.(params);
@@ -2464,7 +2465,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: scrollPositionAfterUpdate, blending: true, userAction,
-              fireUpdate: true, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
+              fireUpdate, behavior: BEHAVIOR_INSTANT, duration: this.animationParams().scrollToItem,
             };
             scroller.scrollTo(params);
             if (emitUpdate) {
