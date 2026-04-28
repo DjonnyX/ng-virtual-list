@@ -232,16 +232,26 @@ input {
     &::part(item-odd) {
         background-color: #8129a3;
     }
+
     &::part(item-even) {
         background-color: #5c5cd9;
     }
 }
 
 .list-divided {
-    &::part(item-odd) {
+    &::part(item-odd item-row-odd) {
+        background-color: #494058;
+    }
+
+    &::part(item-odd item-row-even) {
         background-color: #443b53;
     }
-    &::part(item-even) {
+
+    &::part(item-even item-row-odd) {
+        background-color: #443b53;
+    }
+
+    &::part(item-even item-row-even) {
         background-color: #494058;
     }
 }

@@ -6,9 +6,7 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../interfaces";
 import {
-    DEFAULT_DIVIDES,
-    DEFAULT_DIVIDES_MODE,
-    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
 import { debounce } from "../utils";
@@ -18,7 +16,6 @@ import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 import { ItemTransform } from "../types";
 import { objectAsReadonly } from "../utils/object";
-import { DividesMode } from "../enums";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -167,16 +164,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
 
         this._snappedDisplayComponents = v;
-    }
-
-    protected _dividesMode: DividesMode = DEFAULT_DIVIDES_MODE;
-
-    set dividesMode(v: DividesMode) {
-        if (this._dividesMode === v) {
-            return;
-        }
-
-        this._dividesMode = v;
     }
 
     protected _divides: number = DEFAULT_DIVIDES;

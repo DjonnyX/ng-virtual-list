@@ -2,8 +2,6 @@ import { CollectionMode } from "./collection-mode";
 import { CollectionModes } from "./collection-modes";
 import { Directions } from "./directions";
 import { Direction } from "./direction";
-import { DividesMode } from "./divides-mode";
-import { DividesModes } from "./divides-modes";
 import { MethodsForSelecting } from "./methods-for-selecting";
 import { MethodForSelecting } from "./method-for-selecting";
 import { SnappingMethods } from "./snapping-methods";
@@ -17,7 +15,6 @@ import { SnapToItemAligns } from "./snap-to-item-aligns";
 export {
     CollectionModes,
     Directions,
-    DividesModes,
     FocusAlignments,
     MethodsForSelecting,
     SnappingMethods,
@@ -28,7 +25,6 @@ export {
 export type {
     CollectionMode,
     Direction,
-    DividesMode,
     MethodForSelecting,
     SnappingMethod,
     SnapToItemAlign,

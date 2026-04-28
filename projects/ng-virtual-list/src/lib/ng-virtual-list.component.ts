@@ -21,7 +21,7 @@ import {
   PREPARE_ITERATIONS_FOR_UPDATE_ITEMS, PREPARATION_REUPDATE_LENGTH_FOR_UPDATE_ITEMS, PREPARE_ITERATIONS_FOR_COLLAPSE_ITEMS,
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
-  DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_DIVIDES_MODE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
+  DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -32,7 +32,7 @@ import {
 import { ArithmeticExpression, FloatOrPersentageValue, FocusAlignment, Id, ItemTransform, SnappingDistance } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
-  CollectionMode, CollectionModes, Direction, Directions, DividesMode, FocusAlignments, MethodForSelecting, MethodsForSelecting,
+  CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
   SnappingMethod, SnappingMethods, SnapToItemAlign, TextDirection, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
@@ -737,23 +737,6 @@ export class NgVirtualListComponent implements OnDestroy {
    * Specifies whether to scroll one item at a time if true and the scrollToItem property is set. The default value is `false`.
    */
   scrollingOneByOne = input<boolean>(DEFAULT_SCROLLING_ONE_BY_ONE, { ...this._scrollingOneByOneOptions });
-
-  private _dividesModeOptions = {
-    transform: (v: string) => {
-      const valid = validateString(v) && (v === 'grid' || v === 'waterfall');
-
-      if (!valid) {
-        console.error('The "dividesMode" parameter must be one of `grid` or `waterfall`.');
-        return DEFAULT_DIVIDES_MODE;
-      }
-      return v;
-    },
-  } as any;
-
-  /**
-   * List division mode by columns and rows. The default value is `grid`.
-   */
-  dividesMode = input<DividesMode>(DEFAULT_DIVIDES_MODE, { ...this._dividesModeOptions });
 
   private _dividesOptions = {
     transform: (v: number) => {
@@ -2092,14 +2075,6 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       tap(v => {
         this._trackBox.trackingPropertyName = v;
-      }),
-    ).subscribe();
-
-    const $dividesMode = toObservable(this.dividesMode);
-    $dividesMode.pipe(
-      takeUntilDestroyed(),
-      tap(v => {
-        this._trackBox.dividesMode = v;
       }),
     ).subscribe();
 
