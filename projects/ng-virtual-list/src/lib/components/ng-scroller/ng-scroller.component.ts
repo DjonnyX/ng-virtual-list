@@ -170,6 +170,16 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       $motionBlurEnabled = toObservable(this.motionBlurEnabled),
       $isVertical = toObservable(this.isVertical);
 
+    const $scrollbarScroll = this.$scrollbarScroll;
+    $scrollbarScroll.pipe(
+      takeUntilDestroyed(),
+      debounceTime(50),
+      tap(() => {
+        this.dropVelocity();
+        this.fireScrollEvent(false);
+      }),
+    ).subscribe();
+
     const $averageVelocity = this.$averageVelocity;
     combineLatest([$isVertical, $averageVelocity, $filter, $motionBlurEnabled, $motionBlur, $maxMotionBlur]).pipe(
       takeUntilDestroyed(),
