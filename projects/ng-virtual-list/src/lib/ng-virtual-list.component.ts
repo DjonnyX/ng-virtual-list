@@ -2359,7 +2359,7 @@ export class NgVirtualListComponent implements OnDestroy {
       if (scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
           emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading,
-          fireUpdate = emitUpdate || this._$scrollingTo.getValue();
+          fireUpdate = !this._readyForShow || this._$scrollingTo.getValue();
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
           let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
@@ -2520,11 +2520,15 @@ export class NgVirtualListComponent implements OnDestroy {
             }
 
             if (!isScrolling) {
-              update({
+              const updateList = () => update({
                 snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
                 collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                 cacheVersion, userAction: hasUserAction,
               });
+              updateList();
+              if (!dynamicSize) {
+                updateList();
+              }
             }
           }),
         );
