@@ -1246,7 +1246,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     row.size = Math.max(row.size, size);
                     ci++;
                 }
-                if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
+                if ((id !== undefined && id !== null) && (isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
                     const isOdd = i % 2 != 0,
                         sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
