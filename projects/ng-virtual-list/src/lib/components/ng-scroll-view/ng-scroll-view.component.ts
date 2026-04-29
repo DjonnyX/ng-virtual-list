@@ -494,17 +494,19 @@ export class NgScrollView extends BaseScrollView {
     }
 
     private checkOverscroll(e: Event) {
-        if (!this.overscrollEnabled()) {
+        if (!this._overscrollEnabled || !this.overscrollEnabled()) {
             if (e.cancelable) {
                 e.stopImmediatePropagation();
                 e.preventDefault();
             }
             return;
         }
-        if (this.isVertical()) {
-            this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
-        } else {
-            this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+        if (this._overscrollEnabled) {
+            if (this.isVertical()) {
+                this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
+            } else {
+                this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+            }
         }
     }
 

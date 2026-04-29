@@ -7,7 +7,7 @@ import { SCROLL_VIEW_INVERSION } from '../../../ng-scroll-view';
 import { BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, LEFT_PROP_NAME, TOP_PROP_NAME } from '../../../../const';
 import { NgScrollBarComponent } from '../../../ng-scroll-bar/ng-scroll-bar.component';
 import { ScrollBox } from '../../../ng-scroller/utils';
-import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../../../ng-scroll-view/const';
 
 /**
  * PrerenderScrollerComponent.
@@ -24,6 +24,7 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/c
     providers: [
         { provide: SCROLL_VIEW_INVERSION, useValue: false },
         { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
+        { provide: SCROLL_VIEW_OVERSCROLL_ENABLED, useValue: false },
     ],
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,

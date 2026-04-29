@@ -12,7 +12,7 @@ import {
 import { TextDirection, TextDirections } from '../../enums';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
-import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../ng-scroll-view/const';
 import { ISize } from '../../interfaces';
 
 const TOP = 'top',
@@ -35,6 +35,7 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: false },
     { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
+    { provide: SCROLL_VIEW_OVERSCROLL_ENABLED, useValue: true },
   ],
   standalone: false,
   templateUrl: './ng-scroller.component.html',

@@ -4,7 +4,7 @@ import {
 import { Subject } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
-import { SCROLL_VIEW_INVERSION } from '../const';
+import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
 
 /**
  * BaseScrollView
@@ -144,6 +144,8 @@ export class BaseScrollView {
     readonly contentBounds = signal<ISize>({ width: 0, height: 0 });
 
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
+
+    protected _overscrollEnabled = inject(SCROLL_VIEW_OVERSCROLL_ENABLED);
 
     constructor() {
         this.isVertical = computed(() => {
