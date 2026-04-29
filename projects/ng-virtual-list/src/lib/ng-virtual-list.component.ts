@@ -2398,9 +2398,9 @@ export class NgVirtualListComponent implements OnDestroy {
           this.snappingHandler();
 
           const delta = this._trackBox.delta,
-            scrollPositionAfterUpdate = Math.round(actualScrollSize + delta),
-            roundedScrollPositionAfterUpdate = Math.round(scrollPositionAfterUpdate),
-            roundedMaxPositionAfterUpdate = Math.round(totalSize - viewportSize);
+            scrollPositionAfterUpdate = actualScrollSize + delta,
+            roundedScrollPositionAfterUpdate = scrollPositionAfterUpdate,
+            roundedMaxPositionAfterUpdate = totalSize - viewportSize;
 
           if (this._isSnappingMethodAdvanced) {
             this.updateRegularRenderer();
