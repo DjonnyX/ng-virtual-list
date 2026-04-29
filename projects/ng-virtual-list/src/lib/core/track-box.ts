@@ -367,9 +367,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (previousCollection) {
                 // deleted
                 for (let i = 0, l = previousCollection.length; i < l; i++) {
-                    const item = previousCollection[i], id = item[trackBy];
+                    const item = previousCollection[i], id = item?.[trackBy];
                     crudDetected = true;
-                    if (this._map.has(id)) {
+                    if (!!item && this._map.has(id)) {
                         this._map.delete(id);
                     }
                 }
@@ -381,8 +381,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 // added
                 for (let i = 0, l = currentCollection.length; i < l; i++) {
                     crudDetected = true;
-                    const item = currentCollection[i], id = item[trackBy];
-                    this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
+                    const item = currentCollection[i], id = item?.[trackBy];
+                    if (!!item) {
+                        this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
+                    }
                 }
             }
             return;
@@ -390,15 +392,15 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const collectionDict: IItem<I> = {};
         for (let i = 0, l = currentCollection.length; i < l; i++) {
             const item = currentCollection[i];
-            if (item) {
+            if (!!item) {
                 collectionDict[item[trackBy]] = item;
             }
         }
         const notChangedMap: IItem<I> = {}, deletedMap: IItem<I> = {}, deletedItemsMap: { [index: number]: ISize } = {},
             updatedMap: IItem<I> = {};
         for (let i = 0, l = previousCollection.length; i < l; i++) {
-            const item = previousCollection[i], id = item[trackBy];
-            if (item) {
+            const item = previousCollection[i], id = item?.[trackBy];
+            if (!!item) {
                 if (collectionDict.hasOwnProperty(id)) {
                     if (item === collectionDict[id]) {
                         // not changed
@@ -429,8 +431,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
 
         for (let i = 0, l = currentCollection.length; i < l; i++) {
-            const item = currentCollection[i], id = item[trackBy];
-            if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
+            const item = currentCollection[i], id = item?.[trackBy];
+            if (!!item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
                 !notChangedMap.hasOwnProperty(id)) {
                 this._newItems.push(id);
                 // added
@@ -1253,8 +1255,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                         absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                        x = isVertical ? divSize * ci : pos,
-                        y = isVertical ? pos : divSize * ci,
+                        x = isVertical ? divSize * (sticky ? 0 : ci) : pos,
+                        y = isVertical ? pos : divSize * (sticky ? 0 : ci),
                         measures: IRenderVirtualListItemMeasures = {
                             x,
                             y,
@@ -1276,8 +1278,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             absoluteStartPositionPercent,
                             absoluteEndPosition,
                             absoluteEndPositionPercent,
-                            width: isVertical ? normalizedItemWidth / divides : size,
-                            height: isVertical ? size : normalizedItemHeight / divides,
+                            width: isVertical ? (sticky ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
+                            height: isVertical ? size : (sticky ? normalizedItemHeight : (normalizedItemHeight / divides)),
                             minWidth: minItemSize,
                             minHeight: minItemSize,
                             maxWidth: maxItemSize,
