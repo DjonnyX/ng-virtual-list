@@ -111,6 +111,8 @@ export class NgScrollView extends BaseScrollView {
             this._x = this._actualX = v;
 
             this.measureVelocity();
+
+            this.fireScrollEvent(false);
         }
     }
     override get x() { return this._x; }
@@ -122,6 +124,8 @@ export class NgScrollView extends BaseScrollView {
             this._y = this._actualY = v;
 
             this.measureVelocity();
+
+            this.fireScrollEvent(false);
         }
     }
     override get y() { return this._y; }
@@ -200,6 +204,8 @@ export class NgScrollView extends BaseScrollView {
                     if (!mouseCanceled) {
                         this.stopMoving();
                     }
+
+                    this._$scrollEnd.next(true);
                 }),
             );
 
@@ -257,6 +263,8 @@ export class NgScrollView extends BaseScrollView {
                                         this.grabbing.set(false);
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
+                                        } else {
+                                            this._$scrollEnd.next(true);
                                         }
                                     }),
                                 );
@@ -292,6 +300,8 @@ export class NgScrollView extends BaseScrollView {
                     if (!touchCanceled) {
                         this.stopMoving();
                     }
+
+                    this._$scrollEnd.next(true);
                 }),
             );
 
@@ -348,6 +358,8 @@ export class NgScrollView extends BaseScrollView {
                                         this.grabbing.set(false);
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
+                                        } else {
+                                            this._$scrollEnd.next(true);
                                         }
                                     }),
                                 );
@@ -715,12 +727,11 @@ export class NgScrollView extends BaseScrollView {
             }
         }
 
-        const roundedPosition = position !== null ? Math.round(position) : null;
-        if ((animated && roundedPosition !== null && roundedPosition !== Math.round(currentPosition))) {
-            this.animate(currentPosition, roundedPosition, this.animationParams().snapToItem, easeOutQuad, false, false);
+        if ((animated && position !== null && position !== currentPosition)) {
+            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
             return true;
-        } else if (!animated && roundedPosition !== null && roundedPosition !== Math.round(currentPosition)) {
-            this.animate(currentPosition, roundedPosition, this.animationParams().snapToItem, easeOutQuad, false, false);
+        } else if (!animated && position !== null && position !== currentPosition) {
+            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
             return true;
         }
         return false;

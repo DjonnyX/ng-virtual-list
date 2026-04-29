@@ -118,6 +118,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.updateScrollBar();
 
       this.recalculatePerspective();
+
+      this.fireScrollEvent(false);
     }
   }
   override get x() { return this._x; }
@@ -133,6 +135,8 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.updateScrollBar();
 
       this.recalculatePerspective();
+
+      this.fireScrollEvent(false);
     }
   }
   override get y() { return this._y; }
@@ -368,10 +372,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   scrollToComplete() {
-    const alignment = this.alignPosition(false);
-    if (!alignment) {
-      this.refresh(false, true);
-    }
+    this.dropVelocity();
+    this.alignPosition();
+    this._scrollingDirection.clear();
+    this.fireScrollEvent(true);
   }
 
   scrollTo(params: IScrollToParams) {
@@ -441,8 +445,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     } else {
       this.alignPosition();
     }
-    this._$scrollbarScroll.next(false);
-    this.fireScrollEvent(false);
+    this._scrollingDirection.clear();
+    this._$scrollbarScroll.next(true);
+    this.fireScrollEvent(true);
   }
 
   private fireUpdateIfEdgesDetected(position: number, min: number = 0, max: number = 1, animation: boolean = false, userAction: boolean = false) {

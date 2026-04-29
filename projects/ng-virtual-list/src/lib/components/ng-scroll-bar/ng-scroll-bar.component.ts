@@ -235,14 +235,6 @@ export class NgScrollBarComponent extends NgScrollView {
     ).subscribe();
   }
 
-  protected override stopMoving(): void {
-    super.stopMoving();
-    const event = this.createDragEvent(false);
-    if (!!event) {
-      this.onDragEnd.emit(event);
-    }
-  }
-
   private createDragEvent(userAction: boolean) {
     const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
       scrollContent = this.scrollContent()?.nativeElement as HTMLElement,

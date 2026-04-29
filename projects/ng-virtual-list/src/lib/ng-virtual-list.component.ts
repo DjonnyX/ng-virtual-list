@@ -2520,15 +2520,11 @@ export class NgVirtualListComponent implements OnDestroy {
             }
 
             if (!isScrolling) {
-              const updateList = () => update({
+              update({
                 snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
                 collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                 cacheVersion, userAction: hasUserAction,
               });
-              updateList();
-              if (!dynamicSize) {
-                updateList();
-              }
             }
           }),
         );
