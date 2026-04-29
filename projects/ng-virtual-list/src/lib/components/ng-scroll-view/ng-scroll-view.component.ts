@@ -682,7 +682,7 @@ export class NgScrollView extends BaseScrollView {
                 if (!!componentBounds) {
                     const { x, y } = componentBounds,
                         componentPosition = isVertical ? y : x;
-                    position = componentPosition;
+                    position = componentPosition - this.startOffset();
                 }
                 break;
             }
@@ -696,7 +696,7 @@ export class NgScrollView extends BaseScrollView {
                     const { x, y, width, height } = componentBounds,
                         size = isVertical ? height : width,
                         componentPosition = isVertical ? y : x;
-                    position = componentPosition + size * .5 - viewportSize * .5;
+                    position = componentPosition + size * .5 - viewportSize * .5 - this.startOffset() * .5;
                 }
                 break;
             }
