@@ -5,6 +5,7 @@ import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { ISize } from '../interfaces';
 import { Id } from "../types";
 import { CMap } from "../utils/cmap";
+import { SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED } from "../const";
 
 type TrackingPropertyId = string | number;
 
@@ -91,7 +92,12 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         let isRegularSnapped = false;
 
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
-            const item = items[i], itemTrackingProperty = item.id;
+            const item = items[i],
+                isDummy = item?.data?.[SERVICE_PROP_DUMMY] && (item?.data?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
+            if (isDummy) {
+                continue;
+            }
+            const itemTrackingProperty = item.id;
             let snappedComponent: ComponentRef<C> | null | undefined;
             if (this._trackMap) {
                 if (this._trackMap.has(itemTrackingProperty)) {
@@ -99,7 +105,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                         compIndex = this._displayObjectIndexMapById[diId], comp = components[compIndex];
 
                     const compId = comp?.instance?.id;
-                    if (comp !== undefined && compId === diId) {
+                    if (comp !== undefined && compId === diId && compId !== undefined) {
                         const indexByUntrackedItems = untrackedItems.findIndex(v => {
                             return v.instance.id === compId;
                         });
@@ -145,7 +151,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
         if (untrackedItems.length > 0) {
             for (let i = 0, l = untrackedItems.length; i < l; i++) {
                 const comp = untrackedItems[i], type = comp?.instance.item?.data?.type;
-                if (!Array.isArray(untrackedComponentsByTypeMap[type])) {
+                if (!untrackedComponentsByTypeMap[type]) {
                     untrackedComponentsByTypeMap[type] = [];
                 }
                 untrackedComponentsByTypeMap[type].push({ comp, index: i });
@@ -160,7 +166,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                 let comp: ComponentRef<C> | undefined;
                 if (type) {
                     const list = untrackedComponentsByTypeMap[type];
-                    if (Array.isArray(list) && list.length > 0) {
+                    if (!!list && list.length > 0) {
                         const untrackedItem = list.shift();
                         if (untrackedItem) {
                             comp = untrackedItem.comp;

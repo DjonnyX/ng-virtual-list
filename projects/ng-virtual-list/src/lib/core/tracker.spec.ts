@@ -59,7 +59,6 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
         index: 0,
         measures: {
             x: 0, y: 0, width: 0, height: 0, delta: 0,
-            positionOffset: 0,
             position: 0,
             scrollSize: 0,
             size: 0,
@@ -67,7 +66,25 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
             absoluteStartPosition: 0,
             absoluteStartPositionPercent: 0,
             absoluteEndPosition: 0,
-            absoluteEndPositionPercent: 0
+            absoluteEndPositionPercent: 0,
+            transformedX: 0,
+            transformedY: 0,
+            z: 0,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            scaleX: 0,
+            scaleY: 0,
+            scaleZ: 0,
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: 0,
+            maxHeight: 0,
+            row: {
+                size: 0,
+                odd: false,
+                even: false
+            }
         },
         data: {
             [trackBy]: id,
@@ -87,6 +104,8 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
             isSnappingMethodAdvanced: false,
             tabIndex: 0,
             zIndex: '0',
+            opacity: 0,
+            divides: 0
         },
         previouseData: undefined,
         nextData: undefined,

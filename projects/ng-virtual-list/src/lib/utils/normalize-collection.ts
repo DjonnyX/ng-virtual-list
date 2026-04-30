@@ -1,3 +1,4 @@
+import { SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, SERVICE_PROP_DUMMY_ID } from "../const";
 import { IVirtualListCollection, IVirtualListItemConfigMap } from "../models";
 
 /**
@@ -11,6 +12,7 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
         const normalizedItems: IVirtualListCollection<any | null> = [];
         let ci = -1, emptyId = Number.MIN_SAFE_INTEGER, offset = 0;
         for (let i = 0, l = items.length; i < l; i++) {
+            const dummyId = `${SERVICE_PROP_DUMMY_ID}-${i}`;
             const ii = i + offset, item = items[i], id = item[trackBy] ?? null, config = id !== null ? itemConfigMap[id] : null,
                 sticky = !!config ? (!!config.sticky && config.sticky > 0) : false;
 
@@ -22,7 +24,7 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
 
             if (sticky && ii > 0 && ci !== 0) {
                 for (let j = ci; j < divides; j++) {
-                    normalizedItems.push({});
+                    normalizedItems.push({[trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
                     emptyId++;
                     offset++;
                 }
@@ -30,7 +32,7 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
             normalizedItems.push(item);
             if (sticky && (i < (l - 1))) {
                 for (let j = 1; j < divides; j++) {
-                    normalizedItems.push({});
+                    normalizedItems.push({[trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
                     emptyId++;
                     offset++;
                 }

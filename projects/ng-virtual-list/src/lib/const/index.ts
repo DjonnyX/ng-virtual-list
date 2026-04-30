@@ -5,6 +5,12 @@ import { Directions } from "../enums/directions";
 import { IAnimationParams, IScrollingSettings } from '../interfaces';
 import { SnappingDistance } from "../types";
 
+export const SERVICE_PROP_DUMMY_ID = '__service-dummy-id__';
+
+export const SERVICE_PROP_DUMMY = '__service-dummy__';
+
+export const SERVICE_PROP_DUMMY_ENABLED = Symbol('__service-dummy-enabled__');
+
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
 
 export const DEFAULT_ITEM_SIZE = 24;

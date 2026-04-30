@@ -6,5 +6,12 @@
  * @email djonnyx@gmail.com
  */
 export type IVirtualListItem<E = Object> = E & {
+    /**
+     * The type of the collection item. Items with different types are cached in separate pools.
+     */
+    type?: string | symbol;
+    /**
+     * Props.
+     */
     [x: string]: any;
 };
