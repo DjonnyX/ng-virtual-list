@@ -27,20 +27,39 @@ import { ID, POSITION, POSITION_ZERO } from '../../../ng-list-item/const';
 })
 export class NgPrerenderVirtualListItemComponent extends NgVirtualListItemComponent {
     protected override update() {
-        const data = this._data, regular = this.regular, length = this._regularLength;
-        if (data) {
-            this._elementRef.nativeElement.setAttribute(ID, `${data.id}`);
-            const styles = this._elementRef.nativeElement.style;
+        const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement,
+        itemElement = this._item()?.nativeElement, containerElement = this._container()?.nativeElement;
+        if (!!data && !!el && !!itemElement && !!containerElement) {
+            const styles = el.style, itemElementStyles = itemElement.style;
+            el.setAttribute(ID, `${data.id}`);
             styles.zIndex = data.config.zIndex;
             if (regular) {
-                this._elementRef.nativeElement.setAttribute(POSITION, POSITION_ZERO);
+                el.setAttribute(POSITION, POSITION_ZERO);
             } else {
-                this._elementRef.nativeElement.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
+                el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
             }
-            styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
-            styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+            if (data.config.divides > 1) {
+                styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
+                styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
+                itemElementStyles.minWidth = styles.minWidth = `${data.measures.minWidth}${PX}`;
+                itemElementStyles.maxWidth = styles.maxWidth = `${data.measures.maxWidth}${PX}`;
+                itemElementStyles.minHeight = styles.minHeight = `${data.measures.minHeight}${PX}`;
+                itemElementStyles.maxHeight = styles.maxHeight = `${data.measures.maxHeight}${PX}`;
+        
+                itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+                itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+              } else {
+                styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+                styles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+                styles.minWidth = `${data.measures.minWidth}${PX}`;
+                styles.maxWidth = `${data.measures.maxWidth}${PX}`;
+                styles.minHeight = `${data.measures.minHeight}${PX}`;
+                styles.maxHeight = `${data.measures.maxHeight}${PX}`;
+              }
+            // styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
+            // styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
         } else {
-            this._elementRef.nativeElement.removeAttribute(ID);
+            el.removeAttribute(ID);
         }
     }
 

@@ -11,6 +11,7 @@ import { TemplateRef } from "@angular/core";
 export interface IPrerenderTrackBoxRefreshParams {
     itemRenderer: TemplateRef<any> | undefined;
     dynamic: boolean;
+    divides: number;
     itemSize: number;
     isVertical: boolean;
     trackBy: string;

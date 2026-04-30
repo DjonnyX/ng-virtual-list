@@ -2,7 +2,7 @@ import {
     ChangeDetectionStrategy, Component, input, TemplateRef, viewChild, ViewEncapsulation,
 } from "@angular/core";
 import {
-    DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
+    DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
@@ -53,6 +53,8 @@ export class NgPrerenderContainer {
     itemSize = input<number>(DEFAULT_ITEM_SIZE);
 
     trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
+
+    divides = input<number>(DEFAULT_DIVIDES);
 
     itemRenderer = input<TemplateRef<any>>();
 

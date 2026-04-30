@@ -6,7 +6,7 @@ import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { toggleClassName } from "../../../../utils";
 import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
 import {
-    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
+    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
@@ -61,6 +61,8 @@ export class NgPrerenderList implements OnDestroy {
     itemSize = input<number>(DEFAULT_ITEM_SIZE);
 
     trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
+
+    divides = input<number>(DEFAULT_DIVIDES);
 
     itemRenderer = input<TemplateRef<any>>();
 
@@ -147,6 +149,7 @@ export class NgPrerenderList implements OnDestroy {
                     this._trackBox.reset(this.itemComponentClass(), items, bounds, {
                         itemRenderer: this.itemRenderer(),
                         dynamic: this.dynamic(),
+                        divides: this.divides(),
                         itemSize: this.itemSize(),
                         isVertical: this.isVertical(),
                         trackBy: this.trackBy(),

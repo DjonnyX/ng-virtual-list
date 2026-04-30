@@ -6,15 +6,15 @@ import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
 import { BaseVirtualListItemComponent } from "../../ng-list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
-import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
+import { DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";
 import { EventEmitter } from "../../../utils/event-emitter/event-emitter";
 import { PrerenderTrackBoxEvents, PrerenderTrackBoxHandlers } from "../events";
 
 const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISize, boundsSize: number,
-    dynamic: boolean, itemSize: number, id: Id, index: number): IRenderVirtualListItem => {
-    const w = (isVertical ? bounds.width : itemSize) as any,
-        h = (isVertical ? itemSize : bounds.height) as any;
+    dynamic: boolean, divides: number, itemSize: number, id: Id, index: number): IRenderVirtualListItem => {
+    const w = (isVertical ? (bounds.width / divides) : itemSize) as any,
+        h = (isVertical ? itemSize : (bounds.height / divides)) as any;
     return {
         index,
         id,
@@ -111,6 +111,7 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
     private refresh(componentClass: Component$1<BaseVirtualListItemComponent>, bounds: ISize, params: IPrerenderTrackBoxRefreshParams) {
         const isVertical = params.isVertical ?? true,
             dynamic = params.dynamic ?? DEFAULT_DYNAMIC_SIZE,
+            divides = params.divides ?? DEFAULT_DIVIDES,
             itemsSize = params.itemSize ?? DEFAULT_ITEM_SIZE,
             trackBy = params.trackBy ?? TRACK_BY_PROPERTY_NAME,
             itemRenderer = params.itemRenderer,
@@ -140,7 +141,7 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
                 } else {
                     comp = components[j];
                 }
-                comp.instance.item = createItemData(item, isVertical, bounds, boundsSize, dynamic, itemsSize, id, index);
+                comp.instance.item = createItemData(item, isVertical, bounds, boundsSize, dynamic, divides, itemsSize, id, index);
                 comp.instance.show();
                 const { width, height } = comp.instance.getBounds(),
                     w = isVertical ? width : width < itemsSize ? itemsSize : width,
