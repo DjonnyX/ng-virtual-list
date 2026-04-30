@@ -1841,7 +1841,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 if (waitForPreparation) {
                   if (this.prerenderable) {
                     this._cached = false;
-                    prerenderContainer!.on(this._actualItems());
+                    prerenderContainer!.on(this.items());
                   }
                 }
                 this.classes.set({ prepared: false });
@@ -1860,7 +1860,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 this._trackBox.isScrollEnd = true;
                 if (this.prerenderable) {
                   this._cached = false;
-                  prerenderContainer!.on(this._actualItems());
+                  prerenderContainer!.on(this.items());
                 }
                 return $initialRenderStabilizer.pipe(
                   takeUntilDestroyed(this._destroyRef),
