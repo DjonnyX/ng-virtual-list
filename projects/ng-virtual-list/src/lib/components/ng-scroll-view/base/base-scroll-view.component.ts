@@ -33,6 +33,10 @@ export class BaseScrollView {
 
     readonly grabbing = signal<boolean>(false);
 
+    protected _inversion = inject(SCROLL_VIEW_INVERSION);
+
+    protected _overscrollEnabled = inject(SCROLL_VIEW_OVERSCROLL_ENABLED);
+
     protected _$updateScrollBar = new Subject<void>();
     protected $updateScrollBar = this._$updateScrollBar.asObservable();
 
@@ -41,7 +45,7 @@ export class BaseScrollView {
             isVertical = this.isVertical(),
             viewportSize = isVertical ? height : width,
             totalSize = this._totalSize;
-        return totalSize > viewportSize;
+        return this._inversion ? true : (totalSize > viewportSize);
     }
 
     protected _destroyRef = inject(DestroyRef);
@@ -142,10 +146,6 @@ export class BaseScrollView {
     readonly viewportBounds = signal<ISize>({ width: 0, height: 0 });
 
     readonly contentBounds = signal<ISize>({ width: 0, height: 0 });
-
-    protected _inversion = inject(SCROLL_VIEW_INVERSION);
-
-    protected _overscrollEnabled = inject(SCROLL_VIEW_OVERSCROLL_ENABLED);
 
     constructor() {
         this.isVertical = computed(() => {

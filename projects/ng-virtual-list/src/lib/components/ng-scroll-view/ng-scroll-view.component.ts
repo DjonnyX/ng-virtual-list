@@ -823,6 +823,10 @@ export class NgScrollView extends BaseScrollView {
     }
 
     scroll(params: IScrollToParams) {
+        if (!this.scrollable) {
+            return;
+        }
+
         const posX = params.x || params.left || 0,
             posY = params.y || params.top || 0,
             userAction = params.userAction ?? false,
