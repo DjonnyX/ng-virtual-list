@@ -23,6 +23,18 @@ interface IDeckOfCardsOptions {
      * Spacing between items. Default value is `0.5`.
      */
     spacingBetweenItems?: number;
+    /**
+     * Depth. Default value is `0.5`.
+     */
+    depth?: number;
+    /**
+     * Depth exponent. Default value is `4`.
+     */
+    depthPow?: number;
+    /**
+     * Sinusoidal distribution. Default value is `true`.
+     */
+    sineWave?: boolean;
 }
 
 /**
@@ -35,7 +47,10 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
     const dof = options?.dof ?? null,
         fogColor = options?.fogColor ?? null,
         fogWeight = options?.fogWeight ?? null,
-        spacingBetweenItems = options?.spacingBetweenItems ?? .5;
+        spacingBetweenItems = options?.spacingBetweenItems ?? .5,
+        depth = options?.depth ?? .05,
+        depthPow = options?.depthPow ?? 4,
+        sineWave = options?.depth ?? true;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
@@ -67,9 +82,9 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * Math.abs(Math.sin(px))));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * Math.abs(Math.sin(py)))) : yy;
-            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .05, 4);
+            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
+            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
+            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * depth, depthPow);
             result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
