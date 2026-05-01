@@ -45,7 +45,7 @@ export class BaseScrollView {
             isVertical = this.isVertical(),
             viewportSize = isVertical ? height : width,
             totalSize = this._totalSize;
-        return this._inversion ? true : (totalSize > viewportSize);
+        return this._inversion ? (totalSize < viewportSize) : (totalSize > viewportSize);
     }
 
     protected _destroyRef = inject(DestroyRef);
