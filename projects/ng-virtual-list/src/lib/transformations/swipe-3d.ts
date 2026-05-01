@@ -81,14 +81,15 @@ export const swipe3D = (options?: ISwipe3DOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(xx, .5) * spacingBetweenItems * Math.abs(Math.sin(px))));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(yy, .5) * spacingBetweenItems * Math.abs(Math.sin(py)))) : yy;
+            const rx = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(xx, .5) * spacingBetweenItems * Math.abs(Math.sin(px)))),
+                ry = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(yy, .5) * spacingBetweenItems * Math.abs(Math.sin(py)))) : yy;
+            result.x = rx;
+            result.y = ry;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * depth, depthPow);
             const z = scale + .1;
             result.z = z > 1 ? 1 : z;
             result.rotationZ = (s * angle);
-            const zI = Math.abs(isVertical ? py : px);
-            result.zIndex = -Math.floor(zI * 100);
+            result.zIndex = -index;
             if (!!dof) {
                 const blur = (s * dof) - B_LIMIT,
                     actualBlur = blur > 0 ? blur : 0;
