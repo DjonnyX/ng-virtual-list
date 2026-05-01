@@ -47,8 +47,8 @@ export const swipe3D = (options?: ISwipe3DOptions): ItemTransform => {
     const dof = options?.dof ?? null,
         fogColor = options?.fogColor ?? null,
         fogWeight = options?.fogWeight ?? null,
-        spacingBetweenItems = options?.spacingBetweenItems ?? 1,
-        angle = options?.angle ?? 1,
+        spacingBetweenItems = options?.spacingBetweenItems ?? .35,
+        angle = options?.angle ?? 25,
         depth = options?.depth ?? .15,
         depthPow = options?.depthPow ?? 4;
     return (index: number, measures: IRenderVirtualListItemMeasures,
@@ -81,14 +81,14 @@ export const swipe3D = (options?: ISwipe3DOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            const rx = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(xx, .5) * spacingBetweenItems * Math.abs(Math.sin(px)))),
-                ry = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (Math.pow(yy, .5) * spacingBetweenItems * Math.abs(Math.sin(py)))) : yy;
+            const rx = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + xx * Math.pow(px, 2) * spacingBetweenItems),
+                ry = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + yy * Math.pow(py, 2) * spacingBetweenItems) : yy;
             result.x = rx;
             result.y = ry;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * depth, depthPow);
             const z = scale + .1;
             result.z = z > 1 ? 1 : z;
-            result.rotationZ = (s * angle);
+            result.rotationZ = (Math.pow(s, 4) * -angle);
             result.zIndex = -index;
             if (!!dof) {
                 const blur = (s * dof) - B_LIMIT,
