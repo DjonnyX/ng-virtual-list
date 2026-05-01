@@ -145,6 +145,28 @@ export class NgScrollView extends BaseScrollView {
 
     constructor() {
         super();
+
+        let mouseCanceled = false,
+            touchCanceled = false;
+
+        const $viewportBounds = toObservable(this.viewportBounds);
+        $viewportBounds.pipe(
+            takeUntilDestroyed(),
+            debounceTime(0),
+            tap(() => {
+                this._isMoving = false;
+                this.grabbing.set(false);
+                if (!mouseCanceled || !touchCanceled) {
+                    this.stopMoving();
+                }
+                mouseCanceled = touchCanceled = true;
+                if (this.snapToItem() || this.scrollingOneByOne()) {
+                    this.alignPosition();
+                }
+                this._$scrollEnd.next(true);
+            }),
+        ).subscribe();
+
         const $wheel = this.$wheel;
         $wheel.pipe(
             takeUntilDestroyed(),
@@ -187,7 +209,6 @@ export class NgScrollView extends BaseScrollView {
             }),
         ).subscribe();
 
-        let mouseCanceled = false;
         const $mouseUp = race([
             fromEvent<MouseEvent>(window, MOUSE_UP, { passive: true }).pipe(
                 takeUntilDestroyed(this._destroyRef),
@@ -308,7 +329,6 @@ export class NgScrollView extends BaseScrollView {
             }),
         ).subscribe();
 
-        let touchCanceled = false;
         const $touchUp = race(
             [
                 fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }).pipe(
