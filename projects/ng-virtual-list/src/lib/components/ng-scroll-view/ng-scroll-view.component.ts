@@ -198,16 +198,44 @@ export class NgScrollView extends BaseScrollView {
                 tap(() => {
                     this._isMoving = false;
                     this.grabbing.set(false);
-                    if (this.snapToItem() && this.scrollingOneByOne()) {
-                        this.alignPosition();
-                    }
                     if (!mouseCanceled) {
                         this.stopMoving();
                     }
-
+                    mouseCanceled = true;
+                    if (this.snapToItem() && this.scrollingOneByOne()) {
+                        this.alignPosition();
+                    }
                     this._$scrollEnd.next(true);
                 }),
             );
+
+        $content.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            switchMap(content => {
+                return fromEvent<MouseEvent>(content, MOUSE_DOWN, { passive: false }).pipe(
+                    takeUntilDestroyed(this._destroyRef),
+                    filter(() => this._interactive),
+                    switchMap(e => {
+                        return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
+                            takeUntilDestroyed(this._destroyRef),
+                            takeUntil(fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false })),
+                            tap(e => {
+                                this._isMoving = false;
+                                this.grabbing.set(false);
+                                if (!mouseCanceled) {
+                                    this.stopMoving();
+                                }
+                                mouseCanceled = true;
+                                if (this.snapToItem() || this.scrollingOneByOne()) {
+                                    this.alignPosition();
+                                }
+                                this._$scrollEnd.next(true);
+                            }),
+                        );
+                    }),
+                );
+            }),
+        ).subscribe();
 
         $content.pipe(
             takeUntilDestroyed(this._destroyRef),
@@ -291,19 +319,46 @@ export class NgScrollView extends BaseScrollView {
                 takeUntilDestroyed(this._destroyRef),
                 delay(0),
                 tap(() => {
-                    touchCanceled = true;
                     this._isMoving = false;
                     this.grabbing.set(false);
-                    if (this.snapToItem() && this.scrollingOneByOne()) {
-                        this.alignPosition(false);
-                    }
                     if (!touchCanceled) {
                         this.stopMoving();
                     }
-
+                    touchCanceled = true;
+                    if (this.snapToItem() && this.scrollingOneByOne()) {
+                        this.alignPosition();
+                    }
                     this._$scrollEnd.next(true);
                 }),
             );
+
+        $content.pipe(
+            takeUntilDestroyed(this._destroyRef),
+            switchMap(content => {
+                return fromEvent<TouchEvent>(content, TOUCH_START, { passive: false }).pipe(
+                    takeUntilDestroyed(this._destroyRef),
+                    filter(() => this._interactive),
+                    switchMap(e => {
+                        return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
+                            takeUntilDestroyed(this._destroyRef),
+                            takeUntil(fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false })),
+                            tap(e => {
+                                this._isMoving = false;
+                                this.grabbing.set(false);
+                                if (!touchCanceled) {
+                                    this.stopMoving();
+                                }
+                                touchCanceled = true;
+                                if (this.snapToItem() || this.scrollingOneByOne()) {
+                                    this.alignPosition();
+                                }
+                                this._$scrollEnd.next(true);
+                            }),
+                        );
+                    }),
+                );
+            }),
+        ).subscribe();
 
         $content.pipe(
             takeUntilDestroyed(this._destroyRef),
