@@ -1243,24 +1243,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED),
                     ii = i + 1;
 
-                if (!isDummy) {
-                    const rowIndex = Math.floor(ii / divides),
-                        id = collectionItem[trackBy],
-                        cache = this.get(id)!,
-                        size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize,
-                        divSize = (isVertical ? normalizedItemWidth : normalizedItemHeight) / divides;
+                const rowIndex = Math.floor(ii / divides),
+                    id = collectionItem[trackBy],
+                    cache = this.get(id)!,
+                    size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize,
+                    divSize = (isVertical ? normalizedItemWidth : normalizedItemHeight) / divides;
 
-                    if (i % divides === 0) {
-                        ci = 0;
-                        row = {
-                            size,
-                            odd: rowIndex % 2 !== 0,
-                            even: rowIndex % 2 === 0,
-                        };
-                    } else {
-                        row.size = Math.max(row.size, size);
-                        ci++;
-                    }
+                if (i % divides === 0) {
+                    ci = 0;
+                    row = {
+                        size,
+                        odd: rowIndex % 2 !== 0,
+                        even: rowIndex % 2 === 0,
+                    };
+                } else {
+                    row.size = Math.max(row.size, size);
+                    ci++;
+                }
+                if (!isDummy) {
                     if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
                         const isOdd = i % 2 != 0,
                             sticky = itemConfigMap[id]?.sticky ?? 0,
