@@ -14,7 +14,7 @@ import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
-import { ItemTransform } from "../types";
+import { ItemTransform, ScrollDirection } from "../types";
 import { objectAsReadonly } from "../utils/object";
 
 export enum TrackBoxEvents {
@@ -165,6 +165,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         this._snappedDisplayComponents = v;
     }
+
+    protected _scrollDirection: ScrollDirection = 0;
+    set scrollDirection(v: ScrollDirection) {
+        if (this._scrollDirection === v) {
+            return;
+        }
+
+        this._scrollDirection = v;
+    }
+    get scrollDirection() { return this._scrollDirection; }
 
     protected _divides: number = DEFAULT_DIVIDES;
 
@@ -607,7 +617,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
         let leftItemsOffset = 0, rightItemsOffset = 0;
         if (enabledBufferOptimization) {
-            switch (this.scrollDirection) {
+            switch (this._scrollDirection) {
                 case 1: {
                     leftItemsOffset = 0;
                     rightItemsOffset = bufferSize * divides;
@@ -946,12 +956,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._prerenderedCache = cache;
     }
 
-    clearDelta(clearDirectionDetector = false): void {
+    clearDelta(): void {
         this._delta = this._deltaOfNewItems = 0;
-
-        if (clearDirectionDetector) {
-            this.clearScrollDirectionCache();
-        }
     }
 
     changes(immediately: boolean = false, force: boolean = false): void {
@@ -1027,6 +1033,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             const trackBy = this._trackingPropertyName, actualSnippedPosition = stickyPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
+                scrollDirection = this._scrollDirection,
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
             let pos = startPosition,
                 renderItems = renderItemsLength,
@@ -1084,6 +1091,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
                                 absoluteEndPositionPercent,
+                                scrollDirection,
                                 delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1174,6 +1182,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 minHeight: minItemSize,
                                 maxWidth: maxItemSize,
                                 maxHeight: maxItemSize,
+                                scrollDirection,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1290,6 +1299,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 minHeight: minItemSize,
                                 maxWidth: maxItemSize,
                                 maxHeight: maxItemSize,
+                                scrollDirection,
                                 delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1412,10 +1422,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     resetPositions() {
         this._tracker.clearTrackMap();
 
-        this.clearScrollDirectionCache(false);
-
-        this.deltaDirection = 0;
-
         this.track();
     }
 
@@ -1427,7 +1433,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this.scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this._scrollDirection);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {

@@ -1,4 +1,5 @@
 import { IRect } from "../interfaces";
+import { ScrollDirection } from "../types";
 
 /**
  * Measures for IRenderVirtualListItem
@@ -105,6 +106,10 @@ export interface IRenderVirtualListItemMeasures extends IRect {
      * End position in viewport (percent)
      */
     absoluteEndPositionPercent: number;
+    /**
+     * Scroll direction.
+     */
+    scrollDirection: ScrollDirection;
     /**
      * Delta is calculated for Snapping Method.ADVANCED
      */

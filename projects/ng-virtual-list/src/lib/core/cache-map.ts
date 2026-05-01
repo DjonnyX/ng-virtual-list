@@ -19,9 +19,6 @@ type OnChangeEventListener = (version: number) => void;
 
 type CacheMapListeners = OnChangeEventListener;
 
-const MAX_SCROLL_DIRECTION_POOL = 10, CLEAR_SCROLL_DIRECTION_TO = 10,
-    DIR_BACK = '-1', DIR_NONE = '0', DIR_FORWARD = '1';
-
 /**
  * Cache map.
  * Emits a change event on each mutation.
@@ -46,31 +43,9 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
         return this._delta;
     }
 
-    protected _deltaDirection: ScrollDirection = 0;
-    set deltaDirection(v: ScrollDirection) {
-        this._deltaDirection = v;
-
-        this._scrollDirection = this.calcScrollDirection(v);
-    }
-    get deltaDirection() {
-        return this._deltaDirection;
-    }
-
-    private _scrollDirectionCache: Array<ScrollDirection> = [];
-    private _scrollDirection: ScrollDirection = 0;
-    get scrollDirection() {
-        return this._scrollDirection;
-    }
-
     get version() {
         return this._version;
     }
-
-    private _clearScrollDirectionDebounce = debounce(() => {
-        while (this._scrollDirectionCache.length > CLEAR_SCROLL_DIRECTION_TO) {
-            this._scrollDirectionCache.shift();
-        }
-    }, 10);
 
     constructor() {
         super();
@@ -110,43 +85,6 @@ export class CacheMap<I = string | number, B = any, E = CacheMapEvents, L = Cach
         this.nextTick(() => {
             this.lifeCircle();
         });
-    }
-
-    clearScrollDirectionCache(async = true) {
-        if (async) {
-            this._clearScrollDirectionDebounce.execute();
-            return;
-        }
-
-        this._scrollDirectionCache = [];
-    }
-
-    private calcScrollDirection(v: ScrollDirection): ScrollDirection {
-        while (this._scrollDirectionCache.length >= MAX_SCROLL_DIRECTION_POOL) {
-            this._scrollDirectionCache.shift();
-        }
-        this._scrollDirectionCache.push(v);
-        const dict: { [x: string]: number } = { [DIR_BACK]: 0, [DIR_NONE]: 0, [DIR_FORWARD]: 0 };
-        for (let i = 0, l = this._scrollDirectionCache.length, li = l - 1; i < l; i++) {
-            const dir = String(this._scrollDirectionCache[i]);
-            dict[dir] += 1;
-            if (i === li) {
-                for (let d in dict) {
-                    if (d === String(v)) {
-                        continue;
-                    }
-                    dict[d] -= 1;
-                }
-            }
-        }
-
-        if (dict[DIR_BACK] > dict[DIR_NONE] && dict[DIR_BACK] > dict[DIR_FORWARD]) {
-            return -1;
-        } else if (dict[DIR_FORWARD] > dict[DIR_BACK] && dict[DIR_FORWARD] > dict[DIR_NONE]) {
-            return 1;
-        }
-
-        return 0;
     }
 
     protected bumpVersion() {

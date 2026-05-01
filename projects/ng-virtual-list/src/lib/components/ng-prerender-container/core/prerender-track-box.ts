@@ -50,6 +50,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             minHeight: 0,
             maxWidth: Number.MAX_SAFE_INTEGER,
             maxHeight: Number.MAX_SAFE_INTEGER,
+            scrollDirection: 0,
         },
         data,
         previouseData: data,

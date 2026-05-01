@@ -1475,6 +1475,15 @@ export class NgVirtualListComponent implements OnDestroy {
         switchMap(scroller => scroller.$resizeContent),
       );
 
+    $scrollerComponent.pipe(
+      takeUntilDestroyed(),
+      filter(v => !!v),
+      switchMap(scroller => scroller.$scrollDirection),
+      tap(v => {
+        this._trackBox.scrollDirection = v;
+      }),
+    ).subscribe();
+
     $resizeViewport.pipe(
       takeUntilDestroyed(),
       filter(v => !!v),
@@ -2953,13 +2962,11 @@ export class NgVirtualListComponent implements OnDestroy {
     if (scrollerEl && scrollerComponent) {
       const isVertical = this._isVertical, scrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
         maxScrollSize = (isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth),
-        bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-        currentScrollSize = this._scrollSize();
-      this._trackBox.deltaDirection = currentScrollSize > scrollSize ? -1 : currentScrollSize < scrollSize ? 1 : 0;
+        bounds = this._bounds() || { x: 0, y: 0, width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE };
       const itemsRange = formatActualDisplayItems(this._service.displayItems, this._actualScrollStartOffset(), this._actualScrollEndOffset(),
         scrollSize, isVertical, bounds),
         event = new ScrollEvent({
-          direction: this._trackBox.scrollDirection, container: scrollerEl,
+          direction: this._scrollerComponent()?.scrollDirection ?? 0, container: scrollerEl,
           list: this._list()!.nativeElement, delta: this._trackBox.delta,
           deltaOfNewItems: this._trackBox.deltaOfNewItems, isVertical,
           scrollSize,
