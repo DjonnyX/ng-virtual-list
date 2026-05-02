@@ -2517,7 +2517,7 @@ export class NgVirtualListComponent implements OnDestroy {
             const enabledOptimization = this.scrollingSettings()?.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
               velocity = this._scrollerComponent()?.averageVelocity ?? 0,
               isScrolling = this._$scrollingTo.getValue(),
-              useDebouncedUpdate = dynamicSize && !itemsChanged && hasUserAction && !isScrolling &&
+              useDebouncedUpdate = (dynamicSize && !itemTransform) && !itemsChanged && hasUserAction && !isScrolling &&
                 (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1);
             if (enabledOptimization) {
               if (useDebouncedUpdate) {
@@ -2533,11 +2533,15 @@ export class NgVirtualListComponent implements OnDestroy {
             }
 
             if (!isScrolling) {
-              update({
-                snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
-                collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
-                cacheVersion, userAction: hasUserAction,
-              });
+              let i = dynamicSize ? 1 : 2;
+              while (i > 0) {
+                update({
+                  snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
+                  collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
+                  cacheVersion, userAction: hasUserAction,
+                });
+                i--;
+              }
             }
           }),
         );
