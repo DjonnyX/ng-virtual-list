@@ -29,7 +29,7 @@ import {
 import {
   IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions, IScrollingSettings,
 } from './interfaces';
-import { ArithmeticExpression, FloatOrPersentageValue, FocusAlignment, Id, ItemTransform, SnappingDistance } from './types';
+import { ArithmeticExpression, FocusAlignment, Id, ItemTransform, SnappingDistance } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
   CollectionMode, CollectionModes, Direction, Directions, FocusAlignments, MethodForSelecting, MethodsForSelecting,
