@@ -24,7 +24,7 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
 
             if (sticky && ii > 0 && ci !== 0) {
                 for (let j = ci; j < divides; j++) {
-                    normalizedItems.push({[trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
+                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
                     emptyId++;
                     offset++;
                 }
@@ -32,7 +32,7 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
             normalizedItems.push(item);
             if (sticky && (i < (l - 1))) {
                 for (let j = 1; j < divides; j++) {
-                    normalizedItems.push({[trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
+                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED });
                     emptyId++;
                     offset++;
                 }

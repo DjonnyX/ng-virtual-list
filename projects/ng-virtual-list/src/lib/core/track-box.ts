@@ -601,7 +601,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
-            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
+            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize,
             deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
@@ -678,34 +678,36 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let y = this._scrollStartOffset, stickyComponentSize = 0;
-            let row: {
-                size: number;
-                deltaFromStartCreation: number;
-                leftSizeOfAddedItems: number;
-                leftSizeOfUpdatedItems: number;
-                leftSizeOfDeletedItems: number;
-                deltaOfNewItems: number;
-                leftItemsOrRowsWeights: number | null;
-                rightItemsWeight: number;
-                leftHiddenItemsWeight: number;
-                totalItemsToDisplayEndWeight: number;
-            } = {
-                size: 0,
-                deltaFromStartCreation: 0,
-                leftSizeOfAddedItems: 0,
-                leftSizeOfUpdatedItems: 0,
-                leftSizeOfDeletedItems: 0,
-                deltaOfNewItems: 0,
-                leftItemsOrRowsWeights: null,
-                rightItemsWeight: 0,
-                leftHiddenItemsWeight: 0,
-                totalItemsToDisplayEndWeight: 0,
-            };
+            let y = this._scrollStartOffset,
+                stickyComponentSize = 0,
+                row: {
+                    size: number;
+                    deltaFromStartCreation: number;
+                    leftSizeOfAddedItems: number;
+                    leftSizeOfUpdatedItems: number;
+                    leftSizeOfDeletedItems: number;
+                    deltaOfNewItems: number;
+                    leftItemsOrRowsWeights: number | null;
+                    rightItemsWeight: number;
+                    leftHiddenItemsWeight: number;
+                    totalItemsToDisplayEndWeight: number;
+                } = {
+                    size: 0,
+                    deltaFromStartCreation: 0,
+                    leftSizeOfAddedItems: 0,
+                    leftSizeOfUpdatedItems: 0,
+                    leftSizeOfDeletedItems: 0,
+                    deltaOfNewItems: 0,
+                    leftItemsOrRowsWeights: null,
+                    rightItemsWeight: 0,
+                    leftHiddenItemsWeight: 0,
+                    totalItemsToDisplayEndWeight: 0,
+                };
             for (let i = 0, l = collection.length, li = l - 1; i < l; i++) {
                 const ii = i + 1,
                     collectionItem = collection[i],
                     id = collectionItem[trackBy],
+                    sticky = itemConfigMap?.[id]?.sticky ?? 0,
                     isNewRow = i % divides === 0,
                     isLastItemInRow = ii % divides === 0,
                     isLastItem = i === li,
@@ -768,7 +770,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (isFromId) {
                     if (itemById === undefined) {
-                        if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
+                        if (id !== fromItemId && id === stickyItemId && sticky === 1) {
                             stickyComponentSize = componentSize;
                             y -= stickyComponentSize;
                         }
@@ -1042,7 +1044,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
 
             if (stickyEnabled) {
-                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
+                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? (divides > 1 ? (itemsFromStartToScrollEnd - 1) : itemsFromStartToScrollEnd) : 0, totalLength - 1); i >= 0; i--) {
                     const collectionItem = items[i],
                         isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
                     if (!collectionItem || isDummy) {
@@ -1246,7 +1248,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const rowIndex = Math.floor(ii / divides),
                     id = collectionItem[trackBy],
                     cache = this.get(id)!,
-                    size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize,
+                    size = isDummy ? 0 : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
                     divSize = (isVertical ? normalizedItemWidth : normalizedItemHeight) / divides;
 
                 if (i % divides === 0) {
@@ -1260,6 +1262,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     row.size = Math.max(row.size, size);
                     ci++;
                 }
+
                 if (!isDummy) {
                     if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
                         const isOdd = i % 2 != 0,
