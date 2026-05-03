@@ -56,8 +56,8 @@ export const eventHorizon = (options?: IEventHorizonOptions): ItemTransform => {
             itemSize = isVertical ? measures.height : measures.width,
             itemSizeHalf = itemSize * .5,
             boundsSizeHalf = boundsSize * .5,
-            xx = isVertical ? measures.x : (measures.x - itemSizeHalf - boundsSizeHalf - scrollSize),
-            yy = isVertical ? (measures.y - itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
+            xx = isVertical ? measures.x : (measures.x + itemSizeHalf - boundsSizeHalf - scrollSize),
+            yy = isVertical ? (measures.y + itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
             pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
             pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
 
