@@ -119,8 +119,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.updateScrollBar();
 
       this.recalculatePerspective();
-
-      this.fireScrollEvent(false);
     }
   }
   override get x() { return this._x; }
@@ -136,8 +134,6 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       this.updateScrollBar();
 
       this.recalculatePerspective();
-
-      this.fireScrollEvent(false);
     }
   }
   override get y() { return this._y; }

@@ -1457,6 +1457,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._service.$tick.pipe(
       takeUntilDestroyed(),
+      filter(() => this.dynamicSize() === true),
       tap(() => {
         this.checkBoundsOfElements();
         this._scrollerComponent()?.tick();

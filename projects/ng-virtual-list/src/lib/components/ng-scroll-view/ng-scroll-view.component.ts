@@ -116,8 +116,6 @@ export class NgScrollView extends BaseScrollView {
             this._x = this._actualX = v;
 
             this.measureVelocity();
-
-            this.fireScrollEvent(false);
         }
     }
     override get x() { return this._x; }
@@ -129,8 +127,6 @@ export class NgScrollView extends BaseScrollView {
             this._y = this._actualY = v;
 
             this.measureVelocity();
-
-            this.fireScrollEvent(false);
         }
     }
     override get y() { return this._y; }

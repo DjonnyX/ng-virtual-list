@@ -9,6 +9,8 @@ export const SERVICE_PROP_DUMMY_ID = '__service-dummy-id__';
 
 export const SERVICE_PROP_DUMMY = '__service-dummy__';
 
+export const SERVICE_TYPE_DUMMY = '__service-type-dummy__';
+
 export const SERVICE_PROP_DUMMY_ENABLED = Symbol('__service-dummy-enabled__');
 
 export const MAX_REGULAR_SNAPED_COMPONENTS = 2;
