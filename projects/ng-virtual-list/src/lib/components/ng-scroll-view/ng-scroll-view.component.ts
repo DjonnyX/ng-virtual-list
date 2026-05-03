@@ -815,6 +815,7 @@ export class NgScrollView extends BaseScrollView {
             }
         } else if (position !== null) {
             this.move(isVertical, position, false, false, true);
+            this._service.update(true, true);
             return true;
         }
         return false;
@@ -911,6 +912,7 @@ export class NgScrollView extends BaseScrollView {
         const posX = params.x || params.left || 0,
             posY = params.y || params.top || 0,
             userAction = params.userAction ?? false,
+            snap = params.snap ?? true,
             ease = params.ease || easeOutQuad,
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
@@ -940,7 +942,9 @@ export class NgScrollView extends BaseScrollView {
                     }
                     this.refreshY(y);
                     this.y = y;
-                    this.checkIntersectionComponent();
+                    if (snap) {
+                        this.checkIntersectionComponent();
+                    }
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
@@ -953,7 +957,9 @@ export class NgScrollView extends BaseScrollView {
                     }
                     this.refreshX(x);
                     this.x = x;
-                    this.checkIntersectionComponent();
+                    if (snap) {
+                        this.checkIntersectionComponent();
+                    }
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);

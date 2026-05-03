@@ -379,8 +379,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
   }
 
   scrollToComplete() {
-    this.dropVelocity();
-    this.alignPosition(false, true);
+    this.alignPosition(true, true);
     this._scrollDirection.clear();
     this.dropVelocity();
     this.fireScrollEvent(true);

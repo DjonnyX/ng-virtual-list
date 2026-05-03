@@ -9,9 +9,8 @@ import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirection, TextDirections } from './enums';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
-  ITEM_CONTAINER,
-  TRACK_BY_PROPERTY_NAME,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK,
+  ITEM_CONTAINER, TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { FocusAlignment, Id } from './types';
 import { getListElements, NGVL_INDEX } from './components/ng-list-item/utils';
@@ -92,6 +91,8 @@ export class NgVirtualListService {
   isVertical: boolean = true;
 
   dynamic: boolean = true;
+
+  itemSize: number = DEFAULT_ITEM_SIZE;
 
   snapScrollToStart: boolean = false;
 

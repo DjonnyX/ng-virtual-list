@@ -1,12 +1,15 @@
 import { Id } from "../types";
+import { ScrollAlignment } from "../enums";
+
 /**
- * Interface IScrollParams.
+ * IScrollParams
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export interface IScrollParams {
     id: Id;
+    alignment?: ScrollAlignment;
     behavior?: ScrollBehavior;
     blending?: boolean;
     iteration?: number;
