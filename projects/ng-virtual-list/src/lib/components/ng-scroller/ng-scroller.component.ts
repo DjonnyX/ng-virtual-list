@@ -424,7 +424,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     if (!userAction) {
       return;
     }
-    this._$scrollbarScroll.next(userAction);
+    this._$scrollbarScroll.next(true);
     this.stopScrolling();
     const isVertical = this.isVertical(),
       {
@@ -434,9 +434,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         position,
       });
 
-    this.scrollTo({
+      this._service.update(false, true);
+      this.scrollTo({
       [isVertical ? TOP : LEFT]: absolutePosition, behavior: INSTANT,
-      blending: false, userAction: false, fireUpdate: true,
+      blending: false, userAction: true, fireUpdate: true,
     });
     this.emitScrollableEvent();
     this.fireUpdateIfEdgesDetected(position, min, max, true, true);
@@ -446,10 +447,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     const { position, min, max, userAction } = event;
     this._isScrollbarUserAction = false;
     this.dropVelocity();
+    this._service.update(false, true);
     const isEdge = this.fireUpdateIfEdgesDetected(position, min, max, true, true);
-    if (isEdge) {
-      this.refresh(true, true);
-    } else {
+    if (!isEdge) {
       this.alignPosition();
     }
     this._scrollDirection.clear();
