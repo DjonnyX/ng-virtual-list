@@ -1,3 +1,4 @@
+import { SnapToItemAlign } from "../enums";
 import { Color } from "../types";
 
 /**
@@ -84,4 +85,12 @@ export interface IRenderVirtualListItemConfig {
      * Division number.
      */
     divides: number;
+    /**
+     * Snap to an item. The default value is `false`.
+     */
+    snapToItem: boolean;
+    /**
+     * Alignment for snapToItem. Available values ​​are `start`, `center`, and `end`. The default value is `center`.
+     */
+    snapToItemAlign: SnapToItemAlign;
 }

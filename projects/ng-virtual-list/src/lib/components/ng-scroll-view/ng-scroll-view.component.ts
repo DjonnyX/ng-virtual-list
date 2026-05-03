@@ -748,11 +748,11 @@ export class NgScrollView extends BaseScrollView {
         return size;
     }
 
-    protected alignPosition(animated: boolean = true) {
+    protected alignPosition(animated: boolean = true, force: boolean = false) {
         if (!this.snapToItem()) {
             return false;
         }
-        const scrollDirection = this._scrollDirection.get();
+        const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
         if (scrollDirection === 0) {
             return false;
         }
@@ -805,11 +805,16 @@ export class NgScrollView extends BaseScrollView {
             }
         }
 
-        if ((animated && position !== null && position !== currentPosition)) {
-            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
-            return true;
-        } else if (!animated && position !== null && position !== currentPosition) {
-            this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
+        if (animated) {
+            if ((position !== null && position !== currentPosition)) {
+                this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
+                return true;
+            } else if (position !== null && position !== currentPosition) {
+                this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
+                return true;
+            }
+        } else if (position !== null) {
+            this.move(isVertical, position, false, false, true);
             return true;
         }
         return false;

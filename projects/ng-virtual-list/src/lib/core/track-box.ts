@@ -16,6 +16,7 @@ import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
 import { ItemTransform, ScrollDirection } from "../types";
 import { objectAsReadonly } from "../utils/object";
+import { SnapToItemAlign } from "../enums";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',
@@ -57,6 +58,8 @@ export interface IMetrics {
     typicalItemSize: number;
     isFromItemIdFound: boolean;
     isUpdating: boolean;
+    snapToItem: boolean;
+    snapToItemAlign: SnapToItemAlign;
     itemTransform: ItemTransform | null;
 }
 
@@ -77,6 +80,8 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     previousTotalSize: number;
     crudDetected: boolean;
     deletedItemsMap: { [index: number]: ISize; };
+    snapToItem: boolean;
+    snapToItemAlign: SnapToItemAlign;
     itemTransform: ItemTransform | null;
 }
 
@@ -601,7 +606,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
         const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
-            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize,
+            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, snapToItem, snapToItemAlign,
             deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
@@ -948,6 +953,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             typicalItemSize,
             isFromItemIdFound,
             isUpdating,
+            snapToItem,
+            snapToItemAlign,
             itemTransform,
         };
 
@@ -1027,6 +1034,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             typicalItemSize,
             minItemSize,
             maxItemSize,
+            snapToItem,
+            snapToItemAlign,
             itemTransform,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
@@ -1108,6 +1117,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                snapToItem,
+                                snapToItemAlign,
                                 tabIndex: count,
                                 divides,
                                 opacity: 1,
@@ -1199,6 +1210,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                snapToItem,
+                                snapToItemAlign,
                                 tabIndex: items.length,
                                 divides,
                                 opacity: 1,
@@ -1317,6 +1330,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                snapToItem,
+                                snapToItemAlign,
                                 tabIndex: count,
                                 isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
                                 divides,

@@ -41,6 +41,8 @@ export const NAVIGATION_BY_KEYBOARD_TIMER = 50;
 
 export const DEFAULT_SNAP_TO_ITEM = false;
 
+export const DEFAULT_SNAP_TO_ITEM_ALIGN: SnapToItemAlign = SnapToItemAligns.CENTER;
+
 export const DEFAULT_SNAPPING_DISTANCE: SnappingDistance = '25%';
 
 export const DEFAULT_SCROLLING_ONE_BY_ONE = false;
@@ -52,8 +54,6 @@ export const DEFAULT_MOTION_BLUR = 0.15;
 export const DEFAULT_MOTION_BLUR_ENABLED = false;
 
 export const DEFAULT_MAX_MOTION_BLUR = 0.5;
-
-export const DEFAULT_SNAP_TO_ITEM_ALIGN: SnapToItemAlign = SnapToItemAligns.CENTER;
 
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
     scrollToItem: 50,

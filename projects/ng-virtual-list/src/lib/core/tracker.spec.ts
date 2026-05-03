@@ -4,6 +4,7 @@ import { IRenderVirtualListCollection } from '../models/render-collection.model'
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { ISize } from '../interfaces';
 import { Id } from '../types';
+import { SnapToItemAligns } from '../enums';
 
 class ComponentRef<C extends any> {
     get instance(): C {
@@ -84,7 +85,8 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
                 size: 0,
                 odd: false,
                 even: false
-            }
+            },
+            scrollDirection: 0,
         },
         data: {
             [trackBy]: id,
@@ -105,7 +107,9 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
             tabIndex: 0,
             zIndex: '0',
             opacity: 0,
-            divides: 0
+            divides: 0,
+            snapToItem: false,
+            snapToItemAlign: SnapToItemAligns.START,
         },
         previouseData: undefined,
         nextData: undefined,

@@ -6,7 +6,7 @@ import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
 import { BaseVirtualListItemComponent } from "../../ng-list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
-import { DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
+import { DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SNAP_TO_ITEM_ALIGN, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";
 import { EventEmitter } from "../../../utils/event-emitter/event-emitter";
 import { PrerenderTrackBoxEvents, PrerenderTrackBoxHandlers } from "../events";
@@ -72,6 +72,8 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             tabIndex: 0,
             opacity: 1,
             zIndex: "0",
+            snapToItem: false,
+            snapToItemAlign: DEFAULT_SNAP_TO_ITEM_ALIGN,
         },
     }
 }

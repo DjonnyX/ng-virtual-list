@@ -4,6 +4,7 @@ import { IRenderVirtualListCollection } from '../models/render-collection.model'
 import { ISize } from '../interfaces';
 import { Id } from '../types';
 import { CMap } from '../utils/cmap';
+import { SnapToItemAligns } from '../enums';
 
 interface IItem<I = any> {
     [prop: string]: I;
@@ -72,7 +73,8 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
                 size: 0,
                 odd: false,
                 even: false
-            }
+            },
+            scrollDirection: 0,
         },
         data: { id },
         config: {
@@ -91,7 +93,9 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             tabIndex: 0,
             zIndex: '0',
             opacity: 0,
-            divides: 0
+            divides: 0,
+            snapToItem: false,
+            snapToItemAlign: SnapToItemAligns.START,
         },
         previouseData: undefined,
         nextData: undefined,
@@ -140,7 +144,9 @@ describe('TrackBox', () => {
             minItemSize: 0,
             maxItemSize: 0,
             stickyEnabled: false,
-            itemTransform: null
+            itemTransform: null,
+            snapToItem: false,
+            snapToItemAlign: SnapToItemAligns.START,
         });
         expect(trackBox.isReseted).toBeTruthy();
     });
@@ -258,7 +264,9 @@ describe('TrackBox', () => {
                 maxItemSize: 0,
                 stickyEnabled: false,
                 stickyPos: 0,
-                itemTransform: null
+                itemTransform: null,
+                snapToItem: false,
+                snapToItemAlign: SnapToItemAligns.START,
             };
             return metric;
         }
