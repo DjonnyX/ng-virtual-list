@@ -1,4 +1,4 @@
-import { Id, ScrollAlignment } from "../types";
+import { Id } from "../types";
 
 /**
  * IScrollParams
@@ -8,7 +8,6 @@ import { Id, ScrollAlignment } from "../types";
  */
 export interface IScrollParams {
     id: Id;
-    alignment?: ScrollAlignment;
     behavior?: ScrollBehavior;
     blending?: boolean;
     iteration?: number;

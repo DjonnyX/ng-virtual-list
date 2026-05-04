@@ -12,7 +12,6 @@ import { GradientColorPositions } from './gradient-color-positions';
 import { CollectionMode } from "../types/collection-mode";
 import { Direction } from "../types/direction";
 import { MethodForSelecting } from "../types/method-for-selecting";
-import { ScrollAlignment } from '../types/scroll-alignment';
 import { SnapToItemAlign } from '../types/snap-to-item-align';
 import { SnappingMethod } from "../types/snapping-method";
 import { TextDirection } from "../types/text-direction";
@@ -32,7 +31,6 @@ export type {
     ScrollDirection,
     SnappingDistance,
     MethodForSelecting,
-    ScrollAlignment,
     SnappingMethod,
     SnapToItemAlign,
     TextDirection,

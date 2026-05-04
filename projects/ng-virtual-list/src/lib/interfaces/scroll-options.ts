@@ -1,5 +1,3 @@
-import { ScrollAlignment } from "../types";
-
 /**
  * Interface IScrollOptions.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
@@ -7,10 +5,6 @@ import { ScrollAlignment } from "../types";
  * @email djonnyx@gmail.com
  */
 export interface IScrollOptions {
-    /**
-     * Scroll alignment. Available options: "none" and "center." "center" aligns the element relative to the center of the viewport. Default value is `none`.
-     */
-    alignment?: ScrollAlignment;
     /**
      * Default value is `0`.
      */
