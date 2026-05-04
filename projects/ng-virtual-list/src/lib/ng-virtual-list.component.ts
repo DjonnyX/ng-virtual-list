@@ -2465,7 +2465,7 @@ export class NgVirtualListComponent implements OnDestroy {
           switch (alignment) {
             case Alignments.NONE: {
               this._actualScrollStartOffset.set(precalculatedScrollStartOffset);
-              this._actualScrollEndOffset.set(precalculatedScrollStartOffset);
+              this._actualScrollEndOffset.set(precalculatedScrollEndOffset);
               break;
             }
             case Alignments.CENTER: {
@@ -2479,7 +2479,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._alignmentScrollStartOffset.set(alignmentStartOffset);
               this._alignmentScrollEndOffset.set(alignmentEndOffset);
               this._actualScrollStartOffset.set(precalculatedScrollStartOffset + alignmentStartOffset);
-              this._actualScrollEndOffset.set(precalculatedScrollStartOffset + alignmentEndOffset);
+              this._actualScrollEndOffset.set(precalculatedScrollEndOffset + alignmentEndOffset);
               break;
             }
           }

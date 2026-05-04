@@ -170,8 +170,8 @@ export class BaseScrollView {
                 endOffset = this.endOffset(),
                 w = viewport.offsetWidth,
                 h = viewport.offsetHeight,
-                width = isVertical ? w : w - startOffset - endOffset,
-                height = isVertical ? h - startOffset - endOffset : h,
+                width = isVertical ? w : (w - startOffset - endOffset),
+                height = isVertical ? (h - startOffset - endOffset) : h,
                 bounds = this.viewportBounds();
             if (bounds.width === width && bounds.height === height) {
                 return;
@@ -187,8 +187,8 @@ export class BaseScrollView {
                 startOffset = this.startOffset(),
                 w = content.offsetWidth,
                 h = content.offsetHeight,
-                width = isVertical ? w : w - startOffset,
-                height = isVertical ? h - startOffset : h,
+                width = isVertical ? w : (w - startOffset),
+                height = isVertical ? (h - startOffset) : h,
                 bounds = this.contentBounds();
             if (bounds.width === width && bounds.height === height) {
                 return;
