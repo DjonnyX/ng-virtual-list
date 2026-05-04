@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, Signal, signal, TemplateRef, viewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map, tap } from 'rxjs';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
@@ -151,11 +153,25 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       this._elementRef.nativeElement.setAttribute('part', part);
     });
 
+    const $focus = this._service.$focusedId.pipe(
+      takeUntilDestroyed(),
+      map(id => id === this.itemId),
+    );
+
+    $focus.pipe(
+      takeUntilDestroyed(),
+      tap(() => {
+        this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
+      }),
+    ).subscribe();
+
+    const focus = toSignal($focus);
+
     this.classes = computed(() => {
-      const data = this.data(), focused = this.focused();
+      const data = this.data(), _focus = focus() ?? false;
       return {
         [CLASS_NAME_SNAPPED]: data?.config?.snapped ?? false, [CLASS_NAME_SNAPPED_OUT]: data?.config?.snappedOut ?? false,
-        [CLASS_NAME_FOCUS]: focused,
+        [CLASS_NAME_FOCUS]: _focus,
       };
     });
 
@@ -256,12 +272,16 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       part += PART_ITEM_NEW;
       fxPart += PART_ITEM_FX_NEW;
     }
-    if (this.focused()) {
+    if (this.hasFocus()) {
       part += PART_ITEM_FOCUSED;
       fxPart += PART_ITEM_FX_FOCUSED;
     }
     this.part.set(part);
     this.fxPart.set(fxPart);
+  }
+
+  protected hasFocus() {
+    return this._service.focusedId === this.itemId;
   }
 
   getBounds(): ISize {

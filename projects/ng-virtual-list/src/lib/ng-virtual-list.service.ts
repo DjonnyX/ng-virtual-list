@@ -55,6 +55,11 @@ export class NgVirtualListService {
 
   private _$focusedId = new BehaviorSubject<Id | null>(null);
   $focusedId = this._$focusedId.asObservable();
+  set focusedId(v: Id | null) {
+    if (this._$focusedId.getValue() !== v) {
+      this._$focusedId.next(v);
+    }
+  }
   get focusedId() { return this._$focusedId.getValue(); }
 
   private _$focusItem = new Subject<FocusItemParams>();
@@ -404,10 +409,6 @@ export class NgVirtualListService {
     if (!!element) {
       this.focus(element, FocusAlignments.CENTER, BEHAVIOR_INSTANT);
     }
-  }
-
-  areaFocus(id: Id | null) {
-    this._$focusedId.next(id);
   }
 
   initialize(id: number, trackBox: TrackBox) {

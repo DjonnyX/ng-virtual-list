@@ -68,16 +68,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     const $data = toObservable(this.data, { injector: this._injector }),
       $focused = toObservable(this.focused, { injector: this._injector });
 
-    $focused.pipe(
-      takeUntilDestroyed(this._destroyRef),
-      tap(v => {
-        this._service.areaFocus(v ? this._id : this._service.focusedId === this._id ? null : this._service.focusedId);
-      }),
-    ).subscribe();
-
     fromEvent(this.element, EVENT_FOCUS_IN).pipe(
       takeUntilDestroyed(this._destroyRef),
       tap(e => {
+        this._service.focusedId = this.itemId ?? null;
         this.focused.set(true);
 
         this.updateConfig(this._data);
