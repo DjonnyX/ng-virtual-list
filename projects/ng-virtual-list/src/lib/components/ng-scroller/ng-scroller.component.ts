@@ -434,17 +434,17 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         position,
       });
 
-      this._service.update(false, true);
-      this.scrollTo({
+    this.scrollTo({
       [isVertical ? TOP : LEFT]: absolutePosition, behavior: INSTANT,
       blending: false, userAction: true, fireUpdate: true,
     });
     this.emitScrollableEvent();
     this.fireUpdateIfEdgesDetected(position, min, max, true, true);
+    this._service.update(false, true);
   }
 
   onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
-    const { position, min, max, userAction } = event;
+    const { position, min, max } = event;
     this._isScrollbarUserAction = false;
     this.dropVelocity();
     this._service.update(false, true);

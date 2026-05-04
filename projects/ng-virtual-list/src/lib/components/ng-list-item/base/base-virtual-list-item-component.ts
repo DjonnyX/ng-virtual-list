@@ -11,7 +11,7 @@ import {
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
-  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO, MATRIX_3D_HIDDEN,
+  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO,
 } from '../const';
 import { TextDirection, TextDirections } from '../../../enums';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
@@ -195,7 +195,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       if (!!data.config.filter) {
         styles.filter = data.config.filter;
       }
-      if (data.config.isStub === true) {
+      if (this.item?.config?.dynamic && data.config.isStub === true) {
         el.style.visibility = VISIBILITY_HIDDEN;
       }
       if (regular) {
@@ -273,6 +273,9 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   show() {
+    if (!this.item?.config?.dynamic) {
+      return;
+    }
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.zIndex = this._data?.config?.zIndex ?? DEFAULT_ZINDEX;
@@ -294,9 +297,11 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   hide() {
+    if (!this.item?.config?.dynamic) {
+      return;
+    }
     const el = this._elementRef.nativeElement,
       styles = el.style;
-    styles.transform = MATRIX_3D_HIDDEN;
     styles.zIndex = HIDDEN_ZINDEX;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {

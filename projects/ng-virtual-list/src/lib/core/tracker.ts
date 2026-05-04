@@ -102,10 +102,10 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             if (this._trackMap) {
                 if (this._trackMap.has(itemTrackingProperty)) {
                     const diId = this._trackMap.get(itemTrackingProperty),
-                        compIndex = this._displayObjectIndexMapById[diId], comp = components[compIndex],
+                        compIndex = this._displayObjectIndexMapById[diId], comp = components[compIndex] ?? null,
                         data = item?.data,
-                        compId = comp?.instance?.id;
-                    if (comp !== undefined && compId === diId && compId !== undefined && data?.[SERVICE_PROP_DUMMY] !== SERVICE_PROP_DUMMY_ENABLED) {
+                        compId = comp?.instance?.id ?? null;
+                    if (comp !== null && compId === diId && compId !== null && data?.[SERVICE_PROP_DUMMY] !== SERVICE_PROP_DUMMY_ENABLED) {
                         const indexByUntrackedItems = untrackedItems.findIndex(v => {
                             return v.instance.id === compId;
                         });
