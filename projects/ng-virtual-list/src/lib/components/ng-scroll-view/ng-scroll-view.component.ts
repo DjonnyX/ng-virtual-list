@@ -63,6 +63,8 @@ export class NgScrollView extends BaseScrollView {
 
     protected _normalizeValueFromZero = inject(SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO);
 
+    protected _isScrollsTo: boolean = false;
+
     protected _scrollDirection = new ScrollingDirection();
     get scrollDirection() {
         return this._scrollDirection.get();
@@ -749,7 +751,7 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected alignPosition(animated: boolean = true, force: boolean = false) {
-        if (!this.snapToItem()) {
+        if (!this.snapToItem() || this._isScrollsTo) {
             return false;
         }
         const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
