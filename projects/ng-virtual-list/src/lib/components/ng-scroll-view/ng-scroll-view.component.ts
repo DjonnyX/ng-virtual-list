@@ -1,5 +1,5 @@
 import {
-    Component, inject, input, output, ViewChild,
+    Component, inject, input, ViewChild,
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -19,9 +19,9 @@ import {
 import { calculateDirection } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
 import { IAnimationParams, IScrollingSettings } from '../../interfaces';
-import { SnapToItemAlign, SnapToItemAligns } from '../../enums';
+import { SnapToItemAligns } from '../../enums';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
-import { Id, SnappingDistance } from '../../types';
+import { Id, SnappingDistance, SnapToItemAlign } from '../../types';
 import { parseFloatOrPersentageValue } from '../../utils/parse-float-or-persentage-value';
 import { isPercentageValue } from '../../utils/is-persentage-value';
 import { ScrollingDirection } from '../../utils/scrolling-direction';
@@ -660,7 +660,7 @@ export class NgScrollView extends BaseScrollView {
     protected normalizeValue(value: number) {
         const isVertical = this.isVertical(),
             startOffset = this._normalizeValueFromZero ? 0 : this.startOffset(),
-            scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+            scrollSize = (isVertical ? this.scrollHeight : this.scrollWidth) - this.alignmentEndOffset(),
             result = value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value;
         return result;
     }
@@ -774,7 +774,7 @@ export class NgScrollView extends BaseScrollView {
                 if (!!componentBounds) {
                     const { x, y } = componentBounds,
                         componentPosition = isVertical ? y : x;
-                    position = componentPosition - this.startOffset();
+                    position = componentPosition - (this.startOffset() - this.alignmentStartOffset());
                 }
                 break;
             }
@@ -788,7 +788,7 @@ export class NgScrollView extends BaseScrollView {
                     const { x, y, width, height } = componentBounds,
                         size = isVertical ? height : width,
                         componentPosition = isVertical ? y : x;
-                    position = componentPosition + size * .5 - viewportSize * .5 - this.startOffset() * .5;
+                    position = componentPosition + size * .5 - viewportSize * .5 - (this.startOffset() - this.alignmentStartOffset()) * .5;
                 }
                 break;
             }

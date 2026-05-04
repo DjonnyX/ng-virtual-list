@@ -1,14 +1,16 @@
 @let scrollStartOffset = _actualScrollStartOffset();
 @let scrollEndOffset = _actualScrollEndOffset();
+@let actualScrollStartOffset = _alignmentScrollStartOffset();
+@let actualScrollEndOffset = _alignmentScrollEndOffset();
 
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [dynamic]="dynamicSize()" [divides]="divides()"
-  [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()" [itemRenderer]="itemRenderer()"
-  [startOffset]="scrollStartOffset" [endOffset]="scrollEndOffset" [scrollbarEnabled]="scroller.scrollbarShow()"
-  [enabled]="dynamicSize() && snapScrollToEnd()" />
+<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [dynamic]="dynamicSize()"
+  [divides]="divides()" [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()"
+  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset" [endOffset]="scrollEndOffset"
+  [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (stickyEnabled()) {
   <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
@@ -20,7 +22,8 @@
 }
 
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset"
-  [endOffset]="scrollEndOffset" [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
+  [endOffset]="scrollEndOffset" [alignmentStartOffset]="actualScrollStartOffset" [alignmentEndOffset]="actualScrollEndOffset"
+  [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
   [animationParams]="animationParams()" [focusedElement]="focusedElement()" [loading]="loading()"
   [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()"

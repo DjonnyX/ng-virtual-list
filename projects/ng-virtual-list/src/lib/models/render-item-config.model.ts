@@ -1,4 +1,4 @@
-import { SnapToItemAlign } from "../enums";
+import { SnapToItemAlign } from "../types";
 import { Color } from "../types";
 
 /**

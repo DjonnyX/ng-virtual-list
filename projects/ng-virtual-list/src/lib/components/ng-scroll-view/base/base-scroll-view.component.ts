@@ -29,6 +29,10 @@ export class BaseScrollView {
 
     readonly endOffset = input<number>(0);
 
+    readonly alignmentStartOffset = input<number>(0);
+
+    readonly alignmentEndOffset = input<number>(0);
+
     readonly isVertical: Signal<boolean>;
 
     readonly grabbing = signal<boolean>(false);
@@ -55,13 +59,13 @@ export class BaseScrollView {
         return this._isMoving;
     }
 
-    protected _x: number = this.startOffset();
+    protected _x: number = 0;
     set x(v: number) {
         this._x = this._actualX = v;
     }
     get x() { return this._x; }
 
-    protected _y: number = this.endOffset();
+    protected _y: number = 0;
     set y(v: number) {
         this._y = this._actualY = v;
     }
@@ -72,8 +76,8 @@ export class BaseScrollView {
     set totalSize(v: number) {
         if (this._totalSize !== v) {
             this._totalSize = v;
-            const startOffset = this.startOffset();
-            this._actualTotalSize = v + startOffset;
+            const startOffset = this.startOffset(), endOffset = this.alignmentEndOffset();
+            this._actualTotalSize = v + startOffset + endOffset;
         }
     }
 
@@ -126,9 +130,9 @@ export class BaseScrollView {
             startOffset = this.startOffset(),
             endOffset = this.endOffset();
         if (this._inversion) {
-            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - contentWidth);
+            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - (contentWidth + this.alignmentEndOffset()));
         }
-        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : (contentWidth - viewportWidth);
+        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : ((contentWidth + this.alignmentEndOffset()) - viewportWidth);
     }
 
     get scrollHeight() {
@@ -138,9 +142,9 @@ export class BaseScrollView {
             startOffset = this.startOffset(),
             endOffset = this.endOffset();
         if (this._inversion) {
-            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - contentHeight);
+            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - (contentHeight + this.alignmentEndOffset()));
         }
-        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : (contentHeight - viewportHeight);
+        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : ((contentHeight + this.alignmentEndOffset()) - viewportHeight);
     }
 
     readonly viewportBounds = signal<ISize>({ width: 0, height: 0 });

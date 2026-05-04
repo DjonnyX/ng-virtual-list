@@ -1,4 +1,4 @@
-import { TextDirections } from "./text-directions";
+import { TextDirections } from "../enums/text-directions";
 
 /**
  * TextDirection.

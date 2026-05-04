@@ -3,8 +3,8 @@ import {
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { toggleClassName } from "../../../../utils";
 import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
+import { toggleClassName } from "../../../../utils";
 import {
     CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
@@ -17,7 +17,7 @@ import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
 import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
-import { Direction } from "../../../../enums";
+import { Direction } from "../../../../types";
 
 /**
  * PrerenderList.

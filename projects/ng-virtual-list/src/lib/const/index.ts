@@ -1,9 +1,9 @@
 import {
-    CollectionModes, MethodsForSelecting, SnappingMethods, SnapToItemAlign, SnapToItemAligns, TextDirections,
+    Alignments, CollectionModes, MethodsForSelecting, SnappingMethods, SnapToItemAligns, TextDirections,
 } from "../enums";
 import { Directions } from "../enums/directions";
 import { IAnimationParams, IScrollingSettings } from '../interfaces';
-import { SnappingDistance } from "../types";
+import { Alignment, SnappingDistance, SnapToItemAlign } from "../types";
 
 export const SERVICE_PROP_DUMMY_ID = '__service-dummy-id__';
 
@@ -46,6 +46,8 @@ export const DEFAULT_SNAP_TO_ITEM_ALIGN: SnapToItemAlign = SnapToItemAligns.CENT
 export const DEFAULT_SNAPPING_DISTANCE: SnappingDistance = '25%';
 
 export const DEFAULT_SCROLLING_ONE_BY_ONE = false;
+
+export const DEFAULT_ALIGNMENT: Alignment = Alignments.NONE;
 
 export const DEFAULT_DIVIDES = 1;
 

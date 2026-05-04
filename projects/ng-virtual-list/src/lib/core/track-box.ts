@@ -14,9 +14,8 @@ import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
-import { ItemTransform, ScrollDirection } from "../types";
+import { ItemTransform, ScrollDirection, SnapToItemAlign } from "../types";
 import { objectAsReadonly } from "../utils/object";
-import { SnapToItemAlign } from "../enums";
 
 export enum TrackBoxEvents {
     CHANGE = 'change',

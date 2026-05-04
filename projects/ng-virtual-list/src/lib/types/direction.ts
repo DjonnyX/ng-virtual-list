@@ -1,4 +1,4 @@
-import { Directions } from "./directions";
+import { Directions } from "../enums/directions";
 
 /**
  * Axis of the arrangement of virtual list elements.

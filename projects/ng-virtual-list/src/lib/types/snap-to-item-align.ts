@@ -1,4 +1,4 @@
-import { SnapToItemAligns } from "./snap-to-item-aligns";
+import { SnapToItemAligns } from "../enums/snap-to-item-aligns";
 
 /**
  * SnapToItemAlign.

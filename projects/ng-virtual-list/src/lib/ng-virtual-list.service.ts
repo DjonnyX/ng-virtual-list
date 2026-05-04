@@ -6,7 +6,8 @@ import { TrackBox, TrackBoxEvents } from './core/track-box';
 import { IRenderVirtualListItem, IVirtualListItem } from './models';
 import { IAnimationParams, IRect, IScrollOptions, ISize } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { FocusAlignments, TextDirection, TextDirections } from './enums';
+import { FocusAlignments, TextDirections } from './enums';
+import { TextDirection } from './types';
 import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK,

@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, Signal, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, from, tap } from 'rxjs';
-import { TextDirection, TextDirections } from '../../../../enums';
+import { TextDirections } from '../../../../enums';
+import { TextDirection } from '../../../../types';
 import { BaseScrollView } from '../../../ng-scroll-view/base/base-scroll-view.component';
 import { SCROLL_VIEW_INVERSION } from '../../../ng-scroll-view';
 import { BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, LEFT_PROP_NAME, TOP_PROP_NAME } from '../../../../const';

@@ -1,4 +1,5 @@
-import { MethodForSelecting, MethodsForSelecting } from "../enums";
+import { MethodsForSelecting } from "../enums";
+import { MethodForSelecting } from "../types";
 
 const NONE_ALIASES = [MethodsForSelecting.NONE, 'none'],
     SELECT_ALIASES = [MethodsForSelecting.SELECT, 'select'],

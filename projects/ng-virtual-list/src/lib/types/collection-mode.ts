@@ -1,4 +1,4 @@
-import { CollectionModes } from "./collection-modes";
+import { CollectionModes } from "../enums/collection-modes";
 
 /**
  * Action modes for collection elements.

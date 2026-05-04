@@ -1,4 +1,4 @@
-import { SnappingMethods } from "./snapping-methods";
+import { SnappingMethods } from "../enums/snapping-methods";
 
 /**
  * Snapping method.

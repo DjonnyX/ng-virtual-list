@@ -13,7 +13,8 @@ import { ITemplateContext } from '../interfaces';
 import {
   CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, ID, ITEM_ID, POSITION, POSITION_ZERO,
 } from '../const';
-import { TextDirection, TextDirections } from '../../../enums';
+import { TextDirections } from '../../../enums';
+import { TextDirection } from '../../../types';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
 import { createDisplayId, matrix3d } from '../utils';
 import { NgVirtualListService } from '../../../ng-virtual-list.service';

@@ -1,5 +1,4 @@
-import { Id } from "../types";
-import { ScrollAlignment } from "../enums";
+import { Id, ScrollAlignment } from "../types";
 
 /**
  * IScrollParams

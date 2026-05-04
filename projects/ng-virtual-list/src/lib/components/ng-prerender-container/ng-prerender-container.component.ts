@@ -1,16 +1,16 @@
 import {
     ChangeDetectionStrategy, Component, input, TemplateRef, viewChild, ViewEncapsulation,
 } from "@angular/core";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { filter, Observable, switchMap } from "rxjs";
 import {
     DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
-import { Direction } from "../../enums";
+import { Direction } from "../../types";
 import { NgPrerenderList } from "./components/ng-prerender-list/ng-prerender-list.component";
-import { filter, Observable, switchMap } from "rxjs";
 import { PrerenderCache } from "./types";
-import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 
 /**
  * Prerender container.

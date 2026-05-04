@@ -1,4 +1,4 @@
-import { MethodsForSelecting } from "./methods-for-selecting";
+import { MethodsForSelecting } from "../enums/methods-for-selecting";
 
 /**
  * Methods for selecting list items.

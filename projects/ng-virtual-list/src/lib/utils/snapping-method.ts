@@ -1,4 +1,5 @@
-import { SnappingMethod, SnappingMethods } from "../enums";
+import { SnappingMethods } from "../enums";
+import { SnappingMethod } from "../types";
 
 const ADVANCED_PATTERNS: Array<SnappingMethod> = [SnappingMethods.ADVANCED, SnappingMethods.STANDART, 'advanced', 'standart'],
     DEFAULT_PATTERN: Array<SnappingMethod> = [SnappingMethods.STANDART, 'standart'];

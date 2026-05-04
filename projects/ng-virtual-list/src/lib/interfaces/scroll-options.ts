@@ -1,4 +1,4 @@
-import { ScrollAlignment } from "../enums";
+import { ScrollAlignment } from "../types";
 
 /**
  * Interface IScrollOptions.

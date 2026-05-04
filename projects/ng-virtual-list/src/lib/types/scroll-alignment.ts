@@ -1,4 +1,4 @@
-import { ScrollAlignments } from "./scroll-alignments"
+import { ScrollAlignments } from "../enums/scroll-alignments";
 
 /**
  * ScrollAlignment
