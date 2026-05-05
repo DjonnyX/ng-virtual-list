@@ -185,6 +185,10 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
         const _v = v * (mb as number), value = _v > mbMax ? mbMax : _v;
         filter!.nativeElement.setStdDeviation(isVertical ? 0 : v * value, isVertical ? v * value : 0);
       }),
+      debounceTime(50),
+      tap(([, , filter, ,]) => {
+        filter!.nativeElement.setStdDeviation(0, 0);
+      }),
     ).subscribe();
 
     this._service.$langTextDir.pipe(
