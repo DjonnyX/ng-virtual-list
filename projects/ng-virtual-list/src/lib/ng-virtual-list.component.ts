@@ -1797,7 +1797,7 @@ export class NgVirtualListComponent implements OnDestroy {
             return $update.pipe(
               takeUntilDestroyed(this._destroyRef),
               debounceTime(0),
-              switchMap((v) => {
+              switchMap(v => {
                 if (((renderStabilizerPrevScrollStateVersion === EMPTY_SCROLL_STATE_VERSION) || (renderStabilizerPrevScrollStateVersion !== v)) &&
                   (renderStabilizerUpdateIterations < prepareIterations)) {
                   if (v !== EMPTY_SCROLL_STATE_VERSION) {
@@ -1875,9 +1875,10 @@ export class NgVirtualListComponent implements OnDestroy {
                   this._trackBox.isScrollEnd = true;
                 }
                 const scrollerComponent = this._scrollerComponent();
-                if (scrollerComponent) {
+                if (!!scrollerComponent) {
                   scrollerComponent.prepared = false;
                   scrollerComponent.stopScrolling();
+                  scrollerComponent.refresh();
                 }
                 this.classes.set({ prepared: true });
                 this._$show.next(true);
@@ -1918,8 +1919,9 @@ export class NgVirtualListComponent implements OnDestroy {
                     }
                     this._readyForShow = true;
                     const scrollerComponent = this._scrollerComponent();
-                    if (scrollerComponent) {
+                    if (!!scrollerComponent) {
                       scrollerComponent.prepared = true;
+                      scrollerComponent.refresh();
                     }
                     this.classes.set({ prepared: true });
                     this._$show.next(true);
@@ -1934,8 +1936,9 @@ export class NgVirtualListComponent implements OnDestroy {
                 this._trackBox.isScrollEnd = true;
               }
               const scrollerComponent = this._scrollerComponent();
-              if (scrollerComponent) {
+              if (!!scrollerComponent) {
                 scrollerComponent.prepared = true;
+                scrollerComponent.refresh();
               }
               this.classes.set({ prepared: true });
               this._$show.next(true);
@@ -1950,7 +1953,7 @@ export class NgVirtualListComponent implements OnDestroy {
               if (!items || items.length === 0) {
                 this.cacheClean();
                 const scrollerComponent = this._scrollerComponent();
-                if (scrollerComponent) {
+                if (!!scrollerComponent) {
                   scrollerComponent.prepared = false;
                 }
                 this.classes.set({ prepared: false });
@@ -1969,8 +1972,9 @@ export class NgVirtualListComponent implements OnDestroy {
                 this._trackBox.isScrollEnd = true;
               }
               const scrollerComponent = this._scrollerComponent();
-              if (scrollerComponent) {
+              if (!!scrollerComponent) {
                 scrollerComponent.prepared = true;
+                scrollerComponent.refresh();
               }
               this.classes.set({ prepared: true });
               this._$show.next(true);
@@ -2412,7 +2416,7 @@ export class NgVirtualListComponent implements OnDestroy {
       } = params;
       const scroller = this._scrollerComponent();
       let totalSize = 0;
-      if (scroller) {
+      if (!!scroller) {
         const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
           emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading,
           fireUpdate = !this._readyForShow || this._$scrollingTo.getValue();
@@ -2439,13 +2443,15 @@ export class NgVirtualListComponent implements OnDestroy {
             totalSize = calculatedTotalSize;
           }
 
-          scroller.totalSize = totalSize;
+          const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
 
-          this._totalSize.set(totalSize);
+          scroller.totalSize = normalizedTotalSize;
+
+          this._totalSize.set(normalizedTotalSize);
 
           this._service.collection = displayItems;
 
-          this.resetBoundsSize(isVertical, totalSize);
+          this.resetBoundsSize(isVertical, normalizedTotalSize);
 
           this.createDisplayComponentsIfNeed(displayItems);
 
@@ -2453,10 +2459,14 @@ export class NgVirtualListComponent implements OnDestroy {
 
           this.snappingHandler();
 
+          if (!scroller.scrollable) {
+            scroller.refresh();
+          }
+
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = actualScrollSize + delta,
             roundedScrollPositionAfterUpdate = scrollPositionAfterUpdate,
-            roundedMaxPositionAfterUpdate = totalSize - viewportSize;
+            roundedMaxPositionAfterUpdate = normalizedTotalSize - viewportSize;
 
           if (this._isSnappingMethodAdvanced) {
             this.updateRegularRenderer();
@@ -2770,17 +2780,20 @@ export class NgVirtualListComponent implements OnDestroy {
 
               this._trackBox.clearDelta();
 
-              const { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, {
-                ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
-              }), delta1 = this._trackBox.delta;
+              const viewportSize = (isVertical ? height : width),
+                { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, {
+                  ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
+                }), delta1 = this._trackBox.delta;
 
-              scrollerComponent.totalSize = totalSize;
+              const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
+
+              scrollerComponent.totalSize = normalizedTotalSize;
 
               this._service.collection = displayItems;
 
               let actualScrollSize = scrollSize + delta1;
 
-              this.resetBoundsSize(isVertical, totalSize);
+              this.resetBoundsSize(isVertical, normalizedTotalSize);
 
               this.createDisplayComponentsIfNeed(displayItems);
 
@@ -2981,20 +2994,18 @@ export class NgVirtualListComponent implements OnDestroy {
         scrollSize = isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0,
         actualScrollSize = Math.round(scrollSize);
       if (this._readyForShow && !this._isLoading) {
-        if (maxScrollSize >= 0) {
+        const isScrollEnd = (actualScrollSize >= (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING)) || !scroller.scrollable;
+        if (isScrollEnd) {
+          this._isScrollStart.set(false);
+          this._isScrollEnd.set(true);
+          this._trackBox.isScrollStart = false;
+          this._trackBox.isScrollEnd = true;
+        } else {
           const isScrollStart = (actualScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING);
-          if (isScrollStart) {
-            this._isScrollStart.set(true);
-            this._isScrollEnd.set(false);
-            this._trackBox.isScrollStart = true;
-            this._trackBox.isScrollEnd = false;
-          } else {
-            const isScrollEnd = (actualScrollSize >= (maxScrollSize - MIN_PIXELS_FOR_PREVENT_SNAPPING));
-            this._isScrollStart.set(false);
-            this._isScrollEnd.set(isScrollEnd);
-            this._trackBox.isScrollStart = false;
-            this._trackBox.isScrollEnd = isScrollEnd;
-          }
+          this._isScrollStart.set(isScrollStart);
+          this._isScrollEnd.set(false);
+          this._trackBox.isScrollStart = isScrollStart;
+          this._trackBox.isScrollEnd = false;
         }
       } else if (!this._readyForShow) {
         const snapScrollToStart = this.snapScrollToStart(), snapScrollToEnd = this.snapScrollToEnd();
@@ -3306,7 +3317,7 @@ export class NgVirtualListComponent implements OnDestroy {
     this._totalSize.set(0);
     this._$scrollSize.next(0);
     const scrollerComponent = this._scrollerComponent();
-    if (scrollerComponent) {
+    if (!!scrollerComponent) {
       scrollerComponent.reset();
     }
   }
