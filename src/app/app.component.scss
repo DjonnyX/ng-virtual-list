@@ -262,7 +262,7 @@ input {
     border: 1px solid #484855;
     background-color: #0f0f11;
 
-    &::part(item-focused) {
+    &::part(item-fx-focused) {
         outline: none;
         border: 2px solid #bd84ff;
     }

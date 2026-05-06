@@ -371,13 +371,17 @@ export class NgVirtualListService {
       if (this.isAccordionCollapse) {
         const prevId = this.getPrevId(id);
         this._$scrollTo.next({
-          id: prevId ?? id, cb: null, options: {
+          id: prevId ?? id, cb: () => {
+            this.update(false, true);
+          }, options: {
             delay: 100, focused: false,
           },
         });
       } else {
         this._$scrollTo.next({
-          id, cb: null, options: {
+          id, cb: () => {
+            this.update(false, true);
+          }, options: {
             delay: 100, focused: false,
           },
         });
