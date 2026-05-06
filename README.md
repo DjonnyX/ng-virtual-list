@@ -131,7 +131,7 @@ items = Array.from({ length: 100000 }, (_, i) => ({ id: i, name: `Item #${i}` })
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
-    [itemRenderer]="horizontalItemRenderer" [dynamicSize]="false" [itemSize]="64" [methodForSelecting]="'select'"
+    [itemRenderer]="horizontalItemRenderer" [dynamicSize]="false" [itemSize]="64" [selectingMode]="'select'"
     [selectedIds]="2" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
@@ -181,7 +181,7 @@ export class AppComponent {
 Template:
 ```html
 <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems" [itemRenderer]="horizontalGroupItemRenderer"
-    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [dynamicSize]="false" [itemSize]="54" [stickyEnabled]="true" methodForSelecting="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
+    [bufferSize]="1" [maxBufferSize]="5" [itemConfigMap]="horizontalGroupItemConfigMap" [dynamicSize]="false" [itemSize]="54" [stickyEnabled]="true" selectingMode="multi-select" [selectedIds]="[3,2]" (onSelect)="onSelect($event)" (onItemClick)="onItemClick($event)"></ng-virtual-list>
 
 <ng-template #horizontalGroupItemRenderer let-data="data" let-config="config">
   @if (data) {
@@ -610,6 +610,7 @@ Inputs
 | clickDistance | number? = 40 | The maximum scroll distance at which a click event is triggered. |
 | collapsedIds | Array<[Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts)> | Sets the collapsed items. |
 | collapseByClick | boolean? = true | If `false`, the element is collapsed using the config.collapse method passed to the template; if `true`, the element is collapsed by clicking on it. The default value is `true`. |
+| collapsingMode | [CollapsingMode](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/collapsing-modes.ts) |  Mode for collapsing list items. Default value is `none`. `none` - List items are not selectable. `multi-collapse` - List items are collapsed one by one. 'accordion' - Accordion collapsible list items. Default value is `multi-collapse`. |
 | collectionMode | [CollectionMode? = 'normal'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/collection-mode.ts) | Determines the action modes for collection elements. Default value is `normal`. |
 | divides | number = 1 | Column or row numbers. The default value is `1`. |
 | direction | [Direction? = 'vertical'](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/direction.ts) | Determines the direction in which elements are placed. Default value is "vertical". |
@@ -625,7 +626,7 @@ Inputs
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
 | maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
 | maxMotionBlur | number = 0.5 | Maximum motion blur effect. The default value is `0.5`. |
-| methodForSelecting | [MethodForSelecting](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
+| selectingMode | [SelectingMode](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/selecting-mode.ts) | Method for selecting list items. Default value is 'none'. 'select' - List items are selected one by one. 'multi-select' - Multiple selection of list items. 'none' - List items are not selectable. |
 | minItemSize | number \| 'viewport' = 1 | If the `dynamicSize` property is enabled, the minimum size of the element is set. If the value is 'viewport', the sizes of elements are automatically resized to fit the viewport size. |
 | maxItemSize | number \| 'viewport' = Number.MAX_SAFE_INTEGER | If the `dynamicSize` property is enabled, the maximum size of the element is set. If the value is 'viewport', the sizes of elements are automatically resized to fit the viewport size. |
 | motionBlur | number \| 'disabled' = 0.15 | Motion blur effect. The default value is `0.25`. |

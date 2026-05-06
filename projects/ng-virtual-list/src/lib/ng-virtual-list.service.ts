@@ -3,12 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
 import { TrackBox, TrackBoxEvents } from './core/track-box';
-import { IRenderVirtualListItem, IVirtualListItem } from './models';
+import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
 import { IAnimationParams, IRect, IScrollOptions, ISize } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import { FocusAlignments, TextDirections } from './enums';
 import { TextDirection } from './types';
-import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { SelectingModesTypes } from './enums/selecting-modes-types';
 import {
   BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK,
   ITEM_CONTAINER, TRACK_BY_PROPERTY_NAME,
@@ -46,11 +46,11 @@ export class NgVirtualListService {
   private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
   $collapsedIds = this._$collapsedIds.asObservable();
 
-  private _$methodOfSelecting = new BehaviorSubject<MethodsForSelectingTypes>(0);
-  $methodOfSelecting = this._$methodOfSelecting.asObservable();
+  private _$selectingMode = new BehaviorSubject<SelectingModesTypes>(0);
+  $selectingMode = this._$selectingMode.asObservable();
 
-  set methodOfSelecting(v: MethodsForSelectingTypes) {
-    this._$methodOfSelecting.next(v);
+  set selectingMode(v: SelectingModesTypes) {
+    this._$selectingMode.next(v);
   }
 
   private _$focusedId = new BehaviorSubject<Id | null>(null);
@@ -106,9 +106,19 @@ export class NgVirtualListService {
 
   animationParams: IAnimationParams = DEFAULT_ANIMATION_PARAMS;
 
+  isNoneCollapse: boolean = false;
+
+  isMultipleCollapse: boolean = false;
+
+  isAccordionCollapse: boolean = false;
+
   private _trackBox: TrackBox | undefined;
 
   listElement: HTMLDivElement | null = null;
+
+  items: IVirtualListCollection = [];
+
+  itemConfigMap: IVirtualListItemConfigMap = {};
 
   private _$displayItems = new BehaviorSubject<IRenderVirtualListCollection>([]);
   readonly $displayItems = this._$displayItems.asObservable();
@@ -199,24 +209,24 @@ export class NgVirtualListService {
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   constructor() {
-    this._$methodOfSelecting.pipe(
+    this._$selectingMode.pipe(
       takeUntilDestroyed(),
       tap(v => {
         switch (v) {
-          case MethodsForSelectingTypes.SELECT: {
+          case SelectingModesTypes.SELECT: {
             const curr = this._$selectedIds.getValue();
             if (typeof curr !== 'number' && typeof curr !== 'string') {
               this._$selectedIds.next(null);
             }
             break;
           }
-          case MethodsForSelectingTypes.MULTI_SELECT: {
+          case SelectingModesTypes.MULTI_SELECT: {
             if (!Array.isArray(this._$selectedIds.getValue())) {
               this._$selectedIds.next([]);
             }
             break;
           }
-          case MethodsForSelectingTypes.NONE:
+          case SelectingModesTypes.NONE:
           default: {
             this._$selectedIds.next(null);
             break;
@@ -263,8 +273,8 @@ export class NgVirtualListService {
     validateId(id);
     const config = this.getItemConfig(id);
     if ((!!config && config.selectable)) {
-      switch (this._$methodOfSelecting.getValue()) {
-        case MethodsForSelectingTypes.SELECT: {
+      switch (this._$selectingMode.getValue()) {
+        case SelectingModesTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
           if (selected === undefined) {
             this._$selectedIds.next(curr !== id ? id : null);
@@ -273,7 +283,7 @@ export class NgVirtualListService {
           }
           break;
         }
-        case MethodsForSelectingTypes.MULTI_SELECT: {
+        case SelectingModesTypes.MULTI_SELECT: {
           const curr = [...(this._$selectedIds.getValue() || []) as Array<Id>],
             index = curr.indexOf(id);
           if (selected === undefined) {
@@ -299,7 +309,7 @@ export class NgVirtualListService {
           }
           break;
         }
-        case MethodsForSelectingTypes.NONE:
+        case SelectingModesTypes.NONE:
         default: {
           this._$selectedIds.next(null);
         }
@@ -313,12 +323,28 @@ export class NgVirtualListService {
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
   collapse(id: Id, collapsed?: boolean) {
+    if (this.isNoneCollapse) {
+      return;
+    }
+
     validateId(id);
     const config = this.getItemConfig(id);
-    if ((!!config && config.sticky > 0 && config.collapsable)) {
-      const curr = [...(this._$collapsedIds.getValue() || []) as Array<Id>],
+    if ((!!config && config.collapsable)) {
+      const allGroups: Array<Id> = [];
+      if (this.isAccordionCollapse) {
+        const items = this.items, itemConfigMap = this.itemConfigMap, trackBy = this.trackBy;
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy], collapsable = itemConfigMap?.[id]?.collapsable === true;
+          if (!collapsable) {
+            continue;
+          }
+          allGroups.push(id);
+        }
+      }
+
+      const curr = this.isAccordionCollapse ? allGroups : [...(this._$collapsedIds.getValue() || []) as Array<Id>],
         index = curr.indexOf(id);
-      if (collapsed === undefined) {
+      if (!collapsed) {
         if (index > -1) {
           curr.splice(index, 1);
           this._$collapsedIds.next(curr);

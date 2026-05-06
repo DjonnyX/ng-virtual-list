@@ -1,5 +1,5 @@
 import {
-    Alignments, CollectionModes, MethodsForSelecting, SnappingMethods, SnapToItemAligns, TextDirections,
+    Alignments, CollapsingModes, CollectionModes, SelectingModes, SnappingMethods, SnapToItemAligns, TextDirections,
 } from "../enums";
 import { Directions } from "../enums/directions";
 import { IAnimationParams, IScrollingSettings } from '../interfaces';
@@ -103,7 +103,9 @@ export const MAX_SCROLL_TO_ITERATIONS = 5;
 
 export const DEFAULT_SNAPPING_METHOD = SnappingMethods.STANDART;
 
-export const DEFAULT_SELECT_METHOD = MethodsForSelecting.NONE;
+export const DEFAULT_COLLAPSING_MODES = CollapsingModes.MULTI_COLLAPSE;
+
+export const DEFAULT_SELECTING_MODES = SelectingModes.NONE;
 
 export const DEFAULT_SCREEN_READER_MESSAGE = 'Showing items $1 to $2';
 

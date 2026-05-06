@@ -1,10 +1,10 @@
 /**
- * Methods for selecting list items.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/method-for-selecting-types.ts
+ * Mods for selecting list items.
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/selecting-modes-types.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export enum MethodsForSelectingTypes {
+export enum SelectingModesTypes {
     /**
      * List items are not selectable.
      */

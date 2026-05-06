@@ -12,7 +12,7 @@ import {
   BEHAVIOR_INSTANT, CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE,
   DEFAULT_ENABLED_BUFFER_OPTIMIZATION, DEFAULT_ITEM_SIZE, DEFAULT_BUFFER_SIZE, DEFAULT_LIST_SIZE, DEFAULT_STICKY_ENABLED, DEFAULT_SNAPPING_METHOD,
   HEIGHT_PROP_NAME, LEFT_PROP_NAME, MAX_SCROLL_TO_ITERATIONS, PX, FOCUS, TOP_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
-  DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECT_METHOD, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
+  DEFAULT_MAX_BUFFER_SIZE, DEFAULT_SELECTING_MODES, DEFAULT_SELECT_BY_CLICK, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_COLLECTION_MODE,
   DEFAULT_SCREEN_READER_MESSAGE, DEFAULT_SNAP_TO_END_TRANSITION_INSTANT_OFFSET, DEFAULT_SNAP_SCROLLTO_END, MIN_PIXELS_FOR_PREVENT_SNAPPING,
   MOUSE_DOWN, TOUCH_START, DEFAULT_LANG_TEXT_DIR, DEFAULT_CLICK_DISTANCE, DEFAULT_WAIT_FOR_PREPARATION, DEFAULT_SCROLLBAR_THICKNESS,
   DEFAULT_SCROLLBAR_MIN_SIZE, KEY_DOWN, BEHAVIOR_AUTO, DEFAULT_SCROLLBAR_ENABLED, DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_OVERSCROLL_ENABLED,
@@ -22,7 +22,7 @@ import {
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
   DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
-  DEFAULT_ALIGNMENT,
+  DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -31,13 +31,12 @@ import {
   IScrollEvent, IScrollOptions, IAnimationParams, ISize, IRenderStabilizerOptions, IScrollingSettings,
 } from './interfaces';
 import {
-  Alignment, ArithmeticExpression, FocusAlignment, Id, ItemTransform, SnappingDistance, CollectionMode, Direction, MethodForSelecting,
-  SnappingMethod, SnapToItemAlign, TextDirection,
+  Alignment, ArithmeticExpression, FocusAlignment, Id, ItemTransform, SnappingDistance, CollectionMode, Direction, SelectingMode,
+  SnappingMethod, SnapToItemAlign, TextDirection, CollapsingMode,
 } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
-  Alignments,
-  CollectionModes, Directions, FocusAlignments, MethodsForSelecting, SnappingMethods, TextDirections,
+  Alignments, CollectionModes, Directions, FocusAlignments, SelectingModes, SnappingMethods, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
@@ -46,8 +45,9 @@ import { BaseVirtualListItemComponent } from './components/ng-list-item/base';
 import { Component$1 } from './models/component.model';
 import { isDirection } from './utils/is-direction';
 import { NgVirtualListService } from './ng-virtual-list.service';
-import { isMethodForSelecting } from './utils/is-method-for-selecting';
-import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { isSelectMode } from './utils/is-select-mode';
+import { isCollapseMode } from './utils/is-collapse-mode';
+import { SelectingModesTypes } from './enums/selecting-modes-types';
 import { CMap } from './utils/cmap';
 import {
   validateArray, validateBoolean, validateFloat, validateFunction, validateInt, validateObject, validateString,
@@ -65,6 +65,7 @@ import { NgVirtualListPublicService } from './ng-virtual-list-public.service';
 import { isPercentageValue } from './utils/is-persentage-value';
 import { parseArithmeticExpression } from './utils/parse-arithmetic-expression';
 import { normalizeCollection } from './utils/normalize-collection';
+import { CollapsingModes } from './enums';
 
 /**
  * Virtual list component.
@@ -330,7 +331,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
       if (!valid) {
         console.error('The "selectedIds" parameter must be of type `Array<Id> | Id` or `null`.');
-        return this._isMultiSelecting ? [] : undefined;
+        return this._isMultiSelection ? [] : undefined;
       }
       return v;
     },
@@ -1121,12 +1122,44 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   snappingMethod = input<SnappingMethod>(DEFAULT_SNAPPING_METHOD, { ...this._snappingMethodOptions });
 
+  private _collapsingModeOptions = {
+    transform: (v: CollapsingMode) => {
+      const valid = validateString(v) && (v === CollapsingModes.NONE || v === CollapsingModes.MULTI_COLLAPSE || v === CollapsingModes.ACCORDION);
+      if (!valid) {
+        console.error(`The "collapsingMode" parameter must have the value '${SnappingMethods.ADVANCED}' or '${SnappingMethods.STANDART}'.`);
+        return DEFAULT_COLLAPSING_MODES;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Mode for collapsing list items. 
+   * `none` - List items are not selectable.
+   * `multi-collapse` - List items are collapsed one by one.
+   * 'accordion' - Accordion collapsible list items.
+   * Default value is `multi-collapse
+   */
+  collapsingMode = input<CollapsingMode>(DEFAULT_COLLAPSING_MODES, { ...this._collapsingModeOptions });
+
   private _methodForSelectingOptions = {
-    transform: (v: MethodForSelecting) => {
+    transform: (v: SelectingMode) => {
+      throw new Error('The "methodForSelecting" property is deprecated. Use the "selectMode" property instead.');
+    },
+  } as any;
+
+  /**
+   * @deprecated
+   * The "methodForSelecting" property is deprecated. Use the "selectMode" property.
+   */
+  methodForSelecting = input<SelectingMode>(DEFAULT_SELECTING_MODES, { ...this._methodForSelectingOptions });
+
+  private _selectingModeOptions = {
+    transform: (v: SelectingMode) => {
       const valid = validateString(v) && (v === 'none' || v === 'select' || v === 'multi-select');
       if (!valid) {
-        console.error('The "methodForSelecting" parameter must be one of `none`, `select` or `multi-select`.');
-        return DEFAULT_SELECT_METHOD;
+        console.error('The "selectingMode" parameter must be one of `none`, `select` or `multi-select`.');
+        return DEFAULT_SELECTING_MODES;
       }
       return v;
     },
@@ -1138,7 +1171,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * 'multi-select' - Multiple selection of list items.
    * 'none' - List items are not selectable.
    */
-  methodForSelecting = input<MethodForSelecting>(DEFAULT_SELECT_METHOD, { ...this._methodForSelectingOptions });
+  selectingMode = input<SelectingMode>(DEFAULT_SELECTING_MODES, { ...this._selectingModeOptions });
 
   private _trackByOptions = {
     transform: (v: string) => {
@@ -1194,11 +1227,17 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   langTextDir = input<TextDirection>(DEFAULT_LANG_TEXT_DIR, { ...this._langTextDir });
 
-  private _isNotSelecting = this.getIsNotSelecting();
+  private _isNotSelecting = this.getIsNoneSelection();
 
-  private _isSingleSelecting = this.getIsSingleSelecting();
+  private _isSingleSelection = this.getIsSingleSelection();
 
-  private _isMultiSelecting = this.getIsMultiSelecting();
+  private _isMultiSelection = this.getIsMultiSelection();
+
+  private _isNoneCollapse = this.getIsNoneCollapse();
+
+  private _isMultipleCollapse = this.getIsMultipleCollapse();
+
+  private _isAccordionCollapse = this.getIsAccordionCollapse();
 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
 
@@ -2160,12 +2199,15 @@ export class NgVirtualListComponent implements OnDestroy {
       $snappingMethod = toObservable(this.snappingMethod).pipe(
         map(v => this.getIsSnappingMethodAdvanced(v || DEFAULT_SNAPPING_METHOD)),
       ),
-      $methodForSelecting = toObservable(this.methodForSelecting),
+      $collapsingMode = toObservable(this.collapsingMode),
+      $selectingMode = toObservable(this.selectingMode),
       $selectedIds = toObservable(this.selectedIds),
       $collapsedIds = toObservable(this.collapsedIds).pipe(
+        distinctUntilChanged(),
         map(v => Array.isArray(v) ? v : []),
       ),
       $collapsedItemIds = toObservable(this._collapsedItemIds).pipe(
+        distinctUntilChanged(),
         map(v => Array.isArray(v) ? v : []),
       ),
       $actualItems = toObservable(this._actualItems).pipe(
@@ -2177,6 +2219,27 @@ export class NgVirtualListComponent implements OnDestroy {
       $screenReaderMessage = toObservable(this.screenReaderMessage),
       $displayItems = this._service.$displayItems,
       $cacheVersion = this._service.$cacheVersion;
+
+    $actualItems.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.items = v;
+      }),
+    ).subscribe();
+
+    $itemConfigMap.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.itemConfigMap = v;
+      }),
+    ).subscribe();
+
+    $collapsedIds.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.collapsedIds = v;
+      }),
+    ).subscribe();
 
     combineLatest([$displayItems, $screenReaderMessage, $isVertical, $scrollSize, $bounds]).pipe(
       takeUntilDestroyed(),
@@ -2274,31 +2337,47 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    $methodForSelecting.pipe(
+    $selectingMode.pipe(
       takeUntilDestroyed(),
       tap(v => {
         const el = this._list()?.nativeElement;
-        if (this.getIsMultiSelecting(v || DEFAULT_SNAPPING_METHOD)) {
-          this._isMultiSelecting = true;
-          this._isNotSelecting = this._isSingleSelecting = false;
+        if (this.getIsMultiSelection(v || DEFAULT_SNAPPING_METHOD)) {
+          this._isMultiSelection = true;
+          this._isNotSelecting = this._isSingleSelection = false;
           if (el) {
             el.role = ROLE_LIST_BOX;
           }
-          this._service.methodOfSelecting = MethodsForSelectingTypes.MULTI_SELECT;
-        } else if (this.getIsSingleSelecting(v || DEFAULT_SNAPPING_METHOD)) {
-          this._isSingleSelecting = true;
-          this._isNotSelecting = this._isMultiSelecting = false;
+          this._service.selectingMode = SelectingModesTypes.MULTI_SELECT;
+        } else if (this.getIsSingleSelection(v || DEFAULT_SNAPPING_METHOD)) {
+          this._isSingleSelection = true;
+          this._isNotSelecting = this._isMultiSelection = false;
           if (el) {
             el.role = ROLE_LIST_BOX;
           }
-          this._service.methodOfSelecting = MethodsForSelectingTypes.SELECT;
-        } else if (this.getIsNotSelecting(v || DEFAULT_SNAPPING_METHOD)) {
+          this._service.selectingMode = SelectingModesTypes.SELECT;
+        } else if (this.getIsNoneSelection(v || DEFAULT_SNAPPING_METHOD)) {
           this._isNotSelecting = true;
-          this._isSingleSelecting = this._isMultiSelecting = false;
+          this._isSingleSelection = this._isMultiSelection = false;
           if (el) {
             el.role = ROLE_LIST;
           }
-          this._service.methodOfSelecting = MethodsForSelectingTypes.NONE;
+          this._service.selectingMode = SelectingModesTypes.NONE;
+        }
+      }),
+    ).subscribe();
+
+    $collapsingMode.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        if (this.getIsNoneCollapse()) {
+          this._service.isNoneCollapse = this._isNoneCollapse = true;
+          this._service.isAccordionCollapse = this._service.isMultipleCollapse = this._isAccordionCollapse = this._isMultipleCollapse = false;
+        } else if (this.getIsMultipleCollapse()) {
+          this._service.isMultipleCollapse = this._isMultipleCollapse = true;
+          this._service.isAccordionCollapse = this._service.isNoneCollapse = this._isNoneCollapse = this._isAccordionCollapse = false;
+        } else if (this.getIsAccordionCollapse()) {
+          this._service.isAccordionCollapse = this._isAccordionCollapse = true;
+          this._service.isMultipleCollapse = this._service.isNoneCollapse = this._isNoneCollapse = this._isMultipleCollapse = false;
         }
       }),
     ).subscribe();
@@ -2895,9 +2974,9 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(v => {
-        if (this._isSingleSelecting || (this._isMultiSelecting && isSelectedIdsFirstEmit >= 2)) {
+        if (this._isSingleSelection || (this._isMultiSelection && isSelectedIdsFirstEmit >= 2)) {
           const curr = this.selectedIds();
-          if ((this._isSingleSelecting && JSON.stringify(v) !== JSON.stringify(curr)) ||
+          if ((this._isSingleSelection && JSON.stringify(v) !== JSON.stringify(curr)) ||
             (isSelectedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isSelectedIdsFirstEmit > 2) {
             this.onSelect.emit(copyValueAsReadonly(v));
           }
@@ -2916,27 +2995,48 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    let isCollapsedIdsFirstEmit = 0;
-
-    this._service.$collapsedIds.pipe(
+    $viewInit.pipe(
       takeUntilDestroyed(),
-      distinctUntilChanged(),
-      tap(v => {
-        this._collapsedItemIds.set(v);
+      filter(v => !!v),
+      switchMap(() => {
+        return this._service.$collapsedIds.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          distinctUntilChanged(),
+          tap(v => {
+            const curr = this._collapsedItemIds();
+            if ((this._isAccordionCollapse || this._isMultipleCollapse) && (JSON.stringify(v) !== JSON.stringify(curr))) {
+              this._collapsedItemIds.set(v);
+              this.onCollapse.emit(copyValueAsReadonly(v));
+            }
+          }),
+        );
+      }),
+    ).subscribe();
 
-        if (isCollapsedIdsFirstEmit >= 2) {
-          const curr = this.collapsedIds();
-          if ((isCollapsedIdsFirstEmit === 2 && JSON.stringify(v) !== JSON.stringify(curr)) || isCollapsedIdsFirstEmit > 2) {
-            this.onCollapse.emit(copyValueAsReadonly(v));
+    combineLatest([$collapsingMode, $items, $itemConfigMap, $trackBy]).pipe(
+      takeUntilDestroyed(),
+      tap(([collapsingMode, items, itemConfigMap, trackBy]) => {
+        const isAccordion = isCollapseMode(collapsingMode, CollapsingModes.ACCORDION);
+        if (isAccordion) {
+          const allGroups: Array<Id> = [];
+          if (this._isAccordionCollapse) {
+            for (let i = 0, l = items.length; i < l; i++) {
+              const item = items[i], id = item[trackBy], collapsable = itemConfigMap?.[id]?.collapsable === true;
+              if (!collapsable) {
+                continue;
+              }
+              allGroups.push(id);
+            }
           }
-        }
-        if (isCollapsedIdsFirstEmit < 3) {
-          isCollapsedIdsFirstEmit++;
+          if ((this._isAccordionCollapse || this._isMultipleCollapse) && (JSON.stringify(this._collapsedItemIds()) !== JSON.stringify(allGroups))) {
+            this._collapsedItemIds.set(allGroups);
+            this.onCollapse.emit(copyValueAsReadonly(allGroups));
+          }
         }
       }),
     ).subscribe();
 
-    $collapsedIds.pipe(
+    $collapsedItemIds.pipe(
       takeUntilDestroyed(),
       distinctUntilChanged(),
       tap(v => {
@@ -3066,19 +3166,34 @@ export class NgVirtualListComponent implements OnDestroy {
     return isSnappingMethodAdvenced(method);
   }
 
-  private getIsNotSelecting(m?: MethodForSelecting) {
-    const method = m || this.methodForSelecting();
-    return isMethodForSelecting(method, MethodsForSelecting.NONE);
+  private getIsNoneSelection(m?: SelectingMode) {
+    const mode = m || this.selectingMode();
+    return isSelectMode(mode, SelectingModes.NONE);
   }
 
-  private getIsSingleSelecting(m?: MethodForSelecting) {
-    const method = m || this.methodForSelecting();
-    return isMethodForSelecting(method, MethodsForSelecting.SELECT);
+  private getIsSingleSelection(m?: SelectingMode) {
+    const mode = m || this.selectingMode();
+    return isSelectMode(mode, SelectingModes.SELECT);
   }
 
-  private getIsMultiSelecting(m?: MethodForSelecting) {
-    const method = m || this.methodForSelecting();
-    return isMethodForSelecting(method, MethodsForSelecting.MULTI_SELECT);
+  private getIsMultiSelection(m?: SelectingMode) {
+    const mode = m || this.selectingMode();
+    return isSelectMode(mode, SelectingModes.MULTI_SELECT);
+  }
+
+  private getIsNoneCollapse(m?: CollapsingMode) {
+    const mode = m || this.collapsingMode();
+    return isCollapseMode(mode, CollapsingModes.NONE);
+  }
+
+  private getIsMultipleCollapse(m?: CollapsingMode) {
+    const mode = m || this.collapsingMode();
+    return isCollapseMode(mode, CollapsingModes.MULTI_COLLAPSE);
+  }
+
+  private getIsAccordionCollapse(m?: CollapsingMode) {
+    const mode = m || this.collapsingMode();
+    return isCollapseMode(mode, CollapsingModes.ACCORDION);
   }
 
   private getIsVertical(d?: Direction) {

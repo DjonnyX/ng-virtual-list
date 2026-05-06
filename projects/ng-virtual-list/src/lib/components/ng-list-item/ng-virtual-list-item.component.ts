@@ -7,7 +7,7 @@ import {
   DEFAULT_CLICK_DISTANCE, NAVIGATION_BY_KEYBOARD_TIMER, VISIBILITY_HIDDEN,
 } from '../../const';
 import { BaseVirtualListItemComponent } from './base';
-import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
+import { SelectingModesTypes } from '../../enums/selecting-modes-types';
 import { IDisplayObjectConfig } from '../../models';
 import { getListElementByIndex } from './utils';
 import {
@@ -102,24 +102,24 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       }),
     ).subscribe();
 
-    combineLatest([$data, this._service.$methodOfSelecting, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
+    combineLatest([$data, this._service.$selectingMode, this._service.$selectedIds, this._service.$collapsedIds]).pipe(
       takeUntilDestroyed(this._destroyRef),
       map(([, m, selectedIds, collapsedIds]) => ({ method: m, selectedIds, collapsedIds })),
       tap(({ method, selectedIds, collapsedIds }) => {
         switch (method) {
-          case MethodsForSelectingTypes.SELECT: {
+          case SelectingModesTypes.SELECT: {
             const id = selectedIds as Id | undefined, isSelected = id === this.itemId;
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
             this._isSelected = isSelected;
             break;
           }
-          case MethodsForSelectingTypes.MULTI_SELECT: {
+          case SelectingModesTypes.MULTI_SELECT: {
             const actualIds = selectedIds as Array<Id>, isSelected = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
             this._isSelected = isSelected;
             break;
           }
-          case MethodsForSelectingTypes.NONE:
+          case SelectingModesTypes.NONE:
           default: {
             this.element.removeAttribute(ATTR_AREA_SELECTED);
             this._isSelected = false;

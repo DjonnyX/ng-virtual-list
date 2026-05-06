@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgVirtualListItemComponent } from './ng-virtual-list-item.component';
 import { NgVirtualListService } from '../../ng-virtual-list.service';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
-import { MethodsForSelectingTypes } from '../../enums/method-for-selecting-types';
+import { SelectingModesTypes } from '../../enums/selecting-modes-types';
 
 const generateItem = (data?: Partial<IRenderVirtualListItem>): IRenderVirtualListItem => {
   return {
@@ -139,7 +139,7 @@ describe('NgVirtualListItemComponent', () => {
 
     await new Promise(resolve => setTimeout(resolve, 0));
 
-    service.methodOfSelecting = MethodsForSelectingTypes.SELECT;
+    service.selectingMode = SelectingModesTypes.SELECT;
     service.setSelectedIds(item.id);
 
     await new Promise(resolve => setTimeout(resolve, 0));
