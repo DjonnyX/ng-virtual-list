@@ -366,12 +366,32 @@ export class NgVirtualListService {
         }
       }
 
-      this._$scrollTo.next({
-        id, cb: null, options: {
-          delay: 50,
-        },
-      });
+      this.update(true, true);
+
+      if (this.isAccordionCollapse) {
+        const prevId = this.getPrevId(id);
+        this._$scrollTo.next({
+          id: prevId ?? id, cb: null, options: {
+            delay: 100, focused: false,
+          },
+        });
+      } else {
+        this._$scrollTo.next({
+          id, cb: null, options: {
+            delay: 100, focused: false,
+          },
+        });
+      }
     }
+  }
+
+  private getPrevId(id: Id) {
+    const collection = this.collection.sort((a, b) => { if (a.index > b.index) { return 1; } if (a.index < b.index) { return -11; } return 0; }), index = collection.findIndex(({ id: itemId }) => itemId === id);
+    if (index > -1) {
+      const prevIndex = index - 1;
+      return prevIndex > 0 ? collection[prevIndex].id : null;
+    }
+    return null;
   }
 
   getFocusedElementById(id: Id) {
