@@ -13,5 +13,6 @@ export interface IScrollParams {
     iteration?: number;
     isLastIteration?: boolean;
     scrollCalled?: boolean;
+    delay?: number;
     cb?: () => void;
 }

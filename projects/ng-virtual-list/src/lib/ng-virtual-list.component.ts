@@ -2809,7 +2809,17 @@ export class NgVirtualListComponent implements OnDestroy {
     combineLatest([$scroller, $trackBy, $scrollTo]).pipe(
       filter(([scroller, , event]) => !!scroller && !!event),
       map(([scroller, trackBy, event]) => ({ scroller: scroller, trackBy, event })),
-      tap(({ event }) => {
+      switchMap(({ event }) => {
+        const d = event?.delay ?? 0;
+        if (d > 0) {
+          return of(event).pipe(
+            takeUntilDestroyed(this._destroyRef),
+            delay(d),
+          );
+        }
+        return of(event);
+      }),
+      tap(event => {
         this._$scrollingTo.next(true);
         this._$scrollToExecutor.next(event);
       }),
@@ -3296,6 +3306,7 @@ export class NgVirtualListComponent implements OnDestroy {
     const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
       blending = options?.blending ?? false,
       focused = options?.focused ?? true,
+      delay = options?.delay ?? 0,
       iteration = options?.iteration ?? 0;
     validateId(id);
     validateScrollBehavior(behavior);
@@ -3307,7 +3318,7 @@ export class NgVirtualListComponent implements OnDestroy {
       return;
     }
     this._$scrollTo.next({
-      id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
+      id, behavior, blending, delay, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
         this.scrollToFinalize(id, focused, cb);
       }
     });
@@ -3328,6 +3339,7 @@ export class NgVirtualListComponent implements OnDestroy {
     const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
       blending = options?.blending ?? false,
       focused = options?.focused ?? true,
+      delay = options?.delay ?? 0,
       iteration = options?.iteration ?? 0;
     validateScrollBehavior(behavior);
     validateIteration(iteration);
@@ -3336,7 +3348,7 @@ export class NgVirtualListComponent implements OnDestroy {
     if (!!firstItem) {
       this._elementRef.nativeElement.focus();
       this._$scrollTo.next({
-        id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
+        id, behavior, blending, delay, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
           this._isScrollStart.set(true);
           this._trackBox.isScrollStart = true;
           this._trackBox.isScrollEnd = false;
@@ -3372,6 +3384,7 @@ export class NgVirtualListComponent implements OnDestroy {
     const behavior = options?.behavior ?? BEHAVIOR_INSTANT,
       blending = options?.blending ?? false,
       focused = options?.focused ?? true,
+      delay = options?.delay ?? 0,
       iteration = options?.iteration ?? 0;
     validateScrollBehavior(behavior);
     validateIteration(iteration);
@@ -3383,7 +3396,7 @@ export class NgVirtualListComponent implements OnDestroy {
       return;
     }
     this._$scrollTo.next({
-      id, behavior, blending, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
+      id, behavior, blending, delay, iteration: actualIteration, isLastIteration: actualIteration === MAX_SCROLL_TO_ITERATIONS, cb: () => {
         this._isScrollEnd.set(true);
         this._trackBox.isScrollStart = false;
         this._trackBox.isScrollEnd = true;

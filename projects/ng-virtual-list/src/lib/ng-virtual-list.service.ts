@@ -365,6 +365,12 @@ export class NgVirtualListService {
           this._$collapsedIds.next(curr);
         }
       }
+
+      this._$scrollTo.next({
+        id, cb: null, options: {
+          delay: 50,
+        },
+      });
     }
   }
 
