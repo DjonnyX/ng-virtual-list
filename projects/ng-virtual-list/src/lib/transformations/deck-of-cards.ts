@@ -6,7 +6,7 @@ import { Color, ItemTransform } from '../types';
 const UNSET = 'unset',
     B_LIMIT = 0.5;
 
-interface IDeckOfCardsOptions {
+export interface IDeckOfCardsOptions {
     /**
      * Depth Of Field. Default value is `null`.
      */

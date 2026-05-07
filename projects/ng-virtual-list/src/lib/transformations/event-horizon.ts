@@ -5,7 +5,7 @@ import { Color, ItemTransform } from '../types';
 
 const UNSET = 'unset';
 
-interface IEventHorizonOptions {
+export interface IEventHorizonOptions {
     /**
      * Depth Of Field. Default value is `null`.
      */

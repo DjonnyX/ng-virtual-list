@@ -20,16 +20,7 @@
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
 ![npm total downloads](https://img.shields.io/npm/dt/ng-virtual-list)
 
-[Chat Demo](https://chat-demo.eugene-grebennikov.pro/)
-[(Code)](https://github.com/DjonnyX/ng-virtual-list-chat-demo)
-
-[News Feed Demo](https://news-feed-demo.eugene-grebennikov.pro/)
-[(Code)](https://github.com/DjonnyX/ng-virtual-list-news-feed-demo)
-
-[Live Examples (Storybook)](https://ng-virtual-list-examples.eugene-grebennikov.pro/)
-
-[Examples](https://ng-virtual-list.eugene-grebennikov.pro/)
-[(Code)](https://github.com/DjonnyX/ng-virtual-list-demo/tree/main/src/app)
+[Documentation](https://ng-virtual-list-x12.eugene-grebennikov.pro/)
 
 <br/>
 

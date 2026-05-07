@@ -6,7 +6,7 @@ import { Color, ItemTransform } from '../types';
 const UNSET = 'unset',
     B_LIMIT = 0.5;
 
-interface ISwipe3DOptions {
+export interface ISwipe3DOptions {
     /**
      * Depth Of Field. Default value is `null`.
      */

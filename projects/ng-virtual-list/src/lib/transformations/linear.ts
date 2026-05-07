@@ -5,7 +5,7 @@ import { Color, ItemTransform } from '../types';
 
 const UNSET = 'unset';
 
-interface ILintearOptions {
+export interface ILintearOptions {
     /**
      * Depth Of Field. Default value is `null`.
      */
