@@ -117,6 +117,8 @@ export class NgScrollView extends BaseScrollView {
 
             this._x = this._actualX = v;
 
+            this.normalizeScrollSize();
+
             this.measureVelocity();
         }
     }
@@ -127,6 +129,8 @@ export class NgScrollView extends BaseScrollView {
             this.updateDirection(v, this._y);
 
             this._y = this._actualY = v;
+
+            this.normalizeScrollSize();
 
             this.measureVelocity();
         }
@@ -199,7 +203,8 @@ export class NgScrollView extends BaseScrollView {
                         this.stopScrolling();
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this.y : this.x,
-                            delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta), position = dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp;
+                            delta = isVertical ? e.deltaY : e.deltaX, dp = (startPos + delta),
+                            position = this.isInfinity() ? dp : (dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp);
                         this.scroll({ [isVertical ? TOP : LEFT]: position, behavior: INSTANT, userAction: true });
                         this._$wheel.next(delta);
                     }),
@@ -300,6 +305,11 @@ export class NgScrollView extends BaseScrollView {
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
+                                this.normalizeScrollSize();
+                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x);
+                                if (Math.abs(offset) > this._service.itemSize) {
+                                    startClientPos -= offset;
+                                }
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
@@ -421,6 +431,11 @@ export class NgScrollView extends BaseScrollView {
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
+                                this.normalizeScrollSize();
+                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x);
+                                if (Math.abs(offset) > this._service.itemSize) {
+                                    startClientPos -= offset;
+                                }
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
                                     takeUntilDestroyed(this._destroyRef),
@@ -538,8 +553,8 @@ export class NgScrollView extends BaseScrollView {
     ) {
         const currentPos = isVertical ? e.touches?.[e.touches?.length - 1]?.clientY || e.clientY : e.touches?.[e.touches?.length - 1]?.clientX || e.clientX,
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
-            dp = this._startPosition + delta, position = Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp), endTime = Date.now(),
-            timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
+            dp = this._startPosition + delta, position = this.isInfinity() ? dp : Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp),
+            endTime = Date.now(), timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
         this.calculateAcceleration(velocities, v0, timestamp);
         return { position, currentPos, endTime, scrollDelta };
@@ -658,6 +673,9 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected normalizeValue(value: number) {
+        if (this.isInfinity()) {
+            return value;
+        }
         const isVertical = this.isVertical(),
             startOffset = this._normalizeValueFromZero ? 0 : this.startOffset(),
             scrollSize = (isVertical ? this.scrollHeight : this.scrollWidth) - this.alignmentEndOffset(),
@@ -889,18 +907,20 @@ export class NgScrollView extends BaseScrollView {
     }
 
     scrollLimits(value?: number | undefined): boolean {
-        const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
-        if (isVertical) {
-            const yy = this.normalizeValue(y);
-            if (y !== yy) {
-                this.y = yy;
-                return true;
-            }
-        } else {
-            const xx = this.normalizeValue(x);
-            if (x !== xx) {
-                this.x = xx;
-                return true;
+        if (this.isInfinity()) {
+            const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
+            if (isVertical) {
+                const yy = this.normalizeValue(y);
+                if (y !== yy) {
+                    this.y = yy;
+                    return true;
+                }
+            } else {
+                const xx = this.normalizeValue(x);
+                if (x !== xx) {
+                    this.x = xx;
+                    return true;
+                }
             }
         }
         return false;

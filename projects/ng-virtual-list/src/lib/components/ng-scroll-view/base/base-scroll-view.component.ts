@@ -33,6 +33,8 @@ export class BaseScrollView {
 
     readonly alignmentEndOffset = input<number>(0);
 
+    readonly isInfinity = input<boolean>(false);
+
     readonly isVertical: Signal<boolean>;
 
     readonly grabbing = signal<boolean>(false);
@@ -62,12 +64,16 @@ export class BaseScrollView {
     protected _x: number = 0;
     set x(v: number) {
         this._x = this._actualX = v;
+
+        this.normalizeScrollSize();
     }
     get x() { return this._x; }
 
     protected _y: number = 0;
     set y(v: number) {
         this._y = this._actualY = v;
+
+        this.normalizeScrollSize();
     }
     get y() { return this._y; }
 
@@ -160,6 +166,32 @@ export class BaseScrollView {
     tick() {
         this.onResizeContent();
         this.onResizeViewport();
+    }
+
+    protected normalizeScrollSize() {
+        if (this.isInfinity()) {
+            const isVertical = this.isVertical();
+            if (isVertical) {
+                const scrollSize = (this._totalSize - this.viewportBounds().height);
+                if (this._y < 0) {
+                    this.y = scrollSize;
+                    return true;
+                } else if (this._y > scrollSize) {
+                    this.y = 0;
+                    return true;
+                }
+            } else {
+                const scrollSize = (this._totalSize - this.viewportBounds().width);
+                if (this._x < 0) {
+                    this.x = scrollSize;
+                    return true;
+                } else if (this._x > scrollSize) {
+                    this.x = 0;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected onResizeViewport() {

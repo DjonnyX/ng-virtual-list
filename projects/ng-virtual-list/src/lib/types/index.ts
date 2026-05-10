@@ -15,6 +15,7 @@ import { CollapsingMode } from "./collapsing-mode";
 import { SelectingMode } from "./selecting-mode";
 import { SnapToItemAlign } from '../types/snap-to-item-align';
 import { SnappingMethod } from "../types/snapping-method";
+import { SpreadingMode } from "../types/spreading-mode";
 import { TextDirection } from "../types/text-direction";
 
 export type {
@@ -35,5 +36,6 @@ export type {
     SelectingMode,
     SnappingMethod,
     SnapToItemAlign,
+    SpreadingMode,
     TextDirection,
 }

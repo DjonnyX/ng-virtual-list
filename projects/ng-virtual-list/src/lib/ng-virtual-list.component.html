@@ -23,7 +23,7 @@
 
 <ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset"
   [endOffset]="scrollEndOffset" [alignmentStartOffset]="alignmentScrollStartOffset" [alignmentEndOffset]="alignmentScrollEndOffset"
-  [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
+  [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()" [isInfinity]="_isInfinity()"
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
   [animationParams]="animationParams()" [focusedElement]="focusedElement()" [loading]="loading()"
   [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()"

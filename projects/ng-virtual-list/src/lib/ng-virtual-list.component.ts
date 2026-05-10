@@ -22,7 +22,7 @@ import {
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
   DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
-  DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES,
+  DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES, DEFAULT_SPREADING_MODE,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -33,10 +33,11 @@ import {
 import {
   Alignment, ArithmeticExpression, FocusAlignment, Id, ItemTransform, SnappingDistance, CollectionMode, Direction, SelectingMode,
   SnappingMethod, SnapToItemAlign, TextDirection, CollapsingMode,
+  SpreadingMode,
 } from './types';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
 import {
-  Alignments, CollectionModes, Directions, FocusAlignments, SelectingModes, SnappingMethods, TextDirections,
+  Alignments, CollectionModes, Directions, FocusAlignments, SelectingModes, SnappingMethods, SpreadingModes, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
 import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
@@ -66,6 +67,7 @@ import { isPercentageValue } from './utils/is-persentage-value';
 import { parseArithmeticExpression } from './utils/parse-arithmetic-expression';
 import { normalizeCollection } from './utils/normalize-collection';
 import { CollapsingModes } from './enums';
+import { isSpreadingMode } from './utils/is-spreading-mode';
 
 /**
  * Virtual list component.
@@ -763,6 +765,26 @@ export class NgVirtualListComponent implements OnDestroy {
    */
   alignment = input<Alignment>(DEFAULT_ALIGNMENT, { ...this._alignmentOptions });
 
+  private _spreadingModeOptions = {
+    transform: (v: SpreadingMode) => {
+      const valid = validateString(v) && (v === 'normal' || v === 'infinity');
+
+      if (!valid) {
+        console.error('The "spreadingMode" parameter must be one of `normal` or `infinity`.');
+        return DEFAULT_SPREADING_MODE;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * The order of list elements. Available values ​​are `standard` and `infinity`.
+   * `normal` — list elements are ordered according to the collection sequence.
+   * `infinity` — list elements are ordered cyclically, forming an infinite list.
+   * The default value is `standard`.
+   */
+  spreadingMode = input<SpreadingMode>(DEFAULT_SPREADING_MODE, { ...this._spreadingModeOptions });
+
   private _dividesOptions = {
     transform: (v: number) => {
       const valid = validateFloat(v);
@@ -1241,6 +1263,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _isSnappingMethodAdvanced: boolean = this.getIsSnappingMethodAdvanced();
 
+  protected _isInfinity: Signal<boolean>;
+
   private _isVertical = this.getIsVertical();
   protected get isVertical() {
     return this._isVertical;
@@ -1260,6 +1284,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _bounds = signal<ISize | null>(null);
   protected get bounds() { return this._bounds; }
+
+  private _actualAlignment: Signal<Alignment>;
+  protected get actualAlignment() { return this._actualAlignment; }
 
   private _actualItemSize = signal<number>(DEFAULT_ITEM_SIZE);
   protected get actualItemSize() { return this._actualItemSize; }
@@ -1487,6 +1514,19 @@ export class NgVirtualListComponent implements OnDestroy {
     this._service.initialize(this._id, this._trackBox);
 
     this._service.animationParams = this.animationParams();
+
+    this._isInfinity = computed(() => {
+      const mode = this.spreadingMode();
+      return isSpreadingMode(mode, SpreadingModes.INFINITY);
+    });
+
+    const $isInfinity = toObservable(this._isInfinity);
+    $isInfinity.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._trackBox.isInfinity = v;
+      }),
+    ).subscribe();
 
     const $bounds = toObservable(this._bounds).pipe(
       filter(b => !!b),
@@ -2177,7 +2217,12 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    const $alignment = toObservable(this.alignment),
+    this._actualAlignment = computed(() => {
+      const alignment = this.alignment(), spreadingMode = this.spreadingMode();
+      return isSpreadingMode(spreadingMode, SpreadingModes.INFINITY) ? Alignments.CENTER : alignment;
+    });
+
+    const $alignment = toObservable(this._actualAlignment),
       $precalculatedScrollStartOffset = toObservable(this._precalculatedScrollStartOffset),
       $precalculatedScrollEndOffset = toObservable(this._precalculatedScrollEndOffset),
       $listBounds = toObservable(this._listBounds).pipe(
@@ -2200,6 +2245,7 @@ export class NgVirtualListComponent implements OnDestroy {
         map(v => this.getIsSnappingMethodAdvanced(v || DEFAULT_SNAPPING_METHOD)),
       ),
       $collapsingMode = toObservable(this.collapsingMode),
+      $spreadingMode = toObservable(this.spreadingMode),
       $selectingMode = toObservable(this.selectingMode),
       $selectedIds = toObservable(this.selectedIds),
       $collapsedIds = toObservable(this.collapsedIds).pipe(
@@ -2479,7 +2525,7 @@ export class NgVirtualListComponent implements OnDestroy {
     ).subscribe();
 
     const update = (params: {
-      alignment: Alignment; precalculatedScrollStartOffset: number; precalculatedScrollEndOffset: number; trackBy: string;
+      alignment: Alignment; precalculatedScrollStartOffset: number; precalculatedScrollEndOffset: number; trackBy: string; isInfinity: boolean;
       snapScrollToStart: boolean, snapScrollToEnd: boolean; bounds: ISize; listBounds: ISize; scrollEndOffset: number;
       items: IVirtualListCollection<Object>; itemConfigMap: IVirtualListItemConfigMap; scrollSize: number; itemSize: number;
       minItemSize: number; maxItemSize: number; bufferSize: number; maxBufferSize: number; stickyEnabled: boolean; isVertical: boolean;
@@ -2487,7 +2533,7 @@ export class NgVirtualListComponent implements OnDestroy {
       snapToItem: boolean, snapToItemAlign: SnapToItemAlign, collapsedIds: Array<Id>; itemTransform: ItemTransform | null;
     }) => {
       const {
-        alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, trackBy,
+        alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, trackBy, isInfinity,
         snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
         maxItemSize, divides, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
         snapToItemAlign, cacheVersion, userAction, collapsedIds,
@@ -2561,9 +2607,9 @@ export class NgVirtualListComponent implements OnDestroy {
               const firstItemId: Id | null = items.length > 0 ? (items[0]?.[trackBy] ?? null) : null,
                 endItemId: Id | null = items.length > 0 ? (items?.[items.length - 1]?.[trackBy] ?? null) : null,
                 alignmentStartOffset = viewportSize * .5 - (firstItemId !== null ? (isVertical ? (this._service.getItemBounds(firstItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * .5,
+                  (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5),
                 alignmentEndOffset = viewportSize * .5 - (endItemId !== null ? (isVertical ? (this._service.getItemBounds(endItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * .5;
+                  (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5);
 
               this._alignmentScrollStartOffset.set(alignmentStartOffset);
               this._alignmentScrollEndOffset.set(alignmentEndOffset);
@@ -2653,14 +2699,14 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       filter(v => !!v),
       switchMap(() => {
-        return combineLatest([$trackBy, $snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize,
+        return combineLatest([$trackBy, $isInfinity, $snapScrollToStart, $snapScrollToEnd, $bounds, $listBounds, $scrollEndOffset, $actualItems, $itemConfigMap, $scrollSize,
           $actualItemSize, $actualMinItemSize, $actualMaxItemSize, $collapsedItemIds, $bufferSize, $maxBufferSize, $stickyEnabled, $isVertical,
           $dynamicSize, $divides, $snapToItem, $snapToItemAlign, $enabledBufferOptimization, $itemTransform, $alignment,
           $precalculatedScrollStartOffset, $precalculatedScrollEndOffset, $cacheVersion, this.$fireUpdate,
         ]).pipe(
           takeUntilDestroyed(this._destroyRef),
           tap(([
-            trackBy, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
+            trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
             maxItemSize, collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, snapToItem, snapToItemAlign,
             enabledBufferOptimization, itemTransform, alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, cacheVersion,
           ]) => {
@@ -2677,7 +2723,7 @@ export class NgVirtualListComponent implements OnDestroy {
             if (enabledOptimization) {
               if (useDebouncedUpdate) {
                 debouncedUpdate.execute({
-                  trackBy, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
+                  trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
                   collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                   snapToItem, snapToItemAlign, alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, cacheVersion, userAction: hasUserAction,
                 });
@@ -2689,7 +2735,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
             if (!isScrolling) {
               update({
-                trackBy, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
+                trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
                 collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                 snapToItem, snapToItemAlign, alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, cacheVersion, userAction: hasUserAction,
               });
@@ -3204,6 +3250,16 @@ export class NgVirtualListComponent implements OnDestroy {
   private getIsAccordionCollapse(m?: CollapsingMode) {
     const mode = m || this.collapsingMode();
     return isCollapseMode(mode, CollapsingModes.ACCORDION);
+  }
+
+  private getIsNormalSpread(m?: SpreadingMode) {
+    const mode = m || this.spreadingMode();
+    return isSpreadingMode(mode, SpreadingModes.NORMAL);
+  }
+
+  private getIsInfinitySpread(m?: SpreadingMode) {
+    const mode = m || this.spreadingMode();
+    return isSpreadingMode(mode, SpreadingModes.INFINITY);
   }
 
   private getIsVertical(d?: Direction) {
