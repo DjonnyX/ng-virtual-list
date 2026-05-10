@@ -2549,6 +2549,7 @@ export class NgVirtualListComponent implements OnDestroy {
           const currentScrollSize = (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0);
           let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight ?? 0 : scroller.scrollWidth ?? 0) :
             (isVertical ? scroller.scrollTop ?? 0 : scroller.scrollLeft ?? 0),
+            leftLayoutOffset = 0,
             displayItems: IRenderVirtualListCollection;
 
           const { width, height } = bounds, viewportSize = (isVertical ? height : width),
@@ -2558,19 +2559,22 @@ export class NgVirtualListComponent implements OnDestroy {
             };
 
           if (snapScrollToEnd && !this._readyForShow) {
-            const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1 } =
+            const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1, leftLayoutOffset: leftLayoutOffset1 } =
               this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize1;
+            leftLayoutOffset = leftLayoutOffset1;
           } else {
-            const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize } = this._trackBox.updateCollection(items, itemConfigMap, opts);
+            const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, opts);
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize;
+            leftLayoutOffset = leftLayoutOffset1;
           }
 
           const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
 
           scroller.totalSize = normalizedTotalSize;
+          scroller.startLayoutOffset = leftLayoutOffset;
 
           this._totalSize.set(normalizedTotalSize);
 

@@ -87,6 +87,14 @@ export class BaseScrollView {
         }
     }
 
+    protected _startLayoutOffset: number = 0;
+    set startLayoutOffset(v: number) {
+        if (this._startLayoutOffset !== v) {
+            this._startLayoutOffset = v;
+        }
+    }
+    get startLayoutOffset() { return this._startLayoutOffset; }
+
     get actualScrollHeight() {
         const { height: viewportHeight } = this.viewportBounds(),
             totalSize = this._actualTotalSize,
