@@ -179,52 +179,36 @@ export class BaseScrollView {
         this.onResizeViewport();
     }
 
+    protected overrideCoordinates(x: number, y: number) { }
+
     protected normalizeScrollSize() {
         if (this.isInfinity()) {
             const isVertical = this.isVertical();
             if (isVertical) {
                 const scrollSize = (this._totalSize - this.viewportBounds().height);
                 if (this._y < 0) {
+                    this.overrideCoordinates(this._x, scrollSize);
                     this.y = scrollSize;
                     return true;
                 } else if (this._y > scrollSize) {
+                    this.overrideCoordinates(this._x, 0);
                     this.y = 0;
                     return true;
                 }
             } else {
                 const scrollSize = (this._totalSize - this.viewportBounds().width);
                 if (this._x < 0) {
+                    this.overrideCoordinates(scrollSize, this._y);
                     this.x = scrollSize;
                     return true;
                 } else if (this._x > scrollSize) {
+                    this.overrideCoordinates(0, this._y);
                     this.x = 0;
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    protected normalizeScrollSizeValue(v: number) {
-        if (this.isInfinity()) {
-            const isVertical = this.isVertical();
-            if (isVertical) {
-                const scrollSize = (this._totalSize - this.viewportBounds().height);
-                if (this._y < 0) {
-                    return scrollSize;
-                } else if (this._y > scrollSize) {
-                    return 0;
-                }
-            } else {
-                const scrollSize = (this._totalSize - this.viewportBounds().width);
-                if (this._x < 0) {
-                    return scrollSize;
-                } else if (this._x > scrollSize) {
-                    return 0;
-                }
-            }
-        }
-        return v;
     }
 
     protected onResizeViewport() {

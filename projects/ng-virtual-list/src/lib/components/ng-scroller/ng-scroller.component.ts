@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, input, OnDestroy, output, Signal, signal, TemplateRef, viewChild, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, input, output, Signal, signal, TemplateRef, viewChild, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, debounceTime, filter, from, Subject, tap } from 'rxjs';
 import { ScrollBox } from './utils';
@@ -41,7 +41,7 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
   templateUrl: './ng-scroller.component.html',
   styleUrl: './ng-scroller.component.scss'
 })
-export class NgScrollerComponent extends NgScrollView implements OnDestroy {
+export class NgScrollerComponent extends NgScrollView {
   @ViewChild('scrollBar', { read: NgScrollBarComponent })
   readonly scrollBar: NgScrollBarComponent | undefined;
 
@@ -114,9 +114,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
       this._x = this._actualX = v;
 
-      const overridden = this.normalizeScrollSize();
+      this.normalizeScrollSize();
 
-      this.measureVelocity(overridden);
+      this.measureVelocity();
 
       this.updateScrollBar();
 
@@ -131,9 +131,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
       this._y = this._actualY = v;
 
-      const overridden = this.normalizeScrollSize();
+      this.normalizeScrollSize();
 
-      this.measureVelocity(overridden);
+      this.measureVelocity();
 
       this.updateScrollBar();
 
@@ -326,8 +326,7 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
     this.scrollbarShow.set(this.scrollable && this.scrollbarEnabled());
   };
 
-  override ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngAfterViewInit() {
     this.viewInitialized.set(true);
   }
 
@@ -484,11 +483,5 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
       }
     }
     return false;
-  }
-
-  override ngOnDestroy(): void {
-    super.ngOnDestroy();
-
-    this.stopMeasureVelocity();
   }
 }

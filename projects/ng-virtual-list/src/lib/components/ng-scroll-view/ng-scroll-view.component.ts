@@ -95,14 +95,6 @@ export class NgScrollView extends BaseScrollView {
 
     private _measureVelocityLastPosition: number = this.isVertical() ? this._y : this._x;
 
-    private _measureVelocityAnimationFrameId: number = -1;
-
-    private _measureVelocityAnimationTimer: number = -1;
-
-    private _measureVelocityHandler = () => {
-        this.measureVelocityExecutor();
-    }
-
     private _startPosition = 0;
 
     protected _animator = new Animator();
@@ -117,9 +109,9 @@ export class NgScrollView extends BaseScrollView {
 
             this._x = this._actualX = v;
 
-            const overridden = this.normalizeScrollSize();
+            this.normalizeScrollSize();
 
-            this.measureVelocity(overridden);
+            this.measureVelocity();
         }
     }
     override get x() { return this._x; }
@@ -130,9 +122,9 @@ export class NgScrollView extends BaseScrollView {
 
             this._y = this._actualY = v;
 
-            const overridden = this.normalizeScrollSize();
+            this.normalizeScrollSize();
 
-            this.measureVelocity(overridden);
+            this.measureVelocity();
         }
     }
     override get y() { return this._y; }
@@ -464,24 +456,19 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
     }
 
-    ngAfterViewInit() {
-        this.runMeasureVelocity();
-    }
-
     protected updateDirection(position: number, prePosition: number) {
         const delta = (position - this._delta) - prePosition;
         this._scrollDirection.add(delta > 0 ? 1 : delta < 0 ? -1 : 0);
     }
 
-    protected measureVelocity(overridden: boolean = false) {
-        if (overridden) {
-            const position = Math.abs(this.isVertical() ? this._y : this._x);
-            this._measureVelocityTimestamp = Date.now();
-            this._measureVelocityLastPosition = position;
-            return;
-        }
-        this._measureVelocityAnimationTimer = MEASURE_VELOCITY_TIMER;
+    protected override overrideCoordinates(x: number, y: number) {
+        super.overrideCoordinates(x, y);
+        const position = Math.abs(this.isVertical() ? y : x);
+        this._measureVelocityTimestamp = Date.now();
+        this._measureVelocityLastPosition = position;
+    }
 
+    protected measureVelocity() {
         this.measureVelocityExecutor();
     };
 
@@ -507,23 +494,6 @@ export class NgScrollView extends BaseScrollView {
         this._$averageVelocity.next(avgVelocity / MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS);
         this._measureVelocityLastPosition = position;
         this._measureVelocityTimestamp = timestamp;
-
-        this.runMeasureVelocity();
-    }
-
-    stopMeasureVelocity() {
-        if (this._measureVelocityAnimationFrameId > -1) {
-            cancelAnimationFrame(this._measureVelocityAnimationFrameId);
-            this._measureVelocityAnimationFrameId = -1;
-        }
-    }
-
-    private runMeasureVelocity() {
-        this.stopMeasureVelocity();
-        if (this._measureVelocityAnimationTimer >= 0) {
-            this._measureVelocityAnimationTimer--;
-            this._measureVelocityAnimationFrameId = requestAnimationFrame(this._measureVelocityHandler);
-        }
     }
 
     protected stopMoving() { }
