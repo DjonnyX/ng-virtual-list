@@ -86,6 +86,9 @@ export class BaseScrollView {
             this._actualTotalSize = v + startOffset + endOffset;
         }
     }
+    get totalSize() {
+        return this._totalSize;
+    }
 
     protected _startLayoutOffset: number = 0;
     set startLayoutOffset(v: number) {

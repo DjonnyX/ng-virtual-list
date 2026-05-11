@@ -512,6 +512,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; 
    * if you move the scroll bar to the beginning, the list will snap to the beginning. 
    * If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end.
+   * In the `spreadingMode=SpreadingModes.INFINITY` mode, the `snapScrollToStart` property is automatically disabled, since the list has no beginning or end.
    */
   snapScrollToStart = input<boolean>(DEFAULT_SNAP_SCROLLTO_START, { ...this._snapScrollToStartOptions });
 
@@ -534,6 +535,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * If snapScrollToStart is disabled and snapScrollToEnd is enabled, the list will snap to the end; 
    * if you move the scroll bar to the beginning, the list will snap to the beginning. 
    * If both snapScrollToStart and snapScrollToEnd are disabled, the list will never snap to the beginning or end.
+   * In the `spreadingMode=SpreadingModes.INFINITY` mode, the `snapScrollToEnd` property is automatically disabled, since the list has no beginning or end.
    */
   snapScrollToEnd = input<boolean>(DEFAULT_SNAP_SCROLLTO_END, { ...this._snapScrollToEndOptions });
 
@@ -1315,6 +1317,10 @@ export class NgVirtualListComponent implements OnDestroy {
 
   protected _actualScrollEndOffset = signal<number>(0);
 
+  protected _actualSnapScrollToStart: Signal<boolean>;
+
+  protected _actualSnapScrollToEnd: Signal<boolean>;
+
   protected _alignmentScrollStartOffset = signal<number>(0);
 
   protected _alignmentScrollEndOffset = signal<number>(0);
@@ -1838,6 +1844,18 @@ export class NgVirtualListComponent implements OnDestroy {
       this._service.clickDistance = dist;
     });
 
+    this._actualSnapScrollToStart = computed(() => {
+      const snapScrollToStart = this.snapScrollToStart(), spreadingMode = this.spreadingMode(),
+        isInfinity = isSpreadingMode(spreadingMode, SpreadingModes.INFINITY);
+      return isInfinity ? false : snapScrollToStart;
+    });
+
+    this._actualSnapScrollToEnd = computed(() => {
+      const snapScrollToEnd = this.snapScrollToEnd(), spreadingMode = this.spreadingMode(),
+        isInfinity = isSpreadingMode(spreadingMode, SpreadingModes.INFINITY);
+      return isInfinity ? false : snapScrollToEnd;
+    });
+
     const $viewInit = this.$viewInit,
       $prerenderContainer = toObservable(this._prerender);
 
@@ -1922,8 +1940,8 @@ export class NgVirtualListComponent implements OnDestroy {
       ),
       $divides = toObservable(this.divides),
       $dynamicSize = toObservable(this.dynamicSize),
-      $snapScrollToStart = toObservable(this.snapScrollToStart),
-      $snapScrollToEnd = toObservable(this.snapScrollToEnd),
+      $snapScrollToStart = toObservable(this._actualSnapScrollToStart),
+      $snapScrollToEnd = toObservable(this._actualSnapScrollToEnd),
       $waitForPreparation = toObservable(this.waitForPreparation),
       $items = toObservable(this.items);
 
@@ -2920,11 +2938,13 @@ export class NgVirtualListComponent implements OnDestroy {
               this._trackBox.clearDelta();
 
               const viewportSize = (isVertical ? height : width),
-                { displayItems, totalSize } = this._trackBox.updateCollection(items, itemConfigMap, {
+                { displayItems, totalSize, leftLayoutOffset } = this._trackBox.updateCollection(items, itemConfigMap, {
                   ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
                 }), delta1 = this._trackBox.delta;
 
               const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
+
+              scrollerComponent.startLayoutOffset = leftLayoutOffset;
 
               scrollerComponent.totalSize = normalizedTotalSize;
 
@@ -3168,7 +3188,7 @@ export class NgVirtualListComponent implements OnDestroy {
           this._trackBox.isScrollEnd = false;
         }
       } else if (!this._readyForShow) {
-        const snapScrollToStart = this.snapScrollToStart(), snapScrollToEnd = this.snapScrollToEnd();
+        const snapScrollToStart = this._actualSnapScrollToStart(), snapScrollToEnd = this._actualSnapScrollToEnd();
         if (!snapScrollToStart && snapScrollToEnd) {
           this._isScrollStart.set(false);
           this._isScrollEnd.set(true);
