@@ -469,10 +469,6 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected measureVelocity() {
-        this.measureVelocityExecutor();
-    };
-
-    private measureVelocityExecutor() {
         const timestamp = Date.now();
         if (timestamp === this._measureVelocityTimestamp) {
             return;
@@ -679,6 +675,7 @@ export class NgScrollView extends BaseScrollView {
                     this.move(isVertical, value, false, userAction);
                 }
                 iteration++;
+                this._service.update(true, true);
             }, onComplete: ({ value, timestamp }) => {
                 const v0 = calculateVelocity(position, value, timestamp);
                 if (alignmentAtComplete) {
@@ -687,6 +684,7 @@ export class NgScrollView extends BaseScrollView {
                     this.move(isVertical, value, false, userAction);
                 }
                 this._$scrollEnd.next(userAction);
+                this._service.update(true, true);
                 this.onAnimationComplete(value);
             },
         });
