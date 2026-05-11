@@ -40,7 +40,7 @@ import {
   Alignments, CollectionModes, Directions, FocusAlignments, SelectingModes, SnappingMethods, SpreadingModes, TextDirections,
 } from './enums';
 import { debounce, ScrollEvent, toggleClassName } from './utils';
-import { IGetItemPositionOptions, IUpdateCollectionOptions, TrackBox } from './core/track-box';
+import { TrackBox } from './core/track-box';
 import { isSnappingMethodAdvenced } from './utils/snapping-method';
 import { BaseVirtualListItemComponent } from './components/ng-list-item/base';
 import { Component$1 } from './models/component.model';
@@ -68,6 +68,7 @@ import { parseArithmeticExpression } from './utils/parse-arithmetic-expression';
 import { normalizeCollection } from './utils/normalize-collection';
 import { CollapsingModes } from './enums';
 import { isSpreadingMode } from './utils/is-spreading-mode';
+import { IGetItemPositionOptions, IUpdateCollectionOptions } from './core/interfaces';
 
 /**
  * Virtual list component.
@@ -1623,7 +1624,7 @@ export class NgVirtualListComponent implements OnDestroy {
     $trackBy.pipe(
       takeUntilDestroyed(),
       tap(v => {
-        this._service.trackBy = v;
+        this._service.trackBy = this._trackBox.trackBy = v;
       }),
     ).subscribe();
 

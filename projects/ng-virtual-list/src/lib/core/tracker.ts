@@ -6,6 +6,7 @@ import { ISize } from '../interfaces';
 import { Id } from "../types";
 import { CMap } from "../utils/cmap";
 import { SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED } from "../const";
+import { getServiceIdProp } from "./utils";
 
 type TrackingPropertyId = string | number;
 
@@ -81,7 +82,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
      * tracking by propName
      */
     track(items: IRenderVirtualListCollection, components: Array<ComponentRef<C>>, snappedComponents: Array<ComponentRef<C>> | null | undefined,
-        direction: ScrollDirection): void {
+        direction: ScrollDirection, trackBy: string): void {
         if (!items) {
             return;
         }
@@ -91,13 +92,14 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             isDown = direction === 0 || direction === 1, snapped = !!snappedComponents ? [...snappedComponents] : [];
         let isRegularSnapped = false;
 
+        const serviceIdProp = getServiceIdProp(trackBy);
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
             const item = items[i],
                 isDummy = item?.data?.[SERVICE_PROP_DUMMY] && (item?.data?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
             if (isDummy) {
                 continue;
             }
-            const itemTrackingProperty = item.id;
+            const itemTrackingProperty = (item as any)[serviceIdProp] ?? (item as any)[trackBy];
             let snappedComponent: ComponentRef<C> | null | undefined;
             if (this._trackMap) {
                 if (this._trackMap.has(itemTrackingProperty)) {

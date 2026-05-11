@@ -205,6 +205,28 @@ export class BaseScrollView {
         return false;
     }
 
+    protected normalizeScrollSizeValue(v: number) {
+        if (this.isInfinity()) {
+            const isVertical = this.isVertical();
+            if (isVertical) {
+                const scrollSize = (this._totalSize - this.viewportBounds().height);
+                if (this._y < 0) {
+                    return scrollSize;
+                } else if (this._y > scrollSize) {
+                    return 0;
+                }
+            } else {
+                const scrollSize = (this._totalSize - this.viewportBounds().width);
+                if (this._x < 0) {
+                    return scrollSize;
+                } else if (this._x > scrollSize) {
+                    return 0;
+                }
+            }
+        }
+        return v;
+    }
+
     protected onResizeViewport() {
         const viewport = this.scrollViewport()?.nativeElement;
         if (viewport) {

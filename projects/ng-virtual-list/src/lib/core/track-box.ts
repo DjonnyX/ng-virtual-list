@@ -6,7 +6,8 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../interfaces";
 import {
-    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
+    X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
 import { debounce } from "../utils";
@@ -14,116 +15,18 @@ import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
-import { ItemTransform, ScrollDirection, SnapToItemAlign } from "../types";
+import { ScrollDirection } from "../types";
 import { objectAsReadonly } from "../utils/object";
-
-export enum TrackBoxEvents {
-    CHANGE = 'change',
-    TICK = 'tick',
-}
-
-export interface IMetrics<I extends IItem> {
-    delta: number;
-    normalizedItemWidth: number;
-    normalizedItemHeight: number;
-    width: number;
-    height: number;
-    dynamicSize: boolean;
-    divides: number;
-    itemSize: number;
-    minItemSize: number;
-    maxItemSize: number;
-    items: Array<I>;
-    itemsFromStartToScrollEnd: number;
-    itemsFromStartToDisplayEnd: number;
-    itemsOnDisplayWeight: number;
-    itemsOnDisplayLength: number;
-    isVertical: boolean;
-    leftHiddenItemsWeight: number;
-    leftItemLength: number;
-    leftItemsWeight: number;
-    leftLayoutOffset: number;
-    renderItems: number;
-    rightItemLength: number;
-    rightItemsWeight: number;
-    scrollSize: number;
-    leftSizeOfAddedItems: number;
-    sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
-    stickyEnabled: boolean;
-    stickyPos: number;
-    startIndex: number;
-    startPosition: number;
-    totalItemsToDisplayEndWeight: number;
-    totalLength: number;
-    totalSize: number;
-    typicalItemSize: number;
-    isFromItemIdFound: boolean;
-    isUpdating: boolean;
-    snapToItem: boolean;
-    snapToItemAlign: SnapToItemAlign;
-    itemTransform: ItemTransform | null;
-}
-
-export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
-    bounds: ISize;
-    collection: C;
-    isVertical: boolean;
-    itemSize: number;
-    minItemSize: number;
-    maxItemSize: number;
-    bufferSize: number;
-    maxBufferSize: number;
-    dynamicSize: boolean;
-    scrollSize: number;
-    stickyEnabled: boolean;
-    enabledBufferOptimization: boolean;
-    fromItemId?: Id;
-    previousTotalSize: number;
-    crudDetected: boolean;
-    deletedItemsMap: { [index: number]: ISize; };
-    snapToItem: boolean;
-    snapToItemAlign: SnapToItemAlign;
-    itemTransform: ItemTransform | null;
-}
-
-export interface IGetItemPositionOptions<I extends IItem, C extends Array<I>>
-    extends Omit<IRecalculateMetricsOptions<I, C>, 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
-
-export interface IUpdateCollectionOptions<I extends IItem, C extends Array<I>>
-    extends Omit<IRecalculateMetricsOptions<I, C>, 'collection' | 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
-
-export type CacheMapEvents = TrackBoxEvents;
-
-export type OnChangeEventListener = (version: number) => void;
-
-export type OnTickEventListener = () => void;
-
-export type CacheMapListeners = OnChangeEventListener | OnTickEventListener;
-
-export enum ItemDisplayMethods {
-    CREATE,
-    UPDATE,
-    DELETE,
-    NOT_CHANGED,
-}
-
-export interface IUpdateCollectionReturns {
-    displayItems: IRenderVirtualListCollection;
-    totalSize: number;
-    leftLayoutOffset: number;
-    delta: number;
-    crudDetected: boolean;
-}
-
-export interface IGetMetricsReturns {
-    totalSize: number;
-    delta: number;
-    crudDetected: boolean;
-}
-
-interface IItem<I = any> {
-    [prop: string]: I;
-}
+import { getServiceIdProp } from "./utils";
+import { END_COLLECTION_PREFIX_ID, START_COLLECTION_PREFIX_ID } from "./const";
+import {
+    IGetItemPositionOptions, IGetMetricsReturns, IItem, IMetrics, IRecalculateMetricsOptions, IUpdateCollectionOptions,
+    IUpdateCollectionReturns,
+} from "./interfaces";
+import { TrackBoxEvents } from "./events";
+import { CacheMapEvents } from "./types/cache-map-events";
+import { CacheMapListeners } from "./types";
+import { ItemDisplayMethods } from "./enums";
 
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
@@ -182,6 +85,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._scrollDirection = v;
     }
     get scrollDirection() { return this._scrollDirection; }
+
+    protected _trackBy: string = TRACK_BY_PROPERTY_NAME;
+    set trackBy(v: string) {
+        if (this._trackBy === v) {
+            return;
+        }
+
+        this._trackBy = v;
+    }
+    get trackBy() { return this._trackBy; }
 
     protected _divides: number = DEFAULT_DIVIDES;
 
@@ -682,11 +595,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const isStart = ((roundedScrollSize === 0) || this.isSnappedToStart);
         let stickyItemId: Id | undefined, isNew = false;
 
-        let items: Array<I>, collectionOffset: number = 0;
+        let items: Array<I>;
 
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
             items = [];
+            const serviceIdProp = getServiceIdProp(trackBy);
             if (isFromId) {
                 for (let stickyId: Id | undefined = undefined, i = 0, l = collection.length; i < l; i++) {
                     const item = collection[i], id = item?.[trackBy];
@@ -727,7 +641,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     leftHiddenItemsWeight: 0,
                     totalItemsToDisplayEndWeight: 0,
                 };
-            const calculate = (i: number, l: number, li: number, isPrecollection: boolean = false) => {
+            const calculate = (i: number, l: number, li: number, isPrecollection: boolean = false, idPrefix: string | null = null) => {
                 const ii = i + 1;
                 if (ii > l) {
                     return false;
@@ -739,7 +653,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     isLastItemInRow = ii % divides === 0,
                     isLastItem = i === li,
                     isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
-                items.push(collectionItem);
+                items.push(isPrecollection ? { ...collectionItem, [serviceIdProp]: `_${idPrefix}-${id}_` } : collectionItem);
                 if (isNewRow || row === null) {
                     row = {
                         size: 0,
@@ -833,7 +747,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     }
                     row.leftItemsOrRowsWeights = Math.max(row.leftItemsOrRowsWeights, componentSize);
                     row.leftHiddenItemsWeight = Math.max(row.leftHiddenItemsWeight, componentSize);
-                    itemsFromStartToScrollEnd = ii;
+                    if (!isPrecollection) {
+                        itemsFromStartToScrollEnd = ii;
+                    }
                 }
 
                 if (isFromId) {
@@ -843,9 +759,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
                     }
                 } else if (y <= scrollSize + size + componentSize) {
-                    itemsFromStartToDisplayEnd = ii;
+                    if (!isPrecollection) {
+                        itemsFromStartToDisplayEnd = ii;
+                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
+                    }
                     row.totalItemsToDisplayEndWeight = Math.max(row.totalItemsToDisplayEndWeight, componentSize);
-                    itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
 
                     if (y <= scrollSize + componentSize) {
                         switch (itemDisplayMethod) {
@@ -901,7 +819,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (l > 0) {
                         const limit = viewportSize;
                         while (y <= limit) {
-                            if (!calculate(li - i, l, li, true)) {
+                            if (!calculate(li - i, l, li, true, START_COLLECTION_PREFIX_ID)) {
                                 break;
                             }
                             if ((i + 1) === l) {
@@ -950,7 +868,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const l = collection.length, li = l - 1;
                 let i = 0, count = 0;
                 while (y < normalizedTotalSize) {
-                    if (!calculate(i, l, li, true)) {
+                    if (!calculate(i, l, li, true, END_COLLECTION_PREFIX_ID)) {
                         break;
                     }
                     if ((i + 1) === l) {
@@ -1007,11 +925,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const itemsOnDisplayWeight = totalItemsToDisplayEndWeight - leftItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
             startPosition = this._scrollStartOffset + leftHiddenItemsWeight - leftItemsWeight - leftYOffset,
-            ri = (Math.ceil((itemsOnDisplayLength + leftItemLength + rightItemLength) / divides) * divides) + leftLayoutIndexOffset + rightLayoutIndexOffset,
-            renderItems = ri > items.length ? items.length : ri,
+            renderItems = (Math.ceil((itemsOnDisplayLength + leftItemLength + rightItemLength) / divides) * divides) + leftLayoutIndexOffset + rightLayoutIndexOffset,
             startCreationDelta = deltaFromStartCreation > 0 ? deltaFromStartCreation : 0,
             delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + startCreationDelta;
-
         this._deltaOfNewItems = deltaOfNewItems;
 
         if (isFromId && !isTargetInOverscroll) {
@@ -1335,6 +1251,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
+            const collectionLength = items.length;
             let i = startIndex,
                 ci = 0,
                 row: {
@@ -1347,13 +1264,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     even: false,
                 };
             while (renderItems > 0) {
-                if (i >= items.length) {
+                if (i >= collectionLength) {
                     i = 0;
                 }
                 const collectionItem = items[i];
-                if (!collectionItem) {
-                    continue;
-                }
 
                 const isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED),
                     ii = i + 1;
@@ -1551,7 +1465,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this._scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this._scrollDirection, this._trackBy);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {

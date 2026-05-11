@@ -1,0 +1,2 @@
+export const START_COLLECTION_PREFIX_ID = 'n',
+    END_COLLECTION_PREFIX_ID = 'p';

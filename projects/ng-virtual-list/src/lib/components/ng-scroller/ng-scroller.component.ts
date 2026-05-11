@@ -114,9 +114,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
       this._x = this._actualX = v;
 
-      this.normalizeScrollSize();
+      const overridden = this.normalizeScrollSize();
 
-      this.measureVelocity();
+      this.measureVelocity(overridden);
 
       this.updateScrollBar();
 
@@ -131,9 +131,9 @@ export class NgScrollerComponent extends NgScrollView implements OnDestroy {
 
       this._y = this._actualY = v;
 
-      this.normalizeScrollSize();
+      const overridden = this.normalizeScrollSize();
 
-      this.measureVelocity();
+      this.measureVelocity(overridden);
 
       this.updateScrollBar();
 
