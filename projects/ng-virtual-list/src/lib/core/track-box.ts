@@ -852,7 +852,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 (row as any) = null;
 
                 const yy = y, currentTotalSize = totalSize, viewportSize = isVertical ? height : width,
-                    normalizedTotalSize = totalSize + viewportSize * 2;
+                    normalizedTotalSize = totalSize + viewportSize;
                 row = {
                     size: 0,
                     deltaFromStartCreation: 0,
@@ -864,7 +864,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     rightItemsWeight: 0,
                     leftHiddenItemsWeight: 0,
                     totalItemsToDisplayEndWeight: 0,
-                }
+                };
                 const l = collection.length, li = l - 1;
                 let i = 0, count = 0;
                 while (y < normalizedTotalSize) {

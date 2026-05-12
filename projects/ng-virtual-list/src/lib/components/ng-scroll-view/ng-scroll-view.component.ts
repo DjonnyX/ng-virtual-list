@@ -973,12 +973,12 @@ export class NgScrollView extends BaseScrollView {
 
     refreshX(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * (v !== null ? v : this._x) + this.startLayoutOffset}px, 0, 0)`;
+        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * (v !== null ? v : this._x)}px, 0, 0)`;
     }
 
     refreshY(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * (v !== null ? v : this._y) + this.startLayoutOffset}px, 0)`;
+        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * (v !== null ? v : this._y)}px, 0)`;
     }
 
     protected fireScrollEvent(userAction: boolean) {

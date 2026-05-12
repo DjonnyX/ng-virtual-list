@@ -38,8 +38,8 @@ export class NgVirtualListService {
 
   private _nextComponentId: number = 0;
 
-  private _$itemClick = new Subject<IRenderVirtualListItem<any> | null>();
-  $itemClick = this._$itemClick.asObservable();
+  private _$virtualClick = new Subject<IRenderVirtualListItem<any> | null>();
+  $virtualClick = this._$virtualClick.asObservable();
 
   private _$selectedIds = new BehaviorSubject<Array<Id> | Id | null>(null);
   $selectedIds = this._$selectedIds.asObservable();
@@ -237,8 +237,8 @@ export class NgVirtualListService {
     ).subscribe();
   }
 
-  itemClick(data: IRenderVirtualListItem | null) {
-    this._$itemClick.next(data);
+  virtualClick(data: IRenderVirtualListItem | null) {
+    this._$virtualClick.next(data);
     if (this.collapseByClick) {
       const trackBy = this.trackBy, id = (data as any)?.[trackBy] ?? null;
       this.collapse(id);

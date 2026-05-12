@@ -24,15 +24,19 @@ export interface IDeckOfCardsOptions {
      */
     spacingBetweenItems?: number;
     /**
-     * Depth. Default value is `0.5`.
+     * Depth. Default value is `0.15`.
      */
     depth?: number;
+    /**
+     * Scale. Default value is `0.15`.
+     */
+    scale?: number;
     /**
      * Depth exponent. Default value is `4`.
      */
     depthPow?: number;
     /**
-     * Sinusoidal distribution. Default value is `true`.
+     * Sinusoidal distribution. Default value is `false`.
      */
     sineWave?: boolean;
 }
@@ -48,9 +52,10 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
         fogColor = options?.fogColor ?? null,
         fogWeight = options?.fogWeight ?? null,
         spacingBetweenItems = options?.spacingBetweenItems ?? .5,
-        depth = options?.depth ?? .05,
+        depth = options?.depth ?? .15,
+        scaleValue = options?.scale ?? .15,
         depthPow = options?.depthPow ?? 4,
-        sineWave = options?.depth ?? true;
+        sineWave = options?.depth ?? false;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
@@ -84,7 +89,7 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
         } else {
             result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
             result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
-            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * depth, depthPow);
+            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * scaleValue, depthPow), dofScale = Math.pow(1 - s * depth, depthPow);
             result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
@@ -93,7 +98,7 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
                 result.filter = actualBlur ? `blur(${actualBlur}${PX})` : UNSET;
             }
             if (!!fogColor) {
-                result.opacity = fogWeight ? Math.pow(scale, fogWeight) : scale;
+                result.opacity = fogWeight ? Math.pow(dofScale, fogWeight) : scale;
                 result.blendColor = fogColor;
             }
         }

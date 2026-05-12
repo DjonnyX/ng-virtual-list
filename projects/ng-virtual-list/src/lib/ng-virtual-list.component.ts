@@ -388,7 +388,7 @@ export class NgVirtualListComponent implements OnDestroy {
   } as any;
 
   /**
-   * If `false`, the element is selected using the config.select method passed to the template; 
+   * If `false`, the element is selected using the api.select method passed to the template; 
    * if `true`, the element is selected by clicking on it. The default value is `true`.
    */
   selectByClick = input<boolean>(DEFAULT_SELECT_BY_CLICK, { ...this._selectByClickOptions });
@@ -3042,7 +3042,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    this._service.$itemClick.pipe(
+    this._service.$virtualClick.pipe(
       takeUntilDestroyed(),
       tap(v => {
         this.onItemClick.emit(objectAsReadonly(v));

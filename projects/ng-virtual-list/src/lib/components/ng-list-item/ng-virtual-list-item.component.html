@@ -4,8 +4,8 @@
     @if (_blendColor) {
         <div class="ngvl-item__blend-color" [style.--blend-color]="_blendColor"></div>
     }
-    <div #container itemClick [part]="fxPart()" [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
-        (onClick)="onClickHandler()">
+    <div #container virtualClick [part]="fxPart()" [maxClickDistance]="maxClickDistance()" class="ngvl-item__container" [ngClass]="class"
+        (onVirtualClick)="onClickHandler()">
         @if (renderer) {
             <ng-container [ngTemplateOutlet]="renderer" [ngTemplateOutletContext]="templateContext()" />
         }

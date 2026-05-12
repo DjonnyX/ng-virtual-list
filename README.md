@@ -127,7 +127,7 @@ Template:
 
 <ng-template #horizontalItemRenderer let-data="data" let-config="config">
   @if (data) {
-    <div [ngClass]="{'list__h-container': true, 'selected': config.selected}">
+    <div [ngClass]="{'list__h-container': true, 'selected': api.selected}">
       <span>{{data.name}}</span>
     </div>
   }
@@ -183,7 +183,7 @@ Template:
         </div>
       }
       @default {
-        <div [ngClass]="{'list__h-container': true, 'selected': config.selected}">
+        <div [ngClass]="{'list__h-container': true, 'selected': api.selected}">
           <span>{{data.name}}</span>
         </div>
       }

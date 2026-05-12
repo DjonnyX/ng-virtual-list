@@ -260,6 +260,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   }
 
   onClickHandler() {
-    this._service.itemClick(this._data);
+    this._service.virtualClick(this._data);
   }
 }

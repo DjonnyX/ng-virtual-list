@@ -6,7 +6,7 @@ import { filter, switchMap, takeUntil, tap } from 'rxjs/operators';
 const DEFAULT_MAX_DISTANCE = 40;
 
 /**
- * ItemClickDirective
+ * VirtualClickDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.directive.ts
@@ -14,10 +14,10 @@ const DEFAULT_MAX_DISTANCE = 40;
  * @email djonnyx@gmail.com
  */
 @Directive({
-    selector: '[itemClick]',
+    selector: '[virtualClick]',
     standalone: false,
 })
-export class ItemClickDirective {
+export class VirtualClickDirective {
     private _maxDistance = DEFAULT_MAX_DISTANCE;
 
     @Input('maxClickDistance')
@@ -25,7 +25,7 @@ export class ItemClickDirective {
         this._maxDistance = v ? Number(v) : DEFAULT_MAX_DISTANCE;
     }
 
-    onClick = output<PointerEvent | TouchEvent>();
+    onVirtualClick = output<PointerEvent | TouchEvent>();
 
     private _elementRef = inject(ElementRef);
     private _destroyRef = inject(DestroyRef);
@@ -73,7 +73,7 @@ export class ItemClickDirective {
                     takeUntilDestroyed(this._destroyRef),
                     tap(e => {
                         if (e) {
-                            this.onClick.emit(e);
+                            this.onVirtualClick.emit(e);
                         }
                     }),
                 );

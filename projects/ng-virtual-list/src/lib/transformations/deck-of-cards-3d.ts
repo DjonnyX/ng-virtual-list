@@ -28,15 +28,19 @@ export interface IDeckOfCards3DOptions {
      */
     angle?: number;
     /**
-     * Depth. Default value is `1.5`.
+     * Depth. Default value is `0.15`.
      */
     depth?: number;
+    /**
+     * Scale. Default value is `0.15`.
+     */
+    scale?: number;
     /**
      * Depth exponent. Default value is `4`.
      */
     depthPow?: number;
     /**
-     * Sinusoidal distribution. Default value is `true`.
+     * Sinusoidal distribution. Default value is `false`.
      */
     sineWave?: boolean;
 }
@@ -54,8 +58,9 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
         spacingBetweenItems = options?.spacingBetweenItems ?? .5,
         angle = options?.angle ?? 1,
         depth = options?.depth ?? .15,
+        scaleValue = options?.scale ?? .15,
         depthPow = options?.depthPow ?? 4,
-        sineWave = options?.depth ?? true;
+        sineWave = options?.depth ?? false;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
@@ -88,7 +93,7 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
         } else {
             result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
             result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
-            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * depth, depthPow);
+            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * scaleValue, depthPow), dofScale = Math.pow(1 - s * depth, depthPow);
             const z = scale + .1;
             result.z = z > 1 ? 1 : z;
             result.scaleX = result.scaleY = scale;
@@ -100,7 +105,7 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
                 result.filter = actualBlur ? `blur(${actualBlur}${PX})` : UNSET;
             }
             if (!!fogColor) {
-                result.opacity = fogWeight ? Math.pow(scale, fogWeight) : scale;
+                result.opacity = fogWeight ? Math.pow(dofScale, fogWeight) : scale;
                 result.blendColor = fogColor;
             }
         }
