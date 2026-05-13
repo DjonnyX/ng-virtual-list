@@ -187,23 +187,27 @@ export class BaseScrollView {
             if (isVertical) {
                 const scrollSize = (this._totalSize - this.viewportBounds().height);
                 if (this._y < 0) {
-                    this.overrideCoordinates(this._x, scrollSize);
-                    this.y = scrollSize;
+                    const currentPosition = scrollSize - 1;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this.y = currentPosition;
                     return true;
                 } else if (this._y > scrollSize) {
-                    this.overrideCoordinates(this._x, 0);
-                    this.y = 0;
+                    const currentPosition = 1;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this.y = currentPosition;
                     return true;
                 }
             } else {
                 const scrollSize = (this._totalSize - this.viewportBounds().width);
                 if (this._x < 0) {
-                    this.overrideCoordinates(scrollSize, this._y);
-                    this.x = scrollSize;
+                    const currentPosition = scrollSize - 1;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this.x = currentPosition;
                     return true;
                 } else if (this._x > scrollSize) {
-                    this.overrideCoordinates(0, this._y);
-                    this.x = 0;
+                    const currentPosition = 1;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this.x = currentPosition;
                     return true;
                 }
             }

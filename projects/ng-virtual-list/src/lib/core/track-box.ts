@@ -1088,7 +1088,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         x = isVertical ? 0 : actualSnippedPosition,
                         y = isVertical ? actualSnippedPosition : 0;
                     if (sticky === 1) {
-                        const isOdd = i % 2 != 0,
+                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
                             measures: IRenderVirtualListItemMeasures = {
                                 x,
                                 y,
@@ -1175,7 +1175,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             ? cache?.[sizeProperty] || typicalItemSize
                             : typicalItemSize;
                     if (sticky === 2) {
-                        const isOdd = i % 2 != 0,
+                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
                             w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight,
                             absoluteStartPosition = pos - (scrollSize - size) - size, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
@@ -1292,7 +1292,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (!isDummy) {
                     if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
-                        const isOdd = i % 2 != 0,
+                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
                             sticky = itemConfigMap[id]?.sticky ?? 0,
                             selectable = itemConfigMap[id]?.selectable ?? true,
                             collapsable = itemConfigMap[id]?.collapsable ?? false,

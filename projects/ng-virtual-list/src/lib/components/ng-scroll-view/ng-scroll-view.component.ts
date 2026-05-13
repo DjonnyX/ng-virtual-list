@@ -135,6 +135,16 @@ export class NgScrollView extends BaseScrollView {
         this._startPosition += v;
     }
 
+    override set startLayoutOffset(v: number) {
+        if (this._startLayoutOffset !== v) {
+            this._startLayoutOffset = v;
+
+            this.refreshX(this._x);
+            this.refreshY(this._y);
+        }
+    }
+    override get startLayoutOffset() { return this._startLayoutOffset; }
+
     protected _intersectionComponentId: Id | null = null;
 
     constructor() {
@@ -297,7 +307,6 @@ export class NgScrollView extends BaseScrollView {
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
-                                this.normalizeScrollSize();
                                 const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                                     viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
@@ -425,7 +434,6 @@ export class NgScrollView extends BaseScrollView {
                                 prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
-                                this.normalizeScrollSize();
                                 const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
                                     scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                                     viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
@@ -470,6 +478,8 @@ export class NgScrollView extends BaseScrollView {
         const position = Math.abs(this.isVertical() ? y : x);
         this._measureVelocityTimestamp = Date.now();
         this._measureVelocityLastPosition = position;
+        this.refreshX(x);
+        this.refreshY(y);
     }
 
     protected measureVelocity() {
@@ -503,7 +513,7 @@ export class NgScrollView extends BaseScrollView {
             return false;
         }
         const snapToItem = this.snapToItem();
-        if (snapToItem) {
+        if (!!snapToItem) {
             const scrollingOneByOne = this.scrollingOneByOne();
             if (scrollingOneByOne) {
                 return this.alignPosition();
@@ -529,7 +539,7 @@ export class NgScrollView extends BaseScrollView {
     ) {
         const currentPos = isVertical ? e.touches?.[e.touches?.length - 1]?.clientY || e.clientY : e.touches?.[e.touches?.length - 1]?.clientX || e.clientX,
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
-            dp = this._startPosition + delta, position = this.isInfinity() ? dp : Math.round(dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp),
+            dp = this._startPosition + delta, position = this.isInfinity() ? dp : dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp,
             endTime = Date.now(), timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
         this.calculateAcceleration(velocities, v0, timestamp);
@@ -700,7 +710,7 @@ export class NgScrollView extends BaseScrollView {
             isPersentageSnappingDistance = isPercentageValue(sd);
         let size: number | null = null;
         const scrollDirection = this._scrollDirection.get(),
-            currentPosition = isVertical ? this.scrollTop : this.scrollLeft,
+            currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
         switch (align) {
@@ -760,7 +770,7 @@ export class NgScrollView extends BaseScrollView {
             snappingDistance = parseFloatOrPersentageValue(sd),
             isPersentageSnappingDistance = isPercentageValue(sd);
         let position: number | null = null;
-        const currentPosition = isVertical ? this.scrollTop : this.scrollLeft,
+        const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
         switch (align) {
