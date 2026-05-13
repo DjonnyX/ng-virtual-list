@@ -298,8 +298,10 @@ export class NgScrollView extends BaseScrollView {
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 this.normalizeScrollSize();
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x);
-                                if (Math.abs(offset) > this._service.itemSize) {
+                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
                                     startClientPos -= offset;
                                 }
                                 startTime = endTime;
@@ -424,8 +426,10 @@ export class NgScrollView extends BaseScrollView {
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 this.normalizeScrollSize();
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x);
-                                if (Math.abs(offset) > this._service.itemSize) {
+                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
                                     startClientPos -= offset;
                                 }
                                 startTime = endTime;
@@ -826,7 +830,7 @@ export class NgScrollView extends BaseScrollView {
             snappingDistance = parseFloatOrPersentageValue(sd),
             isPersentageSnappingDistance = isPercentageValue(sd);
         let componentId: Id | null = null;
-        const currentPosition = isVertical ? this.scrollTop : this.scrollLeft,
+        const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
         switch (align) {
@@ -973,12 +977,12 @@ export class NgScrollView extends BaseScrollView {
 
     refreshX(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * (v !== null ? v : this._x)}px, 0, 0)`;
+        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * (v !== null ? v : this._x) + this._startLayoutOffset}px, 0, 0)`;
     }
 
     refreshY(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * (v !== null ? v : this._y)}px, 0)`;
+        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * (v !== null ? v : this._y) + this._startLayoutOffset}px, 0)`;
     }
 
     protected fireScrollEvent(userAction: boolean) {

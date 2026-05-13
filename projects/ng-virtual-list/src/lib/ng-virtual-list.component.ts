@@ -2592,8 +2592,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
           const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
 
-          scroller.totalSize = normalizedTotalSize;
           scroller.startLayoutOffset = leftLayoutOffset;
+
+          scroller.totalSize = normalizedTotalSize;
 
           this._totalSize.set(normalizedTotalSize);
 
