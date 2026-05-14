@@ -29,6 +29,7 @@ export interface IMetrics<I extends IItem> {
     leftItemLength: number;
     leftItemsWeight: number;
     leftLayoutOffset: number;
+    leftLayoutIndexOffset: number;
     renderItems: number;
     rightItemLength: number;
     rightItemsWeight: number;

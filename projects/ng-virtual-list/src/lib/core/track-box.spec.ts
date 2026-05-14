@@ -255,6 +255,7 @@ describe('TrackBox', () => {
                 scrollSize,
                 leftSizeOfAddedItems: 0,
                 leftLayoutOffset: 0,
+                leftLayoutIndexOffset: 0,
                 sizeProperty: 'height',
                 startIndex: 0,
                 startPosition: 0,
