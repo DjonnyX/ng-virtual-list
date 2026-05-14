@@ -257,10 +257,10 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   private recalculatePerspective() {
-    const isVertical = this.isVertical(), sxrollSize = isVertical ? this.scrollTop : this.scrollLeft,
+    const isVertical = this.isVertical(), scrollSize = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
       { width, height } = this.viewportBounds();
     this.listStyles.set({
-      perspectiveOrigin: `${isVertical ? width * .5 : (sxrollSize + width * .5)}${PX} ${isVertical ? (sxrollSize + height * .5) : height * .5}${PX}`
+      perspectiveOrigin: `${isVertical ? width * .5 : (scrollSize + width * .5)}${PX} ${isVertical ? (scrollSize + height * .5) : height * .5}${PX}`
     });
   }
 
