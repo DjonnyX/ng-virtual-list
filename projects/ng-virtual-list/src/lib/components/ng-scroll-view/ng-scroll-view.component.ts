@@ -12,9 +12,8 @@ import {
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import {
-    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION,
-    MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MAX_VELOCITY_TIMESTAMP, MEASURE_VELOCITY_TIMER, OVERSCROLL_START_ITERATION, SCROLL_EVENT,
-    SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
+    MAX_VELOCITY_TIMESTAMP, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection, matrix3d } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -131,7 +130,7 @@ export class NgScrollView extends BaseScrollView {
 
     protected _delta: number = 0;
     set delta(v: number) {
-        this._delta = 0;
+        this._delta = v;
         this._startPosition += v;
     }
 
@@ -487,11 +486,20 @@ export class NgScrollView extends BaseScrollView {
         if (timestamp === this._measureVelocityTimestamp) {
             return;
         }
+        const position = Math.abs(this.isVertical() ? this._y : this._x);
+        if (!this.isInfinity()) {
+            if (position <= 0 || position >= (this.isVertical() ? this.scrollHeight : this.scrollWidth)) {
+                this._velocities = [0];
+                this._$averageVelocity.next(0);
+                this._measureVelocityLastPosition = position;
+                this._measureVelocityTimestamp = timestamp;
+                return;
+            }
+        }
         if (this._delta !== 0) {
             return;
         }
-        const position = Math.abs(this.isVertical() ? this._y : this._x),
-            timeDelta = timestamp - this._measureVelocityTimestamp,
+        const timeDelta = timestamp - this._measureVelocityTimestamp,
             positionDelta = Math.abs(position - this._measureVelocityLastPosition),
             velocity = timeDelta > 0 ? positionDelta / timeDelta : 0;
         let avgVelocity = this._velocities.length > 0 ? this._velocities.reduce((p, c) => p + c) : 0;
