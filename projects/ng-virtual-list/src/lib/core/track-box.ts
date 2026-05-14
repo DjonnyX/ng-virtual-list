@@ -1085,7 +1085,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!collectionItem || isDummy) {
                         continue;
                     }
-                    const rowIndex = Math.floor((i + 1) / divides), id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const rowIndex = Math.floor(((layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) + 1) / divides), id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? cache?.[sizeProperty] > 0 ? cache?.[sizeProperty] : typicalItemSize : typicalItemSize,
@@ -1096,7 +1096,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         x = isVertical ? 0 : actualSnippedPosition,
                         y = isVertical ? actualSnippedPosition : 0;
                     if (sticky === 1) {
-                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
+                        const isOdd = (layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) % 2 != 0,
                             measures: IRenderVirtualListItemMeasures = {
                                 x,
                                 y,
@@ -1171,7 +1171,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             if (stickyEnabled) {
                 const si = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1, startIndex = si < 0 ? si : si;
-                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), rowIndex = Math.floor((i + 1) / divides), l = totalLength; i < l; i++) {
+                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0),
+                    rowIndex = Math.floor(((layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) + 1) / divides),
+                    l = totalLength; i < l; i++) {
                     const collectionItem = items[i],
                         isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
                     if (!collectionItem || isDummy) {
@@ -1184,7 +1186,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             ? cache?.[sizeProperty] || typicalItemSize
                             : typicalItemSize;
                     if (sticky === 2) {
-                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
+                        const isOdd = (layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) % 2 != 0,
                             w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight,
                             absoluteStartPosition = pos - (scrollSize - size) - size, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
@@ -1282,7 +1284,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED),
                     ii = i + 1;
 
-                const rowIndex = Math.floor(ii / divides),
+                const rowIndex = Math.floor(((layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) + 1) / divides),
                     id = collectionItem[trackBy],
                     cache = this.get(id)!,
                     size = isDummy ? 0 : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
@@ -1302,7 +1304,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (!isDummy) {
                     if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
-                        const isOdd = (i < 0 ? (items.length > 0 ? (items.length - (i + 1)) : 0) : i) % 2 != 0,
+                        const isOdd = (layoutOffset !== 0 ? (items.length > 0 ? ((items.length - 1) + i) : 0) : i) % 2 != 0,
                             sticky = itemConfigMap[id]?.sticky ?? 0,
                             selectable = itemConfigMap[id]?.selectable ?? true,
                             collapsable = itemConfigMap[id]?.collapsable ?? false,

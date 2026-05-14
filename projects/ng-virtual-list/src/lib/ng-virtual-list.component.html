@@ -27,7 +27,7 @@
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
   [animationParams]="animationParams()" [focusedElement]="focusedElement()" [loading]="loading()"
   [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()"
-  [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()" [snapToItem]="snapToItem()"
+  [scrollbarEnabled]="_actualScrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()" [snapToItem]="snapToItem()"
   [snapToItemAlign]="snapToItemAlign()" [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()"
   [scrollingSettings]="scrollingSettings()" [scrollingOneByOne]="scrollingOneByOne()" [motionBlur]="motionBlur()"
   [maxMotionBlur]="maxMotionBlur()" [motionBlurEnabled]="motionBlurEnabled()">

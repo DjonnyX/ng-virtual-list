@@ -784,6 +784,7 @@ export class NgVirtualListComponent implements OnDestroy {
    * The order of list elements. Available values ​​are `standard` and `infinity`.
    * `normal` — list elements are ordered according to the collection sequence.
    * `infinity` — list elements are ordered cyclically, forming an infinite list.
+   * When set to `infinity`, the `alignment` property is forced to the value `Alignments.CENTER`, the `scrollbarEnabled` property is forced to the `false`
    * The default value is `standard`.
    */
   spreadingMode = input<SpreadingMode>(DEFAULT_SPREADING_MODE, { ...this._spreadingModeOptions });
@@ -1283,6 +1284,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
   private _bounds = signal<ISize | null>(null);
   protected get bounds() { return this._bounds; }
+
+  protected _actualScrollbarEnabled: Signal<boolean>;
 
   private _actualAlignment: Signal<Alignment>;
   protected get actualAlignment() { return this._actualAlignment; }
@@ -2234,6 +2237,11 @@ export class NgVirtualListComponent implements OnDestroy {
     this._actualAlignment = computed(() => {
       const alignment = this.alignment(), spreadingMode = this.spreadingMode();
       return isSpreadingMode(spreadingMode, SpreadingModes.INFINITY) ? Alignments.CENTER : alignment;
+    });
+
+    this._actualScrollbarEnabled = computed(() => {
+      const scrollbarEnabled = this.scrollbarEnabled(), spreadingMode = this.spreadingMode();
+      return isSpreadingMode(spreadingMode, SpreadingModes.INFINITY) ? false : scrollbarEnabled;
     });
 
     const $alignment = toObservable(this._actualAlignment),
