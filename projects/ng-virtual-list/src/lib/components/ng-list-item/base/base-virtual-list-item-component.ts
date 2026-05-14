@@ -228,20 +228,20 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       if (data.config.divides > 1) {
         styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
         styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
-        itemElementStyles.minWidth = styles.minWidth = `${data.measures.minWidth}${PX}`;
-        itemElementStyles.maxWidth = styles.maxWidth = `${data.measures.maxWidth}${PX}`;
-        itemElementStyles.minHeight = styles.minHeight = `${data.measures.minHeight}${PX}`;
-        itemElementStyles.maxHeight = styles.maxHeight = `${data.measures.maxHeight}${PX}`;
+        itemElementStyles.minWidth = styles.minWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.minWidth}${PX}`;
+        itemElementStyles.maxWidth = styles.maxWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.maxWidth}${PX}`;
+        itemElementStyles.minHeight = styles.minHeight = data.config.isVertical ? `${data.measures.minHeight}${PX}` : SIZE_AUTO;
+        itemElementStyles.maxHeight = styles.maxHeight = data.config.isVertical ? `${data.measures.maxHeight}${PX}` : SIZE_AUTO;
 
         itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
         itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
       } else {
         styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
         styles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
-        styles.minWidth = `${data.measures.minWidth}${PX}`;
-        styles.maxWidth = `${data.measures.maxWidth}${PX}`;
-        styles.minHeight = `${data.measures.minHeight}${PX}`;
-        styles.maxHeight = `${data.measures.maxHeight}${PX}`;
+        styles.minWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.minWidth}${PX}`;
+        styles.maxWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.maxWidth}${PX}`;
+        styles.minHeight = data.config.isVertical ? `${data.measures.minHeight}${PX}` : SIZE_AUTO;
+        styles.maxHeight = data.config.isVertical ? `${data.measures.maxHeight}${PX}` : SIZE_AUTO;
       }
     } else {
       el.removeAttribute(ID);

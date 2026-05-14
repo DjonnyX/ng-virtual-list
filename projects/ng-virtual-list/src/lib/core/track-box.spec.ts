@@ -1,10 +1,13 @@
-import { TrackBox, ItemDisplayMethods, TrackBoxEvents, IMetrics } from './track-box';
+import { TrackBox } from './track-box';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
 import { ISize } from '../interfaces';
 import { Id } from '../types';
 import { CMap } from '../utils/cmap';
 import { SnapToItemAligns } from '../enums';
+import { TrackBoxEvents } from './events';
+import { ItemDisplayMethods } from './enums';
+import { IMetrics } from './interfaces';
 
 interface IItem<I = any> {
     [prop: string]: I;
@@ -33,7 +36,7 @@ class TrackBoxTested extends TrackBox {
         return super.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical, indexOffset);
     }
 
-    override updateAdaptiveBufferParams(metrics: IMetrics, totalItemsLength: number) {
+    override updateAdaptiveBufferParams<I extends IItem>(metrics: IMetrics<I>, totalItemsLength: number) {
         super.updateAdaptiveBufferParams(metrics, totalItemsLength);
     }
 }
@@ -96,6 +99,7 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             divides: 0,
             snapToItem: false,
             snapToItemAlign: SnapToItemAligns.START,
+            layoutOffset: 0,
         },
         previouseData: undefined,
         nextData: undefined,
@@ -229,7 +233,7 @@ describe('TrackBox', () => {
         let scrollSize = 20000;
         const trackBox = new TrackBoxTested(trackBy);
         const generateMetrics = (scrollSize: number) => {
-            const metric: IMetrics = {
+            const metric: IMetrics<IItem> = {
                 delta: 0,
                 normalizedItemWidth: 0,
                 normalizedItemHeight: 0,
@@ -250,6 +254,7 @@ describe('TrackBox', () => {
                 rightItemsWeight: 0,
                 scrollSize,
                 leftSizeOfAddedItems: 0,
+                leftLayoutOffset: 0,
                 sizeProperty: 'height',
                 startIndex: 0,
                 startPosition: 0,
@@ -267,6 +272,7 @@ describe('TrackBox', () => {
                 itemTransform: null,
                 snapToItem: false,
                 snapToItemAlign: SnapToItemAligns.START,
+                items: [],
             };
             return metric;
         }

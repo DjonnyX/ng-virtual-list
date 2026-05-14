@@ -74,6 +74,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             zIndex: "0",
             snapToItem: false,
             snapToItemAlign: DEFAULT_SNAP_TO_ITEM_ALIGN,
+            layoutOffset: 0,
         },
     }
 }

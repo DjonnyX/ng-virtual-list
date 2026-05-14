@@ -16,7 +16,7 @@ import {
     MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS, MAX_VELOCITY_TIMESTAMP, MEASURE_VELOCITY_TIMER, OVERSCROLL_START_ITERATION, SCROLL_EVENT,
     SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
-import { calculateDirection } from './utils';
+import { calculateDirection, matrix3d } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
 import { IAnimationParams, IScrollingSettings } from '../../interfaces';
 import { SnapToItemAligns } from '../../enums';
@@ -987,12 +987,12 @@ export class NgScrollView extends BaseScrollView {
 
     refreshX(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(${(this._inversion ? 1 : -1) * (v !== null ? v : this._x) + this._startLayoutOffset}px, 0, 0)`;
+        scrollContent.style.transform = matrix3d((this._inversion ? 1 : -1) * (v !== null ? v : this._x) + this._startLayoutOffset, 0);
     }
 
     refreshY(value?: number) {
         const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = `translate3d(0, ${(this._inversion ? 1 : -1) * (v !== null ? v : this._y) + this._startLayoutOffset}px, 0)`;
+        scrollContent.style.transform = matrix3d(0, (this._inversion ? 1 : -1) * (v !== null ? v : this._y) + this._startLayoutOffset);
     }
 
     protected fireScrollEvent(userAction: boolean) {

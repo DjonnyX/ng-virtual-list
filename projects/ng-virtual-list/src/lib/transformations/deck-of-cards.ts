@@ -77,8 +77,8 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
             itemSize = isVertical ? measures.height : measures.width,
             itemSizeHalf = itemSize * .5,
             boundsSizeHalf = boundsSize * .5,
-            xx = isVertical ? measures.x : (measures.x + itemSizeHalf - boundsSizeHalf - scrollSize),
-            yy = isVertical ? (measures.y + itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
+            xx = isVertical ? measures.x : (measures.x + config.layoutOffset + itemSizeHalf - boundsSizeHalf - scrollSize),
+            yy = isVertical ? (measures.y + config.layoutOffset + itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
             pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
             pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
 
@@ -87,8 +87,8 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
+            result.x = isVertical ? xx : (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
+            result.y = isVertical ? (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * scaleValue, depthPow), dofScale = Math.pow(1 - s * depth, depthPow);
             result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);

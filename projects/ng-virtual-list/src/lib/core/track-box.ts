@@ -814,11 +814,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             if (this._isInfinity) {
                 const viewportSize = isVertical ? height : width;
+                let buffSize = -1;
                 if (scrollSize <= viewportSize) {
                     let i = 0, l = collection.length, li = l > 0 ? (l - 1) : 0;
                     if (l > 0) {
                         const limit = viewportSize;
-                        while (y <= limit) {
+                        while (y <= limit || buffSize > -1) {
+                            if (buffSize === -1) {
+                                buffSize = leftItemsOffset;
+                            }
+                            if (y >= limit) {
+                                buffSize--;
+                            }
                             if (!calculate(li - i, l, li, true, START_COLLECTION_PREFIX_ID)) {
                                 break;
                             }
@@ -1041,6 +1048,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             itemsOnDisplayLength,
             itemsFromStartToScrollEnd,
             isVertical,
+            leftLayoutOffset: layoutOffset,
             renderItems: renderItemsLength,
             scrollSize,
             sizeProperty,
@@ -1135,6 +1143,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                layoutOffset,
                                 snapToItem,
                                 snapToItemAlign,
                                 tabIndex: count,
@@ -1228,6 +1237,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                layoutOffset,
                                 snapToItem,
                                 snapToItemAlign,
                                 tabIndex: items.length,
@@ -1344,6 +1354,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
+                                layoutOffset,
                                 snapToItem,
                                 snapToItemAlign,
                                 tabIndex: count,

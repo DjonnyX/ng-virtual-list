@@ -56,8 +56,8 @@ export const eventHorizon = (options?: IEventHorizonOptions): ItemTransform => {
             itemSize = isVertical ? measures.height : measures.width,
             itemSizeHalf = itemSize * .5,
             boundsSizeHalf = boundsSize * .5,
-            xx = isVertical ? measures.x : (measures.x + itemSizeHalf - boundsSizeHalf - scrollSize),
-            yy = isVertical ? (measures.y + itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
+            xx = isVertical ? measures.x : (measures.x + config.layoutOffset + itemSizeHalf - boundsSizeHalf - scrollSize),
+            yy = isVertical ? (measures.y + config.layoutOffset + itemSizeHalf - boundsSizeHalf - scrollSize) : measures.y,
             pxOffset = isVertical ? boundsSizeHalf : xx, px = isVertical ? 1 : (pxOffset / boundsSizeHalf),
             pyOffset = isVertical ? yy : boundsSizeHalf, py = isVertical ? (pyOffset / boundsSizeHalf) : 1;
 
@@ -66,8 +66,8 @@ export const eventHorizon = (options?: IEventHorizonOptions): ItemTransform => {
             result.y = measures.y;
             result.zIndex = config.zIndex;
         } else {
-            result.x = isVertical ? xx : (scrollSize + boundsSizeHalf - itemSizeHalf + (xx * Math.pow(px, 2) * spacingBetweenItems));
-            result.y = isVertical ? (scrollSize + boundsSizeHalf - itemSizeHalf + (yy * Math.pow(py, 2) * spacingBetweenItems)) : yy;
+            result.x = isVertical ? xx : (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (xx * Math.pow(px, 2) * spacingBetweenItems));
+            result.y = isVertical ? (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (yy * Math.pow(py, 2) * spacingBetweenItems)) : yy;
             const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * .15, 4);
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
