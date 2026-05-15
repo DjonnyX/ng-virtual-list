@@ -150,6 +150,17 @@ export class NgScrollerComponent extends NgScrollView {
   }
   override get y() { return this._y; }
 
+  override set startLayoutOffset(v: number) {
+    if (this._startLayoutOffset !== v) {
+      this._startLayoutOffset = v;
+
+      this.refreshCoordinate(this._x, this._y);
+
+      this.recalculatePerspective();
+    }
+  }
+  override get startLayoutOffset() { return this._startLayoutOffset; }
+
   readonly viewInitialized = signal<boolean>(false);
 
   private _isScrollbarUserAction: boolean = false;
