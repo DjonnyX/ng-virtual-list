@@ -2643,6 +2643,10 @@ export class NgVirtualListComponent implements OnDestroy {
 
           scroller.delta = delta;
 
+          if (!scroller.scrollable) {
+            scroller.refresh();
+          }
+
           if ((snapScrollToStart && this._trackBox.isSnappedToStart) ||
             (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
             if (currentScrollSize !== roundedScrollPositionAfterUpdate) {
