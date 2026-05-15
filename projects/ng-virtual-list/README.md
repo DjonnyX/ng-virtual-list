@@ -699,6 +699,31 @@ Properties
 
 <br/>
 
+### [VirtualClickModule](https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.module.ts)
+
+### Virtual click directive
+
+To correctly handle interactive elements within a list, such as buttons, you need to use the VirtualClick directive.
+
+```ts
+import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
+
+@Component({
+  selector: 'example',
+  imports: [NgVirtualListModule, VirtualClickModule],
+})
+```
+
+```html
+<ng-template #itemRenderer let-data="data" let-config="config" let-api="api">
+  @if (data) {
+    <div virtualClick (onVirtualClick)="api.select(data.id, true)">
+      <span>{{data.name}}</span>
+    </div>
+  }
+</ng-template>
+```
+
 ## 🤝 Contributing
 
 PRs and feature requests are welcome!
