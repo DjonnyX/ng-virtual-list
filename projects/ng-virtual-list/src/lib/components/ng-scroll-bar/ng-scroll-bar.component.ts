@@ -119,8 +119,7 @@ export class NgScrollBarComponent extends NgScrollView {
       filter(v => !!v),
       tap(() => {
         this.scrollLimits();
-        this.refreshX(this._x);
-        this.refreshY(this._y);
+        this.refreshCoordinate(this._x, this._y);
         this.fireScrollEvent(false);
       }),
     ).subscribe();

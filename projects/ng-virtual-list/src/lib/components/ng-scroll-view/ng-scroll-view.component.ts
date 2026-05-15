@@ -110,6 +110,8 @@ export class NgScrollView extends BaseScrollView {
 
             this.normalizeScrollSize();
 
+            this.refreshCoordinate(this._x, this._y);
+
             this.measureVelocity();
         }
     }
@@ -122,6 +124,8 @@ export class NgScrollView extends BaseScrollView {
             this._y = this._actualY = v;
 
             this.normalizeScrollSize();
+
+            this.refreshCoordinate(this._x, this._y);
 
             this.measureVelocity();
         }
@@ -138,8 +142,7 @@ export class NgScrollView extends BaseScrollView {
         if (this._startLayoutOffset !== v) {
             this._startLayoutOffset = v;
 
-            this.refreshX(this._x);
-            this.refreshY(this._y);
+            this.refreshCoordinate(this._x, this._y);
         }
     }
     override get startLayoutOffset() { return this._startLayoutOffset; }
@@ -477,8 +480,7 @@ export class NgScrollView extends BaseScrollView {
         const position = Math.abs(this.isVertical() ? y : x);
         this._measureVelocityTimestamp = Date.now();
         this._measureVelocityLastPosition = position;
-        this.refreshX(x);
-        this.refreshY(y);
+        this.refreshCoordinate(x, y);
     }
 
     protected measureVelocity() {
@@ -959,7 +961,6 @@ export class NgScrollView extends BaseScrollView {
                         this.stopScrolling();
                     }
                     this.y = y;
-                    this.refreshY();
                     if (snap) {
                         this.checkIntersectionComponent();
                     }
@@ -974,7 +975,6 @@ export class NgScrollView extends BaseScrollView {
                         this.stopScrolling();
                     }
                     this.x = x;
-                    this.refreshX();
                     if (snap) {
                         this.checkIntersectionComponent();
                     }
@@ -993,14 +993,9 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
-    refreshX(value?: number) {
-        const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = matrix3d((this._inversion ? 1 : -1) * (v !== null ? v : this._x) + (this.isVertical() ? 0 : this._startLayoutOffset), 0);
-    }
-
-    refreshY(value?: number) {
-        const v = value ?? null, scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = matrix3d(0, (this._inversion ? 1 : -1) * (v !== null ? v : this._y) + (this.isVertical() ? this._startLayoutOffset : 0));
+    refreshCoordinate(x: number, y: number) {
+        const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
+        scrollContent.style.transform = matrix3d((this._inversion ? 1 : -1) * x + (this.isVertical() ? 0 : this._startLayoutOffset), (this._inversion ? 1 : -1) * y + (this.isVertical() ? this._startLayoutOffset : 0));
     }
 
     protected fireScrollEvent(userAction: boolean) {

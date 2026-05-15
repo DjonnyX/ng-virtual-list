@@ -116,6 +116,8 @@ export class NgScrollerComponent extends NgScrollView {
 
       const overridden = this.normalizeScrollSize();
 
+      this.refreshCoordinate(this._x, this._y);
+
       if (!overridden) {
         this.measureVelocity();
       }
@@ -134,6 +136,8 @@ export class NgScrollerComponent extends NgScrollView {
       this._y = this._actualY = v;
 
       const overridden = this.normalizeScrollSize();
+
+      this.refreshCoordinate(this._x, this._y);
 
       if (!overridden) {
         this.measureVelocity();
@@ -373,11 +377,7 @@ export class NgScrollerComponent extends NgScrollView {
 
     this.scrollLimits();
 
-    if (this.isVertical()) {
-      this.refreshY(this._y);
-    } else {
-      this.refreshX(this._x);
-    }
+    this.refreshCoordinate(this._x, this._y);
 
     if (updateScrollbar) {
       this.updateScrollBarHandler(false);

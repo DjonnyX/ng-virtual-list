@@ -4,7 +4,7 @@ import {
 import { Subject } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
-import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED, OVERRIDDEN_COORDINATES_OFFSET } from '../const';
+import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
 
 /**
  * BaseScrollView
@@ -84,6 +84,8 @@ export class BaseScrollView {
             this._totalSize = v;
             const startOffset = this.startOffset(), endOffset = this.alignmentEndOffset();
             this._actualTotalSize = v + startOffset + endOffset;
+
+            this.normalizeScrollSize();
         }
     }
     get totalSize() {
@@ -183,16 +185,16 @@ export class BaseScrollView {
 
     protected normalizeScrollSize() {
         if (this.isInfinity()) {
-            const offset = OVERRIDDEN_COORDINATES_OFFSET, isVertical = this.isVertical();
+            const isVertical = this.isVertical();
             if (isVertical) {
                 const scrollSize = (this._totalSize - this.viewportBounds().height);
                 if (this._y < 0) {
-                    const currentPosition = scrollSize - offset;
+                    const currentPosition = scrollSize;
                     this.overrideCoordinates(this._x, currentPosition);
                     this._y = currentPosition;
                     return true;
                 } else if (this._y > scrollSize) {
-                    const currentPosition = offset;
+                    const currentPosition = 0;
                     this.overrideCoordinates(this._x, currentPosition);
                     this._y = currentPosition;
                     return true;
@@ -200,12 +202,12 @@ export class BaseScrollView {
             } else {
                 const scrollSize = (this._totalSize - this.viewportBounds().width);
                 if (this._x < 0) {
-                    const currentPosition = scrollSize - offset;
+                    const currentPosition = scrollSize;
                     this.overrideCoordinates(currentPosition, this._y);
                     this._x = currentPosition;
                     return true;
                 } else if (this._x > scrollSize) {
-                    const currentPosition = offset;
+                    const currentPosition = 0;
                     this.overrideCoordinates(currentPosition, this._y);
                     this._x = currentPosition;
                     return true;
