@@ -114,9 +114,11 @@ export class NgScrollerComponent extends NgScrollView {
 
       this._x = this._actualX = v;
 
-      this.normalizeScrollSize();
+      const overridden = this.normalizeScrollSize();
 
-      this.measureVelocity();
+      if (!overridden) {
+        this.measureVelocity();
+      }
 
       this.updateScrollBar();
 
@@ -131,9 +133,11 @@ export class NgScrollerComponent extends NgScrollView {
 
       this._y = this._actualY = v;
 
-      this.normalizeScrollSize();
+      const overridden = this.normalizeScrollSize();
 
-      this.measureVelocity();
+      if (!overridden) {
+        this.measureVelocity();
+      }
 
       this.updateScrollBar();
 

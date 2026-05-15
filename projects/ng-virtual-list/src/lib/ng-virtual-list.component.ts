@@ -2594,8 +2594,6 @@ export class NgVirtualListComponent implements OnDestroy {
 
           const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
 
-          scroller.startLayoutOffset = leftLayoutOffset;
-
           scroller.totalSize = normalizedTotalSize;
 
           this._totalSize.set(normalizedTotalSize);
@@ -2610,9 +2608,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
           this.snappingHandler();
 
-          if (!scroller.scrollable) {
-            scroller.refresh();
-          }
+          scroller.startLayoutOffset = leftLayoutOffset;
 
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = actualScrollSize + delta,

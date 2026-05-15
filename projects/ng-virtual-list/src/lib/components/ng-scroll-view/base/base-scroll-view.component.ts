@@ -4,7 +4,7 @@ import {
 import { Subject } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
-import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
+import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED, OVERRIDDEN_COORDINATES_OFFSET } from '../const';
 
 /**
  * BaseScrollView
@@ -183,31 +183,31 @@ export class BaseScrollView {
 
     protected normalizeScrollSize() {
         if (this.isInfinity()) {
-            const isVertical = this.isVertical();
+            const offset = OVERRIDDEN_COORDINATES_OFFSET, isVertical = this.isVertical();
             if (isVertical) {
                 const scrollSize = (this._totalSize - this.viewportBounds().height);
                 if (this._y < 0) {
-                    const currentPosition = scrollSize - 1;
+                    const currentPosition = scrollSize - offset;
                     this.overrideCoordinates(this._x, currentPosition);
-                    this.y = currentPosition;
+                    this._y = currentPosition;
                     return true;
                 } else if (this._y > scrollSize) {
-                    const currentPosition = 1;
+                    const currentPosition = offset;
                     this.overrideCoordinates(this._x, currentPosition);
-                    this.y = currentPosition;
+                    this._y = currentPosition;
                     return true;
                 }
             } else {
                 const scrollSize = (this._totalSize - this.viewportBounds().width);
                 if (this._x < 0) {
-                    const currentPosition = scrollSize - 1;
+                    const currentPosition = scrollSize - offset;
                     this.overrideCoordinates(currentPosition, this._y);
-                    this.x = currentPosition;
+                    this._x = currentPosition;
                     return true;
                 } else if (this._x > scrollSize) {
-                    const currentPosition = 1;
+                    const currentPosition = offset;
                     this.overrideCoordinates(currentPosition, this._y);
-                    this.x = currentPosition;
+                    this._x = currentPosition;
                     return true;
                 }
             }
