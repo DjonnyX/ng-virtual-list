@@ -100,6 +100,8 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             snapToItem: false,
             snapToItemAlign: SnapToItemAligns.START,
             layoutOffset: 0,
+            isFirst: false,
+            isLast: false,
         },
         previouseData: undefined,
         nextData: undefined,

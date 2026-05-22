@@ -370,6 +370,7 @@ export class NgVirtualListService {
       this.update(true, true);
 
       if (this.isAccordionCollapse) {
+        this.update(false, true);
         const prevId = this.getPrevId(id);
         this._$scrollTo.next({
           id: prevId ?? id, cb: () => {
@@ -391,10 +392,10 @@ export class NgVirtualListService {
   }
 
   private getPrevId(id: Id) {
-    const collection = this.collection.sort((a, b) => { if (a.index > b.index) { return 1; } if (a.index < b.index) { return -11; } return 0; }), index = collection.findIndex(({ id: itemId }) => itemId === id);
+    const collection = this.items, index = collection.findIndex(item => item[this.trackBy] === id);
     if (index > -1) {
       const prevIndex = index - 1;
-      return prevIndex > 0 ? collection[prevIndex].id : null;
+      return prevIndex >= 0 ? (collection[prevIndex]?.[this.trackBy] ?? null) : null;
     }
     return null;
   }

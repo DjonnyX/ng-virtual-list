@@ -400,6 +400,10 @@ export class NgScrollerComponent extends NgScrollView {
     }
   }
 
+  snapIfNeed(animated: boolean = true) {
+    this.snapWithInitialForceIfNecessary(null, animated, true);
+  }
+
   startScrollTo() {
     this.stopScrollbar();
     this.stopScrolling();
@@ -417,7 +421,7 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   scrollTo(params: IScrollToParams) {
-    const userAction = params.userAction ?? true;
+    const userAction = params?.userAction ?? true;
     if (userAction) {
       this._isScrollbarUserAction = false;
       this.scrollBar?.stopScrolling();

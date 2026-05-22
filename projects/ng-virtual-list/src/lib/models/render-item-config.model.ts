@@ -97,4 +97,12 @@ export interface IRenderVirtualListItemConfig {
      * Alignment for snapToItem. Available values ​​are `start`, `center`, and `end`. The default value is `center`.
      */
     snapToItemAlign: SnapToItemAlign;
+    /**
+     * Indicates whether the element is the first in the collection.
+     */
+    isFirst: boolean;
+    /**
+     * Indicates whether the element is the last one in the collection.
+     */
+    isLast: boolean;
 }

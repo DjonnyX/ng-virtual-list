@@ -2295,6 +2295,15 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    combineLatest([$actualItems, $viewInit]).pipe(
+      takeUntilDestroyed(),
+      filter(([, init]) => init),
+      debounceTime(250),
+      tap(() => {
+        this._scrollerComponent()?.snapIfNeed();
+      })
+    ).subscribe();
+
     $itemConfigMap.pipe(
       takeUntilDestroyed(),
       tap(v => {
@@ -2557,8 +2566,7 @@ export class NgVirtualListComponent implements OnDestroy {
         alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, trackBy, isInfinity,
         snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
         maxItemSize, divides, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
-        snapToItemAlign, cacheVersion, userAction, collapsedIds,
-        itemTransform,
+        snapToItemAlign, cacheVersion, userAction, collapsedIds, itemTransform,
       } = params;
       const scroller = this._scrollerComponent();
       let totalSize = 0;
@@ -2749,8 +2757,8 @@ export class NgVirtualListComponent implements OnDestroy {
             if (enabledOptimization) {
               if (useDebouncedUpdate) {
                 debouncedUpdate.execute({
-                  trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
-                  collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
+                  trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
+                  maxItemSize, collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                   snapToItem, snapToItemAlign, alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, cacheVersion, userAction: hasUserAction,
                 });
                 return;
@@ -2761,8 +2769,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
             if (!isScrolling) {
               update({
-                trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize, maxItemSize,
-                collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
+                trackBy, isInfinity, snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
+                maxItemSize, collapsedIds, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, divides, enabledBufferOptimization, itemTransform,
                 snapToItem, snapToItemAlign, alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, cacheVersion, userAction: hasUserAction,
               });
             }

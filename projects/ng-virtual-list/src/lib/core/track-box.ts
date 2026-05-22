@@ -467,7 +467,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this.snapshot();
         }
 
-        const displayItems = this.generateDisplayCollection(metrics.items, itemConfigMap, { ...metrics, });
+        const displayItems = this.generateDisplayCollection(metrics.items, items, itemConfigMap, { ...metrics, });
         return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected, leftLayoutOffset: metrics.leftLayoutOffset };
     }
 
@@ -1116,7 +1116,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return false;
     }
 
-    protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
+    protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, actualItems: C, itemConfigMap: IVirtualListItemConfigMap,
         metrics: IMetrics<I>): IRenderVirtualListCollection {
         const {
             width,
@@ -1159,6 +1159,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
                 endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
 
+            const li = layoutIndexOffset + actualItems.length - 1;
             if (stickyEnabled) {
                 for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? (divides > 1 ? (itemsFromStartToScrollEnd - 1) : itemsFromStartToScrollEnd) : 0, totalLength - 1); i >= 0; i--) {
                     const collectionItem = items[i],
@@ -1212,6 +1213,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scrollDirection,
                                 delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
@@ -1308,6 +1311,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scrollDirection,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config: IRenderVirtualListItemConfig = {
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
@@ -1428,6 +1433,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scrollDirection,
                                 delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
@@ -1582,20 +1589,42 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null }) | null {
         const components = this._displayComponents;
+        let lastItem: (IRect & { id: Id | null }) | null = null,
+            firstItem: (IRect & { id: Id | null }) | null = null;
         if (!!components) {
+            for (const comp of components) {
+                const isFirst = comp.instance.item?.config?.isFirst,
+                    isLast = comp.instance.item?.config?.isLast;
+                if (!isFirst && !isLast) {
+                    continue;
+                }
+
+                const id = comp.instance.itemId ?? null,
+                    x = comp.instance.item?.measures?.x ?? 0,
+                    y = comp.instance.item?.measures?.y ?? 0,
+                    { width, height } = comp.instance.getBounds();
+
+                if (isFirst) {
+                    firstItem = { id, x, y, width, height };
+                } else if (isLast) {
+                    lastItem = { id, x, y, width, height };
+                }
+            }
             for (const comp of components) {
                 const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
                     x = comp.instance.item?.measures?.x ?? 0,
                     y = comp.instance.item?.measures?.y ?? 0,
-                    { width, height } = comp.instance.getBounds();
-                if (isVertical && (position >= y && position <= y + height)) {
+                    { width, height } = comp.instance.getBounds(),
+                    size = isVertical ? (firstItem?.height ?? 0) : (firstItem?.width ?? 0),
+                    pos = position < size ? size : position;
+                if (isVertical && (pos >= y && pos <= y + height)) {
                     return { id, x, y, width, height };
-                } else if (!isVertical && (position >= x && position <= x + width)) {
+                } else if (!isVertical && (pos >= x && pos <= x + width)) {
                     return { id, x, y, width, height };
                 }
             }
         }
-        return null;
+        return lastItem;
     }
 
     private _debouncedIsScrollStartOff = debounce(() => {
