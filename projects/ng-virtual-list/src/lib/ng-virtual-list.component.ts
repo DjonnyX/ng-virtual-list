@@ -1689,7 +1689,7 @@ export class NgVirtualListComponent implements OnDestroy {
             result = (isVertical ? (viewportBounds?.height ?? 0) : (viewportBounds?.width ?? 0)) - startOffset - endOffset;
           return of(result < min ? min : (result > max ? max : result));
         }
-        return of(v);
+        return of(v < min ? min : (v > max ? max : v));
       }),
       tap(v => {
         this._actualItemSize.set(v);
