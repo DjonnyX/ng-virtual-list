@@ -2298,10 +2298,10 @@ export class NgVirtualListComponent implements OnDestroy {
     combineLatest([$actualItems, $viewInit]).pipe(
       takeUntilDestroyed(),
       filter(([, init]) => init),
-      debounceTime(250),
+      debounceTime(0),
       tap(() => {
         this._scrollerComponent()?.snapIfNeed();
-      })
+      }),
     ).subscribe();
 
     $itemConfigMap.pipe(

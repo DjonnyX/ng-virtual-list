@@ -400,13 +400,13 @@ export class NgScrollerComponent extends NgScrollView {
     }
   }
 
-  snapIfNeed(animated: boolean = true) {
-    this.snapWithInitialForceIfNecessary(null, animated, true);
+  snapIfNeed() {
+    this.snapWithInitialForceIfNecessary(null, true, true);
   }
 
   startScrollTo() {
     this.stopScrollbar();
-    this.stopScrolling();
+    this.stopScrolling(true);
     this._scrollDirection.clear();
     this.dropVelocity();
     this._isScrollsTo = true;
@@ -414,7 +414,7 @@ export class NgScrollerComponent extends NgScrollView {
 
   finishedScrollTo() {
     this._isScrollsTo = false;
-    this.alignPosition(false, true);
+    this.alignPosition(true);
     this._scrollDirection.clear();
     this.dropVelocity();
     this.fireScrollEvent(true);
@@ -460,7 +460,7 @@ export class NgScrollerComponent extends NgScrollView {
       return;
     }
     this._$scrollbarScroll.next(true);
-    this.stopScrolling();
+    this.stopScrolling(true);
     const isVertical = this.isVertical(),
       {
         position: absolutePosition,

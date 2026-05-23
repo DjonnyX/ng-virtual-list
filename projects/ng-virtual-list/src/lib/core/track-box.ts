@@ -1589,38 +1589,22 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null }) | null {
         const components = this._displayComponents;
-        let lastItem: (IRect & { id: Id | null }) | null = null,
-            firstItem: (IRect & { id: Id | null }) | null = null;
+        let lastItem: (IRect & { id: Id | null }) | null = null;
         if (!!components) {
-            for (const comp of components) {
-                const isFirst = comp.instance.item?.config?.isFirst,
-                    isLast = comp.instance.item?.config?.isLast;
-                if (!isFirst && !isLast) {
-                    continue;
-                }
-
-                const id = comp.instance.itemId ?? null,
-                    x = comp.instance.item?.measures?.x ?? 0,
-                    y = comp.instance.item?.measures?.y ?? 0,
-                    { width, height } = comp.instance.getBounds();
-
-                if (isFirst) {
-                    firstItem = { id, x, y, width, height };
-                } else if (isLast) {
-                    lastItem = { id, x, y, width, height };
-                }
-            }
             for (const comp of components) {
                 const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
                     x = comp.instance.item?.measures?.x ?? 0,
                     y = comp.instance.item?.measures?.y ?? 0,
                     { width, height } = comp.instance.getBounds(),
-                    size = isVertical ? (firstItem?.height ?? 0) : (firstItem?.width ?? 0),
+                    size = isVertical ? height : width,
                     pos = position < size ? size : position;
                 if (isVertical && (pos >= y && pos <= y + height)) {
                     return { id, x, y, width, height };
                 } else if (!isVertical && (pos >= x && pos <= x + width)) {
                     return { id, x, y, width, height };
+                }
+                if (comp.instance.item?.config?.isLast) {
+                    lastItem = { id, x, y, width, height };
                 }
             }
         }
