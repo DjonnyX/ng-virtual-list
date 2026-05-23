@@ -1213,6 +1213,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scrollDirection,
                                 delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
+                                fullSize: true,
                                 isFirst: i === layoutIndexOffset,
                                 isLast: i === li,
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1311,6 +1312,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 scrollDirection,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config: IRenderVirtualListItemConfig = {
+                                fullSize: true,
                                 isFirst: i === layoutIndexOffset,
                                 isLast: i === li,
                                 new: (cache satisfies Cache)?.[IS_NEW] === true,
@@ -1395,14 +1397,15 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
                         const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
                             sticky = itemConfigMap[id]?.sticky ?? 0,
+                            fullSize = itemConfigMap[id]?.fullSize ?? false,
                             selectable = itemConfigMap[id]?.selectable ?? true,
                             collapsable = itemConfigMap[id]?.collapsable ?? false,
                             snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
                             absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                             absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                            x = isVertical ? divSize * (sticky ? 0 : ci) : pos,
-                            y = isVertical ? pos : divSize * (sticky ? 0 : ci),
+                            x = isVertical ? divSize * ((sticky || fullSize) ? 0 : ci) : pos,
+                            y = isVertical ? pos : divSize * ((sticky || fullSize) ? 0 : ci),
                             measures: IRenderVirtualListItemMeasures = {
                                 x,
                                 y,
@@ -1424,8 +1427,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
                                 absoluteEndPositionPercent,
-                                width: isVertical ? (sticky ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
-                                height: isVertical ? size : (sticky ? normalizedItemHeight : (normalizedItemHeight / divides)),
+                                width: isVertical ? ((sticky || fullSize) ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
+                                height: isVertical ? size : ((sticky || fullSize) ? normalizedItemHeight : (normalizedItemHeight / divides)),
                                 minWidth: minItemSize,
                                 minHeight: minItemSize,
                                 maxWidth: maxItemSize,
@@ -1455,6 +1458,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 divides,
                                 opacity: 1,
                                 zIndex: '0',
+                                fullSize,
                             };
 
                         count++;

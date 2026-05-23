@@ -105,4 +105,8 @@ export interface IRenderVirtualListItemConfig {
      * Indicates whether the element is the last one in the collection.
      */
     isLast: boolean;
+    /**
+     * Determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true.
+     */
+    fullSize: boolean;
 }
