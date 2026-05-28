@@ -777,10 +777,10 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected alignPosition(animate: boolean = true, force: boolean = false) {
-        this.stopScrolling(true);
         if (!this.snapToItem() || this._isScrollsTo || this._isAlignmentAnimation) {
             return false;
         }
+        this.stopScrolling(true);
         const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
         if (scrollDirection === 0) {
             return false;

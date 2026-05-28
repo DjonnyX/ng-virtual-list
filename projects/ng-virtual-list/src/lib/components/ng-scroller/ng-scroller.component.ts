@@ -122,7 +122,7 @@ export class NgScrollerComponent extends NgScrollView {
         this.measureVelocity();
       }
 
-      this.updateScrollBar();
+      this.refreshScrollbar();
 
       this.recalculatePerspective();
     }
@@ -143,7 +143,7 @@ export class NgScrollerComponent extends NgScrollView {
         this.measureVelocity();
       }
 
-      this.updateScrollBar();
+      this.refreshScrollbar();
 
       this.recalculatePerspective();
     }
