@@ -170,7 +170,7 @@ export class NgScrollView extends BaseScrollView {
                 mouseCanceled = touchCanceled = true;
                 if (this.snapToItem() || this.scrollingOneByOne()) {
                     this.stopScrolling(true);
-                    this.alignPosition(true, true);
+                    this.alignPosition(true);
                 }
                 this._$scrollEnd.next(false);
             }),
@@ -521,7 +521,7 @@ export class NgScrollView extends BaseScrollView {
 
     protected stopMoving() { }
 
-    private snapIfNecessary(v0: number, withInitialForce: boolean = true, animate: boolean = true, force: boolean = false) {
+    private snapIfNecessary(v0: number, withInitialForce: boolean = true, force: boolean = false) {
         const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
         if (scrollDirection === 0) {
             return false;
@@ -530,20 +530,20 @@ export class NgScrollView extends BaseScrollView {
         if (!!snapToItem) {
             const scrollingOneByOne = this.scrollingOneByOne();
             if (scrollingOneByOne) {
-                return this.alignPosition(animate);
+                return this.alignPosition();
             }
             if (withInitialForce) {
-                return this.snapWithInitialForceIfNecessary(v0, animate);
+                return this.snapWithInitialForceIfNecessary(v0);
             }
         }
         return false;
     }
 
-    protected snapWithInitialForceIfNecessary(v0: number | null = null, animate: boolean = true, force: boolean = false) {
+    protected snapWithInitialForceIfNecessary(v0: number | null = null, force: boolean = false) {
         const t = this.animationParams().snapToItem * .01, s = this.getSnappedComponentSize(),
             va = s !== null && t !== 0 ? (s / t) : 0;
         if (va >= Math.abs(v0 ?? this.averageVelocity)) {
-            return this.alignPosition(animate, force);
+            return this.alignPosition(force);
         }
         return false;
     }
@@ -672,7 +672,7 @@ export class NgScrollView extends BaseScrollView {
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
         } else {
-            this.alignPosition(false);
+            this.alignPosition();
         }
     }
 
@@ -776,7 +776,7 @@ export class NgScrollView extends BaseScrollView {
         return size;
     }
 
-    protected alignPosition(animate: boolean = true, force: boolean = false) {
+    protected alignPosition(force: boolean = false) {
         if (!this.snapToItem() || this._isScrollsTo || this._isAlignmentAnimation) {
             return false;
         }
@@ -790,7 +790,7 @@ export class NgScrollView extends BaseScrollView {
             sd = this.snappingDistance(),
             snappingDistance = parseFloatOrPersentageValue(sd),
             isPersentageSnappingDistance = isPercentageValue(sd);
-        let position: number | null = null;
+        let position: number | null = null, size: number = 0;
         const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
@@ -799,8 +799,9 @@ export class NgScrollView extends BaseScrollView {
                 const offset = ((scrollDirection === 1 ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollDirection,
                     componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
                 if (!!componentBounds) {
-                    const { x, y } = componentBounds,
+                    const { x, y, width, height } = componentBounds,
                         componentPosition = isVertical ? y : x;
+                    size = isVertical ? height : width;
                     position = componentPosition - (this.startOffset() - this.alignmentStartOffset());
                 }
                 break;
@@ -813,8 +814,8 @@ export class NgScrollView extends BaseScrollView {
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
                 if (!!componentBounds) {
                     const { x, y, width, height } = componentBounds,
-                        size = isVertical ? height : width,
                         componentPosition = isVertical ? y : x;
+                    size = isVertical ? height : width;
                     position = componentPosition + size * .5 - viewportSize * .5 - (this.startOffset() - this.alignmentStartOffset()) * .5;
                 }
                 break;
@@ -826,24 +827,25 @@ export class NgScrollView extends BaseScrollView {
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
                 if (!!componentBounds) {
-                    const { x, y } = componentBounds,
+                    const { x, y, width, height } = componentBounds,
                         componentPosition = isVertical ? y : x;
+                    size = isVertical ? height : width;
                     position = componentPosition - viewportSize;
                 }
                 break;
             }
         }
 
-        if (animate) {
-            if (position !== null && position !== currentPosition) {
-                this.stopScrolling(true);
+        const cPos = (isVertical ? this.scrollTop : this.scrollLeft);
 
-                this.animate(currentPosition, position, this.animationParams().snapToItem, easeOutQuad, false, false);
-                return true;
+        if (position !== null && position !== cPos) {
+            this.stopScrolling(true);
+
+            let fPos = position + this._startLayoutOffset;
+            if (fPos < 0) {
+                fPos += size;
             }
-        } else if (position !== null && position !== currentPosition) {
-            this.move(isVertical, position, false, false, true);
-            this._service.update(true, true);
+            this.animate(cPos, fPos, this.animationParams().snapToItem, easeOutQuad, false, false);
             return true;
         }
         return false;

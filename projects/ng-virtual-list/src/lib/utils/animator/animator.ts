@@ -68,7 +68,7 @@ export class Animator {
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
           delta,
-          value: currentValue,
+          value: isFinished ? endValue : currentValue,
           timestamp,
         };
         onUpdate(data);
@@ -78,7 +78,7 @@ export class Animator {
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
             delta,
-            value: currentValue,
+            value: endValue,
             timestamp,
           };
           onComplete(data);

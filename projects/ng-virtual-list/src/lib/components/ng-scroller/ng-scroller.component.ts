@@ -402,7 +402,7 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   snapIfNeed() {
-    this.snapWithInitialForceIfNecessary(null, true, true);
+    this.snapWithInitialForceIfNecessary(null, true);
   }
 
   startScrollTo() {
