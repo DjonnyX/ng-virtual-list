@@ -371,9 +371,8 @@ export class NgVirtualListService {
 
       if (this.isAccordionCollapse) {
         this.update(false, true);
-        const prevId = this.getPrevId(id);
         this._$scrollTo.next({
-          id: prevId ?? id, cb: () => {
+          id, cb: () => {
             this.update(false, true);
           }, options: {
             delay: 100, focused: false,
@@ -389,15 +388,6 @@ export class NgVirtualListService {
         });
       }
     }
-  }
-
-  private getPrevId(id: Id) {
-    const collection = this.items, index = collection.findIndex(item => item[this.trackBy] === id);
-    if (index > -1) {
-      const prevIndex = index - 1;
-      return prevIndex >= 0 ? (collection[prevIndex]?.[this.trackBy] ?? null) : null;
-    }
-    return null;
   }
 
   getFocusedElementById(id: Id) {

@@ -389,7 +389,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     getItemPosition<I extends IItem, C extends Array<I>>(id: Id, itemConfigMap: IVirtualListItemConfigMap,
         options: IGetItemPositionOptions<I, C>): number {
-        const opt = { fromItemId: id, itemConfigMap, ...options };
+        const opt = { fromItemId: id ?? options.fromItemId, itemConfigMap, ...options };
         this._defaultBufferSize = opt.bufferSize;
         this._maxBufferSize = opt.maxBufferSize;
 
@@ -578,7 +578,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftSizeOfAddedItems = 0,
             leftSizeOfUpdatedItems = 0,
             leftSizeOfDeletedItems = 0,
-            itemById: I | undefined = undefined,
+            itemById: I | null = null,
             itemByIdPos: number = this._scrollStartOffset,
             isTargetInOverscroll: boolean = false,
             actualScrollSize = itemByIdPos,
@@ -711,7 +711,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 if (isFromId) {
-                    if (itemById === undefined) {
+                    if (itemById === null) {
                         if (id !== fromItemId && id === stickyItemId && sticky === 1) {
                             stickyComponentSize = componentSize;
                             y -= stickyComponentSize;
@@ -753,7 +753,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 if (isFromId) {
-                    if (itemById === undefined || y < itemByIdPos + size + componentSize) {
+                    if (itemById === null || y < itemByIdPos + size + componentSize) {
                         itemsFromStartToDisplayEnd = ii;
                         totalItemsToDisplayEndWeight += componentSize;
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
