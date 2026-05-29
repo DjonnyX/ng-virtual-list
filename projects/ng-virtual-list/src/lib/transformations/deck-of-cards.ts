@@ -32,6 +32,14 @@ export interface IDeckOfCardsOptions {
      */
     scale?: number;
     /**
+     * Scale X. Default value is `null`.
+     */
+    scaleX?: number | null;
+    /**
+     * Scale Y. Default value is `null`.
+     */
+    scaleY?: number | null;
+    /**
      * Depth exponent. Default value is `4`.
      */
     depthPow?: number;
@@ -54,6 +62,8 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
         spacingBetweenItems = options?.spacingBetweenItems ?? .5,
         depth = options?.depth ?? .15,
         scaleValue = options?.scale ?? .15,
+        scaleXValue = options?.scaleX ?? null,
+        scaleYValue = options?.scaleY ?? null,
         depthPow = options?.depthPow ?? 4,
         sineWave = options?.depth ?? false;
     return (index: number, measures: IRenderVirtualListItemMeasures,
@@ -89,8 +99,16 @@ export const deckOfCards = (options?: IDeckOfCardsOptions): ItemTransform => {
         } else {
             result.x = isVertical ? xx : (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (xx * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(px)) : 1)));
             result.y = isVertical ? (scrollSize - config.layoutOffset + boundsSizeHalf - itemSizeHalf + (yy * spacingBetweenItems * (sineWave ? Math.abs(Math.sin(py)) : 1))) : yy;
-            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * scaleValue, depthPow), dofScale = Math.pow(1 - s * depth, depthPow);
-            result.scaleX = result.scaleY = scale > 1 ? 1 : scale;
+            const s = (isVertical ? Math.abs(yy) : Math.abs(xx)) / boundsSize, scale = Math.pow(1 - s * scaleValue, depthPow),
+                scaleX = scaleXValue !== null ? Math.pow(1 - s * scaleXValue, depthPow) : null,
+                scaleY = scaleYValue !== null ? Math.pow(1 - s * scaleYValue, depthPow) : null,
+                dofScale = Math.pow(1 - s * depth, depthPow);
+            if (scaleXValue === null && scaleYValue === null) {
+                result.scaleX = result.scaleY = scale;
+            } else {
+                result.scaleX = scaleX !== null ? scaleX : 1;
+                result.scaleY = scaleY !== null ? scaleY : 1;
+            }
             result.zIndex = 100 - Math.floor(Math.abs(isVertical ? py : px) * 100);
             if (!!dof) {
                 const blur = (s * dof) - B_LIMIT,
