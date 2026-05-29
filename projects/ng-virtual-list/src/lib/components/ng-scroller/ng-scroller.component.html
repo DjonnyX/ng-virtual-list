@@ -6,8 +6,8 @@
             <feGaussianBlur #filter></feGaussianBlur>
         </filter>
         <foreignObject xmlns="http://www.w3.org/1999/xhtml" width="100%" height="100%" part="viewport" class="ngvl__viewport">
-            <div cdkScrollable class="ngvl__scroller-wrapper" [class.filtered]="filtered" [style.filter]="filtered ? _filter : 'unset'">
-                <div #scrollViewport part="scroller" class="ngvl__scroller">
+            <div class="ngvl__scroller-wrapper" [class.filtered]="filtered" [style.filter]="filtered ? _filter : 'unset'">
+                <div cdkScrollable #scrollViewport part="scroller" class="ngvl__scroller">
                     <div #scrollContent [attr.aria-orientation]="direction()"
                         [attr.aria-activedescendant]="focusedElement()" tabindex="0" part="list" class="ngvl__list"
                         [ngClass]="actualClasses()" [ngStyle]="listStyles()">
