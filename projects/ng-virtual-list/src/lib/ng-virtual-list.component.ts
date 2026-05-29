@@ -2753,7 +2753,7 @@ export class NgVirtualListComponent implements OnDestroy {
             const enabledOptimization = this.scrollingSettings()?.optimization ?? DEFAULT_SCROLLING_SETTINGS.optimization,
               velocity = this._scrollerComponent()?.averageVelocity ?? 0,
               isScrolling = this._$scrollingTo.getValue(),
-              useDebouncedUpdate = (dynamicSize && !itemTransform) && !itemsChanged && hasUserAction && !isScrolling &&
+              useDebouncedUpdate = (dynamicSize && !itemTransform) && !(!snapScrollToStart && snapScrollToEnd) && !itemsChanged && hasUserAction && !isScrolling &&
                 (velocity > 0 && velocity < MAX_VELOCITY_FOR_SCROLL_QUALITY_OPTIMIZATION_LVL1);
             if (enabledOptimization) {
               if (useDebouncedUpdate) {
