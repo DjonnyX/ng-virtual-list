@@ -415,7 +415,6 @@ export class NgScrollerComponent extends NgScrollView {
 
   finishedScrollTo() {
     this._isScrollsTo = false;
-    this.alignPosition(true);
     this._scrollDirection.clear();
     this.dropVelocity();
     this.fireScrollEvent(true);
