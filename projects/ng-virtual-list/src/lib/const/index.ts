@@ -73,7 +73,7 @@ export const DEFAULT_SCROLLING_SETTINGS: IScrollingSettings = {
     maxDistance: 100000,
     maxDuration: 4000,
     speedScale: 10,
-    optimization: true,
+    optimization: false,
 };
 
 export const DEFAULT_OVERSCROLL_ENABLED = true;

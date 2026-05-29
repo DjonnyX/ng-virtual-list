@@ -285,7 +285,7 @@ export class NgScrollerComponent extends NgScrollView {
 
   protected override onResizeViewport() {
     const viewport = this.scrollViewport()?.nativeElement;
-    if (viewport) {
+    if (!!viewport) {
       const bounds: ISize = { width: viewport.offsetWidth, height: viewport.offsetHeight }, b = this.viewportBounds();
       if (bounds.width === b.width && bounds.height === b.height) {
         return;
@@ -296,11 +296,11 @@ export class NgScrollerComponent extends NgScrollView {
     }
   }
 
-  protected override onResizeContent() {
+  protected override onResizeContent(value: number | null = null) {
     const content = this.scrollContent()?.nativeElement;
-    if (content) {
-      const bounds: ISize = { width: content.offsetWidth, height: content.offsetHeight }, b = this.contentBounds();
-      if (bounds.width === b.width && bounds.height === b.height) {
+    if (!!content) {
+      const isVertical = this.isVertical(), bounds: ISize = { width: isVertical ? content.offsetWidth : value ?? content.offsetWidth, height: isVertical ? value ?? content.offsetHeight : content.offsetHeight }, b = this.contentBounds();
+      if (value === null && bounds.width === b.width && bounds.height === b.height) {
         return;
       }
       this.contentBounds.set(bounds);
@@ -376,6 +376,7 @@ export class NgScrollerComponent extends NgScrollView {
   override reset() {
     super.reset(this.startOffset());
     this.totalSize = 0;
+    this.onResizeContent(0);
     this.stopScrollbar();
     this.refresh(true, true);
     this.prepared = false;
@@ -478,7 +479,10 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
-    const { position, min, max } = event;
+    const { position, min, max, userAction } = event;
+    if (!userAction) {
+      return;
+    }
     this._isScrollbarUserAction = false;
     this.dropVelocity();
     this._service.update(false, true);

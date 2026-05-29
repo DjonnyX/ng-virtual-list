@@ -145,6 +145,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _trackingPropertyName: string = TRACK_BY_PROPERTY_NAME;
 
+    protected _isScrollStart: boolean = false;
+
     set isScrollStart(v: boolean) {
         this._isScrollStart = v;
         if (v) {
@@ -152,7 +154,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    protected _isScrollStart: boolean = false;
+    protected _isScrollEnd: boolean = false;
 
     set isScrollEnd(v: boolean) {
         this._isScrollEnd = v;
@@ -160,8 +162,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this._isScrollSnapToEnd = true;
         }
     }
-
-    protected _isScrollEnd: boolean = false;
 
     protected _isScrollSnapToStart: boolean = false;
 

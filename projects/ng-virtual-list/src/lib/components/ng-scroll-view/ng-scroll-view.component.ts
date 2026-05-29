@@ -682,8 +682,8 @@ export class NgScrollView extends BaseScrollView {
         }
         const isVertical = this.isVertical(),
             startOffset = this._normalizeValueFromZero ? 0 : this.startOffset(),
-            scrollSize = (isVertical ? this.scrollHeight : this.scrollWidth) - this.alignmentEndOffset(),
-            result = value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value;
+            scrollSize = this.scrollable ? ((isVertical ? this.scrollHeight : this.scrollWidth) - this.alignmentEndOffset()) : 0,
+            result = this.scrollable ? (value <= startOffset ? startOffset : value > scrollSize ? scrollSize : value) : startOffset;
         return result;
     }
 
@@ -913,19 +913,29 @@ export class NgScrollView extends BaseScrollView {
         this.fireScrollEvent(userAction);
     }
 
-    scrollLimits(value?: number | undefined): boolean {
+    scrollLimits(value?: number | undefined, silent: boolean = false): boolean {
         if (!this.isInfinity()) {
             const x = value !== undefined ? value : this._x, y = value !== undefined ? value : this._y, isVertical = this.isVertical();
             if (isVertical) {
                 const yy = this.normalizeValue(y);
                 if (y !== yy) {
-                    this.y = yy;
+                    if (silent) {
+                        this._y = yy;
+                        this.refreshCoordinate(this._x, this._y);
+                    } else {
+                        this.y = yy;
+                    }
                     return true;
                 }
             } else {
                 const xx = this.normalizeValue(x);
                 if (x !== xx) {
-                    this.x = xx;
+                    if (silent) {
+                        this._x = xx;
+                        this.refreshCoordinate(this._x, this._y);
+                    } else {
+                        this.x = xx;
+                    }
                     return true;
                 }
             }

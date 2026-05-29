@@ -219,7 +219,7 @@ export class BaseScrollView {
 
     protected onResizeViewport() {
         const viewport = this.scrollViewport()?.nativeElement;
-        if (viewport) {
+        if (!!viewport) {
             const isVertical = this.isVertical(),
                 startOffset = this.startOffset(),
                 endOffset = this.endOffset(),
@@ -235,15 +235,15 @@ export class BaseScrollView {
         }
     }
 
-    protected onResizeContent() {
+    protected onResizeContent(value: number | null = null) {
         const content = this.scrollContent()?.nativeElement;
-        if (content) {
+        if (!!content) {
             const isVertical = this.isVertical(),
                 startOffset = this.startOffset(),
                 w = content.offsetWidth,
                 h = content.offsetHeight,
-                width = isVertical ? w : (w - startOffset),
-                height = isVertical ? (h - startOffset) : h,
+                width = isVertical ? w : value ?? (w - startOffset),
+                height = isVertical ? value ?? (h - startOffset) : h,
                 bounds = this.contentBounds();
             if (bounds.width === width && bounds.height === height) {
                 return;
