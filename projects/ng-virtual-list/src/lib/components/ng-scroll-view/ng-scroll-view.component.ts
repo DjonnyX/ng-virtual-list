@@ -172,7 +172,7 @@ export class NgScrollView extends BaseScrollView {
                     this.stopScrolling(true);
                     this.alignPosition(true, true);
                 }
-                this._$scrollEnd.next(true);
+                this._$scrollEnd.next(false);
             }),
         ).subscribe();
 

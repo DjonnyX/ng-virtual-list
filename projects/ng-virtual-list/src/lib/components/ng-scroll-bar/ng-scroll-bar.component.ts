@@ -137,7 +137,7 @@ export class NgScrollBarComponent extends NgScrollView {
       takeUntilDestroyed(),
       debounceTime(100),
       tap(() => {
-        const event = this.createDragEvent(false);
+        const event = this.createDragEvent(true);
         if (!!event) {
           this.onDragEnd.emit(event);
         }
@@ -226,8 +226,8 @@ export class NgScrollBarComponent extends NgScrollView {
     const $scrollEnd = this.$scrollEnd;
     $scrollEnd.pipe(
       takeUntilDestroyed(),
-      tap(() => {
-        const event = this.createDragEvent(false);
+      tap(userAction => {
+        const event = this.createDragEvent(userAction);
         if (!!event) {
           this.onDragEnd.emit(event);
         }

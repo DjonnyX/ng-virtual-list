@@ -480,6 +480,7 @@ export class NgScrollerComponent extends NgScrollView {
 
   onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
     const { position, min, max, userAction } = event;
+    this._isScrollbarUserAction = userAction;
     if (!userAction) {
       return;
     }
