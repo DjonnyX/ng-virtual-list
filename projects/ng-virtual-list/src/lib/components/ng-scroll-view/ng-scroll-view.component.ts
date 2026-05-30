@@ -697,7 +697,13 @@ export class NgScrollView extends BaseScrollView {
             easingFunction,
             getPropValue: () => {
                 return isVertical ? this._y : this._x;
-            }, onUpdate: ({ value, timestamp }) => {
+            }, onUpdate: ({ value, timestamp, elapsed }) => {
+                if (this._isCoordinatesOverrided) {
+                    this._isCoordinatesOverrided = false;
+                    const currentCoordinate = isVertical ? this._y : this._x, delta = endValue - value;
+                    this.animate(currentCoordinate, currentCoordinate + delta, duration - elapsed, easingFunction, userAction, alignmentAtComplete);
+                    return;
+                }
                 const v0 = calculateVelocity(position, value, timestamp) ?? this.averageVelocity;
                 position = value;
                 if (alignmentAtComplete && !this._isAlignmentAnimation) {

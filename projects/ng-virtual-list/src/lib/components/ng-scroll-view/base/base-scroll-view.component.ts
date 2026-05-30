@@ -170,6 +170,8 @@ export class BaseScrollView {
 
     readonly contentBounds = signal<ISize>({ width: 0, height: 0 });
 
+    protected _isCoordinatesOverrided: boolean = false;
+
     constructor() {
         this.isVertical = computed(() => {
             return this.direction() === ScrollerDirection.VERTICAL;
@@ -189,11 +191,14 @@ export class BaseScrollView {
             if (isVertical) {
                 const scrollSize = (this._totalSize - this.viewportBounds().height);
                 if (this._y < 0) {
+                    this._isCoordinatesOverrided = true;
                     const currentPosition = scrollSize;
                     this.overrideCoordinates(this._x, currentPosition);
                     this._y = currentPosition;
                     return true;
                 } else if (this._y > scrollSize) {
+                    console.log('coordintanes greater than scrollSize')
+                    this._isCoordinatesOverrided = true;
                     const currentPosition = 0;
                     this.overrideCoordinates(this._x, currentPosition);
                     this._y = currentPosition;
@@ -202,11 +207,13 @@ export class BaseScrollView {
             } else {
                 const scrollSize = (this._totalSize - this.viewportBounds().width);
                 if (this._x < 0) {
+                    this._isCoordinatesOverrided = true;
                     const currentPosition = scrollSize;
                     this.overrideCoordinates(currentPosition, this._y);
                     this._x = currentPosition;
                     return true;
                 } else if (this._x > scrollSize) {
+                    this._isCoordinatesOverrided = true;
                     const currentPosition = 0;
                     this.overrideCoordinates(currentPosition, this._y);
                     this._x = currentPosition;
@@ -214,6 +221,7 @@ export class BaseScrollView {
                 }
             }
         }
+        this._isCoordinatesOverrided = false;
         return false;
     }
 

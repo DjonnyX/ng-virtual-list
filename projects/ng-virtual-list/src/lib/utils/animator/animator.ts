@@ -13,6 +13,7 @@ interface IAnimatorParams {
 
 interface IAnimatorUpdateData {
   timestamp: number;
+  elapsed: number;
   delta: number;
   value: number;
 }
@@ -68,6 +69,7 @@ export class Animator {
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
           delta,
+          elapsed,
           value: isFinished ? endValue : currentValue,
           timestamp,
         };
@@ -78,6 +80,7 @@ export class Animator {
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
             delta,
+            elapsed,
             value: endValue,
             timestamp,
           };
