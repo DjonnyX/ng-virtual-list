@@ -204,7 +204,11 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     if (!!data && !!el && !!itemElement && !!containerElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
       const styles = el.style, itemElementStyles = itemElement.style;
-      styles.zIndex = data.config.zIndex;
+      if (this._service.zIndexWhenSelecting !== null && this._isSelected) {
+        styles.zIndex = this._service.zIndexWhenSelecting;
+      } else {
+        styles.zIndex = data.config.zIndex;
+      }
       this._blendColor = data.config.blendColor ?? null;
       if (!!containerElement && !!data.config.blendColor) {
         containerElement.style.opacity = String(data.config.opacity);

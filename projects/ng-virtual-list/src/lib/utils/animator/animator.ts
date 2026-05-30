@@ -52,7 +52,7 @@ export class Animator {
       const elapsed = currentTime - startTime,
         progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
-        val = startPosDelta + start + diff * easedProgress,
+        val = start + diff * easedProgress,
         currentValue = val,
         t = performance.now();
 

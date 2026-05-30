@@ -840,11 +840,7 @@ export class NgScrollView extends BaseScrollView {
 
         if (position !== null && position !== cPos) {
             this.stopScrolling(true);
-
-            let fPos = position + this._startLayoutOffset;
-            if (fPos < 0) {
-                fPos += size;
-            }
+            const fPos = position + this._startLayoutOffset;
             this.animate(cPos, fPos, this.animationParams().snapToItem, easeOutQuad, false, false);
             return true;
         }

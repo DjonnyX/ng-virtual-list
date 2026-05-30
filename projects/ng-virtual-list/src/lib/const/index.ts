@@ -82,6 +82,8 @@ export const DEFAULT_STICKY_ENABLED = false;
 
 export const DEFAULT_SELECT_BY_CLICK = true;
 
+export const DEFAULT_ZINDEX_WHEN_SELECTING = null;
+
 export const DEFAULT_COLLAPSE_BY_CLICK = true;
 
 export const DEFAULT_ENABLED_BUFFER_OPTIMIZATION = false;

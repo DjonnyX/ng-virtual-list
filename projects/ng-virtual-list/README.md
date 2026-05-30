@@ -652,6 +652,7 @@ Inputs
 | scrollingOneByOne | boolean = false | Specifies whether to scroll one item at a time if true and the scrollToItem property is set. The default value is `false`. |
 | spreadingMode | [SpreadingMode](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/enums/spreading-mode.ts) ='standart' | The order of list elements. Available values ​​are `standard` and `infinity`. `normal` — list elements are ordered according to the collection sequence. `infinity` — list elements are ordered cyclically, forming an infinite list. When set to `infinity`, the `alignment` property is forced to the value `Alignments.CENTER`, the `scrollbarEnabled` property is forced to the `false`. The default value is `standard`. |
 | trackBy | string? = 'id' | The name of the property by which tracking is performed. |
+| zIndexWhenSelecting | string \| null = null | Defines the zIndex when a list item is selected. The default value is `null`. |
 
 <br/>
 

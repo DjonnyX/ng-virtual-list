@@ -22,7 +22,7 @@ import {
   PREPARATION_REUPDATE_LENGTH_FOR_COLLAPSE_ITEMS, MAX_NUMBERS_OF_SKIPS_FOR_QUALITY_OPTIMIZATION_LVL1, DEFAULT_SCROLLING_SETTINGS,
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
   DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
-  DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES, DEFAULT_SPREADING_MODE,
+  DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES, DEFAULT_SPREADING_MODE, DEFAULT_ZINDEX_WHEN_SELECTING,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -767,6 +767,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * The `none` mode means no alignment. The default value is `none`.
    */
   alignment = input<Alignment>(DEFAULT_ALIGNMENT, { ...this._alignmentOptions });
+
+  private _zIndexWhenSelectingOptions = {
+    transform: (v: string | null) => {
+      const valid = validateString(v, true, true);
+
+      if (!valid) {
+        console.error('The "zIndexWhenSelecting" parameter must be of type `number` or `null`.');
+        return DEFAULT_ZINDEX_WHEN_SELECTING;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Defines the zIndex when a list item is selected. The default value is `null`.
+   */
+  zIndexWhenSelecting = input<string | null>(DEFAULT_ZINDEX_WHEN_SELECTING, { ...this._zIndexWhenSelectingOptions });
 
   private _spreadingModeOptions = {
     transform: (v: SpreadingMode) => {
@@ -1531,6 +1548,14 @@ export class NgVirtualListComponent implements OnDestroy {
       takeUntilDestroyed(),
       tap(v => {
         this._trackBox.isInfinity = v;
+      }),
+    ).subscribe();
+
+    const $zIndexWhenSelecting = toObservable(this.zIndexWhenSelecting);
+    $zIndexWhenSelecting.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.zIndexWhenSelecting = v;
       }),
     ).subscribe();
 
