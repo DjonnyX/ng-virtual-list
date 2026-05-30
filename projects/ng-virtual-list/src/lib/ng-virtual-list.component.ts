@@ -776,7 +776,7 @@ export class NgVirtualListComponent implements OnDestroy {
         console.error('The "zIndexWhenSelecting" parameter must be of type `number` or `null`.');
         return DEFAULT_ZINDEX_WHEN_SELECTING;
       }
-      return v;
+      return v ?? null;
     },
   } as any;
 

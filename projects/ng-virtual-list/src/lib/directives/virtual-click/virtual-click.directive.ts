@@ -22,7 +22,7 @@ export class VirtualClickDirective {
 
     @Input('maxClickDistance')
     set maxDistance(v: number | string) {
-        this._maxDistance = v ? Number(v) : DEFAULT_MAX_DISTANCE;
+        this._maxDistance = (v !== null || v !== undefined) ? Number(v) : DEFAULT_MAX_DISTANCE;
     }
 
     onVirtualClick = output<PointerEvent | TouchEvent>();
