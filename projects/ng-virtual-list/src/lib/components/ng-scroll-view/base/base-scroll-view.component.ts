@@ -197,7 +197,6 @@ export class BaseScrollView {
                     this._y = currentPosition;
                     return true;
                 } else if (this._y > scrollSize) {
-                    console.log('coordintanes greater than scrollSize')
                     this._isCoordinatesOverrided = true;
                     const currentPosition = 0;
                     this.overrideCoordinates(this._x, currentPosition);
