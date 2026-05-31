@@ -28,5 +28,6 @@ export class ScrollingDirection {
 
     clear() {
         this._value = 0;
+        this._$direction.next(0);
     }
 }

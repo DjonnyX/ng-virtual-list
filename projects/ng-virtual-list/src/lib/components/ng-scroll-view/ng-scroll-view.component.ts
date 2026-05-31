@@ -12,7 +12,7 @@ import {
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import {
-    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
+    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, INTERSECTION_DISTANCE, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
     MAX_VELOCITY_TIMESTAMP, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection, matrix3d } from './utils';
@@ -854,22 +854,15 @@ export class NgScrollView extends BaseScrollView {
     }
 
     private checkIntersectionComponent() {
-        const scrollDirection = this._scrollDirection.get();
-        if (scrollDirection === 0) {
-            return;
-        }
         const align = this.snapToItemAlign(), isVertical = this.isVertical(),
-            viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width,
-            sd = this.snappingDistance(),
-            snappingDistance = parseFloatOrPersentageValue(sd),
-            isPersentageSnappingDistance = isPercentageValue(sd);
+            viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
         let componentId: Id | null = null;
         const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
         switch (align) {
             case SnapToItemAligns.START: {
-                const offset = ((scrollDirection === 1 ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollDirection,
+                const offset = (currentComponentSize - (currentComponentSize * INTERSECTION_DISTANCE)),
                     componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
                 if (!!componentBounds) {
                     const { id } = componentBounds;
@@ -878,7 +871,7 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.CENTER: {
-                const offset = (currentComponentSize * .5 - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollDirection,
+                const offset = (currentComponentSize * .5 - (currentComponentSize * INTERSECTION_DISTANCE)),
                     actualPos = currentPosition + offset + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
@@ -890,7 +883,7 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.END: {
-                const offset = ((scrollDirection === 1 ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollDirection,
+                const offset = (currentComponentSize - (currentComponentSize * INTERSECTION_DISTANCE)),
                     actualPos = currentPosition + offset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);

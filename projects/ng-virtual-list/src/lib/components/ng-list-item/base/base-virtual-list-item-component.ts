@@ -60,6 +60,14 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
   }
 
   protected _isSelected: boolean = false;
+  set isSelected(v: boolean) {
+    if (this._isSelected !== v) {
+      this._isSelected = v;
+
+      this.update();
+    }
+  }
+  get isSelected() { return this._isSelected; }
 
   protected _isCollapsed: boolean = false;
 

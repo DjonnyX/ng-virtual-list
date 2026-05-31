@@ -110,19 +110,19 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
           case SelectingModesTypes.SELECT: {
             const id = selectedIds as Id | undefined, isSelected = id === this.itemId;
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
-            this._isSelected = isSelected;
+            this.isSelected = isSelected;
             break;
           }
           case SelectingModesTypes.MULTI_SELECT: {
             const actualIds = selectedIds as Array<Id>, isSelected = this.itemId !== undefined && actualIds && actualIds.includes(this.itemId);
             this.element.setAttribute(ATTR_AREA_SELECTED, String(isSelected));
-            this._isSelected = isSelected;
+            this.isSelected = isSelected;
             break;
           }
           case SelectingModesTypes.NONE:
           default: {
             this.element.removeAttribute(ATTR_AREA_SELECTED);
-            this._isSelected = false;
+            this.isSelected = false;
             break;
           }
         }
