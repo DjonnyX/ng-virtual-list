@@ -1600,9 +1600,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     y = comp.instance.item?.measures?.y ?? 0,
                     { width, height } = comp.instance.getBounds(),
                     pos = position;
-                if (isVertical && (pos > y && pos <= y + height)) {
+                if (isVertical && (pos >= y && pos < y + height)) {
                     return { id, x, y, width, height };
-                } else if (!isVertical && (pos > x && pos <= x + width)) {
+                } else if (!isVertical && (pos >= x && pos < x + width)) {
                     return { id, x, y, width, height };
                 }
             }
