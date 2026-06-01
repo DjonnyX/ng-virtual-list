@@ -259,7 +259,8 @@ export class NgScrollView extends BaseScrollView {
                     }
                     mouseCanceled = true;
                     if (this.snapToItem() && this.scrollingOneByOne()) {
-                        this.alignPosition();
+                        this._isAlignmentAnimation = false;
+                        this.alignPosition(true, true);
                     }
                     this._$scrollEnd.next(true);
                 }),
@@ -283,7 +284,8 @@ export class NgScrollView extends BaseScrollView {
                                 }
                                 mouseCanceled = true;
                                 if (this.snapToItem() || this.scrollingOneByOne()) {
-                                    this.alignPosition();
+                                    this._isAlignmentAnimation = false;
+                                    this.alignPosition(true, true);
                                 }
                                 this._$scrollEnd.next(true);
                             }),
@@ -388,7 +390,8 @@ export class NgScrollView extends BaseScrollView {
                     }
                     touchCanceled = true;
                     if (this.snapToItem() && this.scrollingOneByOne()) {
-                        this.alignPosition();
+                        this._isAlignmentAnimation = false;
+                        this.alignPosition(true, true);
                     }
                     this._$scrollEnd.next(true);
                 }),
@@ -412,7 +415,8 @@ export class NgScrollView extends BaseScrollView {
                                 }
                                 touchCanceled = true;
                                 if (this.snapToItem() || this.scrollingOneByOne()) {
-                                    this.alignPosition();
+                                    this._isAlignmentAnimation = false;
+                                    this.alignPosition(true, true);
                                 }
                                 this._$scrollEnd.next(true);
                             }),
@@ -694,7 +698,7 @@ export class NgScrollView extends BaseScrollView {
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
         } else {
-            this.alignPosition();
+            this.alignPosition(true, true);
         }
     }
 
