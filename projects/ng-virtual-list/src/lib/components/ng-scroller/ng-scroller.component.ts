@@ -108,36 +108,13 @@ export class NgScrollerComponent extends NgScrollView {
     }
   }
 
-  override set x(v: number) {
-    if (v !== undefined && !Number.isNaN(v)) {
-      this.updateDirection(v, this._x);
+  protected override setX(x: number, snap: boolean = true, normalize: boolean = true) {
+    if (x !== undefined && !Number.isNaN(x)) {
+      this.updateDirection(x, this._x);
 
-      this._x = this._actualX = v;
+      this._x = this._actualX = x;
 
-      const overridden = this.normalizeScrollSize();
-
-      this.refreshCoordinate(this._x, this._y);
-
-      if (!overridden) {
-        this.measureVelocity();
-      }
-
-      this.updateScrollBar();
-
-      this.recalculatePerspective();
-
-      this.checkIntersectionComponent();
-    }
-  }
-  override get x() { return this._x; }
-
-  override set y(v: number) {
-    if (v !== undefined && !Number.isNaN(v)) {
-      this.updateDirection(v, this._y);
-
-      this._y = this._actualY = v;
-
-      const overridden = this.normalizeScrollSize();
+      const overridden = normalize ? this.normalizeScrollSize() : false;
 
       this.refreshCoordinate(this._x, this._y);
 
@@ -149,10 +126,35 @@ export class NgScrollerComponent extends NgScrollView {
 
       this.recalculatePerspective();
 
-      this.checkIntersectionComponent();
+      if (snap) {
+        this.checkIntersectionComponent();
+      }
     }
   }
-  override get y() { return this._y; }
+
+  protected override setY(y: number, snap: boolean = true, normalize: boolean = true) {
+    if (y !== undefined && !Number.isNaN(y)) {
+      this.updateDirection(y, this._y);
+
+      this._y = this._actualY = y;
+
+      const overridden = normalize ? this.normalizeScrollSize() : false;
+
+      this.refreshCoordinate(this._x, this._y);
+
+      if (!overridden) {
+        this.measureVelocity();
+      }
+
+      this.updateScrollBar();
+
+      this.recalculatePerspective();
+
+      if (snap) {
+        this.checkIntersectionComponent();
+      }
+    }
+  }
 
   override set startLayoutOffset(v: number) {
     if (this._startLayoutOffset !== v) {

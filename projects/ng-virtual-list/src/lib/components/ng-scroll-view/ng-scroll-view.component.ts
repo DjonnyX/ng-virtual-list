@@ -103,38 +103,54 @@ export class NgScrollView extends BaseScrollView {
     private _overscrollIteration: number = 0;
 
     override set x(v: number) {
-        if (v !== undefined && !Number.isNaN(v)) {
-            this.updateDirection(v, this._x);
-
-            this._x = this._actualX = v;
-
-            this.normalizeScrollSize();
-
-            this.refreshCoordinate(this._x, this._y);
-
-            this.measureVelocity();
-
-            this.checkIntersectionComponent();
-        }
+        this.setX(v);
     }
     override get x() { return this._x; }
 
-    override set y(v: number) {
-        if (v !== undefined && !Number.isNaN(v)) {
-            this.updateDirection(v, this._y);
+    protected setX(x: number, snap: boolean = true, normalize: boolean = true) {
+        if (x !== undefined && !Number.isNaN(x)) {
+            this.updateDirection(x, this._y);
 
-            this._y = this._actualY = v;
+            this._x = this._actualY = x;
 
-            this.normalizeScrollSize();
+            if (normalize) {
+                this.normalizeScrollSize();
+            }
 
             this.refreshCoordinate(this._x, this._y);
 
             this.measureVelocity();
 
-            this.checkIntersectionComponent();
+            if (snap) {
+                this.checkIntersectionComponent();
+            }
         }
     }
+
+    override set y(v: number) {
+        this.setY(v);
+    }
     override get y() { return this._y; }
+
+    protected setY(y: number, snap: boolean = true, normalize: boolean = true) {
+        if (y !== undefined && !Number.isNaN(y)) {
+            this.updateDirection(y, this._y);
+
+            this._y = this._actualY = y;
+
+            if (normalize) {
+                this.normalizeScrollSize();
+            }
+
+            this.refreshCoordinate(this._x, this._y);
+
+            this.measureVelocity();
+
+            if (snap) {
+                this.checkIntersectionComponent();
+            }
+        }
+    }
 
     protected _delta: number = 0;
     set delta(v: number) {
@@ -790,7 +806,7 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected alignPosition(animated: boolean = true, force: boolean = false) {
-        if (!this.snapToItem() || this._isScrollsTo || this._isAlignmentAnimation) {
+        if (!this.snapToItem() || this._isAlignmentAnimation) {
             return false;
         }
         this.stopScrolling(true);
@@ -978,6 +994,7 @@ export class NgScrollView extends BaseScrollView {
             posY = params.y || params.top || 0,
             userAction = params.userAction ?? false,
             snap = params.snap ?? true,
+            normalize = params.normalize ?? true,
             ease = params.ease || easeOutQuad,
             fireUpdate = params.fireUpdate ?? true,
             behavior = params.behavior ?? INSTANT,
@@ -1006,7 +1023,7 @@ export class NgScrollView extends BaseScrollView {
                     if (!blending) {
                         this.stopScrolling(force);
                     }
-                    this.y = y;
+                    this.setY(y, snap, normalize);
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
@@ -1017,7 +1034,7 @@ export class NgScrollView extends BaseScrollView {
                     if (!blending) {
                         this.stopScrolling(force);
                     }
-                    this.x = x;
+                    this.setX(x, snap, normalize);
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
