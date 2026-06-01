@@ -817,12 +817,14 @@ export class NgScrollView extends BaseScrollView {
                     size = isVertical ? height : width;
                     const maxPos = (isVertical ? this.scrollHeight : this.scrollWidth) - (startOffset - alignmentStartOffset) + this._startLayoutOffset;
                     position = componentPosition - (startOffset - alignmentStartOffset) + this._startLayoutOffset;
-                    if (position < 0 || position > maxPos) {
-                        position = maxPos;
-                        if (isVertical) {
-                            this._y = this.scrollHeight;
-                        } else {
-                            this._x = this.scrollWidth;
+                    if (this.isInfinity()) {
+                        if (position < 0 || position > maxPos) {
+                            position = maxPos;
+                            if (isVertical) {
+                                this._y = this.scrollHeight;
+                            } else {
+                                this._x = this.scrollWidth;
+                            }
                         }
                     }
                 }
@@ -840,12 +842,14 @@ export class NgScrollView extends BaseScrollView {
                     size = isVertical ? height : width;
                     const maxPos = (isVertical ? this.scrollHeight : this.scrollWidth) - size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5;
                     position = componentPosition + size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5 + this._startLayoutOffset;
-                    if (position <= 0 || position > maxPos) {
-                        position = maxPos;
-                        if (isVertical) {
-                            this._y = this.scrollHeight;
-                        } else {
-                            this._x = this.scrollWidth;
+                    if (this.isInfinity()) {
+                        if (position <= 0 || position > maxPos) {
+                            position = maxPos;
+                            if (isVertical) {
+                                this._y = this.scrollHeight;
+                            } else {
+                                this._x = this.scrollWidth;
+                            }
                         }
                     }
                 }
