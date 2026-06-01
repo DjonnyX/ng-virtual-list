@@ -170,7 +170,7 @@ export class NgScrollView extends BaseScrollView {
                 mouseCanceled = touchCanceled = true;
                 if (this.snapToItem() || this.scrollingOneByOne()) {
                     this.stopScrolling(true);
-                    this.alignPosition(true);
+                    this.alignPosition(true, true);
                 }
                 this._$scrollEnd.next(false);
             }),
@@ -334,6 +334,7 @@ export class NgScrollView extends BaseScrollView {
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         } else {
+                                            this.snapIfNecessary(v0);
                                             this._$scrollEnd.next(true);
                                         }
                                     }),
@@ -461,6 +462,7 @@ export class NgScrollView extends BaseScrollView {
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
                                             this.moveWithAcceleration(isVertical, position, 0, v0, a0, timestamp);
                                         } else {
+                                            this.snapIfNecessary(v0);
                                             this._$scrollEnd.next(true);
                                         }
                                     }),
@@ -521,7 +523,7 @@ export class NgScrollView extends BaseScrollView {
 
     protected stopMoving() { }
 
-    private snapIfNecessary(v0: number, withInitialForce: boolean = true, force: boolean = false) {
+    private snapIfNecessary(v0: number, withInitialForce: boolean = true, animated: boolean = true, force: boolean = false) {
         const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
         if (scrollDirection === 0) {
             return false;
@@ -533,17 +535,17 @@ export class NgScrollView extends BaseScrollView {
                 return this.alignPosition();
             }
             if (withInitialForce) {
-                return this.snapWithInitialForceIfNecessary(v0);
+                return this.snapWithInitialForceIfNecessary(v0, animated, force);
             }
         }
         return false;
     }
 
-    protected snapWithInitialForceIfNecessary(v0: number | null = null, force: boolean = false) {
+    protected snapWithInitialForceIfNecessary(v0: number | null = null, animated = true, force: boolean = false) {
         const t = this.animationParams().snapToItem * .01, s = this.getSnappedComponentSize(),
             va = s !== null && t !== 0 ? (s / t) : 0;
         if (va >= Math.abs(v0 ?? this.averageVelocity)) {
-            return this.alignPosition(force);
+            return this.alignPosition(animated, force);
         }
         return false;
     }
@@ -782,7 +784,7 @@ export class NgScrollView extends BaseScrollView {
         return size;
     }
 
-    protected alignPosition(force: boolean = false) {
+    protected alignPosition(animated: boolean = true, force: boolean = false) {
         if (!this.snapToItem() || this._isScrollsTo || this._isAlignmentAnimation) {
             return false;
         }
@@ -847,7 +849,7 @@ export class NgScrollView extends BaseScrollView {
         if (position !== null && position !== cPos) {
             this.stopScrolling(true);
             const fPos = position + this._startLayoutOffset;
-            this.animate(cPos, fPos, this.animationParams().snapToItem, easeOutQuad, false, false);
+            this.animate(cPos, fPos, animated ? this.animationParams().snapToItem : 1, easeOutQuad, false, false);
             return true;
         }
         return false;

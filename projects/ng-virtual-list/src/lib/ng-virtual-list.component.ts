@@ -3083,7 +3083,7 @@ export class NgVirtualListComponent implements OnDestroy {
       debounceTime(100),
       tap(([, params]) => {
         const scrollParams = params as IScrollParams & { scrollCalled: boolean; };
-        this._scrollerComponent()?.snapIfNeed();
+        this._scrollerComponent()?.snapIfNeed(false);
         scrollParams?.cb?.();
       }),
     ).subscribe();

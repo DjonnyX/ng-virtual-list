@@ -1,27 +1,13 @@
-import { Easing } from './types';
+import { ANIMATOR_MIN_TIMESTAMP, DEFAULT_ANIMATION_DURATION } from './const';
 import { easeLinear } from './ease';
+import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
-interface IAnimatorParams {
-  startValue: number;
-  endValue: number;
-  duration?: number;
-  getPropValue?: () => number;
-  easingFunction?: Easing;
-  onUpdate?: (data: IAnimatorUpdateData) => void;
-  onComplete?: (data: IAnimatorUpdateData) => void;
-}
-
-interface IAnimatorUpdateData {
-  timestamp: number;
-  elapsed: number;
-  delta: number;
-  value: number;
-}
-
-export const DEFAULT_ANIMATION_DURATION = 500,
-  ANIMATOR_MIN_TIMESTAMP = 1000 / 30,
-  MIN_ANIMATED_VALUE = 10;
-
+/**
+ * Animator
+ * @link https://github.com/DjonnyX/data-channel-router/blob/main/library/src/utils/animator/animator.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
 export class Animator {
   private _animationId: number = 0;
 
