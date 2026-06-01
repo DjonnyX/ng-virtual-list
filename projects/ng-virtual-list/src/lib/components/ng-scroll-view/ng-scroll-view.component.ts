@@ -798,7 +798,7 @@ export class NgScrollView extends BaseScrollView {
             sd = this.snappingDistance(),
             snappingDistance = parseFloatOrPersentageValue(sd),
             isPersentageSnappingDistance = isPercentageValue(sd);
-        let position: number | null = null, size: number = 0;
+        let position: number | null = null, size: number = 0, animationEnabled = animated;
         const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
@@ -807,10 +807,15 @@ export class NgScrollView extends BaseScrollView {
                 const offset = ((scrollDirection === 1 ? currentComponentSize : 0) - (isPersentageSnappingDistance ? currentComponentSize * snappingDistance : snappingDistance)) * scrollDirection,
                     componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
                 if (!!componentBounds) {
-                    const { x, y, width, height } = componentBounds,
+                    const { x, y, width, height } = componentBounds, startOffset = this.startOffset(), alignmentStartOffset = this.alignmentStartOffset(),
                         componentPosition = isVertical ? y : x;
                     size = isVertical ? height : width;
-                    position = componentPosition - (this.startOffset() - this.alignmentStartOffset());
+                    const maxPos = (isVertical ? this.scrollHeight : this.scrollWidth) - (startOffset - alignmentStartOffset) + this._startLayoutOffset;
+                    position = componentPosition - (startOffset - alignmentStartOffset) + this._startLayoutOffset;
+                    if (position < 0 || position > maxPos) {
+                        position = maxPos;
+                        animationEnabled = false;
+                    }
                 }
                 break;
             }
@@ -821,10 +826,15 @@ export class NgScrollView extends BaseScrollView {
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
                 if (!!componentBounds) {
-                    const { x, y, width, height } = componentBounds,
+                    const { x, y, width, height } = componentBounds, startOffset = this.startOffset(), alignmentStartOffset = this.alignmentStartOffset(),
                         componentPosition = isVertical ? y : x;
                     size = isVertical ? height : width;
-                    position = componentPosition + size * .5 - viewportSize * .5 - (this.startOffset() - this.alignmentStartOffset()) * .5;
+                    const maxPos = (isVertical ? this.scrollHeight : this.scrollWidth) - size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5;
+                    position = componentPosition + size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5 + this._startLayoutOffset;
+                    if (position < 0 || position > maxPos) {
+                        position = maxPos;
+                        animationEnabled = false;
+                    }
                 }
                 break;
             }
@@ -838,7 +848,7 @@ export class NgScrollView extends BaseScrollView {
                     const { x, y, width, height } = componentBounds,
                         componentPosition = isVertical ? y : x;
                     size = isVertical ? height : width;
-                    position = componentPosition - viewportSize;
+                    position = componentPosition - viewportSize + this._startLayoutOffset;
                 }
                 break;
             }
@@ -848,8 +858,7 @@ export class NgScrollView extends BaseScrollView {
 
         if (position !== null && position !== cPos) {
             this.stopScrolling(true);
-            const fPos = position + this._startLayoutOffset;
-            this.animate(cPos, fPos, animated ? this.animationParams().snapToItem : 1, easeOutQuad, false, false);
+            this.animate(cPos, position, animationEnabled ? this.animationParams().snapToItem : 1, easeOutQuad, false, false);
             return true;
         }
         return false;
@@ -885,7 +894,7 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.END: {
-                const offset = (currentComponentSize - (currentComponentSize * INTERSECTION_DISTANCE)),
+                const offset = - (currentComponentSize * INTERSECTION_DISTANCE),
                     actualPos = currentPosition + offset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);

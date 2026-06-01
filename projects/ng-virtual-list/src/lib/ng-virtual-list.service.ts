@@ -473,7 +473,7 @@ export class NgVirtualListService {
       ? 0 : this._nextComponentId + 1;
   }
 
-  getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null }) | null {
+  getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
     return this._trackBox?.getComponentBoundsByIntersectionPosition(position) ?? null;
   }
 
