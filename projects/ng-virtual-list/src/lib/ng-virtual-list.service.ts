@@ -478,7 +478,9 @@ export class NgVirtualListService {
   }
 
   setIntersectionElementBySnapToItemAlign(id: Id | null) {
-    this._$intersectionElementBySnapToItemAlign.next(id);
+    if (this._$intersectionElementBySnapToItemAlign.getValue() !== id) {
+      this._$intersectionElementBySnapToItemAlign.next(id);
+    }
   }
 
   /**
