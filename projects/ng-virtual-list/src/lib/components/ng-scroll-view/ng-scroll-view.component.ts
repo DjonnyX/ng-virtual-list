@@ -113,6 +113,8 @@ export class NgScrollView extends BaseScrollView {
             this.refreshCoordinate(this._x, this._y);
 
             this.measureVelocity();
+
+            this.checkIntersectionComponent();
         }
     }
     override get x() { return this._x; }
@@ -128,6 +130,8 @@ export class NgScrollView extends BaseScrollView {
             this.refreshCoordinate(this._x, this._y);
 
             this.measureVelocity();
+
+            this.checkIntersectionComponent();
         }
     }
     override get y() { return this._y; }
@@ -690,17 +694,18 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad,
-        userAction: boolean = false, alignmentAtComplete: boolean = true) {
+        userAction: boolean = false, alignmentAtComplete: boolean = true, skipOverridedCoordinates: boolean = false) {
         const isVertical = this.isVertical();
         let iteration = 0, position = startValue;
         this._isAlignmentAnimation = !alignmentAtComplete;
+
         this._animator.animate({
             startValue, endValue, duration,
             easingFunction,
             getPropValue: () => {
                 return isVertical ? this._y : this._x;
             }, onUpdate: ({ value, timestamp, elapsed }) => {
-                if (this._isCoordinatesOverrided) {
+                if (this._isCoordinatesOverrided && !skipOverridedCoordinates) {
                     this._isCoordinatesOverrided = false;
                     const currentCoordinate = isVertical ? this._y : this._x, delta = endValue - value;
                     this.animate(currentCoordinate, currentCoordinate + delta, duration - elapsed, easingFunction, userAction, alignmentAtComplete);
@@ -708,7 +713,7 @@ export class NgScrollView extends BaseScrollView {
                 }
                 const v0 = calculateVelocity(position, value, timestamp) ?? this.averageVelocity;
                 position = value;
-                if (alignmentAtComplete && !this._isAlignmentAnimation) {
+                if (alignmentAtComplete && !this._isAlignmentAnimation && !skipOverridedCoordinates) {
                     if (iteration < MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS || !this.snapIfNecessary(v0)) {
                         this.move(isVertical, value, false, userAction);
                     }
@@ -720,7 +725,7 @@ export class NgScrollView extends BaseScrollView {
             }, onComplete: ({ value, timestamp }) => {
                 this._isAlignmentAnimation = false;
                 const v0 = calculateVelocity(position, value, timestamp);
-                if (alignmentAtComplete && !this._isAlignmentAnimation) {
+                if (alignmentAtComplete && !this._isAlignmentAnimation && !skipOverridedCoordinates) {
                     this.snapIfNecessary(v0);
                 } else {
                     this.move(isVertical, value, false, userAction);
@@ -798,7 +803,7 @@ export class NgScrollView extends BaseScrollView {
             sd = this.snappingDistance(),
             snappingDistance = parseFloatOrPersentageValue(sd),
             isPersentageSnappingDistance = isPercentageValue(sd);
-        let position: number | null = null, size: number = 0, animationEnabled = animated;
+        let position: number | null = null, size: number = 0;
         const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
             currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
             currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
@@ -814,7 +819,11 @@ export class NgScrollView extends BaseScrollView {
                     position = componentPosition - (startOffset - alignmentStartOffset) + this._startLayoutOffset;
                     if (position < 0 || position > maxPos) {
                         position = maxPos;
-                        animationEnabled = false;
+                        if (isVertical) {
+                            this._y = this.scrollHeight;
+                        } else {
+                            this._x = this.scrollWidth;
+                        }
                     }
                 }
                 break;
@@ -831,9 +840,13 @@ export class NgScrollView extends BaseScrollView {
                     size = isVertical ? height : width;
                     const maxPos = (isVertical ? this.scrollHeight : this.scrollWidth) - size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5;
                     position = componentPosition + size * .5 - viewportSize * .5 - (startOffset - alignmentStartOffset) * .5 + this._startLayoutOffset;
-                    if (position < 0 || position > maxPos) {
+                    if (position <= 0 || position > maxPos) {
                         position = maxPos;
-                        animationEnabled = false;
+                        if (isVertical) {
+                            this._y = this.scrollHeight;
+                        } else {
+                            this._x = this.scrollWidth;
+                        }
                     }
                 }
                 break;
@@ -858,13 +871,13 @@ export class NgScrollView extends BaseScrollView {
 
         if (position !== null && position !== cPos) {
             this.stopScrolling(true);
-            this.animate(cPos, position, animationEnabled ? this.animationParams().snapToItem : 1, easeOutQuad, false, false);
+            this.animate(cPos, position, animated ? this.animationParams().snapToItem : 1, easeOutQuad, false, false, true);
             return true;
         }
         return false;
     }
 
-    private checkIntersectionComponent() {
+    protected checkIntersectionComponent() {
         const align = this.snapToItemAlign(), isVertical = this.isVertical(),
             viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
         let componentId: Id | null = null;
@@ -874,7 +887,8 @@ export class NgScrollView extends BaseScrollView {
         switch (align) {
             case SnapToItemAligns.START: {
                 const offset = (currentComponentSize - (currentComponentSize * INTERSECTION_DISTANCE)),
-                    componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset);
+                    maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
+                    componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset, maxPos);
                 if (!!componentBounds) {
                     const { id } = componentBounds;
                     componentId = id;
@@ -886,7 +900,7 @@ export class NgScrollView extends BaseScrollView {
                     actualPos = currentPosition + offset + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
-                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos, maxPos);
                 if (!!componentBounds) {
                     const { id } = componentBounds;
                     componentId = id;
@@ -898,7 +912,7 @@ export class NgScrollView extends BaseScrollView {
                     actualPos = currentPosition + offset + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
-                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos);
+                const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos, maxPos);
                 if (!!componentBounds) {
                     const { id } = componentBounds;
                     componentId = id;
@@ -986,12 +1000,9 @@ export class NgScrollView extends BaseScrollView {
             if (isVertical) {
                 if (this._y !== y || force) {
                     if (!blending) {
-                        this.stopScrolling(true);
+                        this.stopScrolling(force);
                     }
                     this.y = y;
-                    if (snap && (!this._isAlignmentAnimation || force)) {
-                        this.checkIntersectionComponent();
-                    }
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);
@@ -1000,12 +1011,9 @@ export class NgScrollView extends BaseScrollView {
             } else {
                 if (this._x !== x || force) {
                     if (!blending) {
-                        this.stopScrolling(true);
+                        this.stopScrolling(force);
                     }
                     this.x = x;
-                    if (snap && (!this._isAlignmentAnimation || force)) {
-                        this.checkIntersectionComponent();
-                    }
                     this.emitScrollableEvent();
                     if (fireUpdate) {
                         this.fireScrollEvent(userAction);

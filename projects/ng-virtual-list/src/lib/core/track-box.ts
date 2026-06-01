@@ -1591,8 +1591,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return null;
     }
 
-    getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
+    getComponentBoundsByIntersectionPosition(position: number, maxPosition: number | null = null): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
         const components = this._displayComponents;
+        let first: (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null = null,
+            last: (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null = null;
         if (!!components) {
             for (const comp of components) {
                 const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
@@ -1607,7 +1609,18 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 } else if (!isVertical && (pos >= x && pos < x + width)) {
                     return { id, x, y, width, height, isFirst, isLast };
                 }
+                if (isFirst) {
+                    first = { id, x, y, width, height, isFirst, isLast };
+                } else if (isLast) {
+                    last = { id, x, y, width, height, isFirst, isLast };
+                }
             }
+        }
+        if (position < 0) {
+            return first;
+        }
+        if (maxPosition !== null && position > maxPosition) {
+            return last;
         }
         return null;
     }

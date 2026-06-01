@@ -125,6 +125,8 @@ export class NgScrollerComponent extends NgScrollView {
       this.updateScrollBar();
 
       this.recalculatePerspective();
+
+      this.checkIntersectionComponent();
     }
   }
   override get x() { return this._x; }
@@ -146,6 +148,8 @@ export class NgScrollerComponent extends NgScrollView {
       this.updateScrollBar();
 
       this.recalculatePerspective();
+
+      this.checkIntersectionComponent();
     }
   }
   override get y() { return this._y; }

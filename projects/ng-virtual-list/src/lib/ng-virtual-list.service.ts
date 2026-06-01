@@ -473,8 +473,8 @@ export class NgVirtualListService {
       ? 0 : this._nextComponentId + 1;
   }
 
-  getComponentBoundsByIntersectionPosition(position: number): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
-    return this._trackBox?.getComponentBoundsByIntersectionPosition(position) ?? null;
+  getComponentBoundsByIntersectionPosition(position: number, maxPosition: number | null = null): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
+    return this._trackBox?.getComponentBoundsByIntersectionPosition(position, maxPosition) ?? null;
   }
 
   setIntersectionElementBySnapToItemAlign(id: Id | null) {
