@@ -2994,14 +2994,16 @@ export class NgVirtualListComponent implements OnDestroy {
 
               scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
-              if (this.snapToItem()) {
-                const itemBounds = this._trackBox.getItemBounds(id);
-                if (!!itemBounds) {
-                  const itemSize = isVertical ? itemBounds.height : itemBounds.width;
-                  switch (this.snapToItemAlign()) {
-                    case SnapToItemAligns.CENTER: {
-                      scrollSize += itemSize * .5;
-                      break;
+              if (this._isInfinity()) {
+                if (this.snapToItem()) {
+                  const itemBounds = this._trackBox.getItemBounds(id);
+                  if (!!itemBounds) {
+                    const itemSize = isVertical ? itemBounds.height : itemBounds.width;
+                    switch (this.snapToItemAlign()) {
+                      case SnapToItemAligns.CENTER: {
+                        scrollSize += itemSize * .5;
+                        break;
+                      }
                     }
                   }
                 }
@@ -3032,11 +3034,13 @@ export class NgVirtualListComponent implements OnDestroy {
                 const isVertical = this._isVertical, itemSize = this._actualItemSize();
                 let scrollSize = index * itemSize;
 
-                if (this.snapToItem()) {
-                  switch (this.snapToItemAlign()) {
-                    case SnapToItemAligns.CENTER: {
-                      scrollSize += itemSize * .5;
-                      break;
+                if (this._isInfinity()) {
+                  if (this.snapToItem()) {
+                    switch (this.snapToItemAlign()) {
+                      case SnapToItemAligns.CENTER: {
+                        scrollSize += itemSize * .5;
+                        break;
+                      }
                     }
                   }
                 }
@@ -3107,6 +3111,12 @@ export class NgVirtualListComponent implements OnDestroy {
         this.emitScrollEvent(true, false, true);
         const scrollParams = params as IScrollParams & { scrollCalled: boolean; };
         scrollParams?.cb?.();
+      }),
+      delay(100),
+      tap(([finished]) => {
+        if (finished) {
+          this._scrollerComponent()?.snapIfNeed();
+        }
       }),
     ).subscribe();
 
