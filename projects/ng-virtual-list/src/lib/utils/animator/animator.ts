@@ -9,22 +9,36 @@ import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
  * @email djonnyx@gmail.com
  */
 export class Animator {
+  private static _nextId: number = 0;
+
   private _animationId: number = 0;
 
+  private _currentId: number = Animator._nextId;
+
+  private generateId() {
+    return Animator._nextId = Animator._nextId === Number.MAX_SAFE_INTEGER
+      ? 0 : Animator._nextId + 1;
+  }
+
   animate(params: IAnimatorParams) {
+    this.stop();
+
+    const id = this.generateId();
+    this._currentId = id;
+
     const {
       startValue, endValue, duration = DEFAULT_ANIMATION_DURATION, getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
     } = params;
 
-    this.stop();
-
     const startTime = performance.now();
     let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = endValue - start;
-
-    let isFinished = false;
+      diff = endValue - start, isFinished = false;
 
     const step = (currentTime: number) => {
+      if (id !== this._currentId) {
+        isCanceled = true;
+      }
+
       if (!!isCanceled) {
         return;
       }
@@ -54,6 +68,7 @@ export class Animator {
 
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
+          id,
           delta,
           elapsed,
           value: isFinished ? endValue : currentValue,
@@ -65,6 +80,7 @@ export class Animator {
       if (isFinished) {
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
+            id,
             delta,
             elapsed,
             value: endValue,

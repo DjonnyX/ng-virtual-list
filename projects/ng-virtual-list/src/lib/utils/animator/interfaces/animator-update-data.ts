@@ -5,6 +5,7 @@
  * @email djonnyx@gmail.com
  */
 export interface IAnimatorUpdateData {
+    id: number;
     timestamp: number;
     elapsed: number;
     delta: number;
