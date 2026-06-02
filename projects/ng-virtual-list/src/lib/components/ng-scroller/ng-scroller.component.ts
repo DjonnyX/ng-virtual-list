@@ -423,6 +423,7 @@ export class NgScrollerComponent extends NgScrollView {
     this._isScrollsTo = false;
     this._scrollDirection.clear();
     this.dropVelocity();
+    this.checkIntersectionComponent();
     this.fireScrollEvent(true);
   }
 
