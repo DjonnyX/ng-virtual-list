@@ -1604,9 +1604,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     isLast = comp.instance.item?.config?.isLast ?? false,
                     { width, height } = comp.instance.getBounds(),
                     pos = position;
-                if (isVertical && (pos >= y && pos < y + height)) {
+                if (isVertical && comp.instance.zIndex !== '-1' && (pos >= y && pos < y + height)) {
                     return { id, x, y, width, height, isFirst, isLast };
-                } else if (!isVertical && (pos >= x && pos < x + width)) {
+                } else if (!isVertical && comp.instance.zIndex !== '-1' && (pos >= x && pos < x + width)) {
                     return { id, x, y, width, height, isFirst, isLast };
                 }
                 if (isFirst) {

@@ -905,14 +905,11 @@ export class NgScrollView extends BaseScrollView {
         const align = this.snapToItemAlign(), isVertical = this.isVertical(),
             viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
         let componentId: Id | null = null;
-        const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
-            currentComponentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition),
-            currentComponentSize = isVertical ? currentComponentBounds?.height ?? 0 : currentComponentBounds?.width ?? 0;
+        const currentPosition = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset;
         switch (align) {
             case SnapToItemAligns.START: {
-                const offset = (currentComponentSize - (currentComponentSize * INTERSECTION_DISTANCE)),
-                    maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
-                    componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition + offset, maxPos);
+                const maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
+                    componentBounds = this._service.getComponentBoundsByIntersectionPosition(currentPosition, maxPos);
                 if (!!componentBounds) {
                     const { id } = componentBounds;
                     componentId = id;
@@ -920,8 +917,7 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.CENTER: {
-                const offset = (currentComponentSize * .5 - (currentComponentSize * INTERSECTION_DISTANCE)),
-                    actualPos = currentPosition + offset + viewportSize * .5,
+                const actualPos = currentPosition + viewportSize * .5,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos, maxPos);
@@ -932,8 +928,7 @@ export class NgScrollView extends BaseScrollView {
                 break;
             }
             case SnapToItemAligns.END: {
-                const offset = - (currentComponentSize * INTERSECTION_DISTANCE),
-                    actualPos = currentPosition + offset + viewportSize,
+                const actualPos = currentPosition + viewportSize,
                     maxPos = isVertical ? this.scrollHeight : this.scrollWidth,
                     pos = Math.min(actualPos, maxPos);
                 const componentBounds = this._service.getComponentBoundsByIntersectionPosition(pos, maxPos);

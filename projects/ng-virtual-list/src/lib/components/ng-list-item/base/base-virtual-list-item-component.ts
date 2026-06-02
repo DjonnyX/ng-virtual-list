@@ -134,6 +134,10 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     return this._data?.id;
   }
 
+  get zIndex() {
+    return this._elementRef.nativeElement.style.zIndex;
+  }
+
   protected readonly itemRenderer = signal<TemplateRef<any> | undefined>(undefined);
 
   protected _renderer: TemplateRef<any> | undefined;
