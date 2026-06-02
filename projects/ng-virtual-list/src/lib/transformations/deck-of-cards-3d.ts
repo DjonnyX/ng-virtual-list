@@ -70,7 +70,7 @@ export const deckOfCards3D = (options?: IDeckOfCards3DOptions): ItemTransform =>
         scaleXValue = options?.scaleX ?? null,
         scaleYValue = options?.scaleY ?? null,
         depthPow = options?.depthPow ?? 4,
-        sineWave = options?.depth ?? false;
+        sineWave = options?.sineWave ?? false;
     return (index: number, measures: IRenderVirtualListItemMeasures,
         config: IRenderVirtualListItemConfig): IItemTransformation => {
         const result: IItemTransformation = {
