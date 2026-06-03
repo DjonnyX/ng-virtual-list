@@ -31,6 +31,7 @@ import { ItemDisplayMethods } from "./enums";
 const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
     DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
     DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
+    Z_INDEX_NONE = '-1',
     IS_NEW = 'n';
 
 type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
@@ -1365,7 +1366,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 };
             while (renderItems > 0) {
                 if (i >= collectionLength) {
-                    i = 0;
+                    break;
                 }
                 const collectionItem = items[i];
                 if (!collectionItem) {
@@ -1604,9 +1605,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     isLast = comp.instance.item?.config?.isLast ?? false,
                     { width, height } = comp.instance.getBounds(),
                     pos = position;
-                if (isVertical && comp.instance.zIndex !== '-1' && (pos >= y && pos < y + height)) {
+                if (isVertical && comp.instance.zIndex !== Z_INDEX_NONE && (pos >= y && pos < y + height)) {
                     return { id, x, y, width, height, isFirst, isLast };
-                } else if (!isVertical && comp.instance.zIndex !== '-1' && (pos >= x && pos < x + width)) {
+                } else if (!isVertical && comp.instance.zIndex !== Z_INDEX_NONE && (pos >= x && pos < x + width)) {
                     return { id, x, y, width, height, isFirst, isLast };
                 }
                 if (isFirst) {
