@@ -2686,7 +2686,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._trackBox.isScrollEnd;
               const params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate, behavior: BEHAVIOR_INSTANT,
+                fireUpdate: true, behavior: BEHAVIOR_INSTANT,
                 blending: false, duration: this.animationParams().scrollToItem,
               };
               scroller?.scrollTo?.(params);
@@ -2712,7 +2712,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate, behavior: BEHAVIOR_INSTANT, userAction: false,
+              fireUpdate: true, behavior: BEHAVIOR_INSTANT, userAction: false,
               blending: false, duration: this.animationParams().scrollToItem,
             };
             scroller?.scrollTo?.(params);
