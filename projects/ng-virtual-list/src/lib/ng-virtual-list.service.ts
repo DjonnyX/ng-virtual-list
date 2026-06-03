@@ -11,8 +11,9 @@ import { FocusAlignments, TextDirections } from './enums';
 import { TextDirection } from './types';
 import { SelectingModesTypes } from './enums/selecting-modes-types';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK,
-  DEFAULT_ZINDEX_WHEN_SELECTING, ITEM_CONTAINER, TRACK_BY_PROPERTY_NAME,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK,
+  DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK, DEFAULT_SNAP_TO_ITEM, DEFAULT_ZINDEX_WHEN_SELECTING, ITEM_CONTAINER,
+  TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { FocusAlignment, Id } from './types';
 import { getListElements, NGVL_INDEX } from './components/ng-list-item/utils';
@@ -96,6 +97,10 @@ export class NgVirtualListService {
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
 
   defaultItemValue: IVirtualListItem | null = null;
+
+  scrollToItem: boolean = DEFAULT_SNAP_TO_ITEM;
+
+  isInfinity: boolean = false;
 
   isVertical: boolean = true;
 

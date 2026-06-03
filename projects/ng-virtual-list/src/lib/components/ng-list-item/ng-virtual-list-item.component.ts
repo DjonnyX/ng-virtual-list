@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, Injector, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, filter, debounceTime } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, debounceTime, takeUntil, filter } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { Id } from '../../types';
 import {
@@ -142,6 +142,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   private keyKode() {
     return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
       takeUntilDestroyed(this._destroyRef),
+      takeUntil(fromEvent(this.element, EVENT_FOCUS_OUT)),
       switchMap(e => {
         switch (e.key) {
           case KEY_SPACE: {
@@ -192,7 +193,9 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     return of(e).pipe(
       takeUntilDestroyed(this._destroyRef),
       filter(v => !!v),
-      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      debounceTime((this._service.scrollToItem ?
+        Math.max(this._service.animationParams.scrollToItem, this._service.animationParams.navigateByKeyboard) :
+        this._service.animationParams.navigateByKeyboard) ?? NAVIGATION_BY_KEYBOARD_TIMER),
       switchMap(() => {
         return this.keyKode();
       }),
@@ -244,7 +247,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
       while (index >= 0) {
         index--;
         const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-        if (!!element) {
+        if (!!element && element.style.visibility !== VISIBILITY_HIDDEN) {
           this._service.focus(element);
           return index;
         }

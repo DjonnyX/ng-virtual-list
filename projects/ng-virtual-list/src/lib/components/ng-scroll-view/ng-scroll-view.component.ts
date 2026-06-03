@@ -317,7 +317,6 @@ export class NgScrollView extends BaseScrollView {
                         this.grabbing.set(true);
                         this._startPosition = (isVertical ? this.y : this.x);
                         let prevClientPosition = isVertical ? e.clientY : e.clientX,
-                            prevPosition = this._startPosition,
                             startClientPos = prevClientPosition,
                             offsets = new Array<[number, number]>(),
                             velocities = new Array<[number, number]>(),
@@ -331,7 +330,6 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
@@ -448,7 +446,6 @@ export class NgScrollView extends BaseScrollView {
                         this.grabbing.set(true);
                         this._startPosition = (isVertical ? this.y : this.x);
                         let prevClientPosition = isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX,
-                            prevPosition = this._startPosition,
                             startClientPos = prevClientPosition,
                             offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
                             startTime = Date.now();
@@ -461,7 +458,6 @@ export class NgScrollView extends BaseScrollView {
                             switchMap(e => {
                                 const { position, currentPos, endTime, scrollDelta } =
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                prevPosition = position;
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
                                 const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),

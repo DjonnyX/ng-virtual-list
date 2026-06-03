@@ -605,7 +605,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!itemConfigMap[id]?.sticky) {
                         stickyItemId = stickyId;
                     }
-                    if (id === fromItemId) {
+                    if (id == fromItemId) {
                         break;
                     }
                 }
@@ -707,12 +707,12 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
                 if (isFromId) {
                     if (itemById === null) {
-                        if (id !== fromItemId && id === stickyItemId && sticky === 1) {
+                        if (id != fromItemId && id === stickyItemId && sticky === 1) {
                             stickyComponentSize = componentSize;
                             y -= stickyComponentSize;
                         }
 
-                        if (id === fromItemId) {
+                        if (id == fromItemId) {
                             isFromItemIdFound = true;
 
                             const { num, offset } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical),
@@ -921,7 +921,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             totalItemsToDisplayEndWeight = Math.floor(itemsFromStartToDisplayEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
             totalSize = (totalLength * dividedTypicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
             const k = totalSize !== 0 ? previousTotalSize / totalSize : 0;
-            actualScrollSize = scrollSize * k;
+
+            if (isFromId) {
+                const index = collection.findIndex(item => item[trackBy] == fromItemId);
+                if (index > -1) {
+                    itemByIdPos = this._scrollStartOffset + Math.floor(index * dividedTypicalItemSize / divides);
+                    isFromItemIdFound = true;
+                }
+            }
+
+            actualScrollSize = (isFromId ? itemByIdPos : scrollSize * k);
 
             items = [];
 
@@ -1226,7 +1235,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 layoutOffset,
                                 snapToItem,
                                 snapToItemAlign,
-                                tabIndex: count,
+                                tabIndex: count - layoutIndexOffset,
                                 divides,
                                 opacity: 1,
                                 zIndex: Z_INDEX_1,
@@ -1447,7 +1456,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 layoutOffset,
                                 snapToItem,
                                 snapToItemAlign,
-                                tabIndex: count,
+                                tabIndex: count - layoutIndexOffset,
                                 isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
                                 divides,
                                 opacity: 1,
