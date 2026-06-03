@@ -18,23 +18,17 @@ import { PrerenderCache } from "../components/ng-prerender-container/types/cache
 import { ScrollDirection } from "../types";
 import { objectAsReadonly } from "../utils/object";
 import { getServiceIdProp } from "./utils";
-import { END_COLLECTION_PREFIX_ID, START_COLLECTION_PREFIX_ID } from "./const";
+import {
+    DEFAULT_BUFFER_EXTREMUM_THRESHOLD, DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH, DEFAULT_RESET_BUFFER_SIZE_TIMEOUT, END_COLLECTION_PREFIX_ID,
+    IS_NEW, START_COLLECTION_PREFIX_ID, Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, Z_INDEX_NONE,
+} from "./const";
 import {
     IGetItemPositionOptions, IGetMetricsReturns, IItem, IMetrics, IRecalculateMetricsOptions, IUpdateCollectionOptions,
     IUpdateCollectionReturns,
 } from "./interfaces";
 import { TrackBoxEvents } from "./events";
-import { CacheMapEvents } from "./types/cache-map-events";
-import { CacheMapListeners } from "./types";
+import { Cache, CacheMapEvents, CacheMapListeners } from "./types";
 import { ItemDisplayMethods } from "./enums";
-
-const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
-    DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
-    DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
-    Z_INDEX_NONE = '-1',
-    IS_NEW = 'n';
-
-type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
 
 /**
  * An object that performs tracking, calculations and caching.
@@ -1235,7 +1229,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 tabIndex: count,
                                 divides,
                                 opacity: 1,
-                                zIndex: '1',
+                                zIndex: Z_INDEX_1,
                             };
 
                         const itemData: I = collectionItem;
@@ -1334,7 +1328,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 tabIndex: items.length,
                                 divides,
                                 opacity: 1,
-                                zIndex: '1',
+                                zIndex: Z_INDEX_1,
                             };
 
                         const itemData: I = collectionItem;
@@ -1374,9 +1368,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 const isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED),
-                    ii = i + 1;
-
-                const rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides),
+                    ii = i + 1,
+                    rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides),
                     id = collectionItem[trackBy],
                     cache = this.get(id)!,
                     size = isDummy ? 0 : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
@@ -1458,14 +1451,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
                                 divides,
                                 opacity: 1,
-                                zIndex: '0',
+                                zIndex: Z_INDEX_0,
                                 fullSize,
                             };
 
                         count++;
 
                         if (snapped) {
-                            config.zIndex = '2';
+                            config.zIndex = Z_INDEX_2;
                         }
 
                         const itemData: I = collectionItem;
@@ -1480,14 +1473,14 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             nextSticky = item;
                             nextSticky.config.snapped = snapped;
                             nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
-                            nextSticky.config.zIndex = '3';
+                            nextSticky.config.zIndex = Z_INDEX_3;
                         }
                         if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
                             (pos >= actualEndSnippedPosition - size - endStickyItemSize)) {
                             item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
                             item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
                             nextEndSticky = item;
-                            nextEndSticky.config.zIndex = '3';
+                            nextEndSticky.config.zIndex = Z_INDEX_3;
                             nextEndSticky.config.snapped = snapped;
                             nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
                         }
