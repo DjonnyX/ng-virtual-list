@@ -2597,9 +2597,10 @@ export class NgVirtualListComponent implements OnDestroy {
       const scroller = this._scrollerComponent();
       let totalSize = 0;
       if (!!scroller) {
-        const collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
+        const isInfinity = this._isInfinity(), collapsable = collapsedIds.length > 0, cachable = this.cachable, cached = this._cached, waitingCache = cachable && !cached,
           emitUpdate = !this._readyForShow || waitingCache || collapsable || isChunkLoading,
-          fireUpdate = !this._readyForShow || this._$scrollingTo.getValue();
+          fireUpdate = !this._readyForShow || this._$scrollingTo.getValue(),
+          fireUpdateAtEdges = fireUpdate || !isInfinity;
         if (this._readyForShow || (cachable && cached)) {
           const currentScrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft);
           let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight : scroller.scrollWidth) :
@@ -2686,7 +2687,7 @@ export class NgVirtualListComponent implements OnDestroy {
               this._trackBox.isScrollEnd;
               const params: IScrollToParams = {
                 [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate: true, behavior: BEHAVIOR_INSTANT,
+                fireUpdate: fireUpdateAtEdges, behavior: BEHAVIOR_INSTANT,
                 blending: false, duration: this.animationParams().scrollToItem,
               };
               scroller?.scrollTo?.(params);
@@ -2712,7 +2713,7 @@ export class NgVirtualListComponent implements OnDestroy {
             }
             const params: IScrollToParams = {
               [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: true, behavior: BEHAVIOR_INSTANT, userAction: false,
+              fireUpdate: fireUpdateAtEdges, behavior: BEHAVIOR_INSTANT, userAction: false,
               blending: false, duration: this.animationParams().scrollToItem,
             };
             scroller?.scrollTo?.(params);
