@@ -481,7 +481,7 @@ export class NgScrollerComponent extends NgScrollView {
       blending: false, userAction: true, fireUpdate: true,
     });
     this.emitScrollableEvent();
-    this._service.update(false, true);
+    this._service.update(false);
   }
 
   onScrollBarDragEndHandler(event: IScrollBarDragEvent) {
@@ -492,7 +492,7 @@ export class NgScrollerComponent extends NgScrollView {
     }
     this._isScrollbarUserAction = false;
     this.dropVelocity();
-    this._service.update(false, true);
+    this._service.update(false);
     const isEdge = this.fireUpdateIfEdgesDetected(position, min, max, true, true);
     if (!isEdge) {
       this.alignPosition();

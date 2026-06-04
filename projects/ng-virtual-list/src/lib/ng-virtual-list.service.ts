@@ -256,8 +256,8 @@ export class NgVirtualListService {
     }
   }
 
-  update(immediately: boolean = false, force: boolean = false) {
-    this._trackBox?.changes(immediately, force);
+  update(immediately: boolean = false) {
+    this._trackBox?.changes(immediately, false);
   }
 
   private getItemConfig(id: Id) {
@@ -374,13 +374,13 @@ export class NgVirtualListService {
         }
       }
 
-      this.update(true, true);
+      this.update(true);
 
       if (this.isAccordionCollapse) {
-        this.update(false, true);
+        this.update(false);
         this._$scrollTo.next({
           id, cb: () => {
-            this.update(false, true);
+            this.update(false);
           }, options: {
             delay: 100, focused: false,
           },
@@ -388,7 +388,7 @@ export class NgVirtualListService {
       } else {
         this._$scrollTo.next({
           id, cb: () => {
-            this.update(false, true);
+            this.update(false);
           }, options: {
             delay: 100, focused: false,
           },

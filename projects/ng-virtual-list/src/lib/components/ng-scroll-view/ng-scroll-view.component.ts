@@ -740,7 +740,7 @@ export class NgScrollView extends BaseScrollView {
                     this.move(isVertical, value, false, userAction);
                 }
                 iteration++;
-                this._service.update(true, true);
+                this._service.update(true);
             }, onComplete: ({ value, timestamp }) => {
                 this._isAlignmentAnimation = false;
                 const v0 = calculateVelocity(position, value, timestamp);
@@ -750,7 +750,7 @@ export class NgScrollView extends BaseScrollView {
                     this.move(isVertical, value, false, userAction);
                 }
                 this._$scrollEnd.next(userAction);
-                this._service.update(true, true);
+                this._service.update(true);
                 this.onAnimationComplete(value);
             },
         });

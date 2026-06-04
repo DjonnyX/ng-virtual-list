@@ -69,6 +69,7 @@ import { normalizeCollection } from './utils/normalize-collection';
 import { CollapsingModes } from './enums';
 import { isSpreadingMode } from './utils/is-spreading-mode';
 import { IGetItemPositionOptions, IUpdateCollectionOptions } from './core/interfaces';
+import { getScrollStateVersion } from './utils/get-scroll-state-version';
 
 /**
  * Virtual list component.
@@ -1499,17 +1500,6 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$destroy = new Subject<void>();
   private readonly $destroy = this._$destroy.asObservable();
 
-  protected getScrollStateVersion(totalSize: number, scrollSize: number, cacheVersion: number): string {
-    if (totalSize === -1) {
-      return EMPTY_SCROLL_STATE_VERSION;
-    }
-    let scrollStateUpdateIndex = 0;
-    if (totalSize < scrollSize) {
-      scrollStateUpdateIndex = scrollStateUpdateIndex === Number.MAX_SAFE_INTEGER ? 0 : scrollStateUpdateIndex + 1;
-    }
-    return `${scrollStateUpdateIndex}_${totalSize}_${scrollSize}_${cacheVersion}`;
-  };
-
   constructor() {
     NgVirtualListComponent.__nextId = NgVirtualListComponent.__nextId + 1 === Number.MAX_SAFE_INTEGER
       ? 0 : NgVirtualListComponent.__nextId + 1;
@@ -2630,6 +2620,10 @@ export class NgVirtualListComponent implements OnDestroy {
 
           this.snappingHandler();
 
+          if (!scroller.scrollable) {
+            scroller.refresh(false);
+          }
+
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = actualScrollSize + delta,
             roundedScrollPositionAfterUpdate = scrollPositionAfterUpdate,
@@ -2679,7 +2673,7 @@ export class NgVirtualListComponent implements OnDestroy {
               };
               scroller?.scrollTo?.(params);
               if (emitUpdate) {
-                this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+                this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
               }
             }
             return;
@@ -2705,7 +2699,7 @@ export class NgVirtualListComponent implements OnDestroy {
             };
             scroller?.scrollTo?.(params);
             if (emitUpdate) {
-              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+              this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
             }
             return;
           }
@@ -2724,13 +2718,13 @@ export class NgVirtualListComponent implements OnDestroy {
             };
             scroller.scrollTo(params);
             if (emitUpdate) {
-              this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+              this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
             }
             return;
           }
         }
         if (emitUpdate) {
-          this._$update.next(this.getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft, cacheVersion));
+          this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
         }
       }
     };

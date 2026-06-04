@@ -78,10 +78,9 @@ export class NgVirtualListPublicService {
   /**
    * Updates the list
    * @param immediately - Indicates that the list is updated instantly.
-   * @param force - Forced update.
    */
-  update(immediately: boolean = false, force: boolean = false) {
-    this._internalService.update(immediately, force);
+  update(immediately: boolean = false) {
+    this._internalService.update(immediately);
   }
 
   /**
