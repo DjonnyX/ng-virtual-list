@@ -4,7 +4,10 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
-import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
+import {
+  DEFAULT_LANG_TEXT_DIR, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_INTERACTIVE, LEFT, POSITION, POSITION_ABSOLUTE,
+  POSITION_RELATIVE, RIGHT, SIZE_100_PERSENT, SIZE_AUTO, UNSET,
+} from '../../const';
 import {
   DEFAULT_SIZE, DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
@@ -12,6 +15,8 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED }
 import { NgScrollBarService } from './ng-scroll-bar.service';
 import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
 import { ScrollbarStates } from './enums';
+import { TextDirection } from '../../types';
+import { TextDirections } from '../../enums';
 
 /**
  * ScrollBar component.
@@ -57,7 +62,11 @@ export class NgScrollBarComponent extends NgScrollView {
 
   readonly prepared = input<boolean>(false);
 
+  readonly langTextDir = input<TextDirection>(DEFAULT_LANG_TEXT_DIR);
+
   readonly interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+
+  readonly overlapping = input<boolean>(DEFAULT_OVERLAPPING_SCROLLBAR);
 
   readonly show = input<boolean>(false);
 
@@ -211,6 +220,18 @@ export class NgScrollBarComponent extends NgScrollView {
         [sizePropName]: `${show ? this.thickness() : 0}${PX}`,
         [OPACITY]: show ? OPACITY_1 : OPACITY_0, [TRANSITION]: show ? TRANSITION_FADE_IN : NONE,
       };
+    });
+
+    effect(() => {
+      const el = this._elementRef.nativeElement;
+      if (!!el) {
+        const overlapping = this.overlapping(), langTextDir = this.langTextDir();
+        console.log(langTextDir, overlapping && langTextDir === TextDirections.RTL)
+        el.style[POSITION] = overlapping ? POSITION_ABSOLUTE : POSITION_RELATIVE;
+        el.style[LEFT] = overlapping && langTextDir === TextDirections.RTL ? '0' : UNSET;
+        el.style[RIGHT] = overlapping && langTextDir === TextDirections.LTR ? '0' : UNSET;
+        el.style[WIDTH] = overlapping ? SIZE_AUTO : SIZE_100_PERSENT;
+      }
     });
 
     this.$scroll.pipe(

@@ -23,6 +23,7 @@ import {
   DEFAULT_SNAP_TO_ITEM, DEFAULT_SNAP_TO_ITEM_ALIGN, VIEWPORT, DEFAULT_MOTION_BLUR, DEFAULT_MAX_MOTION_BLUR, DEFAULT_SCROLLING_ONE_BY_ONE,
   DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_DIVIDES, DEFAULT_SNAPPING_DISTANCE, DEFAULT_MAX_ITEM_SIZE, DEFAULT_MIN_ITEM_SIZE,
   DEFAULT_ALIGNMENT, DEFAULT_COLLAPSING_MODES, DEFAULT_SPREADING_MODE, DEFAULT_ZINDEX_WHEN_SELECTING,
+  DEFAULT_OVERLAPPING_SCROLLBAR,
 } from './const';
 import {
   IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap,
@@ -586,6 +587,23 @@ export class NgVirtualListComponent implements OnDestroy {
    * Determines whether scrolling using the scrollbar will be possible. The default value is "true".
    */
   scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE, { ...this._scrollbarInteractiveOptions });
+
+  private _overlappingScrollbarOptions = {
+    transform: (v: boolean) => {
+      const valid = validateBoolean(v, true);
+
+      if (!valid) {
+        console.error('The "overlappingScrollbar" parameter must be of type `boolean`.');
+        return DEFAULT_OVERLAPPING_SCROLLBAR;
+      }
+      return v;
+    },
+  } as any;
+
+  /**
+   * Determines whether the scroll bar will overlap the list. The default value is "false".
+   */
+  overlappingScrollbar = input<boolean>(DEFAULT_OVERLAPPING_SCROLLBAR, { ...this._overlappingScrollbarOptions });
 
   private _scrollBehaviorOptions = {
     transform: (v: ScrollBehavior) => {

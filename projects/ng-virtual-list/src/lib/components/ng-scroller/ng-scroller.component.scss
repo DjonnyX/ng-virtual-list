@@ -12,17 +12,27 @@
     height: 100%;
     cursor: grab;
 
+    &.overlapping {
+        position: relative;
+        display: block;
+    }
+
     &.grabbing {
         cursor: grabbing;
     }
 
     &.horizontal {
-        grid-template-rows: 1fr 0;
+        &:not(.overlapping) {
+            grid-template-rows: 1fr 0;
+        }
+
         transition: grid-template-rows 100ms ease-out;
 
         &.scrollable {
             &.enabled {
-                grid-template-rows: 1fr auto;
+                &:not(.overlapping) {
+                    grid-template-rows: 1fr auto;
+                }
             }
         }
 
@@ -44,12 +54,17 @@
     }
 
     &.vertical {
-        grid-template-columns: 1fr 0;
+        &:not(.overlapping) {
+            grid-template-columns: 1fr 0;
+        }
+
         transition: grid-template-columns 100ms ease-out;
 
         &.scrollable {
             &.enabled {
-                grid-template-columns: 1fr auto;
+                &:not(.overlapping) {
+                    grid-template-columns: 1fr auto;
+                }
             }
         }
 

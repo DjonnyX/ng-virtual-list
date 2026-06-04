@@ -36,6 +36,8 @@ export const DEFAULT_SCROLLBAR_ENABLED = true;
 
 export const DEFAULT_SCROLLBAR_INTERACTIVE = true;
 
+export const DEFAULT_OVERLAPPING_SCROLLBAR = false;
+
 export const DEFAULT_SCROLL_BEHAVIOR: ScrollBehavior = 'smooth';
 
 export const NAVIGATION_BY_KEYBOARD_TIMER = 50;
@@ -147,6 +149,16 @@ export const VISIBILITY_HIDDEN = 'hidden';
 export const SIZE_100_PERSENT = '100%';
 
 export const SIZE_AUTO = 'auto';
+
+export const UNSET = 'unset';
+
+export const LEFT = 'left';
+
+export const RIGHT = 'right';
+
+export const POSITION = 'position';
+
+export const POSITION_RELATIVE = 'relative';
 
 export const POSITION_ABSOLUTE = 'absolute';
 

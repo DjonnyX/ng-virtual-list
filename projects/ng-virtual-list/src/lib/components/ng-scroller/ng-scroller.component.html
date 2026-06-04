@@ -18,13 +18,13 @@
         </foreignObject>
     </svg>
     @if (scrollbarEnabled()) {
-    @let prepared = preparedSignal();
-    <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
-        [thickness]="scrollbarThickness()" [params]="scrollbarThumbParams()" [loading]="loading()"
-        [thumbGradientPositions]="thumbGradientPositions()" [prepared]="prepared" [interactive]="scrollbarInteractive()"
-        [show]="scrollbarShow() && scrollbarEnabled() && prepared" [startOffset]="startOffset()"
-        [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()" [scrollBehavior]="scrollBehavior()"
-        [scrollbarMinSize]="scrollbarMinSize()" (onDrag)="onScrollBarDragHandler($event)"
-        (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
+        @let prepared = preparedSignal();
+        <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
+            [thickness]="scrollbarThickness()" [params]="scrollbarThumbParams()" [loading]="loading()" [overlapping]="overlappingScrollbar()"
+            [thumbGradientPositions]="thumbGradientPositions()" [prepared]="prepared" [interactive]="scrollbarInteractive()"
+            [show]="scrollbarShow() && scrollbarEnabled() && prepared" [startOffset]="startOffset()" [langTextDir]="langTextDir()"
+            [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()" [scrollBehavior]="scrollBehavior()"
+            [scrollbarMinSize]="scrollbarMinSize()" (onDrag)="onScrollBarDragHandler($event)"
+            (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
     }
 </div>

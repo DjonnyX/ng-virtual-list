@@ -6,7 +6,7 @@ import { Id, TextDirection } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
-  BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_SCROLLBAR_ENABLED,
+  BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_ENABLED,
   DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, LEFT_PROP_NAME, PX, SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
 import { TextDirections } from '../../enums';
@@ -54,6 +54,8 @@ export class NgScrollerComponent extends NgScrollView {
   readonly scrollbarInteractive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
 
   readonly focusedElement = input<Id | null>(null);
+
+  readonly overlappingScrollbar = input<boolean>(DEFAULT_OVERLAPPING_SCROLLBAR);
 
   readonly content = input<HTMLElement>();
 
@@ -267,10 +269,11 @@ export class NgScrollerComponent extends NgScrollView {
     this.containerClasses = computed(() => {
       const { width: contentWidth, height: contentHeight } = this.contentBounds(),
         { width, height } = this.viewportBounds(),
+        overlappingScrollbar = this.overlappingScrollbar(),
         isVertical = this.isVertical(),
         viewportSize = isVertical ? height : width,
         contentSize = isVertical ? contentHeight : contentWidth;
-      return { [this.direction()]: true, grabbing: this.grabbing(), enabled: this.scrollbarEnabled(), scrollable: contentSize > viewportSize };
+      return { [this.direction()]: true, grabbing: this.grabbing(), enabled: this.scrollbarEnabled(), scrollable: contentSize > viewportSize, overlapping: overlappingScrollbar };
     });
 
     effect(() => {
