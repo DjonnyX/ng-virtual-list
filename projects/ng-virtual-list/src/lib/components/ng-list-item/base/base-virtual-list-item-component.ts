@@ -198,6 +198,8 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
         config, reseted: false, index: data?.index ?? - 1, api: this._apiService,
       };
     });
+
+    this.hide();
   }
 
   protected updateMeasures(v: IRenderVirtualListItem<any> | null) {
