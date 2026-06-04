@@ -984,10 +984,6 @@ export class NgScrollView extends BaseScrollView {
     }
 
     scroll(params: IScrollToParams) {
-        if (!this.scrollable && !this.isInfinity()) {
-            return;
-        }
-
         const posX = params.x || params.left || 0,
             posY = params.y || params.top || 0,
             userAction = params.userAction ?? false,
@@ -1050,7 +1046,8 @@ export class NgScrollView extends BaseScrollView {
 
     refreshCoordinate(x: number, y: number) {
         const scrollContent = this.scrollContent()?.nativeElement as HTMLDivElement;
-        scrollContent.style.transform = matrix3d((this._inversion ? 1 : -1) * x + (this.isVertical() ? 0 : this._startLayoutOffset), (this._inversion ? 1 : -1) * y + (this.isVertical() ? this._startLayoutOffset : 0));
+        scrollContent.style.transform = matrix3d((this._inversion ? 1 : -1) * x + (this.isVertical() ? 0 : this._startLayoutOffset),
+            (this._inversion ? 1 : -1) * y + (this.isVertical() ? this._startLayoutOffset : 0));
     }
 
     protected fireScrollEvent(userAction: boolean) {

@@ -305,7 +305,10 @@ export class NgScrollerComponent extends NgScrollView {
   protected override onResizeContent(value: number | null = null) {
     const content = this.scrollContent()?.nativeElement;
     if (!!content) {
-      const isVertical = this.isVertical(), bounds: ISize = { width: isVertical ? content.offsetWidth : value ?? content.offsetWidth, height: isVertical ? value ?? content.offsetHeight : content.offsetHeight }, b = this.contentBounds();
+      const isVertical = this.isVertical(), bounds: ISize = {
+        width: isVertical ? content.offsetWidth : (value ?? content.offsetWidth),
+        height: isVertical ? (value ?? content.offsetHeight) : content.offsetHeight
+      }, b = this.contentBounds();
       if (value === null && bounds.width === b.width && bounds.height === b.height) {
         return;
       }
@@ -380,7 +383,7 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   override reset() {
-    super.reset(this.startOffset());
+    super.reset();
     this.totalSize = 0;
     this.onResizeContent(0);
     this.stopScrollbar();
