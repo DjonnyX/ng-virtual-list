@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, Injector, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, debounceTime, takeUntil, filter } from 'rxjs';
+import { map, tap, combineLatest, fromEvent, switchMap, of, Observable, debounceTime } from 'rxjs';
 import { IRenderVirtualListItem } from '../../models/render-item.model';
 import { Id } from '../../types';
 import {
@@ -12,7 +12,7 @@ import { IDisplayObjectConfig } from '../../models';
 import { getListElementByIndex } from './utils';
 import {
   ATTR_AREA_SELECTED, EVENT_FOCUS_IN, EVENT_FOCUS_OUT, EVENT_KEY_DOWN, KEY_ARR_DOWN, KEY_ARR_LEFT,
-  KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE,
+  KEY_ARR_RIGHT, KEY_ARR_UP, KEY_SPACE, NGVL_VISIBILITY,
 } from './const';
 
 /**
@@ -93,7 +93,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
     $focused.pipe(
       takeUntilDestroyed(this._destroyRef),
-      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      debounceTime(this.getNavigationTimeout()),
       switchMap(v => {
         if (v) {
           return this.keyKode();
@@ -142,7 +142,6 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
   private keyKode() {
     return fromEvent<KeyboardEvent>(this.element, EVENT_KEY_DOWN).pipe(
       takeUntilDestroyed(this._destroyRef),
-      takeUntil(fromEvent(this.element, EVENT_FOCUS_OUT)),
       switchMap(e => {
         switch (e.key) {
           case KEY_SPACE: {
@@ -180,6 +179,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     );
   }
 
+  private getNavigationTimeout() {
+    return this._service.snapToItem ?
+      Math.max(this._service.animationParams.snapToItem, this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER) :
+      this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER;
+  }
+
   private toNextItem(e: Event): Observable<any> {
     if (!!e && e.cancelable) {
       e.stopImmediatePropagation();
@@ -187,15 +192,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     }
 
     const index = this.focusNext();
-    if (index > -1) {
+    if (index !== Number.MIN_SAFE_INTEGER) {
       this._service.lastFocusedItemId = index;
     }
     return of(e).pipe(
       takeUntilDestroyed(this._destroyRef),
-      filter(v => !!v),
-      debounceTime((this._service.scrollToItem ?
-        Math.max(this._service.animationParams.scrollToItem, this._service.animationParams.navigateByKeyboard) :
-        this._service.animationParams.navigateByKeyboard) ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      debounceTime(this.getNavigationTimeout()),
       switchMap(() => {
         return this.keyKode();
       }),
@@ -209,13 +211,12 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     }
 
     const index = this.focusPrev();
-    if (index > -1) {
+    if (index !== Number.MIN_SAFE_INTEGER) {
       this._service.lastFocusedItemId = index;
     }
     return of(e).pipe(
       takeUntilDestroyed(this._destroyRef),
-      filter(v => !!v),
-      debounceTime(this._service.animationParams.navigateByKeyboard ?? NAVIGATION_BY_KEYBOARD_TIMER),
+      debounceTime(this.getNavigationTimeout()),
       switchMap(() => {
         return this.keyKode();
       }),
@@ -224,12 +225,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   private focusNext(): number {
     if (this._service.listElement) {
-      const tabIndex = this._data?.config?.tabIndex ?? 0, length = this._service.collection?.length ?? 0;
+      const tabIndex = this._data?.config?.tabIndex ?? 0, length = this._data?.config.totalItems ?? 0,
+        l = length > 0 ? (this._service.isInfinity ? (length + 1) : length) : 0;
       let index = tabIndex;
-      while (index <= length) {
+      while (index <= l) {
         index++;
         const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-        if (!!element && element.style.visibility !== VISIBILITY_HIDDEN) {
+        if (!!element && element.getAttribute(NGVL_VISIBILITY) !== VISIBILITY_HIDDEN) {
           const focused = this._service.focus(element);
           if (focused) {
             return index;
@@ -237,23 +239,23 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         }
       }
     }
-    return -1;
+    return Number.MIN_SAFE_INTEGER;
   }
 
   private focusPrev(): number {
     if (this._service.listElement) {
-      const tabIndex = this._data?.config?.tabIndex ?? 0;
+      const tabIndex = this._data?.config?.tabIndex ?? 0, min = -(this._data?.config?.layoutIndexOffset ?? 0);
       let index = tabIndex;
-      while (index >= 0) {
+      while (index >= min) {
         index--;
         const element = this._service.listElement.querySelector<HTMLDivElement>(getListElementByIndex(index));
-        if (!!element && element.style.visibility !== VISIBILITY_HIDDEN) {
+        if (!!element && element.getAttribute(NGVL_VISIBILITY) !== VISIBILITY_HIDDEN) {
           this._service.focus(element);
           return index;
         }
       }
     }
-    return -1;
+    return Number.MIN_SAFE_INTEGER;
   }
 
   protected override updateConfig(v: IRenderVirtualListItem<any> | null) {

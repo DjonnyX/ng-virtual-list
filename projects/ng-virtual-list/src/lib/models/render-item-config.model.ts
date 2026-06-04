@@ -62,6 +62,10 @@ export interface IRenderVirtualListItemConfig {
      */
     layoutOffset: number;
     /**
+     * layout index offset;
+     */
+    layoutIndexOffset: number;
+    /**
      * Tab index.
      */
     tabIndex: number;
@@ -109,4 +113,8 @@ export interface IRenderVirtualListItemConfig {
      * Determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true.
      */
     fullSize: boolean;
+    /**
+     * Number of elements in the collection to be visualized.
+     */
+    totalItems: number;
 }

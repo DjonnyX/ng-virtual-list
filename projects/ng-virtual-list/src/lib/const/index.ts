@@ -303,3 +303,9 @@ export const ITEM_ID = 'item-id';
 export const ITEM_CONTAINER = 'ngvl-item';
 
 export const PERCENTAGE_VALUE_PATTERN = /^([\d]+%)$/;
+
+export const Z_INDEX_NONE = '-1',
+    Z_INDEX_0 = '0',
+    Z_INDEX_1 = '1',
+    Z_INDEX_2 = '2',
+    Z_INDEX_3 = '3';

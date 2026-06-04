@@ -20,8 +20,9 @@ import { objectAsReadonly } from "../utils/object";
 import { getServiceIdProp } from "./utils";
 import {
     DEFAULT_BUFFER_EXTREMUM_THRESHOLD, DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH, DEFAULT_RESET_BUFFER_SIZE_TIMEOUT, END_COLLECTION_PREFIX_ID,
-    IS_NEW, START_COLLECTION_PREFIX_ID, Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, Z_INDEX_NONE,
+    IS_NEW, START_COLLECTION_PREFIX_ID,
 } from "./const";
+import { Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, Z_INDEX_NONE, } from '../const';
 import {
     IGetItemPositionOptions, IGetMetricsReturns, IItem, IMetrics, IRecalculateMetricsOptions, IUpdateCollectionOptions,
     IUpdateCollectionReturns,
@@ -835,7 +836,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         items.reverse();
                         leftYOffset = y;
                         leftLayoutOffset = viewportSize * .5;
-                        leftLayoutIndexOffset = 0;
+                        leftLayoutIndexOffset = i;
                         y = this._scrollStartOffset;
                         totalSize = this._scrollStartOffset + this._scrollEndOffset;
                         itemsFromStartToDisplayEnd = itemsFromDisplayEndToOffsetEnd = 0;
@@ -905,7 +906,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
 
-            startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides) - leftLayoutIndexOffset;
+            startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides);
         } else
         // Buffer optimization does not work on fast linear algorithm
         {
@@ -970,7 +971,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         items.reverse();
                         leftYOffset = y;
                         leftLayoutOffset = viewportSize * .5;
-                        leftLayoutIndexOffset = 0;
+                        leftLayoutIndexOffset = i;
                     }
                 }
             }
@@ -1006,7 +1007,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
                     ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
 
-                startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides) - leftLayoutIndexOffset;
+                startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides);
             } else {
                 startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
             }
@@ -1015,7 +1016,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const itemsOnDisplayWeight = totalItemsToDisplayEndWeight - leftItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
             startPosition = this._scrollStartOffset + leftHiddenItemsWeight - leftItemsWeight - leftYOffset,
-            renderItems = (Math.ceil((itemsOnDisplayLength + leftItemLength + rightItemLength) / divides) * divides) + leftLayoutIndexOffset + rightLayoutIndexOffset,
+            renderItems = (Math.ceil((itemsOnDisplayLength + leftItemLength + rightItemLength) / divides) * divides) + rightLayoutIndexOffset,
             startCreationDelta = deltaFromStartCreation > 0 ? deltaFromStartCreation : 0,
             delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + startCreationDelta;
         this._deltaOfNewItems = deltaOfNewItems;
@@ -1161,7 +1162,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
-                endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
+                endStickyItemIndex = -1, endStickyItemSize = 0;
 
             const li = layoutIndexOffset + actualItems.length - 1;
             if (stickyEnabled) {
@@ -1233,9 +1234,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
                                 snapToItem,
                                 snapToItemAlign,
-                                tabIndex: count - layoutIndexOffset,
+                                tabIndex: i - layoutIndexOffset,
                                 divides,
                                 opacity: 1,
                                 zIndex: Z_INDEX_1,
@@ -1251,8 +1254,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         stickyItemSize = size;
 
                         displayItems.push(stickyItem);
-
-                        count++;
                         break;
                     }
                 }
@@ -1332,9 +1333,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
                                 snapToItem,
                                 snapToItemAlign,
-                                tabIndex: items.length,
+                                tabIndex: i - layoutIndexOffset,
                                 divides,
                                 opacity: 1,
                                 zIndex: Z_INDEX_1,
@@ -1454,17 +1457,17 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
                                 layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
                                 snapToItem,
                                 snapToItemAlign,
-                                tabIndex: count - layoutIndexOffset,
+                                tabIndex: i - layoutIndexOffset,
                                 isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
                                 divides,
                                 opacity: 1,
                                 zIndex: Z_INDEX_0,
                                 fullSize,
                             };
-
-                        count++;
 
                         if (snapped) {
                             config.zIndex = Z_INDEX_2;

@@ -1,6 +1,7 @@
 import { matrix3d } from "../utils";
 
 export const ID = 'id',
+    NGVL_VISIBILITY = 'ngvl-visibility',
     MATRIX_3D_HIDDEN = matrix3d(-1000, -1000, 0, 1, 1, 1, 0, 0, 0),
     ATTR_AREA_SELECTED = 'area-selected',
     POSITION = 'position',

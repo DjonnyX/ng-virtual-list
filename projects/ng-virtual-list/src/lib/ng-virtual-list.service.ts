@@ -98,7 +98,7 @@ export class NgVirtualListService {
 
   defaultItemValue: IVirtualListItem | null = null;
 
-  scrollToItem: boolean = DEFAULT_SNAP_TO_ITEM;
+  snapToItem: boolean = DEFAULT_SNAP_TO_ITEM;
 
   isInfinity: boolean = false;
 
@@ -374,23 +374,16 @@ export class NgVirtualListService {
         }
       }
 
-      this.update(true);
-
       if (this.isAccordionCollapse) {
-        this.update(false);
         this._$scrollTo.next({
-          id, cb: () => {
-            this.update(false);
-          }, options: {
-            delay: 100, focused: false,
+          id, cb: null, options: {
+            delay: 100, focused: true,
           },
         });
       } else {
         this._$scrollTo.next({
-          id, cb: () => {
-            this.update(false);
-          }, options: {
-            delay: 100, focused: false,
+          id, cb: null, options: {
+            delay: 100, focused: true,
           },
         });
       }

@@ -110,6 +110,12 @@ const generateItem = (id: Id, trackBy: string): IRenderVirtualListItem => {
             divides: 0,
             snapToItem: false,
             snapToItemAlign: SnapToItemAligns.START,
+            layoutOffset: 0,
+            layoutIndexOffset: 0,
+            isFirst: false,
+            isLast: false,
+            fullSize: false,
+            totalItems: 0,
         },
         previouseData: undefined,
         nextData: undefined,
@@ -133,7 +139,7 @@ describe('Tracker', () => {
             components.push(comp);
         }
 
-        tracker.track(items, components as any, undefined, 1);
+        tracker.track(items, components as any, undefined, 1, 'id');
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
@@ -171,7 +177,7 @@ describe('Tracker', () => {
             }
         }
 
-        tracker.track(items, components as any, undefined, 1);
+        tracker.track(items, components as any, undefined, 1, 'id');
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
@@ -209,7 +215,7 @@ describe('Tracker', () => {
             }
         }
 
-        tracker.track(items, components as any, undefined, 1);
+        tracker.track(items, components as any, undefined, 1, 'id');
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {
@@ -247,7 +253,7 @@ describe('Tracker', () => {
             }
         }
 
-        tracker.track(items, components as any, undefined, 1);
+        tracker.track(items, components as any, undefined, 1, 'id');
 
         const result = [];
         for (let i = 0, l = COLLECTION_LENGTH; i < l; i++) {

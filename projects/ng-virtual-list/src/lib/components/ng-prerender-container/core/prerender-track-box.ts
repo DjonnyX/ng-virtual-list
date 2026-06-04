@@ -78,6 +78,8 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             isFirst: false,
             isLast: false,
             fullSize: false,
+            layoutIndexOffset: 0,
+            totalItems: 0,
         },
     }
 }

@@ -103,6 +103,8 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             isFirst: false,
             isLast: false,
             fullSize: false,
+            layoutIndexOffset: 0,
+            totalItems: 0,
         },
         previouseData: undefined,
         nextData: undefined,
