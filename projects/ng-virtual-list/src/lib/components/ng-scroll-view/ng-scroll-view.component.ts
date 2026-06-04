@@ -716,7 +716,10 @@ export class NgScrollView extends BaseScrollView {
         this._isAlignmentAnimation = !alignmentAtComplete;
 
         this._animator.animate({
-            startValue, endValue, duration,
+            withDelta: this._service.dynamic && !this.isInfinity(),
+            startValue,
+            endValue,
+            duration,
             easingFunction,
             getPropValue: () => {
                 return isVertical ? this._y : this._x;

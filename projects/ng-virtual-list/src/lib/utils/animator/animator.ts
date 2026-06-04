@@ -1,4 +1,4 @@
-import { ANIMATOR_MIN_TIMESTAMP, DEFAULT_ANIMATION_DURATION } from './const';
+import { ANIMATOR_MIN_TIMESTAMP, DEFAULT_ANIMATION_DURATION, DEFAULT_WITH_DELTA } from './const';
 import { easeLinear } from './ease';
 import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
@@ -27,7 +27,8 @@ export class Animator {
     this._currentId = id;
 
     const {
-      startValue, endValue, duration = DEFAULT_ANIMATION_DURATION, getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
+      withDelta = DEFAULT_WITH_DELTA, startValue, endValue, duration = DEFAULT_ANIMATION_DURATION,
+      getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
     } = params;
 
     const startTime = performance.now();
@@ -53,7 +54,7 @@ export class Animator {
       const elapsed = currentTime - startTime,
         progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
-        val = start + diff * easedProgress,
+        val = (withDelta ? startPosDelta : 0) + start + diff * easedProgress,
         currentValue = val,
         t = performance.now();
 
@@ -71,7 +72,7 @@ export class Animator {
           id,
           delta,
           elapsed,
-          value: isFinished ? endValue : currentValue,
+          value: !withDelta && isFinished ? endValue : currentValue,
           timestamp,
         };
         onUpdate(data);
@@ -83,7 +84,7 @@ export class Animator {
             id,
             delta,
             elapsed,
-            value: endValue,
+            value: withDelta ? currentValue : endValue,
             timestamp,
           };
           onComplete(data);

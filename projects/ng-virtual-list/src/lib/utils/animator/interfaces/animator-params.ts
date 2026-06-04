@@ -11,6 +11,7 @@ export interface IAnimatorParams {
     startValue: number;
     endValue: number;
     duration?: number;
+    withDelta?: boolean;
     getPropValue?: () => number;
     easingFunction?: Easing;
     onUpdate?: (data: IAnimatorUpdateData) => void;
