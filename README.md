@@ -1,6 +1,6 @@
 # NgVirtualList
 
-🚀 High-performance virtual scrolling for Angular apps. Render 100,000+ items in Angular without breaking a sweat. Smooth, customizable, and developer-friendly.
+🚀 High-performance virtual scrolling for Angular apps. Render 10,000+ items in Angular without breaking a sweat. Smooth, customizable, and developer-friendly.
 
 ⚡A powerful API for implementing lists of varying functionality and complexity.
 
