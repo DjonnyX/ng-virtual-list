@@ -226,7 +226,6 @@ export class NgScrollBarComponent extends NgScrollView {
       const el = this._elementRef.nativeElement;
       if (!!el) {
         const overlapping = this.overlapping(), langTextDir = this.langTextDir();
-        console.log(langTextDir, overlapping && langTextDir === TextDirections.RTL)
         el.style[POSITION] = overlapping ? POSITION_ABSOLUTE : POSITION_RELATIVE;
         el.style[LEFT] = overlapping && langTextDir === TextDirections.RTL ? '0' : UNSET;
         el.style[RIGHT] = overlapping && langTextDir === TextDirections.LTR ? '0' : UNSET;
