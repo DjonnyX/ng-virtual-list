@@ -615,7 +615,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             let y = this._scrollStartOffset,
                 stickyComponentSize = 0,
                 row: {
+                    startItemIndex: number;
+                    endItemIndex: number;
                     size: number;
+                    snapshotSize: number;
                     deltaFromStartCreation: number;
                     leftSizeOfAddedItems: number;
                     leftSizeOfUpdatedItems: number;
@@ -626,7 +629,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     leftHiddenItemsWeight: number;
                     totalItemsToDisplayEndWeight: number;
                 } = {
+                    startItemIndex: 0,
+                    endItemIndex: 0,
                     size: 0,
+                    snapshotSize: 0,
                     deltaFromStartCreation: 0,
                     leftSizeOfAddedItems: 0,
                     leftSizeOfUpdatedItems: 0,
@@ -647,11 +653,15 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     sticky = itemConfigMap?.[id]?.sticky ?? 0,
                     isNewRow = i % divides === 0,
                     isLastItemInRow = ii % divides === 0,
-                    isLastItem = i === li;
+                    isLastItem = i === li,
+                    isRowEnd = isLastItemInRow || (!isLastItemInRow && isLastItem);
                 items.push(isPrecollection ? { ...collectionItem, [serviceIdProp]: `_${idPrefix}-${id}_` } : collectionItem);
                 if (isNewRow || row === null) {
                     row = {
+                        startItemIndex: i + 1,
+                        endItemIndex: i + divides,
                         size: 0,
+                        snapshotSize: 0,
                         deltaFromStartCreation: 0,
                         leftSizeOfAddedItems: 0,
                         leftSizeOfUpdatedItems: 0,
@@ -667,7 +677,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 if (map.has(id)) {
                     const cache = map.get(id);
                     componentSize = cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize;
-                    row.size = Math.max(row.size, componentSize);
                     itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
                     const isItemNew = this._newItems.indexOf(id) > -1 || (this._isLazy && isStart && !this._isReseted);
                     isNew = isItemNew;
@@ -675,12 +684,17 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         isUpdating = true;
                     }
                     const snapshotBounds = snapshot.get(id),
-                        componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
-                    componentSizeDelta = componentSnapshotSize;
+                        snapshotSize = snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize;
+
+                    row.size = Math.max(row.size, componentSize);
+                    row.snapshotSize = Math.max(row.snapshotSize, snapshotSize);
+
+                    componentSizeDelta = row.size - row.snapshotSize;
+
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
                             map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, [IS_NEW]: isNew });
-                            if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
+                            if (isRowEnd && isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 row.deltaFromStartCreation = Math.max(Math.abs(row.deltaFromStartCreation), Math.abs(componentSizeDelta)) * Math.sign(componentSizeDelta);
                                 componentSizeDelta = 0;
                             }
@@ -689,7 +703,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         case ItemDisplayMethods.CREATE: {
                             componentSizeDelta = typicalItemSize;
                             map.set(id, { ...cache, method: ItemDisplayMethods.UPDATE, [IS_NEW]: isNew });
-                            if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
+                            if (isRowEnd && isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
                                 row.deltaFromStartCreation = Math.max(Math.abs(row.deltaFromStartCreation), Math.abs(componentSizeDelta)) * Math.sign(componentSizeDelta);
                                 componentSizeDelta = 0;
                             }
@@ -699,6 +713,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 } else {
                     componentSize = typicalItemSize;
                     row.size = Math.max(row.size, componentSize);
+                    row.snapshotSize = row.size;
                     componentSizeDelta = 0;
                 }
 
@@ -737,7 +752,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         } else {
                             leftItemsOrRowsWeights.push(componentSize);
                             leftHiddenItemsWeight += componentSize;
-                            itemsFromStartToScrollEnd = ii;
+                            itemsFromStartToScrollEnd = row.startItemIndex;
                         }
                     }
                 } else if (y <= scrollSize - componentSize) {
@@ -747,24 +762,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     row.leftItemsOrRowsWeights = Math.max(row.leftItemsOrRowsWeights, componentSize);
                     row.leftHiddenItemsWeight = Math.max(row.leftHiddenItemsWeight, componentSize);
                     if (!isPrecollection) {
-                        itemsFromStartToScrollEnd = ii;
+                        itemsFromStartToScrollEnd = row.startItemIndex;
                     }
                 }
 
                 if (isFromId) {
                     if (itemById === null || y < itemByIdPos + size + componentSize) {
-                        itemsFromStartToDisplayEnd = ii;
+                        itemsFromStartToDisplayEnd = row.endItemIndex;
                         totalItemsToDisplayEndWeight += componentSize;
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
                     }
                 } else if (y <= scrollSize + size + componentSize) {
                     if (!isPrecollection) {
-                        itemsFromStartToDisplayEnd = ii;
+                        itemsFromStartToDisplayEnd = row.endItemIndex;
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
                     }
                     row.totalItemsToDisplayEndWeight = Math.max(row.totalItemsToDisplayEndWeight, componentSize);
 
-                    if (y <= scrollSize + componentSize) {
+                    if (isRowEnd && y <= scrollSize + componentSize) {
                         switch (itemDisplayMethod) {
                             case ItemDisplayMethods.CREATE: {
                                 row.leftSizeOfAddedItems = Math.max(Math.abs(row.leftSizeOfAddedItems), Math.abs(componentSizeDelta)) * Math.sign(componentSizeDelta);
@@ -782,16 +797,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         }
                     }
 
-                    if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
+                    if (isRowEnd && itemDisplayMethod === ItemDisplayMethods.CREATE) {
                         row.deltaOfNewItems = Math.max(Math.abs(row.deltaOfNewItems), Math.abs(componentSizeDelta)) * Math.sign(componentSizeDelta);
                     }
                 } else {
-                    if (i < itemsFromDisplayEndToOffsetEnd) {
+                    if (isRowEnd && i < itemsFromDisplayEndToOffsetEnd) {
                         row.rightItemsWeight = Math.max(row.rightItemsWeight, componentSize);
                     }
                 }
 
-                if (isLastItemInRow || (!isLastItemInRow && isLastItem)) {
+                if (isRowEnd) {
                     if (!isPrecollection) {
                         deltaFromStartCreation += row.deltaFromStartCreation;
                         leftSizeOfAddedItems += row.leftSizeOfAddedItems;
@@ -861,7 +876,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 const yy = y, currentTotalSize = totalSize, viewportSize = isVertical ? height : width,
                     normalizedTotalSize = totalSize + viewportSize;
                 row = {
+                    startItemIndex: 0,
+                    endItemIndex: 0,
                     size: 0,
+                    snapshotSize: 0,
                     deltaFromStartCreation: 0,
                     leftSizeOfAddedItems: 0,
                     leftSizeOfUpdatedItems: 0,
