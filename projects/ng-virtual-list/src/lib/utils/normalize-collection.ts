@@ -12,7 +12,6 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
         const normalizedItems: IVirtualListCollection<any | null> = [];
         let ci = -1, emptyId = Number.MIN_SAFE_INTEGER, offset = 0;
         for (let i = 0, l = items.length; i < l; i++) {
-            const dummyId = `${SERVICE_PROP_DUMMY_ID}-${i}`;
             const ii = i + offset, item = items[i], id = item[trackBy] ?? null, config = id !== null ? itemConfigMap[id] : null,
                 fullSize = !!config ? ((!!config.sticky && config.sticky > 0) || (config.fullSize === true)) : false;
 
@@ -24,7 +23,8 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
 
             if (fullSize && ii > 0 && ci !== 0) {
                 for (let j = ci; j < divides; j++) {
-                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED, type: [SERVICE_TYPE_DUMMY] });
+                    const dummyId = `${SERVICE_PROP_DUMMY_ID}-${i},${j}`;
+                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED, type: SERVICE_TYPE_DUMMY });
                     emptyId++;
                     offset++;
                 }
@@ -32,7 +32,8 @@ export const normalizeCollection = (items: IVirtualListCollection, itemConfigMap
             normalizedItems.push(item);
             if (fullSize && (i < (l - 1))) {
                 for (let j = 1; j < divides; j++) {
-                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED, type: [SERVICE_TYPE_DUMMY] });
+                    const dummyId = `${SERVICE_PROP_DUMMY_ID}-${i},${j}`;
+                    normalizedItems.push({ [trackBy]: dummyId, [SERVICE_PROP_DUMMY]: SERVICE_PROP_DUMMY_ENABLED, type: SERVICE_TYPE_DUMMY });
                     emptyId++;
                     offset++;
                 }

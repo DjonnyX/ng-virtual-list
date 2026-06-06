@@ -1966,7 +1966,7 @@ export class NgVirtualListComponent implements OnDestroy {
       debounceTime(0),
       switchMap(([, prerenderContainer, dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
         if (!!dynamicSize && !snapScrollToStart && !!snapScrollToEnd && !!waitForPreparation) {
-          return $items.pipe(
+          return $actualItems.pipe(
             takeUntilDestroyed(this._destroyRef),
             distinctUntilChanged((p, c) => {
               const pLength = p?.length ?? 0, cLength = c?.length ?? 0;
@@ -2058,7 +2058,7 @@ export class NgVirtualListComponent implements OnDestroy {
           );
         } else {
           prerenderContainer!.off();
-          return $items.pipe(
+          return $actualItems.pipe(
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
               if (!items || items.length === 0) {
@@ -2415,7 +2415,9 @@ export class NgVirtualListComponent implements OnDestroy {
           actualItems.push(item);
         }
 
-        this._actualItems.set(normalizeCollection(actualItems, itemConfigMap, trackBy, divides));
+        const normalizedCollection = normalizeCollection(actualItems, itemConfigMap, trackBy, divides);
+
+        this._actualItems.set(normalizedCollection);
       }),
     ).subscribe();
 
