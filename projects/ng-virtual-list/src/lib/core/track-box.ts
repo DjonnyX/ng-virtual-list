@@ -647,8 +647,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     sticky = itemConfigMap?.[id]?.sticky ?? 0,
                     isNewRow = i % divides === 0,
                     isLastItemInRow = ii % divides === 0,
-                    isLastItem = i === li,
-                    isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
+                    isLastItem = i === li;
                 items.push(isPrecollection ? { ...collectionItem, [serviceIdProp]: `_${idPrefix}-${id}_` } : collectionItem);
                 if (isNewRow || row === null) {
                     row = {
@@ -667,7 +666,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 let componentSize = 0, componentSizeDelta = 0, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
                 if (map.has(id)) {
                     const cache = map.get(id);
-                    componentSize = isDummy ? 0 : (cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize);
+                    componentSize = cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize;
                     row.size = Math.max(row.size, componentSize);
                     itemDisplayMethod = cache?.method ?? ItemDisplayMethods.UPDATE;
                     const isItemNew = this._newItems.indexOf(id) > -1 || (this._isLazy && isStart && !this._isReseted);
@@ -697,6 +696,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             break;
                         }
                     }
+                } else {
+                    componentSize = typicalItemSize;
+                    row.size = Math.max(row.size, componentSize);
+                    componentSizeDelta = 0;
                 }
 
                 if (deletedItemsMap.hasOwnProperty(i)) {
@@ -1384,7 +1387,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides),
                     id = collectionItem[trackBy],
                     cache = this.get(id)!,
-                    size = isDummy ? 0 : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
+                    size = isDummy ? typicalItemSize : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
                     divSize = (isVertical ? normalizedItemWidth : normalizedItemHeight) / divides;
 
                 if (i % divides === 0) {
@@ -1399,106 +1402,104 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     ci++;
                 }
 
-                if (!isDummy) {
-                    if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
-                        const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
-                            sticky = itemConfigMap[id]?.sticky ?? 0,
-                            fullSize = itemConfigMap[id]?.fullSize ?? false,
-                            selectable = itemConfigMap[id]?.selectable ?? true,
-                            collapsable = itemConfigMap[id]?.collapsable ?? false,
-                            snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
-                            absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
-                            absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
-                            absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                            x = isVertical ? divSize * ((sticky || fullSize) ? 0 : ci) : pos,
-                            y = isVertical ? pos : divSize * ((sticky || fullSize) ? 0 : ci),
-                            measures: IRenderVirtualListItemMeasures = {
-                                x,
-                                y,
-                                transformedX: x,
-                                transformedY: y,
-                                z: 0,
-                                rotationX: 0,
-                                rotationY: 0,
-                                rotationZ: 0,
-                                scaleX: 1,
-                                scaleY: 1,
-                                scaleZ: 1,
-                                size,
-                                row,
-                                position: pos,
-                                boundsSize,
-                                scrollSize,
-                                absoluteStartPosition,
-                                absoluteStartPositionPercent,
-                                absoluteEndPosition,
-                                absoluteEndPositionPercent,
-                                width: isVertical ? ((sticky || fullSize) ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
-                                height: isVertical ? size : ((sticky || fullSize) ? normalizedItemHeight : (normalizedItemHeight / divides)),
-                                minWidth: minItemSize,
-                                minHeight: minItemSize,
-                                maxWidth: maxItemSize,
-                                maxHeight: maxItemSize,
-                                scrollDirection,
-                                delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
-                            }, config: IRenderVirtualListItemConfig = {
-                                isFirst: i === layoutIndexOffset,
-                                isLast: i === li,
-                                new: (cache satisfies Cache)?.[IS_NEW] === true,
-                                odd: isOdd,
-                                even: !isOdd,
-                                isVertical,
-                                collapsable,
-                                selectable,
-                                sticky: sticky,
-                                snap: stickyEnabled,
-                                snapped: false,
-                                snappedOut: false,
-                                dynamic: dynamicSize,
-                                isSnappingMethodAdvanced,
-                                layoutOffset,
-                                layoutIndexOffset,
-                                totalItems: items.length,
-                                snapToItem,
-                                snapToItemAlign,
-                                tabIndex: i - layoutIndexOffset,
-                                isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
-                                divides,
-                                opacity: 1,
-                                zIndex: Z_INDEX_0,
-                                fullSize,
-                            };
-
-                        if (snapped) {
-                            config.zIndex = Z_INDEX_2;
-                        }
-
-                        const itemData: I = collectionItem;
-
-                        const item: IRenderVirtualListItem = {
-                            index: i, id, measures, data: itemData, previouseData: i > 0 ? items[i - 1] : null,
-                            nextData: i < totalLength ? items[i + 1] : null, config,
+                if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
+                    const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
+                        sticky = itemConfigMap[id]?.sticky ?? 0,
+                        fullSize = itemConfigMap[id]?.fullSize ?? false,
+                        selectable = itemConfigMap[id]?.selectable ?? true,
+                        collapsable = itemConfigMap[id]?.collapsable ?? false,
+                        snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
+                        absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
+                        absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
+                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                        x = isVertical ? divSize * ((sticky || fullSize) ? 0 : ci) : pos,
+                        y = isVertical ? pos : divSize * ((sticky || fullSize) ? 0 : ci),
+                        measures: IRenderVirtualListItemMeasures = {
+                            x,
+                            y,
+                            transformedX: x,
+                            transformedY: y,
+                            z: 0,
+                            rotationX: 0,
+                            rotationY: 0,
+                            rotationZ: 0,
+                            scaleX: 1,
+                            scaleY: 1,
+                            scaleZ: 1,
+                            size,
+                            row,
+                            position: pos,
+                            boundsSize,
+                            scrollSize,
+                            absoluteStartPosition,
+                            absoluteStartPositionPercent,
+                            absoluteEndPosition,
+                            absoluteEndPositionPercent,
+                            width: isVertical ? ((sticky || fullSize) ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
+                            height: isVertical ? size : ((sticky || fullSize) ? normalizedItemHeight : (normalizedItemHeight / divides)),
+                            minWidth: minItemSize,
+                            minHeight: minItemSize,
+                            maxWidth: maxItemSize,
+                            maxHeight: maxItemSize,
+                            scrollDirection,
+                            delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
+                        }, config: IRenderVirtualListItemConfig = {
+                            isFirst: i === layoutIndexOffset,
+                            isLast: i === li,
+                            new: (cache satisfies Cache)?.[IS_NEW] === true,
+                            odd: isOdd,
+                            even: !isOdd,
+                            isVertical,
+                            collapsable,
+                            selectable,
+                            sticky: sticky,
+                            snap: stickyEnabled,
+                            snapped: false,
+                            snappedOut: false,
+                            dynamic: dynamicSize,
+                            isSnappingMethodAdvanced,
+                            layoutOffset,
+                            layoutIndexOffset,
+                            totalItems: items.length,
+                            snapToItem,
+                            snapToItemAlign,
+                            tabIndex: i - layoutIndexOffset,
+                            isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
+                            divides,
+                            opacity: 1,
+                            zIndex: Z_INDEX_0,
+                            fullSize,
                         };
-                        if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + this._scrollStartOffset + size + stickyItemSize)) {
-                            item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
-                            item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
-                            nextSticky = item;
-                            nextSticky.config.snapped = snapped;
-                            nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
-                            nextSticky.config.zIndex = Z_INDEX_3;
-                        }
-                        if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
-                            (pos >= actualEndSnippedPosition - size - endStickyItemSize)) {
-                            item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
-                            item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
-                            nextEndSticky = item;
-                            nextEndSticky.config.zIndex = Z_INDEX_3;
-                            nextEndSticky.config.snapped = snapped;
-                            nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
-                        }
 
-                        displayItems.push(item);
+                    if (snapped) {
+                        config.zIndex = Z_INDEX_2;
                     }
+
+                    const itemData: I = collectionItem;
+
+                    const item: IRenderVirtualListItem = {
+                        index: i, id, measures, data: itemData, previouseData: i > 0 ? items[i - 1] : null,
+                        nextData: i < totalLength ? items[i + 1] : null, config,
+                    };
+                    if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + this._scrollStartOffset + size + stickyItemSize)) {
+                        item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
+                        item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
+                        nextSticky = item;
+                        nextSticky.config.snapped = snapped;
+                        nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
+                        nextSticky.config.zIndex = Z_INDEX_3;
+                    }
+                    if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
+                        (pos >= actualEndSnippedPosition - size - endStickyItemSize)) {
+                        item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
+                        item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
+                        nextEndSticky = item;
+                        nextEndSticky.config.zIndex = Z_INDEX_3;
+                        nextEndSticky.config.snapped = snapped;
+                        nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
+                    }
+
+                    displayItems.push(item);
                 }
 
                 renderItems--;

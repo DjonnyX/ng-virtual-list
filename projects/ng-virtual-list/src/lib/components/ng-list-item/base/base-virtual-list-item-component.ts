@@ -203,6 +203,12 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
       };
     });
 
+    if (this._service.isVertical) {
+      this._elementRef.nativeElement.style.height = `${this._service.itemSize}px`;
+    } else {
+      this._elementRef.nativeElement.style.width = `${this._service.itemSize}px`;
+    }
+
     this.hide();
   }
 
@@ -310,9 +316,9 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     const el = this._item()?.nativeElement;
     if (!!el) {
       const width = el.offsetWidth, height = el.offsetHeight;
-      return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
+      return { width, height, };
     }
-    return { width: 1, height: 1 };
+    return { width: 0, height: 0 };
   }
 
   show() {
