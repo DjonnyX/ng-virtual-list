@@ -166,6 +166,9 @@ export class NgVirtualListComponent implements OnDestroy {
   private _$show = new BehaviorSubject<boolean>(false);
   readonly $show = this._$show.asObservable();
 
+  private _$initialized = new BehaviorSubject<boolean>(false);
+  readonly $initialized = this._$initialized.asObservable();
+
   private _scrollbarThickness = {
     transform: (v: number) => {
       const valid = validateInt(v);
@@ -1523,6 +1526,18 @@ export class NgVirtualListComponent implements OnDestroy {
       ? 0 : NgVirtualListComponent.__nextId + 1;
     this._id = NgVirtualListComponent.__nextId;
 
+    const _$created = new BehaviorSubject<boolean>(false),
+      $created = _$created.asObservable();
+
+    combineLatest([$created, this.$show]).pipe(
+      takeUntilDestroyed(),
+      filter(([created, shown]) => created && shown),
+      debounceTime(1),
+      tap(v => {
+        this._$initialized.next(true);
+      }),
+    ).subscribe();
+
     this._service.initialize(this._id, this._trackBox);
 
     this._service.animationParams = this.animationParams();
@@ -2640,6 +2655,10 @@ export class NgVirtualListComponent implements OnDestroy {
           this.tracking();
 
           this.snappingHandler();
+
+          if (!_$created.getValue()) {
+            _$created.next(true);
+          }
 
           const delta = this._trackBox.delta,
             scrollPositionAfterUpdate = actualScrollSize + delta,
