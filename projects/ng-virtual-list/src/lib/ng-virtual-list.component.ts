@@ -1712,7 +1712,11 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
-    const $actualItemSize = toObservable(this._actualItemSize);
+    const $actualItemSize = toObservable(this._actualItemSize),
+      $actualItems = toObservable(this._actualItems).pipe(
+        takeUntilDestroyed(),
+        distinctUntilChanged(),
+      );
 
     this._scroller = computed(() => {
       return this._scrollerComponent()?.scrollViewport();
@@ -1959,14 +1963,15 @@ export class NgVirtualListComponent implements OnDestroy {
       $waitForPreparation = toObservable(this.waitForPreparation),
       $items = toObservable(this.items);
 
-    combineLatest([$viewInit, $prerenderContainer, $dynamicSize, $snapScrollToStart, $snapScrollToEnd, $waitForPreparation]).pipe(
+    combineLatest([$viewInit, $prerenderContainer, $divides, $dynamicSize, $snapScrollToStart, $snapScrollToEnd, $waitForPreparation]).pipe(
       takeUntilDestroyed(this._destroyRef),
       distinctUntilChanged(),
       filter(([init, prerenderContainer]) => !!init && !!prerenderContainer),
       debounceTime(0),
-      switchMap(([, prerenderContainer, dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
+      switchMap(([, prerenderContainer, divides, dynamicSize, snapScrollToStart, snapScrollToEnd, waitForPreparation]) => {
         if (!!dynamicSize && !snapScrollToStart && !!snapScrollToEnd && !!waitForPreparation) {
-          return $actualItems.pipe(
+          const $collection = (divides > 1 ? $actualItems : $items);
+          return $collection.pipe(
             takeUntilDestroyed(this._destroyRef),
             distinctUntilChanged((p, c) => {
               const pLength = p?.length ?? 0, cLength = c?.length ?? 0;
@@ -2058,7 +2063,8 @@ export class NgVirtualListComponent implements OnDestroy {
           );
         } else {
           prerenderContainer!.off();
-          return $actualItems.pipe(
+          const $collection = (divides > 1 ? $actualItems : $items);
+          return $collection.pipe(
             takeUntilDestroyed(this._destroyRef),
             tap(items => {
               if (!items || items.length === 0) {
@@ -2291,11 +2297,6 @@ export class NgVirtualListComponent implements OnDestroy {
       $collapsedItemIds = toObservable(this._collapsedItemIds).pipe(
         distinctUntilChanged(),
         map(v => Array.isArray(v) ? v : []),
-      ),
-      $actualItems = toObservable(this._actualItems).pipe(
-        takeUntilDestroyed(),
-        distinctUntilChanged(),
-        debounceTime(0),
       ),
       $itemTransform = toObservable(this.itemTransform),
       $screenReaderMessage = toObservable(this.screenReaderMessage),
