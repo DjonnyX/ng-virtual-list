@@ -20,7 +20,7 @@
 ![npm downloads](https://img.shields.io/npm/dm/ng-virtual-list)
 ![npm total downloads](https://img.shields.io/npm/dt/ng-virtual-list)
 
-[Documentation](https://ng-virtual-list-x12.eugene-grebennikov.pro/)
+[Documentation](https://ng-virtual-list.eugene-grebennikov.pro/)
 
 <br/>
 
