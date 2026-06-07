@@ -22,7 +22,7 @@ import {
     DEFAULT_BUFFER_EXTREMUM_THRESHOLD, DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH, DEFAULT_RESET_BUFFER_SIZE_TIMEOUT, END_COLLECTION_PREFIX_ID,
     IS_NEW, START_COLLECTION_PREFIX_ID,
 } from "./const";
-import { Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, Z_INDEX_NONE, } from '../const';
+import { Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, } from '../const';
 import {
     IGetItemPositionOptions, IGetMetricsReturns, IItem, IMetrics, IRecalculateMetricsOptions, IUpdateCollectionOptions,
     IUpdateCollectionReturns,
@@ -1631,9 +1631,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     isLast = comp.instance.item?.config?.isLast ?? false,
                     { width, height } = comp.instance.getBounds(),
                     pos = position;
-                if (isVertical && comp.instance.zIndex !== Z_INDEX_NONE && (pos >= y && pos < y + height)) {
+                if (isVertical && (pos >= y && pos < y + height)) {
                     return { id, x, y, width, height, isFirst, isLast };
-                } else if (!isVertical && comp.instance.zIndex !== Z_INDEX_NONE && (pos >= x && pos < x + width)) {
+                } else if (!isVertical && (pos >= x && pos < x + width)) {
                     return { id, x, y, width, height, isFirst, isLast };
                 }
                 if (isFirst) {
@@ -1651,7 +1651,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
         return null;
     }
-
     private _debouncedIsScrollStartOff = debounce(() => {
         this._isScrollStart = false;
     });
