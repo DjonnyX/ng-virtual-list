@@ -19,6 +19,7 @@ import { DisposableComponent } from '../../../../projects/ng-virtual-list/src/li
     selector: 'custom-scrollbar',
     templateUrl: './custom-scrollbar.component.html',
     styleUrls: ['./custom-scrollbar.component.scss'],
+    standalone: false,
 })
 export class CustomScrollbarComponent extends DisposableComponent {
     @ViewChild('substrate', { read: XSubstrateComponent })

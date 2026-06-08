@@ -1,4 +1,5 @@
-import { Animator, ANIMATOR_MIN_TIMESTAMP } from "./animator";
+import { Animator } from "./animator";
+import { ANIMATOR_MIN_TIMESTAMP } from './const';
 import { easeLinear, easeOutQuad } from './ease';
 import { Easing } from './types';
 
