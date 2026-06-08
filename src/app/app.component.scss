@@ -239,20 +239,12 @@ input {
 }
 
 .list-divided {
-    &::part(item-odd item-row-odd) {
-        background-color: #494058;
+    &::part(item-row-odd) {
+        background-color: #443b53 !important;
     }
 
-    &::part(item-odd item-row-even) {
-        background-color: #443b53;
-    }
-
-    &::part(item-even item-row-odd) {
-        background-color: #443b53;
-    }
-
-    &::part(item-even item-row-even) {
-        background-color: #494058;
+    &::part(item-row-even) {
+        background-color: #494058 !important;
     }
 }
 
