@@ -20,10 +20,10 @@ import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/n
 import { Direction } from "../../../../types";
 
 /**
- * PrerenderList.
+ * NgPrerenderList
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/prerender-container/components/prerender-list/prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

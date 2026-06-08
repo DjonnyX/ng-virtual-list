@@ -1540,7 +1540,13 @@ export class NgVirtualListComponent implements OnDestroy {
 
     this._service.initialize(this._id, this._trackBox);
 
-    this._service.animationParams = this.animationParams();
+    const $animationParams = toObservable(this.animationParams);
+    $animationParams.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this._service.animationParams = v;
+      }),
+    ).subscribe();
 
     this._isInfinity = computed(() => {
       const mode = this.spreadingMode();

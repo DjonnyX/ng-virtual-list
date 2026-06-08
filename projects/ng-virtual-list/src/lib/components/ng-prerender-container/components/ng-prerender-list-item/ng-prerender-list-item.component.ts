@@ -7,10 +7,10 @@ import {
 import { ID, POSITION, POSITION_ZERO } from '../../../ng-list-item/const';
 
 /**
- * Virtual list component.
+ * NgPrerenderVirtualListItemComponent
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list-item.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list-item/ng-prerender-list-item.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
