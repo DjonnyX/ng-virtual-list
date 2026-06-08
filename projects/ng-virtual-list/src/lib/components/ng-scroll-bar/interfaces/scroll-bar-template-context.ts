@@ -21,5 +21,5 @@ export interface IScrollBarTemplateContext {
     /**
      * Additional options for the scrollbar.
      */
-    params: { [propName: string]: any };
+    params: { [propName: string]: any } | null;
 }

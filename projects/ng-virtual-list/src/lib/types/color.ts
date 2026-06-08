@@ -1,7 +1,5 @@
 /**
- * Color
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/types/color.ts
- * @author Evgenii Alexandrovich Grebennikov
- * @email djonnyx@gmail.com
+ * @license Copyright (c) 2026 Evgenii Alexandrovich Grebennikov (djonnyx@gmail.com tg: http://t.me/djonnyx).
  */
-export type Color = `#${string}` | `rgb(${number},${number},${number})` | `rgba(${number},${number},${number},${number})`;
+export type Color = `#${string}` | `rgb(${number},${number},${number})` | `rgba(${number},${number},${number},${number})`
+    | `rgba(#${string},${number})`;

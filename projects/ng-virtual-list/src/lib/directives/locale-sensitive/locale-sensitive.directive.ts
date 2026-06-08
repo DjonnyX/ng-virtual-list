@@ -1,8 +1,9 @@
 import { Directive, ElementRef, Input, OnDestroy } from '@angular/core';
 import { BehaviorSubject, combineLatest, Subject, takeUntil, tap } from 'rxjs';
-import { TextDirection, TextDirections } from '../../enums';
+import { TextDirections } from '../../enums';
 import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
 import { isDirection } from '../../utils/is-direction';
+import { TextDirection } from '../../types';
 
 const RIGHT = 'right',
   DIR = 'dir';
@@ -17,6 +18,7 @@ const RIGHT = 'right',
  */
 @Directive({
   selector: '[localeSensitive]',
+  standalone: false,
 })
 export class LocaleSensitiveDirective implements OnDestroy {
   protected _$unsubscribe = new Subject<void>();

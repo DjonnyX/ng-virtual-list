@@ -1,10 +1,11 @@
 <ng-container *ngIf="($data | async) as data">
-    <div itemClick [maxClickDistance]="$maxClickDistance | async" [part]="$part | async"
-        [attr.ngvl-index]="data.config.tabIndex || -1" tabindex="-1" class="ngvl-item__container"
-        [ngClass]="$classes | async" (onClick)="onClickHandler()">
-        <ng-container *ngIf="itemRenderer">
-            <ng-container [ngTemplateOutlet]="itemRenderer"
-                [ngTemplateOutletContext]="($templateContext | async)||''"></ng-container>
-        </ng-container>
+    <div #item class="ngvl-item" [ngClass]="$classes | async" [part]="$part | async" [attr.ngvl-index]="$index | async"
+        [attr.ngvl-visibility]="visibility" tabindex="-1">
+        <div *ngIf="_blendColor" class="ngvl-item__blend-color" [style.--blend-color]="_blendColor"></div>
+        <div #container virtualClick [part]="$fxPart | async" [maxClickDistance]="$maxClickDistance | async"
+            class="ngvl-item__container" [ngClass]="$classes | async" (onVirtualClick)="onClickHandler()">
+            <ng-container [ngTemplateOutlet]="itemRenderer ?? null"
+                [ngTemplateOutletContext]="$templateContext | async"></ng-container>
+        </div>
     </div>
 </ng-container>

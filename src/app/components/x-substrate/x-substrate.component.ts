@@ -27,6 +27,7 @@ import { DisposableComponent } from 'projects/ng-virtual-list/src/lib/utils/disp
   selector: 'x-substrate',
   templateUrl: './x-substrate.component.html',
   styleUrls: ['./x-substrate.component.scss'],
+  standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.Emulated,
 })

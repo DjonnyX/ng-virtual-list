@@ -1,4 +1,5 @@
-<div #scrollViewport class="track" part="scrollbar-track" [ngStyle]="$styles | async" [ngClass]="($classes | async)!">
+<div #scrollViewport class="track" part="scrollbar-track" [ngStyle]="$styles | async"
+    [ngClass]="{grabbing: $grabbing | async}">
     <div #scrollContent class="thumb" part="scrollbar-thumb" [class.horizontal]="($isVertical | async)! == false"
         (pointerdown)="click($event)">
         <ng-container [ngTemplateOutlet]="($thumbRenderer | async)!"

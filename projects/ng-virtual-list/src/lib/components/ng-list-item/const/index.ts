@@ -1,7 +1,9 @@
+import { matrix3d } from "../utils";
 import { ITemplateContext } from "../interfaces";
 
 export const ID = 'id',
-    TRANSLATE_3D_HIDDEN = 'translate3d(-1000px,-1000px,0)',
+    NGVL_VISIBILITY = 'ngvl-visibility',
+    MATRIX_3D_HIDDEN = matrix3d(-1000, -1000, 0, 1, 1, 1, 0, 0, 0),
     ATTR_AREA_SELECTED = 'area-selected',
     POSITION = 'position',
     POSITION_ZERO = '0',
@@ -17,7 +19,6 @@ export const ID = 'id',
     CLASS_NAME_SNAPPED = 'snapped',
     CLASS_NAME_SNAPPED_OUT = 'snapped-out',
     CLASS_NAME_FOCUS = 'focus';
-
 
     export const DEFAULT_TEMPLATE_CONTEXT: ITemplateContext = {
         data: undefined,
@@ -42,9 +43,18 @@ export const ID = 'id',
             isSnappingMethodAdvanced: false,
             tabIndex: 0,
             zIndex: '0',
+            layoutOffset: 0,
+            layoutIndexOffset: 0,
+            opacity: 0,
+            divides: 0,
+            snapToItem: false,
+            snapToItemAlign: "center",
+            isFirst: false,
+            isLast: false,
+            fullSize: false,
+            totalItems: 0,
         },
         reseted: false,
         index: -1,
         api: null,
     };
-    
