@@ -671,7 +671,7 @@ Properties
 
 <br/>
 
-### [VirtualClickModule](https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.module.ts)
+### [VirtualClickModule](https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.module.ts)
 
 ### Virtual click directive
 
