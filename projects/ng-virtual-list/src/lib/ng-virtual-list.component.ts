@@ -4382,7 +4382,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   }
 
   override ngOnDestroy(): void {
-    this.ngOnDestroy();
+    super.ngOnDestroy();
     this.dispose();
   }
 

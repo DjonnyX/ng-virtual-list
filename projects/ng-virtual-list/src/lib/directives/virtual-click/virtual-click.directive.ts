@@ -23,11 +23,11 @@ export class VirtualClickDirective implements OnDestroy {
 
     @Input('maxClickDistance')
     set maxDistance(v: number | null) {
-        this._maxDistance = v ? Number(v) : DEFAULT_MAX_DISTANCE;
+        this._maxDistance = (v !== null || v !== undefined) ? Number(v) : DEFAULT_MAX_DISTANCE;
     }
 
     @Output()
-    onClick = new EventEmitter<PointerEvent | TouchEvent>();
+    onVirtualClick = new EventEmitter<PointerEvent | TouchEvent>();
 
     constructor(private _elementRef: ElementRef) {
         const $pointerPressed = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown'),
@@ -72,7 +72,7 @@ export class VirtualClickDirective implements OnDestroy {
                     takeUntil(this._$unsubscribe),
                     tap(e => {
                         if (e) {
-                            this.onClick.emit(e);
+                            this.onVirtualClick.emit(e);
                         }
                     }),
                 );
