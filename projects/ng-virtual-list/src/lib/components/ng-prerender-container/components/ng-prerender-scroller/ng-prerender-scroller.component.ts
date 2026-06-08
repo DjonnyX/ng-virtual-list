@@ -10,10 +10,10 @@ import { ScrollBox } from '../../../ng-scroller/utils';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../../../ng-scroll-view/const';
 
 /**
- * NgPrerenderScrollerComponent.
+ * NgPrerenderScrollerComponent
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/ng-prerender-scroller/ng-prerender-scroller.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-scroller/ng-prerender-scroller.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

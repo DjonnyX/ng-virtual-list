@@ -20,10 +20,10 @@ import { Direction } from "../../../../types";
 import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
- * NgPrerenderList.
+ * NgPrerenderList
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
