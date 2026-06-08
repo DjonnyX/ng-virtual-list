@@ -1,22 +1,27 @@
-import { ChangeDetectorRef, ElementRef, inject, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, TemplateRef, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, map, takeUntil, tap } from 'rxjs';
 import { ISize } from '../../../interfaces';
 import { IRenderVirtualListItem } from '../../../models/render-item.model';
 import { IDisplayObjectConfig, IDisplayObjectMeasures } from '../../../models';
 import {
   DEFAULT_ZINDEX, DISPLAY_BLOCK, DISPLAY_NONE, HIDDEN_ZINDEX, PART_DEFAULT_ITEM, PART_ITEM_COLLAPSED, PART_ITEM_EVEN,
-  PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, POSITION_ABSOLUTE, PX, SIZE_100_PERSENT,
-  SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE,
+  PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
+  PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
+  PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, PART_ITEM_ROW_ODD, PART_ITEM_ROW_EVEN,
+  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
-  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, DEFAULT_TEMPLATE_CONTEXT, ID, ITEM_ID, POSITION, POSITION_ZERO, TRANSLATE_3D_HIDDEN,
+  CLASS_NAME_FOCUS, CLASS_NAME_SNAPPED, CLASS_NAME_SNAPPED_OUT, DEFAULT_TEMPLATE_CONTEXT, ID, ITEM_ID, POSITION, POSITION_ZERO,
 } from '../const';
-import { TextDirection, TextDirections } from '../../../enums';
+import { TextDirections } from '../../../enums';
+import { TextDirection } from '../../../types';
 import { NgVirtualListPublicService } from '../../../ng-virtual-list-public.service';
-import { BehaviorSubject, combineLatest, takeUntil, tap } from 'rxjs';
+import { createDisplayId, matrix3d } from '../utils';
 import { DisposableComponent } from '../../../utils/disposable-component';
 import { NgVirtualListService } from '../../../ng-virtual-list.service';
-import { createDisplayId } from '../utils';
+import { IBaseVirtualListItemComponent } from '../../../interfaces/base-virtual-list-item-component';
+import { Color } from '../../../types';
 
 /**
  * BaseVirtualListItemComponent
@@ -24,7 +29,19 @@ import { createDisplayId } from '../utils';
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export class BaseVirtualListItemComponent extends DisposableComponent {
+@Component({
+  selector: 'ng-base-virtual-list-item',
+  template: '',
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BaseVirtualListItemComponent extends DisposableComponent implements IBaseVirtualListItemComponent {
+  @ViewChild('item')
+  protected _item: ElementRef<HTMLDivElement> | undefined;
+
+  @ViewChild('container')
+  protected _container: ElementRef<HTMLDivElement> | undefined;
+
   private _apiService = inject(NgVirtualListPublicService);
 
   protected readonly _service = inject(NgVirtualListService);
@@ -47,6 +64,14 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
   }
 
   protected _isSelected: boolean = false;
+  set isSelected(v: boolean) {
+    if (this._isSelected !== v) {
+      this._isSelected = v;
+
+      this.update();
+    }
+  }
+  get isSelected() { return this._isSelected; }
 
   protected _isCollapsed: boolean = false;
 
@@ -61,6 +86,9 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
 
   protected _$part = new BehaviorSubject<string>(PART_DEFAULT_ITEM);
   $part = this._$part.asObservable();
+
+  protected _$fxPart = new BehaviorSubject<string>(PART_DEFAULT_ITEM_FX);
+  $fxPart = this._$fxPart.asObservable();
 
   protected _data: IRenderVirtualListItem | null = null;
   get data() { return this._data; }
@@ -96,6 +124,8 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
 
   public regular: boolean = false;
 
+  protected _blendColor: Color | null = null;
+
   protected _scrollBarSize: number = 0;
 
   protected _langTextDir: TextDirection = TextDirections.LTR;
@@ -117,6 +147,14 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
 
   get itemId() {
     return this._data?.id;
+  }
+
+  get zIndex() {
+    return this._elementRef.nativeElement.style.zIndex;
+  }
+
+  get visibility() {
+    return this._elementRef.nativeElement.style.visibility;
   }
 
   protected itemRenderer: TemplateRef<any> | undefined;
@@ -142,18 +180,39 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
 
+    const $part = this.$part;
+    $part.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(part => {
+        this._elementRef.nativeElement.setAttribute('part', part);
+      }),
+    ).subscribe();
+
+    const $focus = this._service.$focusedId.pipe(
+      takeUntil(this._$unsubscribe),
+      map(id => id === this.itemId),
+    );
+
+    $focus.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(() => {
+        this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
+      }),
+    ).subscribe();
+
     const $data = this.$data,
       $config = this.$config,
-      $measures = this.$measures,
-      $focused = this.$focused;
+      $measures = this.$measures;
 
-    combineLatest([$data, $focused]).pipe(
+    combineLatest([$data, $focus]).pipe(
       takeUntil(this._$unsubscribe),
-      tap(([data, focused]) => {
-        this._$classes.next({
-          [CLASS_NAME_SNAPPED]: data?.config?.snapped ?? false, [CLASS_NAME_SNAPPED_OUT]: data?.config?.snappedOut ?? false,
-          [CLASS_NAME_FOCUS]: focused,
-        });
+      tap(([data, focus]) => {
+        const f = focus ?? false,
+          classes = {
+            [CLASS_NAME_SNAPPED]: data?.config?.snapped ?? false, [CLASS_NAME_SNAPPED_OUT]: data?.config?.snappedOut ?? false,
+            [CLASS_NAME_FOCUS]: f,
+          };
+        this._$classes.next(classes);
       }),
     ).subscribe();
 
@@ -173,75 +232,137 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
         });
       }),
     ).subscribe();
+
+    if (this._service.isVertical) {
+      this._elementRef.nativeElement.style.height = `${this._service.itemSize}px`;
+    } else {
+      this._elementRef.nativeElement.style.width = `${this._service.itemSize}px`;
+    }
+
+    this.hide();
   }
 
   protected updateMeasures(v: IRenderVirtualListItem<any> | null) {
-    this._$measures.next(v?.measures ? { ...v.measures } : null)
+    this._$measures.next(v?.measures ? { ...v.measures } : null);
+
+    this._cdr.markForCheck();
   }
 
   protected updateConfig(v: IRenderVirtualListItem<any> | null) {
     this._$config.next({
       ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
     });
+
+    this._cdr.markForCheck();
   }
 
   protected update() {
-    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement;
-    if (data) {
+    const data = this._data, regular = this.regular, length = this._regularLength, el = this._elementRef.nativeElement,
+      itemElement = this._item?.nativeElement, containerElement = this._container?.nativeElement;
+    if (!!data && !!el && !!itemElement && !!containerElement) {
       el.setAttribute(ITEM_ID, `${data.id}`);
-      const styles = el.style;
-      styles.zIndex = data.config.zIndex;
-      styles.position = POSITION_ABSOLUTE;
-      if (data.config.isStub === true) {
+      const styles = el.style, itemElementStyles = itemElement.style;
+      if (this._service.zIndexWhenSelecting !== null && this._isSelected) {
+        styles.zIndex = this._service.zIndexWhenSelecting;
+      } else {
+        styles.zIndex = data.config.zIndex;
+      }
+      this._blendColor = data.config.blendColor ?? null;
+      if (!!containerElement && !!data.config.blendColor) {
+        containerElement.style.opacity = String(data.config.opacity);
+      }
+      if (!!data.config.filter) {
+        styles.filter = data.config.filter;
+      }
+      if (this.item?.config?.dynamic && data.config.isStub === true) {
         el.style.visibility = VISIBILITY_HIDDEN;
       }
       if (regular) {
         el.setAttribute(POSITION, POSITION_ZERO);
-        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) : data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
+        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ?
+          (this._langTextDir === TextDirections.RTL ? this._scrollBarSize : 0) :
+          data.measures.delta}${PX}, ${data.config.isVertical ? data.measures.delta : 0}${PX}, ${POSITION_ZERO})`;
       } else {
         el.setAttribute(POSITION, `${data.config.isVertical ? data.measures.y : data.measures.x}`);
-        styles.transform = `${TRANSLATE_3D}(${data.config.isVertical ? 0 : data.measures.x}${PX}, ${data.config.isVertical ? data.measures.y : 0}${PX}, ${POSITION_ZERO})`;
+        styles.transform = matrix3d(data.measures.transformedX, data.measures.transformedY, data.measures.z, data.measures.scaleX, data.measures.scaleY,
+          data.measures.scaleZ, data.measures.rotationX, data.measures.rotationY, data.measures.rotationZ);
       }
-      styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : SIZE_100_PERSENT;
-      styles.width = data.config.isVertical ? regular ? length : SIZE_100_PERSENT : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      if (data.config.divides > 1) {
+        styles.height = data.config.isVertical ? `${data.measures.row.size}${PX}` : `${data.measures.height}${PX}`;
+        styles.width = data.config.isVertical ? `${data.measures.width}${PX}` : `${data.measures.row.size}${PX}`;
+        itemElementStyles.minWidth = styles.minWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.minWidth}${PX}`;
+        itemElementStyles.maxWidth = styles.maxWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.maxWidth}${PX}`;
+        itemElementStyles.minHeight = styles.minHeight = data.config.isVertical ? `${data.measures.minHeight}${PX}` : SIZE_AUTO;
+        itemElementStyles.maxHeight = styles.maxHeight = data.config.isVertical ? `${data.measures.maxHeight}${PX}` : SIZE_AUTO;
+
+        itemElementStyles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        itemElementStyles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+      } else {
+        styles.height = data.config.isVertical ? data.config.dynamic ? SIZE_AUTO : `${data.measures.height}${PX}` : regular ? length : `${data.measures.height}${PX}`;
+        styles.width = data.config.isVertical ? regular ? length : `${data.measures.width}${PX}` : data.config.dynamic ? SIZE_AUTO : `${data.measures.width}${PX}`;
+        styles.minWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.minWidth}${PX}`;
+        styles.maxWidth = data.config.isVertical ? SIZE_AUTO : `${data.measures.maxWidth}${PX}`;
+        styles.minHeight = data.config.isVertical ? `${data.measures.minHeight}${PX}` : SIZE_AUTO;
+        styles.maxHeight = data.config.isVertical ? `${data.measures.maxHeight}${PX}` : SIZE_AUTO;
+      }
     } else {
       el.removeAttribute(ID);
     }
+
+    this._cdr.markForCheck();
   }
 
   protected updatePartStr(v: IRenderVirtualListItem | null, isSelected: boolean, isCollapsed: boolean) {
-    let odd = false;
-    if (v?.index !== undefined) {
-      odd = v.index % 2 === 0;
-    }
+    const odd = v?.config.odd, rowOdd = v?.measures.row.odd;
 
-    let part = PART_DEFAULT_ITEM;
+    let part = PART_DEFAULT_ITEM, fxPart = PART_DEFAULT_ITEM_FX;
     part += odd ? PART_ITEM_ODD : PART_ITEM_EVEN;
+    part += rowOdd ? PART_ITEM_ROW_ODD : PART_ITEM_ROW_EVEN;
+    fxPart += odd ? PART_ITEM_FX_ODD : PART_ITEM_FX_EVEN;
+    fxPart += rowOdd ? PART_ITEM_ROW_FX_ODD : PART_ITEM_ROW_FX_EVEN;
     if (v ? v.config.snapped : false) {
       part += PART_ITEM_SNAPPED;
+      fxPart += PART_ITEM_FX_SNAPPED;
     }
     if (isSelected) {
       part += PART_ITEM_SELECTED;
+      fxPart += PART_ITEM_FX_SELECTED;
     }
     if (isCollapsed) {
       part += PART_ITEM_COLLAPSED;
+      fxPart += PART_ITEM_FX_COLLAPSED;
     }
     if (v ? v.config.new : false) {
       part += PART_ITEM_NEW;
+      fxPart += PART_ITEM_FX_NEW;
     }
-    if (this._$focused.getValue()) {
+    if (this.hasFocus()) {
       part += PART_ITEM_FOCUSED;
+      fxPart += PART_ITEM_FX_FOCUSED;
     }
     this._$part.next(part);
+    this._$fxPart.next(fxPart);
+
+    this._cdr.markForCheck();
+  }
+
+  protected hasFocus() {
+    return this._service.focusedId === this.itemId;
   }
 
   getBounds(): ISize {
-    const el: HTMLElement = this._elementRef.nativeElement,
-      { width, height } = el.getBoundingClientRect();
-    return { width: width > 0 ? width : 1, height: height > 0 ? height : 1, };
+    const el = this._item?.nativeElement;
+    if (!!el) {
+      const width = el.offsetWidth, height = el.offsetHeight;
+      return { width, height, };
+    }
+    return { width: 0, height: 0 };
   }
 
   show() {
+    if (!this.item?.config?.dynamic) {
+      return;
+    }
     const el = this._elementRef.nativeElement as HTMLElement,
       styles = el.style;
     styles.zIndex = this._data?.config?.zIndex ?? DEFAULT_ZINDEX;
@@ -263,10 +384,11 @@ export class BaseVirtualListItemComponent extends DisposableComponent {
   }
 
   hide() {
+    if (!this.item?.config?.dynamic) {
+      return;
+    }
     const el = this._elementRef.nativeElement,
       styles = el.style;
-    styles.position = POSITION_ABSOLUTE;
-    styles.transform = TRANSLATE_3D_HIDDEN;
     styles.zIndex = HIDDEN_ZINDEX;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {

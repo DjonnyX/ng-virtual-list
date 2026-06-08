@@ -3,11 +3,11 @@ import {
 } from "@angular/core";
 import { filter, Observable, of, switchMap, takeUntil } from "rxjs";
 import {
-    DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
+    DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
-import { Direction } from "../../enums";
+import { Direction } from "../../types";
 import { NgPrerenderList } from "./components/ng-prerender-list/ng-prerender-list.component";
 import { PrerenderCache } from "./types";
 import { DisposableComponent } from "../../utils/disposable-component";
@@ -27,6 +27,7 @@ import { DisposableComponent } from "../../utils/disposable-component";
     host: {
         'style': 'position: relative;'
     },
+    standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
@@ -38,7 +39,7 @@ export class NgPrerenderContainer extends DisposableComponent {
     enabled: boolean = false;
 
     @Input()
-    direction: Direction = DEFAULT_DIRECTION;
+    direction: Direction | any = DEFAULT_DIRECTION;
 
     @Input()
     isVertical: boolean = true;
@@ -65,6 +66,8 @@ export class NgPrerenderContainer extends DisposableComponent {
     trackBy: string = TRACK_BY_PROPERTY_NAME;
 
     @Input()
+    divides: number = DEFAULT_DIVIDES;
+
     itemRenderer!: TemplateRef<any>;
 
     $render!: Observable<PrerenderCache>;

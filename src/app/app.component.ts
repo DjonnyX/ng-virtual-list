@@ -1,17 +1,17 @@
 import { Component, ViewChild } from '@angular/core';
+import { delay, interval, tap } from 'rxjs';
 import {
   NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
   IScrollingSettings,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
-import { delay, interval, tap } from 'rxjs';
 import { GradientColor, RoundedCorner } from './components/interfaces';
 import { CustomScrollBarTheme } from './components/custom-scrollbar/interfaces/custom-scrollbar-theme';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   CUSTOM_SCROLLBAR_THEME: CustomScrollBarTheme = {
-    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    fill: ["rgba(101, 50, 147, 1)", "rgba(123, 50, 147, 1)"],
     hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
     pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
@@ -21,7 +21,7 @@ const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "r
     rippleEnabled: true,
   };
 
-const MAX_ITEMS = 10000;
+const MAX_ITEMS = 1000;
 
 interface ICollectionItem {
   id: Id;
@@ -174,14 +174,6 @@ const generateDynamicShortItems = (len: number, startWith: number = 0) => {
   standalone: false,
 })
 export class AppComponent {
-  @ViewChild('virtualList', { read: NgVirtualListComponent })
-  protected _listContainerRef!: NgVirtualListComponent;
-
-  @ViewChild('dynamicItemsList', { read: NgVirtualListComponent })
-  protected _dynamicItemsListContainerRef!: NgVirtualListComponent;
-
-  @ViewChild('dynamicList', { read: NgVirtualListComponent })
-  protected _dynamicListContainerRef!: NgVirtualListComponent;
   readonly logo = LOGO;
 
   scrollingSettings: IScrollingSettings = {
@@ -193,11 +185,25 @@ export class AppComponent {
     optimization: false,
   }
 
+  @ViewChild('virtualList', { read: NgVirtualListComponent })
+  protected _listContainerRef!: NgVirtualListComponent;
+
+  @ViewChild('dynamicItemsList', { read: NgVirtualListComponent })
+  protected _dynamicItemsListContainerRef!: NgVirtualListComponent;
+
+  @ViewChild('dl2List', { read: NgVirtualListComponent })
+  protected _dl2ListContainerRef!: NgVirtualListComponent;
+
+  @ViewChild('dynamicList', { read: NgVirtualListComponent })
+  protected _dynamicListContainerRef!: NgVirtualListComponent;
+
   customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
 
   items = ITEMS;
 
   items1 = generateItems(1000);
+
+  items2 = generateDynamicItems(1000, 0);
 
   dynamicItems = generateDynamicItems(20, 0);
 
@@ -235,11 +241,21 @@ export class AppComponent {
 
   dlItemId: Id = this._minDlId;
 
+  private _minDl2Id: Id = this.items2.length > 0 ? this.items2[0].id : 0;
+  get minDl2Id() { return this._minDl2Id; };
+
+  private _maxDl2Id: Id = this.items2.length > 0 ? this.items2[this.items2.length - 1].id : 0;
+  get maxDl2Id() { return this._maxDl2Id; };
+
+  dl2ItemId: Id = this._minDl2Id;
+
   itemsLength: number = 0;
 
   dynamicItemsLength: number = 0;
 
   dynamicShortItemsLength: number = 0;
+
+  motionBlurEnabled = false;
 
   constructor() {
     interval(1000).pipe(
@@ -298,6 +314,16 @@ export class AppComponent {
         this.dynamicShortItems = collection;
       }),
     ).subscribe();
+
+    const bp: Promise<EventTarget & { level: number, charging: boolean; }> | null = (navigator as any).getBattery?.() ?? null;
+    if (!!bp) {
+      bp.then(battery => {
+        battery.addEventListener('levelchange', () => {
+          this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+        });
+        this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+      });
+    }
   }
 
   onButtonScrollToIdClickHandler = (e: Event) => {
@@ -308,6 +334,18 @@ export class AppComponent {
         console.info(`scrollTo finished. id: ${id}`);
       }, {
         behavior: 'smooth',
+      });
+    }
+  }
+
+  onButtonScrollDL2ToIdClickHandler = (e: Event) => {
+    const list = this._dl2ListContainerRef, id = this.dl2ItemId;
+    if (list && id !== null) {
+      list.scrollTo(id, () => {
+        list.focus(id);
+        console.info(`scrollTo finished. id: ${id}`);
+      }, {
+        behavior: 'instant',
       });
     }
   }

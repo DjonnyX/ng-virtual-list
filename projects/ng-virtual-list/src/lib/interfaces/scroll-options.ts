@@ -21,4 +21,8 @@ export interface IScrollOptions {
      * Determines whether the element will have focus after scrolling is complete. Default value is true.
      */
     focused?: boolean;
+    /**
+     * Delay.
+     */
+    delay?: number;
 }
