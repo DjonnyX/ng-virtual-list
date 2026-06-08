@@ -239,18 +239,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
   get scrollbarMinSize() { return this._$scrollbarMinSize.getValue() as number; }
 
-  private _scrollbarThumbRenderer = {
-    transform: (v: TemplateRef<any> | null) => {
-      const valid = validateObject(v, true, true);
-
-      if (!valid) {
-        console.error('The "scrollbarThumbRenderer" parameter must be of type `object`.');
-        return null;
-      }
-      return v;
-    },
-  } as any;
-
   private _$scrollbarThumbRenderer = new BehaviorSubject<TemplateRef<any> | null>(null);
   protected readonly $scrollbarThumbRenderer = this._$scrollbarThumbRenderer.asObservable();
 

@@ -409,6 +409,14 @@ export class NgScrollBarComponent extends NgScrollView {
         }
       }),
     ).subscribe();
+
+    const $renderer = this.$renderer, $defaultRenderer = of(this._defaultRenderer);
+    combineLatest([$renderer, $defaultRenderer]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([renderer, defaultRenderer]) => {
+        this._$thumbRenderer.next(renderer || defaultRenderer || null);
+      }),
+    ).subscribe();
   }
 
   private createDragEvent(userAction: boolean) {
