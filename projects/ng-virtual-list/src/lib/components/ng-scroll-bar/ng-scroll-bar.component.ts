@@ -219,6 +219,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
     combineLatest([$thumbWidth, $thumbHeight, $thumbGradientPositions, $params]).pipe(
       takeUntil(this._$unsubscribe),
+      debounceTime(0),
       tap(([thumbWidth, thumbHeight, thumbGradientPositions, params]) => {
         const context: IScrollBarTemplateContext = {
           api: this._apiService,
@@ -241,6 +242,7 @@ export class NgScrollBarComponent extends NgScrollView {
       switchMap(([renderer, defaultRenderer]) => {
         return of((renderer ?? defaultRenderer) ?? null);
       }),
+      debounceTime(0),
       tap(v => {
         this._$thumbRenderer.next(v);
       }),
@@ -413,6 +415,7 @@ export class NgScrollBarComponent extends NgScrollView {
     const $renderer = this.$renderer, $defaultRenderer = of(this._defaultRenderer);
     combineLatest([$renderer, $defaultRenderer]).pipe(
       takeUntil(this._$unsubscribe),
+      debounceTime(0),
       tap(([renderer, defaultRenderer]) => {
         this._$thumbRenderer.next(renderer || defaultRenderer || null);
       }),
