@@ -11,7 +11,7 @@ export interface ITemplateContext<D = any> {
     /**
      * API provider.
      */
-    api: NgVirtualListPublicService;
+    api: NgVirtualListPublicService | null;
     /**
      * List item data.
      */

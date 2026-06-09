@@ -1,17 +1,22 @@
-import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef, viewChild } from '@angular/core';
-import { combineLatest, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Component, ElementRef, EventEmitter, inject, Input, Output, TemplateRef, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, fromEvent, of, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
-import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
 import {
+  DEFAULT_LANG_TEXT_DIR, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_INTERACTIVE, LEFT, POSITION, POSITION_ABSOLUTE,
+  POSITION_RELATIVE, RIGHT, SIZE_100_PERSENT, SIZE_AUTO, UNSET,
+} from '../../const';
+import {
+  DEFAULT_SCROLLBAR_TEMPLATE_CONTEXT,
   DEFAULT_SIZE, DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
-import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../ng-scroll-view/const';
 import { NgScrollBarService } from './ng-scroll-bar.service';
 import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
 import { ScrollbarStates } from './enums';
+import { TextDirection } from '../../types';
+import { TextDirections } from '../../enums';
 
 /**
  * ScrollBar component.
@@ -26,57 +31,178 @@ import { ScrollbarStates } from './enums';
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
     { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
+    { provide: SCROLL_VIEW_OVERSCROLL_ENABLED, useValue: false },
     NgScrollBarService,
     NgScrollBarPublicService,
   ],
   standalone: false,
   templateUrl: './ng-scroll-bar.component.html',
-  styleUrl: './ng-scroll-bar.component.scss'
+  styleUrls: ['./ng-scroll-bar.component.scss',]
 })
 export class NgScrollBarComponent extends NgScrollView {
-  protected _defaultRenderer = viewChild<TemplateRef<any>>('defaultRenderer');
+  @ViewChild('defaultRenderer', { read: TemplateRef<any> })
+  protected _defaultRenderer: TemplateRef<any> | undefined = undefined;
 
-  protected _service = inject(NgScrollBarService);
+  protected _scrollBarService = inject(NgScrollBarService);
 
   private _apiService = inject(NgScrollBarPublicService);
 
-  readonly loading = input<boolean>(false);
+  private _$loading = new BehaviorSubject<boolean>(false);
+  readonly $loading = this._$loading.asObservable();
 
-  readonly onDrag = output<IScrollBarDragEvent>();
+  @Input()
+  set loading(v: boolean) {
+    this._$loading.next(v);
+  }
+  get loading() { return this._$loading.getValue(); }
 
-  readonly onDragEnd = output<IScrollBarDragEvent>();
+  @Output()
+  onDrag = new EventEmitter<IScrollBarDragEvent>();
 
-  readonly thumbGradientPositions = input<GradientColorPositions>([0, 0]);
+  @Output()
+  onDragEnd = new EventEmitter<IScrollBarDragEvent>();
 
-  readonly size = input<number>(DEFAULT_SIZE);
+  private _$thumbGradientPositions = new BehaviorSubject<GradientColorPositions>([0, 0]);
+  readonly $thumbGradientPositions = this._$thumbGradientPositions.asObservable();
 
-  readonly thickness = input<number>(DEFAULT_THICKNESS);
+  @Input()
+  set thumbGradientPositions(v: GradientColorPositions) {
+    if (this._$thumbGradientPositions.getValue() !== v) {
+      this._$thumbGradientPositions.next(v);
+    }
+  }
+  get thumbGradientPositions() { return this._$thumbGradientPositions.getValue(); }
 
-  readonly scrollbarMinSize = input<number>(0);
+  private _$size = new BehaviorSubject<number>(DEFAULT_SIZE);
+  readonly $size = this._$size.asObservable();
 
-  readonly prepared = input<boolean>(false);
+  @Input()
+  set size(v: number) {
+    if (this._$size.getValue() !== v) {
+      this._$size.next(v);
+    }
+  }
+  get size() { return this._$size.getValue(); }
 
-  readonly interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+  private _$thickness = new BehaviorSubject<number>(DEFAULT_THICKNESS);
+  readonly $thickness = this._$thickness.asObservable();
 
-  readonly show = input<boolean>(false);
+  @Input()
+  set thickness(v: number) {
+    if (this._$thickness.getValue() !== v) {
+      this._$thickness.next(v);
+    }
+  }
+  get thickness() { return this._$thickness.getValue(); }
 
-  readonly params = input<{ [propName: string]: any } | null>({});
+  private _$scrollbarMinSize = new BehaviorSubject<number>(0);
+  readonly $scrollbarMinSize = this._$scrollbarMinSize.asObservable();
 
-  readonly renderer = input<TemplateRef<any> | null>(null);
+  @Input()
+  set scrollbarMinSize(v: number) {
+    if (this._$scrollbarMinSize.getValue() !== v) {
+      this._$scrollbarMinSize.next(v);
+    }
+  }
+  get scrollbarMinSize() { return this._$endOffset.getValue(); }
 
-  readonly thumbRenderer = signal<TemplateRef<any> | null>(this._defaultRenderer() ?? null);
+  private _$prepared = new BehaviorSubject<boolean>(false);
+  readonly $prepared = this._$prepared.asObservable();
 
-  protected readonly hoverState = signal<boolean>(false);
+  @Input()
+  set prepared(v: boolean) {
+    if (this._$prepared.getValue() !== v) {
+      this._$prepared.next(v);
+    }
+  }
+  get prepared() { return this._$prepared.getValue(); }
 
-  protected readonly pressedState = signal<boolean>(false);
+  private _$langTextDir = new BehaviorSubject<TextDirection>(DEFAULT_LANG_TEXT_DIR);
+  readonly $langTextDir = this._$langTextDir.asObservable();
 
-  protected readonly templateContext!: Signal<IScrollBarTemplateContext>;
+  @Input()
+  set langTextDir(v: TextDirection) {
+    if (this._$langTextDir.getValue() !== v) {
+      this._$langTextDir.next(v);
+    }
+  }
+  get langTextDir() { return this._$langTextDir.getValue(); }
 
-  protected readonly styles: Signal<{ [sName: string]: any }>;
+  private _$interactive = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+  readonly $interactive = this._$interactive.asObservable();
 
-  protected readonly thumbWidth: Signal<number>;
+  @Input()
+  set interactive(v: boolean) {
+    if (this._$interactive.getValue() !== v) {
+      this._$interactive.next(v);
+    }
+  }
+  get interactive() { return this._$interactive.getValue(); }
 
-  protected readonly thumbHeight: Signal<number>;
+  private _$overlapping = new BehaviorSubject<boolean>(DEFAULT_OVERLAPPING_SCROLLBAR);
+  readonly $overlapping = this._$overlapping.asObservable();
+
+  @Input()
+  set overlapping(v: boolean) {
+    if (this._$overlapping.getValue() !== v) {
+      this._$overlapping.next(v);
+    }
+  }
+  get overlapping() { return this._$overlapping.getValue(); }
+
+  private _$show = new BehaviorSubject<boolean>(false);
+  readonly $show = this._$show.asObservable();
+
+  @Input()
+  set show(v: boolean) {
+    if (this._$show.getValue() !== v) {
+      this._$show.next(v);
+    }
+  }
+  get show() { return this._$show.getValue(); }
+
+  private _$params = new BehaviorSubject<{ [propName: string]: any } | null>({});
+  readonly $params = this._$params.asObservable();
+
+  @Input()
+  set params(v: { [propName: string]: any } | null) {
+    if (this._$params.getValue() !== v) {
+      this._$params.next(v);
+    }
+  }
+  get params() { return this._$params.getValue(); }
+
+  private _$renderer = new BehaviorSubject<TemplateRef<any> | null>(null);
+  readonly $renderer = this._$renderer.asObservable();
+
+  @Input()
+  set renderer(v: TemplateRef<any> | null) {
+    if (this._$renderer.getValue() !== v) {
+      this._$renderer.next(v);
+    }
+  }
+  get renderer() { return this._$renderer.getValue(); }
+
+  private _$thumbRenderer = new BehaviorSubject<TemplateRef<any> | null>(this._defaultRenderer ?? null);
+  readonly $thumbRenderer = this._$thumbRenderer.asObservable();
+
+  private _$hoverState = new BehaviorSubject<boolean>(false);
+  readonly $hoverState = this._$hoverState.asObservable();
+
+  private _$pressedState = new BehaviorSubject<boolean>(false);
+  readonly $pressedState = this._$pressedState.asObservable();
+
+  private _$templateContext = new BehaviorSubject<IScrollBarTemplateContext>(DEFAULT_SCROLLBAR_TEMPLATE_CONTEXT);
+  readonly $templateContext = this._$templateContext.asObservable();
+
+  private _$styles = new BehaviorSubject<{ [styleName: string]: any }>({});
+  readonly $styles = this._$styles.asObservable();
+
+  private _$thumbWidth = new BehaviorSubject<number>(0);
+  readonly $thumbWidth = this._$thumbWidth.asObservable();
+
+  private _$thumbHeight = new BehaviorSubject<number>(0);
+  readonly $thumbHeight = this._$thumbHeight.asObservable();
 
   private _$scrollingCancel = new Subject<void>();
   protected readonly $scrollingCancel = this._$scrollingCancel.asObservable();
@@ -86,123 +212,185 @@ export class NgScrollBarComponent extends NgScrollView {
   constructor() {
     super();
 
-    this.templateContext = computed(() => {
-      const context: IScrollBarTemplateContext = {
-        api: this._apiService,
-        width: this.thumbWidth(),
-        height: this.thumbHeight(),
-        fillPositions: this.thumbGradientPositions(),
-        params: this.params() ?? {},
-      };
-      return context;
-    });
+    const $thumbWidth = this.$thumbWidth,
+      $thumbHeight = this.$thumbHeight,
+      $thumbGradientPositions = this.$thumbGradientPositions,
+      $params = this.$params;
 
-    const $renderer = toObservable(this.renderer).pipe(
-        startWith(null),
-      ),
-      $defaultRenderer = toObservable(this._defaultRenderer);
+    combineLatest([$thumbWidth, $thumbHeight, $thumbGradientPositions, $params]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([thumbWidth, thumbHeight, thumbGradientPositions, params]) => {
+        const context: IScrollBarTemplateContext = {
+          api: this._apiService,
+          width: thumbWidth,
+          height: thumbHeight,
+          fillPositions: thumbGradientPositions,
+          params: params ?? {},
+        };
+        this._$templateContext.next(context);
+      }),
+    ).subscribe();
+
+    const $renderer = this.$renderer.pipe(
+      startWith(null),
+    ),
+      $defaultRenderer = of(this._defaultRenderer);
 
     combineLatest([$renderer, $defaultRenderer]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       switchMap(([renderer, defaultRenderer]) => {
         return of((renderer ?? defaultRenderer) ?? null);
       }),
       tap(v => {
-        this.thumbRenderer.set(v);
+        this._$thumbRenderer.next(v);
       }),
     ).subscribe();
 
-    const $prepared = toObservable(this.prepared);
+    const $prepared = this.$prepared;
     $prepared.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       filter(v => !!v),
       tap(() => {
         this.scrollLimits();
-        this.refreshX(this._x);
-        this.refreshY(this._y);
+        this.refreshCoordinate(this._x, this._y);
         this.fireScrollEvent(false);
       }),
     ).subscribe();
 
-    this.thumbWidth = computed(() => {
-      return this.isVertical() ? this.thickness() : this.size();
-    });
+    combineLatest([this.$isVertical, this.$thickness, this.$size]).pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(([isVertical, thickness, size]) => {
+        this._$thumbWidth.next(isVertical ? thickness : size);
+        this._$thumbHeight.next(isVertical ? size : thickness);
+      }),
+    ).subscribe();
+  }
 
-    this.thumbHeight = computed(() => {
-      return this.isVertical() ? this.size() : this.thickness();
-    });
+  override ngAfterViewInit(): void {
+    super.ngAfterViewInit();
+
+    const $wheel = this.$wheel;
+    $wheel.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(100),
+      tap(() => {
+        const event = this.createDragEvent(true);
+        if (!!event) {
+          this.onDragEnd.emit(event);
+        }
+      }),
+    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
     ), $pointerUp = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerup').pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
     ), $docPointerUp = fromEvent<PointerEvent>(document, 'pointerup').pipe(
-      takeUntilDestroyed()
+      takeUntil(this._$unsubscribe),
     ), $pointerEnter = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerenter').pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
     ), $pointerLeave = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerleave').pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
     );
 
     $pointerDown.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(e => {
-        this.pressedState.set(this.thumbHit(e.clientX, e.clientY));
+        this._$pressedState.next(this.thumbHit(e.clientX, e.clientY));
       }),
     ).subscribe();
 
     combineLatest([$docPointerUp, $pointerUp]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(() => {
-        this.pressedState.set(false);
+        this._$pressedState.next(false);
       }),
     ).subscribe();
 
     $pointerEnter.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(() => {
-        this.hoverState.set(true);
+        this._$hoverState.next(true);
       }),
     ).subscribe();
 
     $pointerLeave.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(() => {
-        this.hoverState.set(false);
+        this._$hoverState.next(false);
       }),
     ).subscribe();
 
-    effect(() => {
-      const pressed = this.pressedState(), hover = this.hoverState();
-      if (pressed) {
-        this._service.state = ScrollbarStates.PRESSED;
+    const $pressedState = this.$pressedState.pipe(
+      takeUntil(this._$unsubscribe),
+    ), $hoverState = this.$hoverState.pipe(
+      takeUntil(this._$unsubscribe),
+    );
+
+    combineLatest([
+      $pressedState, $hoverState,
+    ]).pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      distinctUntilChanged(),
+      tap(([pressed, hover]) => {
+        if (pressed) {
+          this._scrollBarService.state = ScrollbarStates.PRESSED;
+          return;
+        } else if (hover) {
+          this._scrollBarService.state = ScrollbarStates.HOVER;
+          return;
+        }
+        this._scrollBarService.state = ScrollbarStates.NORMAL;
         return;
-      } else if (hover) {
-        this._service.state = ScrollbarStates.HOVER;
-        return;
-      }
-      this._service.state = ScrollbarStates.NORMAL;
-      return;
-    }, { allowSignalWrites: true });
+      }),
+    ).subscribe();
 
-    effect(() => {
-      this.totalSize = this.size();
-    });
+    this.$size.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this.totalSize = v;
+      }),
+    ).subscribe();
 
-    effect(() => {
-      this._interactive = this.interactive();
-    });
+    this.$interactive.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(v => {
+        this.interactive = v;
+      }),
+    ).subscribe();
 
-    this.styles = computed(() => {
-      const show = this.show(), sizePropName = this.isVertical() ? WIDTH : HEIGHT;
-      return {
-        [sizePropName]: `${show ? this.thickness() : 0}${PX}`,
-        [OPACITY]: show ? OPACITY_1 : OPACITY_0, [TRANSITION]: show ? TRANSITION_FADE_IN : NONE,
-      };
-    });
+    combineLatest([this.$show, this.$isVertical, this.$thickness]).pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+      tap(([show, isVertical, thickness]) => {
+        const sizePropName = isVertical ? WIDTH : HEIGHT;
+        this._$styles.next({
+          [sizePropName]: `${show ? thickness : 0}${PX}`,
+          [OPACITY]: show ? OPACITY_1 : OPACITY_0, [TRANSITION]: show ? TRANSITION_FADE_IN : NONE,
+        });
+      }),
+    ).subscribe();
+
+    const $overlapping = this.$overlapping, $langTextDir = this.$langTextDir;
+    combineLatest([$overlapping, $langTextDir]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([overlapping, langTextDir]) => {
+        const el = this._elementRef.nativeElement;
+        if (!!el) {
+          el.style[POSITION] = overlapping ? POSITION_ABSOLUTE : POSITION_RELATIVE;
+          el.style[LEFT] = overlapping && langTextDir === TextDirections.RTL ? '0' : UNSET;
+          el.style[RIGHT] = overlapping && langTextDir === TextDirections.LTR ? '0' : UNSET;
+          el.style[WIDTH] = overlapping ? SIZE_AUTO : SIZE_100_PERSENT;
+        }
+      }),
+    ).subscribe();
 
     this.$scroll.pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(v => {
         const event = this.createDragEvent(v);
         if (!!event) {
@@ -213,27 +401,35 @@ export class NgScrollBarComponent extends NgScrollView {
 
     const $scrollEnd = this.$scrollEnd;
     $scrollEnd.pipe(
-      takeUntilDestroyed(),
-      tap(() => {
-        const event = this.createDragEvent(false);
+      takeUntil(this._$unsubscribe),
+      tap(userAction => {
+        const event = this.createDragEvent(userAction);
         if (!!event) {
           this.onDragEnd.emit(event);
         }
       }),
     ).subscribe();
+
+    const $renderer = this.$renderer, $defaultRenderer = of(this._defaultRenderer);
+    combineLatest([$renderer, $defaultRenderer]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([renderer, defaultRenderer]) => {
+        this._$thumbRenderer.next(renderer || defaultRenderer || null);
+      }),
+    ).subscribe();
   }
 
   private createDragEvent(userAction: boolean) {
-    const isVertical = this.isVertical(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-      scrollContent = this.scrollContent()?.nativeElement as HTMLElement,
-      scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
+    const isVertical = this._$isVertical.getValue(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+      scrollContent = this.scrollContent?.nativeElement as HTMLElement,
+      scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement;
     if (!!scrollViewport && !!scrollContent) {
       const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
         viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
       const event: IScrollBarDragEvent = {
         position: scrollSize !== 0 ? ((isVertical ? this._y : this._x) / scrollSize) : 0,
-        min: scrollSize !== 0 ? (this.startOffset() / scrollSize) : 0,
-        max: scrollSize !== 0 ? ((viewportSize - this.endOffset() - contentSize) / scrollSize) : 0,
+        min: scrollSize !== 0 ? (this.startOffset / scrollSize) : 0,
+        max: scrollSize !== 0 ? ((viewportSize - this.endOffset - contentSize) / scrollSize) : 0,
         animation: !this._isMoving,
         userAction,
       };
@@ -243,9 +439,9 @@ export class NgScrollBarComponent extends NgScrollView {
   }
 
   private thumbHit(x: number, y: number): boolean {
-    const thumb = this.scrollContent()?.nativeElement;
+    const thumb = this.scrollContent?.nativeElement;
     if (!!thumb) {
-      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect()
+      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect();
       if ((x >= tX && x <= tX + tWidth) && (y >= tY && y <= tY + tHeight)) {
         return true;
       }
@@ -254,6 +450,6 @@ export class NgScrollBarComponent extends NgScrollView {
   }
 
   click(event: PointerEvent | MouseEvent) {
-    this._service.click(event);
+    this._scrollBarService.click(event);
   }
 }

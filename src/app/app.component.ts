@@ -1,21 +1,21 @@
-import { Component, viewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, ViewChild } from '@angular/core';
 import { delay, interval, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  NgVirtualListModule, NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
+  NgVirtualListComponent, IVirtualListCollection, IVirtualListItemConfigMap, IRenderVirtualListItem, ISize, Id,
   IScrollingSettings,
+  NgVirtualListModule,
 } from '../../projects/ng-virtual-list/src/public-api';
 import { LOGO } from './const';
 import { GradientColor, RoundedCorner } from './components/interfaces';
 import { CustomScrollBarTheme } from './components/custom-scrollbar/interfaces/custom-scrollbar-theme';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CustomScrollbarModule } from './components/custom-scrollbar/custom-scrollbar.module';
 
 const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "rgb(0, 133, 160)"],
   ROUND_CORNER: RoundedCorner = [3, 3, 3, 3],
   CUSTOM_SCROLLBAR_THEME: CustomScrollBarTheme = {
-    fill: ["rgba(51, 0, 97, 1)", "rgba(73, 0, 97, 1)"],
+    fill: ["rgba(101, 50, 147, 1)", "rgba(123, 50, 147, 1)"],
     hoverFill: ["rgba(73, 6, 133, 1)", "rgba(73, 6, 133, 1)"],
     pressedFill: ["rgba(73, 6, 150, 1)", "rgba(95, 0, 150, 1)"],
     strokeGradientColor: X_LITE_BLUE_PLASMA_GRADIENT,
@@ -25,7 +25,7 @@ const X_LITE_BLUE_PLASMA_GRADIENT: GradientColor = ["rgba(133, 142, 255, 0)", "r
     rippleEnabled: true,
   };
 
-const MAX_ITEMS = 10000;
+const MAX_ITEMS = 1000;
 
 interface ICollectionItem {
   id: Id;
@@ -173,10 +173,15 @@ const generateDynamicShortItems = (len: number, startWith: number = 0) => {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule, NgVirtualListModule, CustomScrollbarModule],
-  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgVirtualListModule,
+    CustomScrollbarModule,
+  ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss'],
+  standalone: true,
 })
 export class AppComponent {
   readonly logo = LOGO;
@@ -190,17 +195,25 @@ export class AppComponent {
     optimization: false,
   }
 
-  protected _listContainerRef = viewChild('virtualList', { read: NgVirtualListComponent });
+  @ViewChild('virtualList', { read: NgVirtualListComponent })
+  protected _listContainerRef!: NgVirtualListComponent;
 
-  protected _dynamicItemsListContainerRef = viewChild('dynamicItemsList', { read: NgVirtualListComponent });
+  @ViewChild('dynamicItemsList', { read: NgVirtualListComponent })
+  protected _dynamicItemsListContainerRef!: NgVirtualListComponent;
 
-  protected _dynamicListContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
+  @ViewChild('dl2List', { read: NgVirtualListComponent })
+  protected _dl2ListContainerRef!: NgVirtualListComponent;
+
+  @ViewChild('dynamicList', { read: NgVirtualListComponent })
+  protected _dynamicListContainerRef!: NgVirtualListComponent;
 
   customScrollBarThumbParams = CUSTOM_SCROLLBAR_THEME;
 
   items = ITEMS;
 
   items1 = generateItems(1000);
+
+  items2 = generateDynamicItems(1000, 0);
 
   dynamicItems = generateDynamicItems(20, 0);
 
@@ -238,15 +251,24 @@ export class AppComponent {
 
   dlItemId: Id = this._minDlId;
 
+  private _minDl2Id: Id = this.items2.length > 0 ? this.items2[0].id : 0;
+  get minDl2Id() { return this._minDl2Id; };
+
+  private _maxDl2Id: Id = this.items2.length > 0 ? this.items2[this.items2.length - 1].id : 0;
+  get maxDl2Id() { return this._maxDl2Id; };
+
+  dl2ItemId: Id = this._minDl2Id;
+
   itemsLength: number = 0;
 
   dynamicItemsLength: number = 0;
 
   dynamicShortItemsLength: number = 0;
 
+  motionBlurEnabled = false;
+
   constructor() {
     interval(1000).pipe(
-      takeUntilDestroyed(),
       delay(250),
       tap(() => {
         const collection = [...this.dynamicItems];
@@ -276,7 +298,6 @@ export class AppComponent {
 
 
     interval(1000).pipe(
-      takeUntilDestroyed(),
       delay(0),
       tap(() => {
         const collection = [...this.dynamicShortItems];
@@ -303,10 +324,20 @@ export class AppComponent {
         this.dynamicShortItems = collection;
       }),
     ).subscribe();
+
+    const bp: Promise<EventTarget & { level: number, charging: boolean; }> | null = (navigator as any).getBattery?.() ?? null;
+    if (!!bp) {
+      bp.then(battery => {
+        battery.addEventListener('levelchange', () => {
+          this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+        });
+        this.motionBlurEnabled = battery.level >= 0.10 || battery.charging;
+      });
+    }
   }
 
   onButtonScrollToIdClickHandler = (e: Event) => {
-    const list = this._listContainerRef(), id = this.itemId;
+    const list = this._listContainerRef, id = this.itemId;
     if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);
@@ -317,8 +348,20 @@ export class AppComponent {
     }
   }
 
+  onButtonScrollDL2ToIdClickHandler = (e: Event) => {
+    const list = this._dl2ListContainerRef, id = this.dl2ItemId;
+    if (list && id !== null) {
+      list.scrollTo(id, () => {
+        list.focus(id);
+        console.info(`scrollTo finished. id: ${id}`);
+      }, {
+        behavior: 'instant',
+      });
+    }
+  }
+
   onButtonScrollDLToIdClickHandler = (e: Event) => {
-    const list = this._dynamicListContainerRef(), id = this.dlItemId;
+    const list = this._dynamicListContainerRef, id = this.dlItemId;
     if (list && id !== null) {
       list.scrollTo(id, () => {
         list.focus(id);

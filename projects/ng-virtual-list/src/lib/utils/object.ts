@@ -1,4 +1,4 @@
-export const objectAsReadonly = <T = { [x: string]: any }>(source: T) => {
+export const objectAsReadonly = <T = { [x: string]: any } | null | undefined>(source: T) => {
     if (!source) {
         return source;
     }
@@ -22,7 +22,7 @@ export const copyValueAsReadonly = <T = any>(source: T) => {
     }
 
     if (Array.isArray(source)) {
-        return Object.freeze([...source]) as T;
+        return Object.freeze([...source]) as unknown as T;
     }
 
     if (typeof source === 'object') {

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { IRenderVirtualListItem, IVirtualListItem } from './models';
+import { IRenderVirtualListItem } from './models';
 import { IScrollOptions } from './interfaces';
 import { FocusAlignment, Id } from './types';
 import { FocusItemParams } from './types/focus-item-params';
@@ -29,7 +29,7 @@ export class NgVirtualListPublicService {
   /**
    * Informs about a click on a list item.
    */
-  get $itemClick(): Observable<IRenderVirtualListItem<any> | null> { return this._internalService.$itemClick; };
+  get $virtualClick(): Observable<IRenderVirtualListItem<any> | null> { return this._internalService.$virtualClick; };
 
   /**
    * Informs about the selection of a list item(s).
@@ -66,22 +66,21 @@ export class NgVirtualListPublicService {
   /**
    * Specifies a list of collapsed elements.
    */
-  set сollapsedIds(ids: Array<Id>) {
+  set collapsedIds(ids: Array<Id>) {
     this._internalService.collapsedIds = ids;
   }
 
   /**
    * Returns a list of collapsed elements.
    */
-  get сollapsedIds() { return this._internalService.collapsedIds; }
+  get collapsedIds() { return this._internalService.collapsedIds; }
 
   /**
    * Updates the list
    * @param immediately - Indicates that the list is updated instantly.
-   * @param force - Forced update.
    */
-  update(immediately: boolean = false, force: boolean = false) {
-    this._internalService.update(immediately, force);
+  update(immediately: boolean = false) {
+    this._internalService.update(immediately);
   }
 
   /**

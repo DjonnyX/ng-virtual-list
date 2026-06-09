@@ -1,12 +1,11 @@
 import {
-    ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, OnDestroy, signal, TemplateRef, ViewChild,
+    ChangeDetectionStrategy, Component, ElementRef, inject, Input, OnDestroy, TemplateRef, ViewChild,
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
-import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { BehaviorSubject, combineLatest, filter, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { toggleClassName } from "../../../../utils";
-import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
 import {
-    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
+    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
@@ -17,13 +16,14 @@ import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
 import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
-import { Direction } from "../../../../enums";
+import { Direction } from "../../../../types";
+import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
- * PrerenderList.
+ * NgPrerenderList
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/prerender-container/components/prerender-list/prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -38,37 +38,152 @@ import { Direction } from "../../../../enums";
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class NgPrerenderList implements OnDestroy {
+export class NgPrerenderList extends DisposableComponent implements OnDestroy {
     @ViewChild('renderersContainer', { read: ViewContainerRef })
     private _listContainerRef: ViewContainerRef | undefined;
 
-    enabled = input<boolean>(false);
+    protected _$enabled = new BehaviorSubject<boolean>(false);
+    readonly $enabled = this._$enabled.asObservable();
+    @Input()
+    set enabled(v: boolean) {
+        if (this._$enabled.getValue() !== v) {
+            this._$enabled.next(v);
+        }
+    }
+    get enabled() { return this._$enabled.getValue(); }
 
-    direction = input<Direction>(DEFAULT_DIRECTION);
+    protected _$direction = new BehaviorSubject<Direction>(DEFAULT_DIRECTION);
+    readonly $direction = this._$direction.asObservable();
+    @Input()
+    set direction(v: Direction) {
+        if (this._$direction.getValue() !== v) {
+            this._$direction.next(v);
+        }
+    }
+    get direction() { return this._$direction.getValue(); }
 
-    isVertical = input<boolean>(true);
+    protected _$isVertical = new BehaviorSubject<boolean>(true);
+    readonly $isVertical = this._$isVertical.asObservable();
+    @Input()
+    set isVertical(v: boolean) {
+        if (this._$isVertical.getValue() !== v) {
+            this._$isVertical.next(v);
+        }
+    }
+    get isVertical() { return this._$isVertical.getValue(); }
 
-    scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
+    protected _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
+    readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
+    @Input()
+    set scrollbarEnabled(v: boolean) {
+        if (this._$scrollbarEnabled.getValue() !== v) {
+            this._$scrollbarEnabled.next(v);
+        }
+    }
+    get scrollbarEnabled() { return this._$scrollbarEnabled.getValue(); }
 
-    startOffset = input<number>(0);
+    protected _$startOffset = new BehaviorSubject<number>(0);
+    readonly $startOffset = this._$startOffset.asObservable();
+    @Input()
+    set startOffset(v: number) {
+        if (this._$startOffset.getValue() !== v) {
+            this._$startOffset.next(v);
+        }
+    }
+    get startOffset() { return this._$startOffset.getValue(); }
 
-    endOffset = input<number>(0);
+    protected _$endOffset = new BehaviorSubject<number>(0);
+    readonly $endOffset = this._$endOffset.asObservable();
+    @Input()
+    set endOffset(v: number) {
+        if (this._$endOffset.getValue() !== v) {
+            this._$endOffset.next(v);
+        }
+    }
+    get endOffset() { return this._$endOffset.getValue(); }
 
-    bounds = input.required<ISize>();
+    protected _$bounds = new BehaviorSubject<ISize | null>({ width: 0, height: 0 });
+    readonly $bounds = this._$bounds.asObservable();
+    @Input()
+    set bounds(v: ISize | null) {
+        if (this._$bounds.getValue() !== v) {
+            this._$bounds.next(v);
+        }
+    }
+    get bounds() { return this._$bounds.getValue(); }
 
-    dynamic = input<boolean>(DEFAULT_DYNAMIC_SIZE);
+    protected _$dynamic = new BehaviorSubject<boolean>(DEFAULT_DYNAMIC_SIZE);
+    readonly $dynamic = this._$dynamic.asObservable();
+    @Input()
+    set dynamic(v: boolean) {
+        if (this._$dynamic.getValue() !== v) {
+            this._$dynamic.next(v);
+        }
+    }
+    get dynamic() { return this._$dynamic.getValue(); }
 
-    itemSize = input<number>(DEFAULT_ITEM_SIZE);
+    protected _$itemSize = new BehaviorSubject<number>(DEFAULT_ITEM_SIZE);
+    readonly $itemSize = this._$itemSize.asObservable();
+    @Input()
+    set itemSize(v: number) {
+        if (this._$itemSize.getValue() !== v) {
+            this._$itemSize.next(v);
+        }
+    }
+    get itemSize() { return this._$itemSize.getValue(); }
 
-    trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
+    protected _$trackBy = new BehaviorSubject<string>(TRACK_BY_PROPERTY_NAME);
+    readonly $trackBy = this._$trackBy.asObservable();
+    @Input()
+    set trackBy(v: string) {
+        if (this._$trackBy.getValue() !== v) {
+            this._$trackBy.next(v);
+        }
+    }
+    get trackBy() { return this._$trackBy.getValue(); }
 
-    itemRenderer = input<TemplateRef<any>>();
+    protected _$divides = new BehaviorSubject<number>(DEFAULT_DIVIDES);
+    readonly $divides = this._$divides.asObservable();
+    @Input()
+    set divides(v: number) {
+        if (this._$divides.getValue() !== v) {
+            this._$divides.next(v);
+        }
+    }
+    get divides() { return this._$divides.getValue(); }
 
-    itemComponentClass = input<Component$1<BaseVirtualListItemComponent>>(NgPrerenderVirtualListItemComponent);
+    protected _$items = new BehaviorSubject<IVirtualListCollection>([]);
+    readonly $items = this._$items.asObservable();
+    @Input()
+    set items(v: IVirtualListCollection) {
+        if (this._$items.getValue() !== v) {
+            this._$items.next(v);
+        }
+    }
+    get items() { return this._$items.getValue(); }
 
-    protected _items = signal<IVirtualListCollection | null>(null);
+    protected _$itemRenderer = new BehaviorSubject<TemplateRef<any> | null>(null);
+    readonly $itemRenderer = this._$itemRenderer.asObservable();
+    @Input()
+    set itemRenderer(v: TemplateRef<any> | null) {
+        if (this._$itemRenderer.getValue() !== v) {
+            this._$itemRenderer.next(v);
+        }
+    }
+    get itemRenderer() { return this._$itemRenderer.getValue(); }
 
-    protected readonly classes = signal<{ [cName: string]: boolean }>({ prepared: true });
+    protected _$itemComponentClass = new BehaviorSubject<Component$1<BaseVirtualListItemComponent>>(NgPrerenderVirtualListItemComponent);
+    readonly $itemComponentClass = this._$itemComponentClass.asObservable();
+    @Input()
+    set itemComponentClass(v: Component$1<BaseVirtualListItemComponent>) {
+        if (this._$itemComponentClass.getValue() !== v) {
+            this._$itemComponentClass.next(v);
+        }
+    }
+    get itemComponentClass() { return this._$itemComponentClass.getValue(); }
+
+    protected _$classes = new BehaviorSubject<{ [cName: string]: boolean }>({ prepared: true });
+    readonly $classes = this._$classes.asObservable();
 
     private _$render = new Subject<PrerenderCache>();
     $render = this._$render.asObservable();
@@ -84,33 +199,26 @@ export class NgPrerenderList implements OnDestroy {
 
     private _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
-    protected $isVertical: Observable<boolean>;
-
-    protected $items: Observable<IVirtualListCollection | null>;
-
-    protected $bounds: Observable<ISize>;
-
     get active() { return this._trackBox?.active ?? false; }
 
     private _activated: boolean = false;
 
     private _subscriptions = new Array<Subscription>();
 
-    private _destroyRef = inject(DestroyRef);
-
     constructor() {
-        this.$isVertical = toObservable(this.isVertical);
-        this.$items = toObservable(this._items);
-        this.$bounds = toObservable(this.bounds);
+        super();
 
-        effect(() => {
-            const enabled = this.enabled();
-            if (enabled) {
-                this.activate();
-            } else {
-                this.deactivate();
-            }
-        });
+        const $enabled = this.$enabled;
+        $enabled.pipe(
+            takeUntil(this._$unsubscribe),
+            tap(enabled => {
+                if (enabled) {
+                    this.activate();
+                } else {
+                    this.deactivate();
+                }
+            }),
+        ).subscribe();
     }
 
     activate() {
@@ -122,7 +230,7 @@ export class NgPrerenderList implements OnDestroy {
         this._trackBox!.addEventListener(PrerenderTrackBoxEvents.RESIZE, this._onTrackBoxResizeHandler);
 
         this._subscriptions.push(this.$isVertical.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(v => {
                 const el = this._elementRef.nativeElement;
                 toggleClassName(el, v ? CLASS_LIST_VERTICAL : CLASS_LIST_HORIZONTAL, v ? CLASS_LIST_HORIZONTAL : CLASS_LIST_VERTICAL);
@@ -130,26 +238,28 @@ export class NgPrerenderList implements OnDestroy {
         ).subscribe());
 
         this._subscriptions.push(this.$bounds.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(v => !!v),
-            tap(({ width, height }) => {
-                const el = this._elementRef.nativeElement;
+            tap(bounds => {
+                const { width, height } = bounds!,
+                    el = this._elementRef.nativeElement;
                 el.style.width = `${width}${PX}`;
                 el.style.height = `${height}${PX}`;
             }),
         ).subscribe());
 
         this._subscriptions.push(combineLatest([this.$bounds, this.$items]).pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             filter(([b, i]) => !!b && !!i),
             tap(([bounds, items]) => {
-                if (this.active && !!this._trackBox && !!items) {
-                    this._trackBox.reset(this.itemComponentClass(), items, bounds, {
-                        itemRenderer: this.itemRenderer(),
-                        dynamic: this.dynamic(),
-                        itemSize: this.itemSize(),
-                        isVertical: this.isVertical(),
-                        trackBy: this.trackBy(),
+                if (this.active && !!this._trackBox) {
+                    this._trackBox.reset(this._$itemComponentClass.getValue(), items, this._$bounds.getValue()!, {
+                        itemRenderer: this._$itemRenderer.getValue()!,
+                        dynamic: this._$dynamic.getValue(),
+                        divides: this._$divides.getValue(),
+                        itemSize: this._$itemSize.getValue(),
+                        isVertical: this._$isVertical.getValue(),
+                        trackBy: this._$trackBy.getValue(),
                     });
                 }
             }),
@@ -157,7 +267,7 @@ export class NgPrerenderList implements OnDestroy {
 
         const $componentResize = this.$componentResize;
         this._subscriptions.push($componentResize.pipe(
-            takeUntilDestroyed(this._destroyRef),
+            takeUntil(this._$unsubscribe),
             tap(cache => {
                 this._$render.next(cache);
             }),
@@ -194,7 +304,7 @@ export class NgPrerenderList implements OnDestroy {
     on(items: IVirtualListCollection | null = null) {
         if (!!this._trackBox) {
             this._trackBox.on();
-            this._items.set(items);
+            this._$items.next(items ?? []);
         }
     }
 
@@ -208,7 +318,9 @@ export class NgPrerenderList implements OnDestroy {
         this._trackBox!.create(this._listContainerRef!);
     }
 
-    ngOnDestroy(): void {
+    override ngOnDestroy(): void {
+        super.ngOnDestroy();
+
         this.dispose();
     }
 
