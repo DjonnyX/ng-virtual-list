@@ -1,9 +1,13 @@
-import { TrackBox, ItemDisplayMethods, TrackBoxEvents, IMetrics } from './track-box';
+import { TrackBox } from './track-box';
 import { IRenderVirtualListItem } from '../models/render-item.model';
 import { IRenderVirtualListCollection } from '../models/render-collection.model';
 import { ISize } from '../interfaces';
 import { Id } from '../types';
 import { CMap } from '../utils/cmap';
+import { SnapToItemAligns } from '../enums';
+import { TrackBoxEvents } from './events';
+import { ItemDisplayMethods } from './enums';
+import { IMetrics } from './interfaces';
 
 interface IItem<I = any> {
     [prop: string]: I;
@@ -32,7 +36,7 @@ class TrackBoxTested extends TrackBox {
         return super.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical, indexOffset);
     }
 
-    override updateAdaptiveBufferParams(metrics: IMetrics, totalItemsLength: number) {
+    override updateAdaptiveBufferParams<I extends IItem>(metrics: IMetrics<I>, totalItemsLength: number) {
         super.updateAdaptiveBufferParams(metrics, totalItemsLength);
     }
 }
@@ -47,7 +51,6 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             width: 0,
             height: 0,
             delta: 0,
-            positionOffset: 0,
             position: 0,
             scrollSize: 0,
             size: 0,
@@ -55,7 +58,26 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             absoluteStartPosition: 0,
             absoluteStartPositionPercent: 0,
             absoluteEndPosition: 0,
-            absoluteEndPositionPercent: 0
+            absoluteEndPositionPercent: 0,
+            transformedX: 0,
+            transformedY: 0,
+            z: 0,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            scaleX: 0,
+            scaleY: 0,
+            scaleZ: 0,
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: 0,
+            maxHeight: 0,
+            row: {
+                size: 0,
+                odd: false,
+                even: false
+            },
+            scrollDirection: 0,
         },
         data: { id },
         config: {
@@ -73,6 +95,16 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             isSnappingMethodAdvanced: false,
             tabIndex: 0,
             zIndex: '0',
+            opacity: 0,
+            divides: 0,
+            snapToItem: false,
+            snapToItemAlign: SnapToItemAligns.START,
+            layoutOffset: 0,
+            isFirst: false,
+            isLast: false,
+            fullSize: false,
+            layoutIndexOffset: 0,
+            totalItems: 0,
         },
         previouseData: undefined,
         nextData: undefined,
@@ -109,8 +141,6 @@ describe('TrackBox', () => {
             bounds: {
                 width: 0,
                 height: 0,
-                x: 0,
-                y: 0
             },
             isVertical: true,
             itemSize: 40,
@@ -118,9 +148,14 @@ describe('TrackBox', () => {
             maxBufferSize: 1,
             dynamicSize: false,
             scrollSize: 100,
-            snap: true,
             enabledBufferOptimization: false,
             fromItemId: undefined,
+            minItemSize: 0,
+            maxItemSize: 0,
+            stickyEnabled: false,
+            itemTransform: null,
+            snapToItem: false,
+            snapToItemAlign: SnapToItemAligns.START,
         });
         expect(trackBox.isReseted).toBeTruthy();
     });
@@ -203,7 +238,7 @@ describe('TrackBox', () => {
         let scrollSize = 20000;
         const trackBox = new TrackBoxTested(trackBy);
         const generateMetrics = (scrollSize: number) => {
-            const metric: IMetrics = {
+            const metric: IMetrics<IItem> = {
                 delta: 0,
                 normalizedItemWidth: 0,
                 normalizedItemHeight: 0,
@@ -224,9 +259,9 @@ describe('TrackBox', () => {
                 rightItemsWeight: 0,
                 scrollSize,
                 leftSizeOfAddedItems: 0,
+                leftLayoutOffset: 0,
+                leftLayoutIndexOffset: 0,
                 sizeProperty: 'height',
-                snap: false,
-                snipedPos: 0,
                 startIndex: 0,
                 startPosition: 0,
                 totalItemsToDisplayEndWeight: 0,
@@ -234,9 +269,16 @@ describe('TrackBox', () => {
                 totalSize: 0,
                 typicalItemSize: itemSize,
                 isFromItemIdFound: false,
-                offsetX: 0,
-                offsetY: 0,
-                isUpdating: false
+                isUpdating: false,
+                divides: 0,
+                minItemSize: 0,
+                maxItemSize: 0,
+                stickyEnabled: false,
+                stickyPos: 0,
+                itemTransform: null,
+                snapToItem: false,
+                snapToItemAlign: SnapToItemAligns.START,
+                items: [],
             };
             return metric;
         }

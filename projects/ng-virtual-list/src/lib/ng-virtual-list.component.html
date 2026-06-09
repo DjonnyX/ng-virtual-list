@@ -1,13 +1,18 @@
+@let scrollStartOffset = _actualScrollStartOffset();
+@let scrollEndOffset = _actualScrollEndOffset();
+@let alignmentScrollStartOffset = _alignmentScrollStartOffset();
+@let alignmentScrollEndOffset = _alignmentScrollEndOffset();
+
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
   {{ screenReaderFormattedMessage() }}
 </div>
 
-<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()"
-  [dynamic]="dynamicSize()" [isVertical]="isVertical" [itemSize]="itemSize()" [trackBy]="trackBy()"
-  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset()" [endOffset]="scrollEndOffset()"
+<ng-prerender-container #prerender [bounds]="bounds()!" [direction]="direction()" [dynamic]="dynamicSize()"
+  [divides]="divides()" [isVertical]="isVertical" [itemSize]="actualItemSize()" [trackBy]="trackBy()"
+  [itemRenderer]="itemRenderer()" [startOffset]="scrollStartOffset" [endOffset]="scrollEndOffset"
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
-@if (snap()) {
+@if (stickyEnabled()) {
   <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
     [ngClass]="classes()">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
@@ -15,11 +20,16 @@
     </div>
   </div>
 }
-<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset()"
-  [direction]="direction()" [endOffset]="scrollEndOffset()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()"
+
+<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset"
+  [endOffset]="scrollEndOffset" [alignmentStartOffset]="alignmentScrollStartOffset" [alignmentEndOffset]="alignmentScrollEndOffset"
+  [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()" [isInfinity]="_isInfinity()"
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
-  [focusedElement]="focusedElement()" [loading]="loading()" [overscrollEnabled]="overscrollEnabled()"
-  [scrollbarEnabled]="scrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()"
-  [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()" [scrollingSettings]="scrollingSettings()">
+  [animationParams]="animationParams()" [focusedElement]="focusedElement()" [loading]="loading()"
+  [overscrollEnabled]="overscrollEnabled()" [snappingDistance]="snappingDistance()" [overlappingScrollbar]="overlappingScrollbar()"
+  [scrollbarEnabled]="_actualScrollbarEnabled()" [scrollbarInteractive]="scrollbarInteractive()" [snapToItem]="snapToItem()"
+  [snapToItemAlign]="snapToItemAlign()" [scrollbarMinSize]="scrollbarMinSize()" [scrollBehavior]="scrollBehavior()"
+  [scrollingSettings]="scrollingSettings()" [scrollingOneByOne]="scrollingOneByOne()" [motionBlur]="motionBlur()"
+  [maxMotionBlur]="maxMotionBlur()" [motionBlurEnabled]="motionBlurEnabled()">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>
