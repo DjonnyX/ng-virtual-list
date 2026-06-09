@@ -1,7 +1,7 @@
 import { LocaleSensitiveModule } from './locale-sensitive/locale-sensitive.module';
-import { ItemClickModule } from './item-click/item-click.module';
+import { VirtualClickModule } from './virtual-click/virtual-click.module';
 
 export {
     LocaleSensitiveModule,
-    ItemClickModule,
+    VirtualClickModule,
 }

@@ -4,7 +4,7 @@ import {
 import { BehaviorSubject, distinctUntilChanged, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
-import { SCROLL_VIEW_INVERSION } from '../const';
+import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
 import { DisposableComponent } from '../../../utils/disposable-component';
 
 /**
@@ -26,18 +26,15 @@ export class BaseScrollView extends DisposableComponent {
     @ViewChild('scrollViewport')
     scrollViewport: ElementRef<HTMLDivElement> | undefined;
 
-    protected _$direction = new BehaviorSubject<ScrollerDirections>(ScrollerDirection.VERTICAL);
+    protected _$direction = new BehaviorSubject<ScrollerDirections | any>(ScrollerDirection.VERTICAL);
     readonly $direction = this._$direction.asObservable();
     @Input()
-    set direction(v: ScrollerDirections) {
+    set direction(v: ScrollerDirections | any) {
         if (this._$direction.getValue() !== v) {
             this._$direction.next(v);
         }
     }
     get direction() { return this._$direction.getValue(); }
-
-    protected _$isVertical = new BehaviorSubject<boolean>(true);
-    readonly $isVertical = this._$isVertical.asObservable();
 
     protected _$startOffset = new BehaviorSubject<number>(0);
     readonly $startOffset = this._$startOffset.asObservable();
@@ -57,10 +54,47 @@ export class BaseScrollView extends DisposableComponent {
             this._$endOffset.next(v);
         }
     }
-    get direcendOffsettion() { return this._$endOffset.getValue(); }
+    get endOffset() { return this._$endOffset.getValue(); }
+
+    protected _$alignmentStartOffset = new BehaviorSubject<number>(0);
+    readonly $alignmentStartOffset = this._$alignmentStartOffset.asObservable();
+    @Input()
+    set alignmentStartOffset(v: number) {
+        if (this._$alignmentStartOffset.getValue() !== v) {
+            this._$alignmentStartOffset.next(v);
+        }
+    }
+    get alignmentStartOffset() { return this._$alignmentStartOffset.getValue(); }
+
+    protected _$alignmentEndOffset = new BehaviorSubject<number>(0);
+    readonly $alignmentEndOffset = this._$alignmentEndOffset.asObservable();
+    @Input()
+    set alignmentEndOffset(v: number) {
+        if (this._$alignmentEndOffset.getValue() !== v) {
+            this._$alignmentEndOffset.next(v);
+        }
+    }
+    get alignmentEndOffset() { return this._$alignmentEndOffset.getValue(); }
+
+    protected _$isInfinity = new BehaviorSubject<boolean>(false);
+    readonly $isInfinity = this._$isInfinity.asObservable();
+    @Input()
+    set isInfinity(v: boolean) {
+        if (this._$isInfinity.getValue() !== v) {
+            this._$isInfinity.next(v);
+        }
+    }
+    get isInfinity() { return this._$isInfinity.getValue(); }
+
+    protected _$isVertical = new BehaviorSubject<boolean>(true);
+    readonly $isVertical = this._$isVertical.asObservable();
 
     protected _$grabbing = new BehaviorSubject<boolean>(false);
     readonly $grabbing = this._$grabbing.asObservable();
+
+    protected _inversion = inject(SCROLL_VIEW_INVERSION);
+
+    protected _overscrollEnabled = inject(SCROLL_VIEW_OVERSCROLL_ENABLED);
 
     protected _$updateScrollBar = new Subject<void>();
     protected $updateScrollBar = this._$updateScrollBar.asObservable();
@@ -70,7 +104,7 @@ export class BaseScrollView extends DisposableComponent {
             isVertical = this._$isVertical.getValue(),
             viewportSize = isVertical ? height : width,
             totalSize = this._totalSize;
-        return totalSize > viewportSize;
+        return this._inversion ? (totalSize < viewportSize) : (totalSize > viewportSize);
     }
 
     protected _isMoving = false;
@@ -78,15 +112,19 @@ export class BaseScrollView extends DisposableComponent {
         return this._isMoving;
     }
 
-    protected _x: number = this._$startOffset.getValue();
+    protected _x: number = 0;
     set x(v: number) {
         this._x = this._actualX = v;
+
+        this.normalizeScrollSize();
     }
     get x() { return this._x; }
 
-    protected _y: number = this._$endOffset.getValue();
+    protected _y: number = 0;
     set y(v: number) {
         this._y = this._actualY = v;
+
+        this.normalizeScrollSize();
     }
     get y() { return this._y; }
 
@@ -95,10 +133,23 @@ export class BaseScrollView extends DisposableComponent {
     set totalSize(v: number) {
         if (this._totalSize !== v) {
             this._totalSize = v;
-            const startOffset = this._$startOffset.getValue();
-            this._actualTotalSize = v + startOffset;
+            const startOffset = this._$startOffset.getValue(), endOffset = this._$alignmentEndOffset.getValue();
+            this._actualTotalSize = v + startOffset + endOffset;
+
+            this.normalizeScrollSize();
         }
     }
+    get totalSize() {
+        return this._totalSize;
+    }
+
+    protected _startLayoutOffset: number = 0;
+    set startLayoutOffset(v: number) {
+        if (this._startLayoutOffset !== v) {
+            this._startLayoutOffset = v;
+        }
+    }
+    get startLayoutOffset() { return this._startLayoutOffset; }
 
     get actualScrollHeight() {
         const { height: viewportHeight } = this._$viewportBounds.getValue(),
@@ -149,9 +200,9 @@ export class BaseScrollView extends DisposableComponent {
             startOffset = this._$startOffset.getValue(),
             endOffset = this._$endOffset.getValue();
         if (this._inversion) {
-            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - contentWidth);
+            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - (contentWidth + this._$alignmentEndOffset.getValue()));
         }
-        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : (contentWidth - viewportWidth);
+        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : ((contentWidth + this._$alignmentEndOffset.getValue()) - viewportWidth);
     }
 
     get scrollHeight() {
@@ -161,9 +212,9 @@ export class BaseScrollView extends DisposableComponent {
             startOffset = this._$startOffset.getValue(),
             endOffset = this._$endOffset.getValue();
         if (this._inversion) {
-            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - contentHeight);
+            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - (contentHeight + this._$alignmentEndOffset.getValue()));
         }
-        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : (contentHeight - viewportHeight);
+        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : ((contentHeight + this._$alignmentEndOffset.getValue()) - viewportHeight);
     }
 
     protected _$viewportBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
@@ -172,8 +223,7 @@ export class BaseScrollView extends DisposableComponent {
     protected _$contentBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
     readonly $contentBounds = this._$contentBounds.asObservable();
 
-
-    protected _inversion = inject(SCROLL_VIEW_INVERSION);
+    protected _isCoordinatesOverrided: boolean = false;
 
     constructor() {
         super();
@@ -193,16 +243,57 @@ export class BaseScrollView extends DisposableComponent {
         this.onResizeViewport();
     }
 
+    protected overrideCoordinates(x: number, y: number) { }
+
+    protected normalizeScrollSize() {
+        if (this._$isInfinity.getValue()) {
+            const isVertical = this._$isVertical.getValue();
+            if (isVertical) {
+                const scrollSize = (this._totalSize - this._$viewportBounds.getValue().height);
+                if (this._y < 0) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = scrollSize;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this._y = currentPosition;
+                    return true;
+                } else if (this._y > scrollSize) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = 0;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this._y = currentPosition;
+                    return true;
+                }
+            } else {
+                const scrollSize = (this._totalSize - this._$viewportBounds.getValue().width);
+                if (this._x < 0) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = scrollSize;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this._x = currentPosition;
+                    return true;
+                } else if (this._x > scrollSize) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = 0;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this._x = currentPosition;
+                    return true;
+                }
+            }
+        }
+        this._isCoordinatesOverrided = false;
+        return false;
+    }
+
     protected onResizeViewport() {
         const viewport = this.scrollViewport?.nativeElement;
-        if (viewport) {
+        if (!!viewport) {
             const isVertical = this._$isVertical.getValue(),
                 startOffset = this._$startOffset.getValue(),
                 endOffset = this._$endOffset.getValue(),
                 w = viewport.offsetWidth,
                 h = viewport.offsetHeight,
-                width = isVertical ? w : w - startOffset - endOffset,
-                height = isVertical ? h - startOffset - endOffset : h,
+                width = isVertical ? w : (w - startOffset - endOffset),
+                height = isVertical ? (h - startOffset - endOffset) : h,
                 bounds = this._$viewportBounds.getValue();
             if (bounds.width === width && bounds.height === height) {
                 return;
@@ -211,15 +302,15 @@ export class BaseScrollView extends DisposableComponent {
         }
     }
 
-    protected onResizeContent() {
+    protected onResizeContent(value: number | null = null) {
         const content = this.scrollContent?.nativeElement;
-        if (content) {
+        if (!!content) {
             const isVertical = this._$isVertical.getValue(),
                 startOffset = this._$startOffset.getValue(),
                 w = content.offsetWidth,
                 h = content.offsetHeight,
-                width = isVertical ? w : w - startOffset,
-                height = isVertical ? h - startOffset : h,
+                width = isVertical ? w : value ?? (w - startOffset),
+                height = isVertical ? value ?? (h - startOffset) : h,
                 bounds = this._$contentBounds.getValue();
             if (bounds.width === width && bounds.height === height) {
                 return;

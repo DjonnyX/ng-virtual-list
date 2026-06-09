@@ -3,27 +3,35 @@
 </div>
 
 <ng-prerender-container #prerender [bounds]="($bounds | async)!" [direction]="($direction | async)!"
-  [dynamic]="($dynamicSize | async)!" [isVertical]="($isVertical | async)!"
-  [itemSize]="($itemSize | async)!" [trackBy]="($trackBy | async)!" [itemRenderer]="($itemRenderer | async)!"
-  [startOffset]="($scrollStartOffset | async)!" [endOffset]="($scrollEndOffset | async)!"
+  [dynamic]="($dynamicSize | async)!" [divides]="($divides | async)!" [isVertical]="($isVertical | async)!"
+  [itemSize]="($actualItemSize | async)!" [trackBy]="($trackBy | async)!" [itemRenderer]="($itemRenderer | async)!"
+  [startOffset]="($startOffset | async)!" [endOffset]="($endOffset | async)!"
   [scrollbarEnabled]="(scroller.$scrollbarShow | async)!"
   [enabled]="($prerenderEnabled | async)!"></ng-prerender-container>
 
-<ng-container *ngIf="$snap | async">
+<ng-container *ngIf="($stickyEnabled | async)!">
   <div localeSensitive [langTextDir]="($langTextDir | async)!" #snappedContainer class="ngvl__snapped-container"
-    [ngClass]="($classes | async)!">
+    [ngClass]="($classes | async)">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
       <ng-container #snapRendererContainer></ng-container>
     </div>
   </div>
 </ng-container>
-<ng-scroller class="ngvl__list-scroller" #scroller [classes]="($classes | async)!"
-  [startOffset]="($scrollStartOffset | async)!" [direction]="($direction | async)!"
-  [endOffset]="($scrollEndOffset | async)!" [scrollbarThumbRenderer]="($scrollbarThumbRenderer | async)!"
-  [scrollbarThickness]="($scrollbarThickness | async)!" [scrollbarThumbParams]="($scrollbarThumbParams | async)"
-  [focusedElement]="($focusedElement | async)!" [loading]="($loading | async)!"
-  [overscrollEnabled]="($overscrollEnabled | async)!" [scrollbarEnabled]="($scrollbarEnabled | async)!"
-  [scrollbarInteractive]="($scrollbarInteractive | async)!" [scrollbarMinSize]="($scrollbarMinSize | async)!"
-  [scrollBehavior]="($scrollBehavior | async)!" [scrollingSettings]="($scrollingSettings | async)!">
+
+<ng-scroller #scroller class="ngvl__list-scroller" [classes]="($classes | async)!"
+  [startOffset]="($startOffset | async)!" [endOffset]="($endOffset | async)!"
+  [alignmentStartOffset]="($alignmentScrollStartOffset | async)!"
+  [alignmentEndOffset]="($alignmentScrollEndOffset | async)!" [direction]="($direction | async)!"
+  [scrollbarThumbRenderer]="($scrollbarThumbRenderer | async)!" [isInfinity]="($isInfinity | async)!"
+  [scrollbarThickness]="($scrollbarThickness | async)!" [scrollbarThumbParams]="($scrollbarThumbParams | async)!"
+  [animationParams]="($animationParams | async)!" [focusedElement]="($focusedElement | async)!"
+  [loading]="($loading | async)!" [overscrollEnabled]="($overscrollEnabled | async)!"
+  [snappingDistance]="($snappingDistance | async)!" [overlappingScrollbar]="($overlappingScrollbar | async)!"
+  [scrollbarEnabled]="($actualScrollbarEnabled | async)!" [scrollbarInteractive]="($scrollbarInteractive | async)!"
+  [snapToItem]="($snapToItem | async)!" [snapToItemAlign]="($snapToItemAlign | async)!"
+  [scrollbarMinSize]="($scrollbarMinSize | async)!" [scrollBehavior]="($scrollBehavior | async)!"
+  [scrollingSettings]="($scrollingSettings | async)!" [scrollingOneByOne]="($scrollingOneByOne | async)!"
+  [motionBlur]="($motionBlur | async)!" [maxMotionBlur]="($maxMotionBlur | async)!"
+  [motionBlurEnabled]="($motionBlurEnabled | async)!">
   <ng-container #renderersContainer></ng-container>
 </ng-scroller>
