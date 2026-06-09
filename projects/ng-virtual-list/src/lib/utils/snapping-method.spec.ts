@@ -8,16 +8,16 @@ describe('isSnappingMethodAdvenced', () => {
         expect(isAdvanced).toBeTruthy();
     });
 
-    it('The isAdvanced value must be false', () => {
-        const isAdvanced = isSnappingMethodAdvenced('normal');
-        expect(isAdvanced).toBeFalsy();
+    it('The isAdvanced value must be true', () => {
+        const isAdvanced = isSnappingMethodAdvenced('standart');
+        expect(isAdvanced).toBeTruthy();
     });
 });
 
 describe('isSnappingMethodDefault', () => {
     it('isNormal value must be true', () => {
-        const isNormal = isSnappingMethodDefault('normal') && 
-        isSnappingMethodDefault(SnappingMethods.NORMAL);
+        const isNormal = isSnappingMethodDefault('standart') && 
+        isSnappingMethodDefault(SnappingMethods.STANDART);
         expect(isNormal).toBeTruthy();
     });
 

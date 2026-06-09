@@ -1,4 +1,5 @@
-import { CollectionMode, CollectionModes } from "../enums";
+import { CollectionModes } from "../enums";
+import { CollectionMode } from "../types";
 
 const NORMAL_ALIASES = [CollectionModes.NORMAL, 'normal'],
     LAZY_ALIASES = [CollectionModes.LAZY, 'lazy'];

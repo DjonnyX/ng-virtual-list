@@ -2,10 +2,10 @@ import {
     ChangeDetectionStrategy, Component, ElementRef, inject, Input, OnDestroy, TemplateRef, ViewChild,
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
-import { toggleClassName } from "../../../../utils";
 import { BehaviorSubject, combineLatest, filter, Subject, Subscription, takeUntil, tap } from "rxjs";
+import { toggleClassName } from "../../../../utils";
 import {
-    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
+    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
@@ -16,11 +16,11 @@ import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
 import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
-import { Direction } from "../../../../enums";
+import { Direction } from "../../../../types";
 import { DisposableComponent } from "../../../../utils/disposable-component";
 
 /**
- * NgPrerenderList.
+ * NgPrerenderList
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
@@ -34,6 +34,7 @@ import { DisposableComponent } from "../../../../utils/disposable-component";
     host: {
         'style': 'position: relative;'
     },
+    standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
@@ -70,16 +71,6 @@ export class NgPrerenderList extends DisposableComponent implements OnDestroy {
         }
     }
     get isVertical() { return this._$isVertical.getValue(); }
-
-    protected _$items = new BehaviorSubject<IVirtualListCollection>([]);
-    readonly $items = this._$items.asObservable();
-    @Input()
-    set items(v: IVirtualListCollection) {
-        if (this._$items.getValue() !== v) {
-            this._$items.next(v);
-        }
-    }
-    get items() { return this._$items.getValue(); }
 
     protected _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
     readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
@@ -150,6 +141,26 @@ export class NgPrerenderList extends DisposableComponent implements OnDestroy {
         }
     }
     get trackBy() { return this._$trackBy.getValue(); }
+
+    protected _$divides = new BehaviorSubject<number>(DEFAULT_DIVIDES);
+    readonly $divides = this._$divides.asObservable();
+    @Input()
+    set divides(v: number) {
+        if (this._$divides.getValue() !== v) {
+            this._$divides.next(v);
+        }
+    }
+    get divides() { return this._$divides.getValue(); }
+
+    protected _$items = new BehaviorSubject<IVirtualListCollection>([]);
+    readonly $items = this._$items.asObservable();
+    @Input()
+    set items(v: IVirtualListCollection) {
+        if (this._$items.getValue() !== v) {
+            this._$items.next(v);
+        }
+    }
+    get items() { return this._$items.getValue(); }
 
     protected _$itemRenderer = new BehaviorSubject<TemplateRef<any> | null>(null);
     readonly $itemRenderer = this._$itemRenderer.asObservable();
@@ -230,8 +241,8 @@ export class NgPrerenderList extends DisposableComponent implements OnDestroy {
             takeUntil(this._$unsubscribe),
             filter(v => !!v),
             tap(bounds => {
-                const { width, height } = bounds!;
-                const el = this._elementRef.nativeElement;
+                const { width, height } = bounds!,
+                    el = this._elementRef.nativeElement;
                 el.style.width = `${width}${PX}`;
                 el.style.height = `${height}${PX}`;
             }),
@@ -245,6 +256,7 @@ export class NgPrerenderList extends DisposableComponent implements OnDestroy {
                     this._trackBox.reset(this._$itemComponentClass.getValue(), items, this._$bounds.getValue()!, {
                         itemRenderer: this._$itemRenderer.getValue()!,
                         dynamic: this._$dynamic.getValue(),
+                        divides: this._$divides.getValue(),
                         itemSize: this._$itemSize.getValue(),
                         isVertical: this._$isVertical.getValue(),
                         trackBy: this._$trackBy.getValue(),
