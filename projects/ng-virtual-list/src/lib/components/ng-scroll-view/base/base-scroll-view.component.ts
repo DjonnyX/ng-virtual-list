@@ -1,10 +1,11 @@
 import {
-    Component, computed, DestroyRef, ElementRef, inject, input, Signal, signal, viewChild,
+    Component, ElementRef, inject, Input, ViewChild,
 } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, Subject, takeUntil, tap } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
-import { SCROLL_VIEW_INVERSION } from '../const';
+import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
+import { DisposableComponent } from '../../../utils/disposable-component';
 
 /**
  * BaseScrollView
@@ -18,48 +19,112 @@ import { SCROLL_VIEW_INVERSION } from '../const';
     selector: 'base-scroll-view',
     template: '',
 })
-export class BaseScrollView {
-    readonly scrollContent = viewChild<ElementRef<HTMLDivElement>>('scrollContent');
+export class BaseScrollView extends DisposableComponent {
+    @ViewChild('scrollContent')
+    scrollContent: ElementRef<HTMLDivElement> | undefined;
 
-    readonly scrollViewport = viewChild<ElementRef<HTMLDivElement>>('scrollViewport');
+    @ViewChild('scrollViewport')
+    scrollViewport: ElementRef<HTMLDivElement> | undefined;
 
-    readonly direction = input<ScrollerDirections>(ScrollerDirection.VERTICAL);
+    protected _$direction = new BehaviorSubject<ScrollerDirections | any>(ScrollerDirection.VERTICAL);
+    readonly $direction = this._$direction.asObservable();
+    @Input()
+    set direction(v: ScrollerDirections | any) {
+        if (this._$direction.getValue() !== v) {
+            this._$direction.next(v);
+        }
+    }
+    get direction() { return this._$direction.getValue(); }
 
-    readonly startOffset = input<number>(0);
+    protected _$startOffset = new BehaviorSubject<number>(0);
+    readonly $startOffset = this._$startOffset.asObservable();
+    @Input()
+    set startOffset(v: number) {
+        if (this._$startOffset.getValue() !== v) {
+            this._$startOffset.next(v);
+        }
+    }
+    get startOffset() { return this._$startOffset.getValue(); }
 
-    readonly endOffset = input<number>(0);
+    protected _$endOffset = new BehaviorSubject<number>(0);
+    readonly $endOffset = this._$endOffset.asObservable();
+    @Input()
+    set endOffset(v: number) {
+        if (this._$endOffset.getValue() !== v) {
+            this._$endOffset.next(v);
+        }
+    }
+    get endOffset() { return this._$endOffset.getValue(); }
 
-    readonly isVertical: Signal<boolean>;
+    protected _$alignmentStartOffset = new BehaviorSubject<number>(0);
+    readonly $alignmentStartOffset = this._$alignmentStartOffset.asObservable();
+    @Input()
+    set alignmentStartOffset(v: number) {
+        if (this._$alignmentStartOffset.getValue() !== v) {
+            this._$alignmentStartOffset.next(v);
+        }
+    }
+    get alignmentStartOffset() { return this._$alignmentStartOffset.getValue(); }
 
-    readonly grabbing = signal<boolean>(false);
+    protected _$alignmentEndOffset = new BehaviorSubject<number>(0);
+    readonly $alignmentEndOffset = this._$alignmentEndOffset.asObservable();
+    @Input()
+    set alignmentEndOffset(v: number) {
+        if (this._$alignmentEndOffset.getValue() !== v) {
+            this._$alignmentEndOffset.next(v);
+        }
+    }
+    get alignmentEndOffset() { return this._$alignmentEndOffset.getValue(); }
+
+    protected _$isInfinity = new BehaviorSubject<boolean>(false);
+    readonly $isInfinity = this._$isInfinity.asObservable();
+    @Input()
+    set isInfinity(v: boolean) {
+        if (this._$isInfinity.getValue() !== v) {
+            this._$isInfinity.next(v);
+        }
+    }
+    get isInfinity() { return this._$isInfinity.getValue(); }
+
+    protected _$isVertical = new BehaviorSubject<boolean>(true);
+    readonly $isVertical = this._$isVertical.asObservable();
+
+    protected _$grabbing = new BehaviorSubject<boolean>(false);
+    readonly $grabbing = this._$grabbing.asObservable();
+
+    protected _inversion = inject(SCROLL_VIEW_INVERSION);
+
+    protected _overscrollEnabled = inject(SCROLL_VIEW_OVERSCROLL_ENABLED);
 
     protected _$updateScrollBar = new Subject<void>();
     protected $updateScrollBar = this._$updateScrollBar.asObservable();
 
     get scrollable() {
-        const { width, height } = this.viewportBounds(),
-            isVertical = this.isVertical(),
+        const { width, height } = this._$viewportBounds.getValue(),
+            isVertical = this._$isVertical.getValue(),
             viewportSize = isVertical ? height : width,
             totalSize = this._totalSize;
-        return totalSize > viewportSize;
+        return this._inversion ? (totalSize < viewportSize) : (totalSize > viewportSize);
     }
-
-    protected _destroyRef = inject(DestroyRef);
 
     protected _isMoving = false;
     get isMoving() {
         return this._isMoving;
     }
 
-    protected _x: number = this.startOffset();
+    protected _x: number = 0;
     set x(v: number) {
         this._x = this._actualX = v;
+
+        this.normalizeScrollSize();
     }
     get x() { return this._x; }
 
-    protected _y: number = this.endOffset();
+    protected _y: number = 0;
     set y(v: number) {
         this._y = this._actualY = v;
+
+        this.normalizeScrollSize();
     }
     get y() { return this._y; }
 
@@ -68,17 +133,30 @@ export class BaseScrollView {
     set totalSize(v: number) {
         if (this._totalSize !== v) {
             this._totalSize = v;
-            const startOffset = this.startOffset();
-            this._actualTotalSize = v + startOffset;
+            const startOffset = this._$startOffset.getValue(), endOffset = this._$alignmentEndOffset.getValue();
+            this._actualTotalSize = v + startOffset + endOffset;
+
+            this.normalizeScrollSize();
         }
     }
+    get totalSize() {
+        return this._totalSize;
+    }
+
+    protected _startLayoutOffset: number = 0;
+    set startLayoutOffset(v: number) {
+        if (this._startLayoutOffset !== v) {
+            this._startLayoutOffset = v;
+        }
+    }
+    get startLayoutOffset() { return this._startLayoutOffset; }
 
     get actualScrollHeight() {
-        const { height: viewportHeight } = this.viewportBounds(),
+        const { height: viewportHeight } = this._$viewportBounds.getValue(),
             totalSize = this._actualTotalSize,
-            isVertical = this.isVertical(),
-            startOffset = this.startOffset(),
-            endOffset = this.endOffset();
+            isVertical = this._$isVertical.getValue(),
+            startOffset = this._$startOffset.getValue(),
+            endOffset = this._$endOffset.getValue();
         if (this._inversion) {
             return totalSize > viewportHeight ? isVertical ? endOffset : 0 : viewportHeight - totalSize;
         }
@@ -86,11 +164,11 @@ export class BaseScrollView {
     }
 
     get actualScrollWidth() {
-        const { width: viewportWidth } = this.viewportBounds(),
+        const { width: viewportWidth } = this._$viewportBounds.getValue(),
             totalSize = this._actualTotalSize,
-            isVertical = this.isVertical(),
-            startOffset = this.startOffset(),
-            endOffset = this.endOffset();
+            isVertical = this._$isVertical.getValue(),
+            startOffset = this._$startOffset.getValue(),
+            endOffset = this._$endOffset.getValue();
         if (this._inversion) {
             return totalSize > viewportWidth ? isVertical ? 0 : endOffset : viewportWidth - totalSize;
         }
@@ -116,39 +194,48 @@ export class BaseScrollView {
     }
 
     get scrollWidth() {
-        const { width: viewportWidth } = this.viewportBounds(),
-            { width: contentWidth } = this.contentBounds(),
-            isVertical = this.isVertical(),
-            startOffset = this.startOffset(),
-            endOffset = this.endOffset();
+        const { width: viewportWidth } = this._$viewportBounds.getValue(),
+            { width: contentWidth } = this._$contentBounds.getValue(),
+            isVertical = this._$isVertical.getValue(),
+            startOffset = this._$startOffset.getValue(),
+            endOffset = this._$endOffset.getValue();
         if (this._inversion) {
-            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - contentWidth);
+            return contentWidth > viewportWidth ? isVertical ? 0 : endOffset : (viewportWidth - (contentWidth + this._$alignmentEndOffset.getValue()));
         }
-        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : (contentWidth - viewportWidth);
+        return contentWidth < viewportWidth ? isVertical ? 0 : startOffset : ((contentWidth + this._$alignmentEndOffset.getValue()) - viewportWidth);
     }
 
     get scrollHeight() {
-        const { height: viewportHeight } = this.viewportBounds(),
-            { height: contentHeight } = this.contentBounds(),
-            isVertical = this.isVertical(),
-            startOffset = this.startOffset(),
-            endOffset = this.endOffset();
+        const { height: viewportHeight } = this._$viewportBounds.getValue(),
+            { height: contentHeight } = this._$contentBounds.getValue(),
+            isVertical = this._$isVertical.getValue(),
+            startOffset = this._$startOffset.getValue(),
+            endOffset = this._$endOffset.getValue();
         if (this._inversion) {
-            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - contentHeight);
+            return contentHeight > viewportHeight ? isVertical ? endOffset : 0 : (viewportHeight - (contentHeight + this._$alignmentEndOffset.getValue()));
         }
-        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : (contentHeight - viewportHeight);
+        return contentHeight < viewportHeight ? isVertical ? startOffset : 0 : ((contentHeight + this._$alignmentEndOffset.getValue()) - viewportHeight);
     }
 
-    readonly viewportBounds = signal<ISize>({ width: 0, height: 0 });
+    protected _$viewportBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
+    readonly $viewportBounds = this._$viewportBounds.asObservable();
 
-    readonly contentBounds = signal<ISize>({ width: 0, height: 0 });
+    protected _$contentBounds = new BehaviorSubject<ISize>({ width: 0, height: 0 });
+    readonly $contentBounds = this._$contentBounds.asObservable();
 
-    protected _inversion = inject(SCROLL_VIEW_INVERSION);
+    protected _isCoordinatesOverrided: boolean = false;
 
     constructor() {
-        this.isVertical = computed(() => {
-            return this.direction() === ScrollerDirection.VERTICAL;
-        });
+        super();
+
+        const $direction = this.$direction;
+        $direction.pipe(
+            takeUntil(this._$unsubscribe),
+            distinctUntilChanged(),
+            tap(v => {
+                this._$isVertical.next(v === ScrollerDirection.VERTICAL);
+            }),
+        ).subscribe();
     }
 
     tick() {
@@ -156,38 +243,79 @@ export class BaseScrollView {
         this.onResizeViewport();
     }
 
+    protected overrideCoordinates(x: number, y: number) { }
+
+    protected normalizeScrollSize() {
+        if (this._$isInfinity.getValue()) {
+            const isVertical = this._$isVertical.getValue();
+            if (isVertical) {
+                const scrollSize = (this._totalSize - this._$viewportBounds.getValue().height);
+                if (this._y < 0) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = scrollSize;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this._y = currentPosition;
+                    return true;
+                } else if (this._y > scrollSize) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = 0;
+                    this.overrideCoordinates(this._x, currentPosition);
+                    this._y = currentPosition;
+                    return true;
+                }
+            } else {
+                const scrollSize = (this._totalSize - this._$viewportBounds.getValue().width);
+                if (this._x < 0) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = scrollSize;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this._x = currentPosition;
+                    return true;
+                } else if (this._x > scrollSize) {
+                    this._isCoordinatesOverrided = true;
+                    const currentPosition = 0;
+                    this.overrideCoordinates(currentPosition, this._y);
+                    this._x = currentPosition;
+                    return true;
+                }
+            }
+        }
+        this._isCoordinatesOverrided = false;
+        return false;
+    }
+
     protected onResizeViewport() {
-        const viewport = this.scrollViewport()?.nativeElement;
-        if (viewport) {
-            const isVertical = this.isVertical(),
-                startOffset = this.startOffset(),
-                endOffset = this.endOffset(),
+        const viewport = this.scrollViewport?.nativeElement;
+        if (!!viewport) {
+            const isVertical = this._$isVertical.getValue(),
+                startOffset = this._$startOffset.getValue(),
+                endOffset = this._$endOffset.getValue(),
                 w = viewport.offsetWidth,
                 h = viewport.offsetHeight,
-                width = isVertical ? w : w - startOffset - endOffset,
-                height = isVertical ? h - startOffset - endOffset : h,
-                bounds = this.viewportBounds();
+                width = isVertical ? w : (w - startOffset - endOffset),
+                height = isVertical ? (h - startOffset - endOffset) : h,
+                bounds = this._$viewportBounds.getValue();
             if (bounds.width === width && bounds.height === height) {
                 return;
             }
-            this.viewportBounds.set({ width, height });
+            this._$viewportBounds.next({ width, height });
         }
     }
 
-    protected onResizeContent() {
-        const content = this.scrollContent()?.nativeElement;
-        if (content) {
-            const isVertical = this.isVertical(),
-                startOffset = this.startOffset(),
+    protected onResizeContent(value: number | null = null) {
+        const content = this.scrollContent?.nativeElement;
+        if (!!content) {
+            const isVertical = this._$isVertical.getValue(),
+                startOffset = this._$startOffset.getValue(),
                 w = content.offsetWidth,
                 h = content.offsetHeight,
-                width = isVertical ? w : w - startOffset,
-                height = isVertical ? h - startOffset : h,
-                bounds = this.contentBounds();
+                width = isVertical ? w : value ?? (w - startOffset),
+                height = isVertical ? value ?? (h - startOffset) : h,
+                bounds = this._$contentBounds.getValue();
             if (bounds.width === width && bounds.height === height) {
                 return;
             }
-            this.contentBounds.set({ width, height });
+            this._$contentBounds.next({ width, height });
         }
     }
 }

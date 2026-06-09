@@ -1,22 +1,22 @@
 import {
-    ChangeDetectionStrategy, Component, input, TemplateRef, viewChild, ViewEncapsulation,
+    ChangeDetectionStrategy, Component, Input, TemplateRef, ViewChild, ViewEncapsulation,
 } from "@angular/core";
+import { filter, Observable, of, switchMap, takeUntil } from "rxjs";
 import {
-    DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
+    DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SCROLLBAR_ENABLED, TRACK_BY_PROPERTY_NAME,
 } from "../../const";
 import { ISize } from '../../interfaces';
 import { IVirtualListCollection } from "../../models";
-import { Direction } from "../../enums";
+import { Direction } from "../../types";
 import { NgPrerenderList } from "./components/ng-prerender-list/ng-prerender-list.component";
-import { filter, Observable, switchMap } from "rxjs";
 import { PrerenderCache } from "./types";
-import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { DisposableComponent } from "../../utils/disposable-component";
 
 /**
  * Prerender container.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/ng-prerender-container/ng-prerender-container.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/ng-prerender-container.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -31,63 +31,81 @@ import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class NgPrerenderContainer {
-    private _list = viewChild<NgPrerenderList>('list');
+export class NgPrerenderContainer extends DisposableComponent {
+    @ViewChild('list', { read: NgPrerenderList })
+    private _list: NgPrerenderList | null = null;
 
-    enabled = input<boolean>(false);
+    @Input()
+    enabled: boolean = false;
 
-    direction = input<Direction>(DEFAULT_DIRECTION);
+    @Input()
+    direction: Direction | any = DEFAULT_DIRECTION;
 
-    isVertical = input<boolean>(true);
+    @Input()
+    isVertical: boolean = true;
 
-    scrollbarEnabled = input<boolean>(DEFAULT_SCROLLBAR_ENABLED);
+    @Input()
+    scrollbarEnabled: boolean = DEFAULT_SCROLLBAR_ENABLED;
 
-    startOffset = input<number>(0);
+    @Input()
+    startOffset: number = 0;
 
-    endOffset = input<number>(0);
+    @Input()
+    endOffset: number = 0;
 
-    bounds = input.required<ISize>();
+    @Input()
+    bounds!: ISize;
 
-    dynamic = input<boolean>(DEFAULT_DYNAMIC_SIZE);
+    @Input()
+    dynamic: boolean = DEFAULT_DYNAMIC_SIZE;
 
-    itemSize = input<number>(DEFAULT_ITEM_SIZE);
+    @Input()
+    itemSize: number = DEFAULT_ITEM_SIZE;
 
-    trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
+    @Input()
+    trackBy: string = TRACK_BY_PROPERTY_NAME;
 
-    itemRenderer = input<TemplateRef<any>>();
+    @Input()
+    divides: number = DEFAULT_DIVIDES;
 
-    readonly $render: Observable<PrerenderCache>;
+    itemRenderer!: TemplateRef<any>;
+
+    $render!: Observable<PrerenderCache>;
 
     get active() {
-        return this._list()?.active ?? false;
+        return this._list?.active ?? false;
     }
 
     constructor() {
-        const $list = toObservable(this._list);
+        super();
+    }
+
+    ngAfterViewInit() {
+        const $list = of(this._list);
 
         this.$render = $list.pipe(
-            takeUntilDestroyed(),
+            takeUntil(this._$unsubscribe),
             filter(v => !!v),
             switchMap(v => v!.$render),
         );
     }
 
     clear() {
-        const list = this._list();
+        const list = this._list;
         if (!!list) {
             list.clear();
         }
     }
 
     on(items: IVirtualListCollection | null = null) {
-        const list = this._list();
+        const list = this._list;
         if (!!list) {
             list.on(items);
         }
     }
 
     off() {
-        const list = this._list();
+        const list = this._list;
         if (!!list) {
             list.off();
         }
