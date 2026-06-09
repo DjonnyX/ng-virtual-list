@@ -1,6 +1,7 @@
 import { Id } from "../types";
+
 /**
- * Interface IScrollParams.
+ * IScrollParams
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
@@ -12,5 +13,6 @@ export interface IScrollParams {
     iteration?: number;
     isLastIteration?: boolean;
     scrollCalled?: boolean;
+    delay?: number;
     cb?: () => void;
 }

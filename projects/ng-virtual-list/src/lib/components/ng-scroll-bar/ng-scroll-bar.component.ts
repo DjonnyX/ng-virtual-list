@@ -1,17 +1,22 @@
 import { Component, computed, effect, ElementRef, inject, input, output, Signal, signal, TemplateRef, viewChild } from '@angular/core';
-import { combineLatest, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
+import { combineLatest, debounceTime, filter, fromEvent, of, startWith, Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
-import { DEFAULT_SCROLLBAR_INTERACTIVE } from '../../const';
+import {
+  DEFAULT_LANG_TEXT_DIR, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_INTERACTIVE, LEFT, POSITION, POSITION_ABSOLUTE,
+  POSITION_RELATIVE, RIGHT, SIZE_100_PERSENT, SIZE_AUTO, UNSET,
+} from '../../const';
 import {
   DEFAULT_SIZE, DEFAULT_THICKNESS, HEIGHT, NONE, OPACITY, OPACITY_0, OPACITY_1, PX, TRANSITION, TRANSITION_FADE_IN, WIDTH,
 } from './const';
-import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../ng-scroll-view/const';
 import { NgScrollBarService } from './ng-scroll-bar.service';
 import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
 import { ScrollbarStates } from './enums';
+import { TextDirection } from '../../types';
+import { TextDirections } from '../../enums';
 
 /**
  * ScrollBar component.
@@ -26,6 +31,7 @@ import { ScrollbarStates } from './enums';
   providers: [
     { provide: SCROLL_VIEW_INVERSION, useValue: true },
     { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: false },
+    { provide: SCROLL_VIEW_OVERSCROLL_ENABLED, useValue: false },
     NgScrollBarService,
     NgScrollBarPublicService,
   ],
@@ -36,7 +42,7 @@ import { ScrollbarStates } from './enums';
 export class NgScrollBarComponent extends NgScrollView {
   protected _defaultRenderer = viewChild<TemplateRef<any>>('defaultRenderer');
 
-  protected _service = inject(NgScrollBarService);
+  protected _scrollBarService = inject(NgScrollBarService);
 
   private _apiService = inject(NgScrollBarPublicService);
 
@@ -56,7 +62,11 @@ export class NgScrollBarComponent extends NgScrollView {
 
   readonly prepared = input<boolean>(false);
 
+  readonly langTextDir = input<TextDirection>(DEFAULT_LANG_TEXT_DIR);
+
   readonly interactive = input<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
+
+  readonly overlapping = input<boolean>(DEFAULT_OVERLAPPING_SCROLLBAR);
 
   readonly show = input<boolean>(false);
 
@@ -98,8 +108,8 @@ export class NgScrollBarComponent extends NgScrollView {
     });
 
     const $renderer = toObservable(this.renderer).pipe(
-        startWith(null),
-      ),
+      startWith(null),
+    ),
       $defaultRenderer = toObservable(this._defaultRenderer);
 
     combineLatest([$renderer, $defaultRenderer]).pipe(
@@ -118,8 +128,7 @@ export class NgScrollBarComponent extends NgScrollView {
       filter(v => !!v),
       tap(() => {
         this.scrollLimits();
-        this.refreshX(this._x);
-        this.refreshY(this._y);
+        this.refreshCoordinate(this._x, this._y);
         this.fireScrollEvent(false);
       }),
     ).subscribe();
@@ -131,6 +140,18 @@ export class NgScrollBarComponent extends NgScrollView {
     this.thumbHeight = computed(() => {
       return this.isVertical() ? this.size() : this.thickness();
     });
+
+    const $wheel = this.$wheel;
+    $wheel.pipe(
+      takeUntilDestroyed(),
+      debounceTime(100),
+      tap(() => {
+        const event = this.createDragEvent(true);
+        if (!!event) {
+          this.onDragEnd.emit(event);
+        }
+      }),
+    ).subscribe();
 
     const $pointerDown = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown').pipe(
       takeUntilDestroyed(),
@@ -175,13 +196,13 @@ export class NgScrollBarComponent extends NgScrollView {
     effect(() => {
       const pressed = this.pressedState(), hover = this.hoverState();
       if (pressed) {
-        this._service.state = ScrollbarStates.PRESSED;
+        this._scrollBarService.state = ScrollbarStates.PRESSED;
         return;
       } else if (hover) {
-        this._service.state = ScrollbarStates.HOVER;
+        this._scrollBarService.state = ScrollbarStates.HOVER;
         return;
       }
-      this._service.state = ScrollbarStates.NORMAL;
+      this._scrollBarService.state = ScrollbarStates.NORMAL;
       return;
     });
 
@@ -201,6 +222,17 @@ export class NgScrollBarComponent extends NgScrollView {
       };
     });
 
+    effect(() => {
+      const el = this._elementRef.nativeElement;
+      if (!!el) {
+        const overlapping = this.overlapping(), langTextDir = this.langTextDir();
+        el.style[POSITION] = overlapping ? POSITION_ABSOLUTE : POSITION_RELATIVE;
+        el.style[LEFT] = overlapping && langTextDir === TextDirections.RTL ? '0' : UNSET;
+        el.style[RIGHT] = overlapping && langTextDir === TextDirections.LTR ? '0' : UNSET;
+        el.style[WIDTH] = overlapping ? SIZE_AUTO : SIZE_100_PERSENT;
+      }
+    });
+
     this.$scroll.pipe(
       takeUntilDestroyed(),
       tap(v => {
@@ -214,8 +246,8 @@ export class NgScrollBarComponent extends NgScrollView {
     const $scrollEnd = this.$scrollEnd;
     $scrollEnd.pipe(
       takeUntilDestroyed(),
-      tap(() => {
-        const event = this.createDragEvent(false);
+      tap(userAction => {
+        const event = this.createDragEvent(userAction);
         if (!!event) {
           this.onDragEnd.emit(event);
         }
@@ -245,7 +277,7 @@ export class NgScrollBarComponent extends NgScrollView {
   private thumbHit(x: number, y: number): boolean {
     const thumb = this.scrollContent()?.nativeElement;
     if (!!thumb) {
-      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect()
+      const { x: tX, y: tY, width: tWidth, height: tHeight } = thumb.getBoundingClientRect();
       if ((x >= tX && x <= tX + tWidth) && (y >= tY && y <= tY + tHeight)) {
         return true;
       }
@@ -254,6 +286,6 @@ export class NgScrollBarComponent extends NgScrollView {
   }
 
   click(event: PointerEvent | MouseEvent) {
-    this._service.click(event);
+    this._scrollBarService.click(event);
   }
 }
