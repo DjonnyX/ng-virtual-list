@@ -1,18 +1,28 @@
-<div localeSensitive [langTextDir]="langTextDir()" [listDir]="direction()" class="ngvl__container"
-    [ngClass]="containerClasses()">
-    <div #scrollViewport cdkScrollable part="scroller" class="ngvl__scroller">
-        <div #scrollContent [attr.aria-orientation]="direction()" [attr.aria-activedescendant]="focusedElement()"
-            tabindex="0" part="list" class="ngvl__list" [ngClass]="actualClasses()">
-            <ng-content></ng-content>
-        </div>
-    </div>
-    @if (scrollbarEnabled()) {
-    <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
-        [thickness]="scrollbarThickness()" [params]="scrollbarThumbParams()" [loading]="loading()"
-        [thumbGradientPositions]="thumbGradientPositions()" [prepared]="preparedSignal()"
-        [interactive]="scrollbarInteractive()" [show]="scrollbarShow() && scrollbarEnabled() && preparedSignal()"
-        [startOffset]="startOffset()" [endOffset]="endOffset()" [overscrollEnabled]="overscrollEnabled()"
-        [scrollBehavior]="scrollBehavior()" [scrollbarMinSize]="scrollbarMinSize()"
-        (onDrag)="onScrollBarDragHandler($event)" (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
-    }
+<div localeSensitive [langTextDir]="($langTextDir | async)!" [listDir]="($direction | async)!" class="ngvl__container"
+    [ngClass]="($containerClasses | async)!">
+    <svg part="viewport" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <filter [id]="_filterId">
+            <feGaussianBlur #filter></feGaussianBlur>
+        </filter>
+        <foreignObject xmlns="http://www.w3.org/1999/xhtml" width="100%" height="100%" class="ngvl__viewport">
+            <div class="ngvl__scroller-wrapper" [class.filtered]="($motionBlurEnabled | async)!" [style.filter]="($motionBlurEnabled | async)! ? _filter : 'unset'">
+                <div cdkScrollable #scrollViewport part="scroller" class="ngvl__scroller">
+                    <div #scrollContent [attr.aria-orientation]="($direction | async)!"
+                        [attr.aria-activedescendant]="$focusedElement | async" tabindex="0" part="list" class="ngvl__list"
+                        [ngClass]="($actualClasses | async)!" [ngStyle]="($listStyles | async)!">
+                        <ng-content></ng-content>
+                    </div>
+                </div>
+            </div>
+        </foreignObject>
+    </svg>
+    <ng-container *ngIf="($scrollbarEnabled | async)!">
+        <ng-scroll-bar #scrollBar [direction]="($direction | async)!" [size]="($actualThumbSize | async)!" [renderer]="($scrollbarThumbRenderer | async)!"
+            [thickness]="($scrollbarThickness | async)!" [params]="($scrollbarThumbParams | async)!" [loading]="($loading | async)!" [overlapping]="($overlappingScrollbar | async)!"
+            [thumbGradientPositions]="($thumbColorPositions | async)!" [prepared]="($preparedSignal | async)!" [interactive]="($scrollbarInteractive | async)!"
+            [show]="($show | async)!" [startOffset]="($startOffset | async)!" [langTextDir]="($langTextDir | async)!"
+            [endOffset]="($endOffset | async)!" [overscrollEnabled]="($overscrollEnabled | async)!" [scrollBehavior]="($scrollBehavior | async)!"
+            [scrollbarMinSize]="($scrollbarMinSize | async)!" (onDrag)="onScrollBarDragHandler($event)"
+            (onDragEnd)="onScrollBarDragEndHandler($event)"></ng-scroll-bar>
+    </ng-container>
 </div>

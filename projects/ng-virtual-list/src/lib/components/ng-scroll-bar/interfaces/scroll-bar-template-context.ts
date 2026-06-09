@@ -5,7 +5,7 @@ export interface IScrollBarTemplateContext {
     /**
      * API provider
      */
-    api: NgScrollBarPublicService;
+    api: NgScrollBarPublicService | null;
     /**
      * Scrollbar thumb width.
      */
@@ -21,5 +21,5 @@ export interface IScrollBarTemplateContext {
     /**
      * Additional options for the scrollbar.
      */
-    params: { [propName: string]: any };
+    params: { [propName: string]: any } | null;
 }

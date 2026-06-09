@@ -1,43 +1,45 @@
-import { Easing } from './types';
+import { ANIMATOR_MIN_TIMESTAMP, DEFAULT_ANIMATION_DURATION, DEFAULT_WITH_DELTA } from './const';
 import { easeLinear } from './ease';
+import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
-interface IAnimatorParams {
-  startValue: number;
-  endValue: number;
-  duration?: number;
-  getPropValue?: () => number;
-  easingFunction?: Easing;
-  onUpdate?: (data: IAnimatorUpdateData) => void;
-  onComplete?: (data: IAnimatorUpdateData) => void;
-}
-
-interface IAnimatorUpdateData {
-  timestamp: number;
-  delta: number;
-  value: number;
-}
-
-export const DEFAULT_ANIMATION_DURATION = 500,
-  ANIMATOR_MIN_TIMESTAMP = 1000 / 30,
-  MIN_ANIMATED_VALUE = 10;
-
+/**
+ * Animator
+ * @link https://github.com/DjonnyX/data-channel-router/blob/main/library/src/utils/animator/animator.ts
+ * @author Evgenii Alexandrovich Grebennikov
+ * @email djonnyx@gmail.com
+ */
 export class Animator {
+  private static _nextId: number = 0;
+
   private _animationId: number = 0;
 
-  animate(params: IAnimatorParams) {
-    const {
-      startValue, endValue, duration = DEFAULT_ANIMATION_DURATION, getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
-    } = params;
+  private _currentId: number = Animator._nextId;
 
+  private generateId() {
+    return Animator._nextId = Animator._nextId === Number.MAX_SAFE_INTEGER
+      ? 0 : Animator._nextId + 1;
+  }
+
+  animate(params: IAnimatorParams) {
     this.stop();
+
+    const id = this.generateId();
+    this._currentId = id;
+
+    const {
+      withDelta = DEFAULT_WITH_DELTA, startValue, endValue, duration = DEFAULT_ANIMATION_DURATION,
+      getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
+    } = params;
 
     const startTime = performance.now();
     let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = endValue - start;
-
-    let isFinished = false;
+      diff = endValue - start, isFinished = false;
 
     const step = (currentTime: number) => {
+      if (id !== this._currentId) {
+        isCanceled = true;
+      }
+
       if (!!isCanceled) {
         return;
       }
@@ -52,9 +54,9 @@ export class Animator {
       const elapsed = currentTime - startTime,
         progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
-        val = startPosDelta + start + diff * easedProgress,
+        val = (withDelta ? startPosDelta : 0) + start + diff * easedProgress,
         currentValue = val,
-        t = Date.now();
+        t = performance.now();
 
       isFinished = progress === 1;
 
@@ -67,8 +69,10 @@ export class Animator {
 
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
+          id,
           delta,
-          value: currentValue,
+          elapsed,
+          value: !withDelta && isFinished ? endValue : currentValue,
           timestamp,
         };
         onUpdate(data);
@@ -77,8 +81,10 @@ export class Animator {
       if (isFinished) {
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
+            id,
             delta,
-            value: currentValue,
+            elapsed,
+            value: withDelta ? currentValue : endValue,
             timestamp,
           };
           onComplete(data);
