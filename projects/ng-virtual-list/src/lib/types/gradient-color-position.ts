@@ -4,4 +4,4 @@
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
-export type GradientColorPosition = `${string}%` | `${number}` | number | string;
+export type GradientColorPosition = `${number}%` | `${number}` | number | string;

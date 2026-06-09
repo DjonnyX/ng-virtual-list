@@ -3,10 +3,10 @@ import {
     ViewContainerRef, ViewEncapsulation,
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { toggleClassName } from "../../../../utils";
 import { combineLatest, filter, Observable, Subject, Subscription, tap } from "rxjs";
+import { toggleClassName } from "../../../../utils";
 import {
-    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
+    CLASS_LIST_HORIZONTAL, CLASS_LIST_VERTICAL, DEFAULT_DIRECTION, DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE,
     DEFAULT_SCROLLBAR_ENABLED, PX, TRACK_BY_PROPERTY_NAME,
 } from "../../../../const";
 import { ISize } from '../../../../interfaces';
@@ -17,13 +17,13 @@ import { Component$1 } from "../../../../models/component.model";
 import { PrerenderTrackBox } from "../../core";
 import { PrerenderTrackBoxEvents } from "../../events";
 import { NgPrerenderVirtualListItemComponent } from "../ng-prerender-list-item/ng-prerender-list-item.component";
-import { Direction } from "../../../../enums";
+import { Direction } from "../../../../types";
 
 /**
- * PrerenderList.
+ * NgPrerenderList
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/prerender-container/components/prerender-list/prerender-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-list/ng-prerender-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -61,6 +61,8 @@ export class NgPrerenderList implements OnDestroy {
     itemSize = input<number>(DEFAULT_ITEM_SIZE);
 
     trackBy = input<string>(TRACK_BY_PROPERTY_NAME);
+
+    divides = input<number>(DEFAULT_DIVIDES);
 
     itemRenderer = input<TemplateRef<any>>();
 
@@ -147,6 +149,7 @@ export class NgPrerenderList implements OnDestroy {
                     this._trackBox.reset(this.itemComponentClass(), items, bounds, {
                         itemRenderer: this.itemRenderer(),
                         dynamic: this.dynamic(),
+                        divides: this.divides(),
                         itemSize: this.itemSize(),
                         isVertical: this.isVertical(),
                         trackBy: this.trackBy(),

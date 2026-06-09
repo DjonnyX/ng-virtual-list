@@ -28,4 +28,9 @@ export interface IVirtualListItemConfig {
      * Default value is `true`.
      */
     selectable?: boolean;
+    /**
+     * Determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true.
+     * The default value is false.
+     */
+    fullSize?: boolean;
 }

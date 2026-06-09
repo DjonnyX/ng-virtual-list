@@ -1,19 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, input, Signal, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, from, tap } from 'rxjs';
-import { TextDirection, TextDirections } from '../../../../enums';
+import { TextDirections } from '../../../../enums';
+import { TextDirection } from '../../../../types';
 import { BaseScrollView } from '../../../ng-scroll-view/base/base-scroll-view.component';
 import { SCROLL_VIEW_INVERSION } from '../../../ng-scroll-view';
 import { BEHAVIOR_INSTANT, DEFAULT_SCROLLBAR_ENABLED, LEFT_PROP_NAME, TOP_PROP_NAME } from '../../../../const';
 import { NgScrollBarComponent } from '../../../ng-scroll-bar/ng-scroll-bar.component';
 import { ScrollBox } from '../../../ng-scroller/utils';
-import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/const';
+import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../../../ng-scroll-view/const';
 
 /**
- * PrerenderScrollerComponent.
+ * NgPrerenderScrollerComponent
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/prerender-container/prerender-scroller/prerender-scroller.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/19.x/projects/ng-virtual-list/src/lib/components/ng-prerender-container/components/ng-prerender-scroller/ng-prerender-scroller.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -24,6 +25,7 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO } from '../../../ng-scroll-view/c
     providers: [
         { provide: SCROLL_VIEW_INVERSION, useValue: false },
         { provide: SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, useValue: true },
+        { provide: SCROLL_VIEW_OVERSCROLL_ENABLED, useValue: false },
     ],
     standalone: false,
     changeDetection: ChangeDetectionStrategy.OnPush,
