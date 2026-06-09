@@ -15,7 +15,7 @@ export interface IDebounce {
 
 /**
  * Simple debounce function.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/utils/debounce.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  * @param cb - Callback.

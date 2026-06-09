@@ -1,11 +1,12 @@
-import { CollectionMode, CollectionModes } from "../enums";
+import { CollectionModes } from "../enums";
+import { CollectionMode } from "../types";
 
 const NORMAL_ALIASES = [CollectionModes.NORMAL, 'normal'],
     LAZY_ALIASES = [CollectionModes.LAZY, 'lazy'];
 
 /**
  * Determines the axis membership of a virtual list
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/utils/is-collection-mode.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/utils/is-collection-mode.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

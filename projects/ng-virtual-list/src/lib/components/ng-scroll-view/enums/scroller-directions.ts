@@ -2,7 +2,7 @@ import { ScrollerDirection } from "./scroller-direction";
 
 /**
  * ScrollerDirections
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/components/ng-scroll-view/enums/scroller-directions.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/components/ng-scroll-view/enums/scroller-directions.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

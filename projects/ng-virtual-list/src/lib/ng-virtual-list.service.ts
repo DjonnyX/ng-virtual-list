@@ -2,15 +2,17 @@ import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { Subject, tap } from 'rxjs';
-import { TrackBox, TrackBoxEvents } from './core/track-box';
-import { IRenderVirtualListItem, IVirtualListItem } from './models';
-import { IAnimationParams, IScrollOptions, ISize } from './interfaces';
+import { TrackBox } from './core/track-box';
+import { TrackBoxEvents } from './core/events';
+import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
+import { IAnimationParams, IRect, IScrollOptions, ISize } from './interfaces';
 import { IRenderVirtualListCollection } from './models/render-collection.model';
-import { FocusAlignments, TextDirection, TextDirections } from './enums';
-import { MethodsForSelectingTypes } from './enums/method-for-selecting-types';
+import { FocusAlignments, TextDirections } from './enums';
+import { TextDirection } from './types';
+import { SelectingModesTypes } from './enums/selecting-modes-types';
 import {
-  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK, DEFAULT_SELECT_BY_CLICK,
-  ITEM_CONTAINER,
+  BEHAVIOR_AUTO, BEHAVIOR_INSTANT, DEFAULT_ANIMATION_PARAMS, DEFAULT_CLICK_DISTANCE, DEFAULT_COLLAPSE_BY_CLICK,
+  DEFAULT_ITEM_SIZE, DEFAULT_SELECT_BY_CLICK, DEFAULT_SNAP_TO_ITEM, DEFAULT_ZINDEX_WHEN_SELECTING, ITEM_CONTAINER,
   TRACK_BY_PROPERTY_NAME,
 } from './const';
 import { FocusAlignment, Id } from './types';
@@ -24,7 +26,7 @@ import { IScrollToParams } from './interfaces/scroll-to-params';
  * NgVirtualListService
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/ng-virtual-list.service.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/ng-virtual-list.service.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -37,8 +39,8 @@ export class NgVirtualListService {
 
   private _nextComponentId: number = 0;
 
-  private _$itemClick = new Subject<IRenderVirtualListItem<any> | null>();
-  $itemClick = this._$itemClick.asObservable();
+  private _$virtualClick = new Subject<IRenderVirtualListItem<any> | null>();
+  $virtualClick = this._$virtualClick.asObservable();
 
   private _$selectedIds = new BehaviorSubject<Array<Id> | Id | null>(null);
   $selectedIds = this._$selectedIds.asObservable();
@@ -46,15 +48,20 @@ export class NgVirtualListService {
   private _$collapsedIds = new BehaviorSubject<Array<Id>>([]);
   $collapsedIds = this._$collapsedIds.asObservable();
 
-  private _$methodOfSelecting = new BehaviorSubject<MethodsForSelectingTypes>(0);
-  $methodOfSelecting = this._$methodOfSelecting.asObservable();
+  private _$selectingMode = new BehaviorSubject<SelectingModesTypes>(0);
+  $selectingMode = this._$selectingMode.asObservable();
 
-  set methodOfSelecting(v: MethodsForSelectingTypes) {
-    this._$methodOfSelecting.next(v);
+  set selectingMode(v: SelectingModesTypes) {
+    this._$selectingMode.next(v);
   }
 
   private _$focusedId = new BehaviorSubject<Id | null>(null);
   $focusedId = this._$focusedId.asObservable();
+  set focusedId(v: Id | null) {
+    if (this._$focusedId.getValue() !== v) {
+      this._$focusedId.next(v);
+    }
+  }
   get focusedId() { return this._$focusedId.getValue(); }
 
   private _$focusItem = new Subject<FocusItemParams>();
@@ -83,15 +90,23 @@ export class NgVirtualListService {
 
   scrollEndOffset: number = 0;
 
+  zIndexWhenSelecting: string | null = DEFAULT_ZINDEX_WHEN_SELECTING;
+
   selectByClick: boolean = DEFAULT_SELECT_BY_CLICK;
 
   collapseByClick: boolean = DEFAULT_COLLAPSE_BY_CLICK;
 
   defaultItemValue: IVirtualListItem | null = null;
 
+  snapToItem: boolean = DEFAULT_SNAP_TO_ITEM;
+
+  isInfinity: boolean = false;
+
   isVertical: boolean = true;
 
   dynamic: boolean = true;
+
+  itemSize: number = DEFAULT_ITEM_SIZE;
 
   snapScrollToStart: boolean = false;
 
@@ -99,9 +114,19 @@ export class NgVirtualListService {
 
   animationParams: IAnimationParams = DEFAULT_ANIMATION_PARAMS;
 
+  isNoneCollapse: boolean = false;
+
+  isMultipleCollapse: boolean = false;
+
+  isAccordionCollapse: boolean = false;
+
   private _trackBox: TrackBox | undefined;
 
   listElement: HTMLDivElement | null = null;
+
+  items: IVirtualListCollection = [];
+
+  itemConfigMap: IVirtualListItemConfigMap = {};
 
   private _$displayItems = new BehaviorSubject<IRenderVirtualListCollection>([]);
   readonly $displayItems = this._$displayItems.asObservable();
@@ -149,6 +174,9 @@ export class NgVirtualListService {
   private _$scrollBarSize = new BehaviorSubject<number>(this._scrollBarSize);
   readonly $scrollBarSize = this._$scrollBarSize.asObservable();
 
+  private _$intersectionElementBySnapToItemAlign = new BehaviorSubject<Id | null>(null);
+  readonly $intersectionElementBySnapToItemAlign = this._$intersectionElementBySnapToItemAlign.asObservable();
+
   private _$clickDistance = new BehaviorSubject<number>(DEFAULT_CLICK_DISTANCE);
   readonly $clickDistance = this._$clickDistance.asObservable();
   get clickDistance() { return this._$clickDistance.getValue(); }
@@ -189,24 +217,24 @@ export class NgVirtualListService {
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   constructor() {
-    this._$methodOfSelecting.pipe(
+    this._$selectingMode.pipe(
       takeUntilDestroyed(),
       tap(v => {
         switch (v) {
-          case MethodsForSelectingTypes.SELECT: {
+          case SelectingModesTypes.SELECT: {
             const curr = this._$selectedIds.getValue();
             if (typeof curr !== 'number' && typeof curr !== 'string') {
               this._$selectedIds.next(null);
             }
             break;
           }
-          case MethodsForSelectingTypes.MULTI_SELECT: {
+          case SelectingModesTypes.MULTI_SELECT: {
             if (!Array.isArray(this._$selectedIds.getValue())) {
               this._$selectedIds.next([]);
             }
             break;
           }
-          case MethodsForSelectingTypes.NONE:
+          case SelectingModesTypes.NONE:
           default: {
             this._$selectedIds.next(null);
             break;
@@ -216,8 +244,8 @@ export class NgVirtualListService {
     ).subscribe();
   }
 
-  itemClick(data: IRenderVirtualListItem | null) {
-    this._$itemClick.next(data);
+  virtualClick(data: IRenderVirtualListItem | null) {
+    this._$virtualClick.next(data);
     if (this.collapseByClick) {
       const trackBy = this.trackBy, id = (data as any)?.[trackBy] ?? null;
       this.collapse(id);
@@ -228,8 +256,8 @@ export class NgVirtualListService {
     }
   }
 
-  update(immediately: boolean = false, force: boolean = false) {
-    this._trackBox?.changes(immediately, force);
+  update(immediately: boolean = false) {
+    this._trackBox?.changes(immediately, false);
   }
 
   private getItemConfig(id: Id) {
@@ -253,8 +281,8 @@ export class NgVirtualListService {
     validateId(id);
     const config = this.getItemConfig(id);
     if ((!!config && config.selectable)) {
-      switch (this._$methodOfSelecting.getValue()) {
-        case MethodsForSelectingTypes.SELECT: {
+      switch (this._$selectingMode.getValue()) {
+        case SelectingModesTypes.SELECT: {
           const curr = this._$selectedIds.getValue() as (Id | undefined);
           if (selected === undefined) {
             this._$selectedIds.next(curr !== id ? id : null);
@@ -263,7 +291,7 @@ export class NgVirtualListService {
           }
           break;
         }
-        case MethodsForSelectingTypes.MULTI_SELECT: {
+        case SelectingModesTypes.MULTI_SELECT: {
           const curr = [...(this._$selectedIds.getValue() || []) as Array<Id>],
             index = curr.indexOf(id);
           if (selected === undefined) {
@@ -289,7 +317,7 @@ export class NgVirtualListService {
           }
           break;
         }
-        case MethodsForSelectingTypes.NONE:
+        case SelectingModesTypes.NONE:
         default: {
           this._$selectedIds.next(null);
         }
@@ -303,12 +331,28 @@ export class NgVirtualListService {
     * @param collapsed - If the value is undefined, then the toggle method is executed, if false or true, then the collapse/expand is performed.
     */
   collapse(id: Id, collapsed?: boolean) {
+    if (this.isNoneCollapse) {
+      return;
+    }
+
     validateId(id);
     const config = this.getItemConfig(id);
-    if ((!!config && config.sticky > 0 && config.collapsable)) {
-      const curr = [...(this._$collapsedIds.getValue() || []) as Array<Id>],
+    if ((!!config && config.collapsable)) {
+      const allGroups: Array<Id> = [];
+      if (this.isAccordionCollapse) {
+        const items = this.items, itemConfigMap = this.itemConfigMap, trackBy = this.trackBy;
+        for (let i = 0, l = items.length; i < l; i++) {
+          const item = items[i], id = item[trackBy], collapsable = itemConfigMap?.[id]?.collapsable === true;
+          if (!collapsable) {
+            continue;
+          }
+          allGroups.push(id);
+        }
+      }
+
+      const curr = this.isAccordionCollapse ? allGroups : [...(this._$collapsedIds.getValue() || []) as Array<Id>],
         index = curr.indexOf(id);
-      if (collapsed === undefined) {
+      if (!collapsed) {
         if (index > -1) {
           curr.splice(index, 1);
           this._$collapsedIds.next(curr);
@@ -328,6 +372,20 @@ export class NgVirtualListService {
         } else {
           this._$collapsedIds.next(curr);
         }
+      }
+
+      if (this.isAccordionCollapse) {
+        this._$scrollTo.next({
+          id, cb: null, options: {
+            delay: 100, focused: true,
+          },
+        });
+      } else {
+        this._$scrollTo.next({
+          id, cb: null, options: {
+            delay: 100, focused: true,
+          },
+        });
       }
     }
   }
@@ -373,6 +431,13 @@ export class NgVirtualListService {
     return false;
   }
 
+  focusList() {
+    const element = this.listElement;
+    if (!!element) {
+      element.focus({ preventScroll: true });
+    }
+  }
+
   focusFirstElement() {
     const elements = this.listElement?.querySelectorAll<HTMLDivElement>(getListElements()),
       elList = (elements ? Array.from(elements) : []).sort((a, b) => {
@@ -394,10 +459,6 @@ export class NgVirtualListService {
     }
   }
 
-  areaFocus(id: Id | null) {
-    this._$focusedId.next(id);
-  }
-
   initialize(id: number, trackBox: TrackBox) {
     this._id = id;
     this._trackBox = trackBox;
@@ -408,6 +469,16 @@ export class NgVirtualListService {
   generateComponentId() {
     return this._nextComponentId = this._nextComponentId === Number.MAX_SAFE_INTEGER
       ? 0 : this._nextComponentId + 1;
+  }
+
+  getComponentBoundsByIntersectionPosition(position: number, maxPosition: number | null = null): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
+    return this._trackBox?.getComponentBoundsByIntersectionPosition(position, maxPosition) ?? null;
+  }
+
+  setIntersectionElementBySnapToItemAlign(id: Id | null) {
+    if (this._$intersectionElementBySnapToItemAlign.getValue() !== id) {
+      this._$intersectionElementBySnapToItemAlign.next(id);
+    }
   }
 
   /**

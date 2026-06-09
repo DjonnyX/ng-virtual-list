@@ -6,7 +6,7 @@ import { XSubstrateComponent } from './x-substrate.component';
  * XSubstrateModule
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/src/app/components/x-substrate/x-substrate.module.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/src/app/components/x-substrate/x-substrate.module.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
