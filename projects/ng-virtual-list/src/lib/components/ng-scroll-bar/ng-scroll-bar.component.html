@@ -1,7 +1,9 @@
-<div #scrollViewport class="track" part="scrollbar-track" [ngStyle]="styles()" [ngClass]="{grabbing: grabbing()}">
-    <div #scrollContent class="thumb" part="scrollbar-thumb" [class.horizontal]="!isVertical()"
+<div #scrollViewport class="track" part="scrollbar-track" [ngStyle]="$styles | async"
+    [ngClass]="{grabbing: $grabbing | async}">
+    <div #scrollContent class="thumb" part="scrollbar-thumb" [class.horizontal]="($isVertical | async)! == false"
         (pointerdown)="click($event)">
-        <ng-container [ngTemplateOutlet]="thumbRenderer()" [ngTemplateOutletContext]="templateContext()" />
+        <ng-container [ngTemplateOutlet]="($thumbRenderer | async)!"
+            [ngTemplateOutletContext]="($templateContext | async)!"></ng-container>
     </div>
 </div>
 

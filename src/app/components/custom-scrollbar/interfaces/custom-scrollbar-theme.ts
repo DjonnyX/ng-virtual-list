@@ -2,7 +2,7 @@ import { Color } from "../../interfaces/color";
 import { GradientColor, RoundedCorner } from "../../interfaces";
 
 /**
- * ScrollBarTheme
+ * CustomScrollBarTheme
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/18.x/src/app/components/custom-scrollbar/interfaces/custom-scrollbar-theme.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com

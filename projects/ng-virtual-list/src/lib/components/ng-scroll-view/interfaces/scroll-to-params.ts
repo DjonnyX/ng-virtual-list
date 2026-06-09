@@ -11,8 +11,11 @@ export interface IScrollToParams {
     y?: number;
     left?: number;
     top?: number;
+    snap?: boolean;
+    normalize?: boolean;
+    force?: boolean;
     blending?: boolean;
-    behavior?: ScrollBehavior;
+    behavior?: ScrollBehavior | "auto" | "instant" | "smooth";
     ease?: Easing;
     fireUpdate?: boolean;
     userAction?: boolean;

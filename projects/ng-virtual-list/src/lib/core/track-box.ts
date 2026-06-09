@@ -4,9 +4,10 @@ import { IRenderVirtualListItem } from "../models/render-item.model";
 import { Id } from "../types/id";
 import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
-import { ISize } from "../interfaces";
+import { IRect, ISize } from "../interfaces";
 import {
-    HEIGHT_PROP_NAME, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME, X_PROP_NAME, Y_PROP_NAME,
+    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
+    X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
 import { debounce } from "../utils";
@@ -14,107 +15,21 @@ import { CMap } from '../utils/cmap';
 import { bufferInterpolation } from "../utils/buffer-interpolation";
 import { BaseVirtualListItemComponent } from "../components/ng-list-item/base";
 import { PrerenderCache } from "../components/ng-prerender-container/types/cache";
-
-export enum TrackBoxEvents {
-    CHANGE = 'change',
-    TICK = 'tick',
-}
-
-export interface IMetrics {
-    delta: number;
-    normalizedItemWidth: number;
-    normalizedItemHeight: number;
-    width: number;
-    height: number;
-    dynamicSize: boolean;
-    itemSize: number;
-    itemsFromStartToScrollEnd: number;
-    itemsFromStartToDisplayEnd: number;
-    itemsOnDisplayWeight: number;
-    itemsOnDisplayLength: number;
-    isVertical: boolean;
-    leftHiddenItemsWeight: number;
-    leftItemLength: number;
-    leftItemsWeight: number;
-    renderItems: number;
-    rightItemLength: number;
-    rightItemsWeight: number;
-    scrollSize: number;
-    leftSizeOfAddedItems: number;
-    sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
-    snap: boolean;
-    snipedPos: number;
-    startIndex: number;
-    startPosition: number;
-    totalItemsToDisplayEndWeight: number;
-    totalLength: number;
-    totalSize: number;
-    typicalItemSize: number;
-    isFromItemIdFound: boolean;
-    isUpdating: boolean;
-}
-
-export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
-    bounds: ISize;
-    collection: C;
-    isVertical: boolean;
-    itemSize: number;
-    bufferSize: number;
-    maxBufferSize: number;
-    dynamicSize: boolean;
-    scrollSize: number;
-    snap: boolean;
-    enabledBufferOptimization: boolean;
-    fromItemId?: Id;
-    previousTotalSize: number;
-    crudDetected: boolean;
-    deletedItemsMap: { [index: number]: ISize; };
-}
-
-export interface IGetItemPositionOptions<I extends IItem, C extends Array<I>>
-    extends Omit<IRecalculateMetricsOptions<I, C>, 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
-
-export interface IUpdateCollectionOptions<I extends IItem, C extends Array<I>>
-    extends Omit<IRecalculateMetricsOptions<I, C>, 'collection' | 'previousTotalSize' | 'crudDetected' | 'deletedItemsMap'> { }
-
-export type CacheMapEvents = TrackBoxEvents;
-
-export type OnChangeEventListener = (version: number) => void;
-
-export type OnTickEventListener = () => void;
-
-export type CacheMapListeners = OnChangeEventListener | OnTickEventListener;
-
-export enum ItemDisplayMethods {
-    CREATE,
-    UPDATE,
-    DELETE,
-    NOT_CHANGED,
-}
-
-export interface IUpdateCollectionReturns {
-    displayItems: IRenderVirtualListCollection;
-    totalSize: number;
-    delta: number;
-    crudDetected: boolean;
-}
-
-export interface IGetMetricsReturns {
-    totalSize: number;
-    delta: number;
-    crudDetected: boolean;
-}
-
-interface IItem<I = any> {
-    [prop: string]: I;
-}
-
-const DEFAULT_BUFFER_EXTREMUM_THRESHOLD = 15,
-    DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH = 30,
-    DEFAULT_RESET_BUFFER_SIZE_TIMEOUT = 10000,
-    IS_NEW = 'n';
-
-type Cache = ISize & { method?: ItemDisplayMethods } & IItem;
+import { ScrollDirection } from "../types";
+import { objectAsReadonly } from "../utils/object";
+import { getServiceIdProp } from "./utils";
+import {
+    DEFAULT_BUFFER_EXTREMUM_THRESHOLD, DEFAULT_MAX_BUFFER_SEQUENCE_LENGTH, DEFAULT_RESET_BUFFER_SIZE_TIMEOUT, END_COLLECTION_PREFIX_ID,
+    IS_NEW, START_COLLECTION_PREFIX_ID,
+} from "./const";
+import { Z_INDEX_0, Z_INDEX_1, Z_INDEX_2, Z_INDEX_3, } from '../const';
+import {
+    IGetItemPositionOptions, IGetMetricsReturns, IItem, IMetrics, IRecalculateMetricsOptions, IUpdateCollectionOptions,
+    IUpdateCollectionReturns,
+} from "./interfaces";
+import { TrackBoxEvents } from "./events";
+import { Cache, CacheMapEvents, CacheMapListeners } from "./types";
+import { ItemDisplayMethods } from "./enums";
 
 /**
  * An object that performs tracking, calculations and caching.
@@ -157,6 +72,46 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._snappedDisplayComponents = v;
     }
 
+    protected _scrollDirection: ScrollDirection = 0;
+    set scrollDirection(v: ScrollDirection) {
+        if (this._scrollDirection === v) {
+            return;
+        }
+
+        this._scrollDirection = v;
+    }
+    get scrollDirection() { return this._scrollDirection; }
+
+    protected _trackBy: string = TRACK_BY_PROPERTY_NAME;
+    set trackBy(v: string) {
+        if (this._trackBy === v) {
+            return;
+        }
+
+        this._trackBy = v;
+    }
+    get trackBy() { return this._trackBy; }
+
+    protected _divides: number = DEFAULT_DIVIDES;
+
+    set divides(v: number) {
+        if (this._divides === v) {
+            return;
+        }
+
+        this._divides = v;
+    }
+
+    protected _isInfinity: boolean = false;
+
+    set isInfinity(v: boolean) {
+        if (this._isInfinity === v) {
+            return;
+        }
+
+        this._isInfinity = v;
+    }
+
     protected _isSnappingMethodAdvanced: boolean = false;
 
     set isSnappingMethodAdvanced(v: boolean) {
@@ -186,6 +141,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
     protected _trackingPropertyName: string = TRACK_BY_PROPERTY_NAME;
 
+    protected _isScrollStart: boolean = false;
+
     set isScrollStart(v: boolean) {
         this._isScrollStart = v;
         if (v) {
@@ -193,7 +150,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
     }
 
-    protected _isScrollStart: boolean = false;
+    protected _isScrollEnd: boolean = false;
 
     set isScrollEnd(v: boolean) {
         this._isScrollEnd = v;
@@ -201,8 +158,6 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this._isScrollSnapToEnd = true;
         }
     }
-
-    protected _isScrollEnd: boolean = false;
 
     protected _isScrollSnapToStart: boolean = false;
 
@@ -348,9 +303,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (previousCollection) {
                 // deleted
                 for (let i = 0, l = previousCollection.length; i < l; i++) {
-                    const item = previousCollection[i], id = item[trackBy];
+                    const item = previousCollection[i], id = item?.[trackBy];
                     crudDetected = true;
-                    if (this._map.has(id)) {
+                    if (!!item && this._map.has(id)) {
                         this._map.delete(id);
                     }
                 }
@@ -362,8 +317,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 // added
                 for (let i = 0, l = currentCollection.length; i < l; i++) {
                     crudDetected = true;
-                    const item = currentCollection[i], id = item[trackBy];
-                    this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
+                    const item = currentCollection[i], id = item?.[trackBy];
+                    if (!!item) {
+                        this._map.set(id, { width: itemSize, height: itemSize, method: ItemDisplayMethods.CREATE });
+                    }
                 }
             }
             return;
@@ -371,15 +328,15 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         const collectionDict: IItem<I> = {};
         for (let i = 0, l = currentCollection.length; i < l; i++) {
             const item = currentCollection[i];
-            if (item) {
+            if (!!item) {
                 collectionDict[item[trackBy]] = item;
             }
         }
         const notChangedMap: IItem<I> = {}, deletedMap: IItem<I> = {}, deletedItemsMap: { [index: number]: ISize } = {},
             updatedMap: IItem<I> = {};
         for (let i = 0, l = previousCollection.length; i < l; i++) {
-            const item = previousCollection[i], id = item[trackBy];
-            if (item) {
+            const item = previousCollection[i], id = item?.[trackBy];
+            if (!!item) {
                 if (collectionDict.hasOwnProperty(id)) {
                     if (item === collectionDict[id]) {
                         // not changed
@@ -410,8 +367,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         }
 
         for (let i = 0, l = currentCollection.length; i < l; i++) {
-            const item = currentCollection[i], id = item[trackBy];
-            if (item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
+            const item = currentCollection[i], id = item?.[trackBy];
+            if (!!item && !deletedMap.hasOwnProperty(id) && !updatedMap.hasOwnProperty(id) &&
                 !notChangedMap.hasOwnProperty(id)) {
                 this._newItems.push(id);
                 // added
@@ -428,7 +385,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      */
     getItemPosition<I extends IItem, C extends Array<I>>(id: Id, itemConfigMap: IVirtualListItemConfigMap,
         options: IGetItemPositionOptions<I, C>): number {
-        const opt = { fromItemId: id, itemConfigMap, ...options };
+        const opt = { fromItemId: id ?? options.fromItemId, itemConfigMap, ...options };
         this._defaultBufferSize = opt.bufferSize;
         this._maxBufferSize = opt.maxBufferSize;
 
@@ -506,13 +463,13 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             this.snapshot();
         }
 
-        const displayItems = this.generateDisplayCollection(items, itemConfigMap, { ...metrics, });
-        return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected };
+        const displayItems = this.generateDisplayCollection(metrics.items, items, itemConfigMap, { ...metrics, });
+        return { displayItems, totalSize: metrics.totalSize, delta: metrics.delta, crudDetected, leftLayoutOffset: metrics.leftLayoutOffset };
     }
 
     protected _previousScrollSize = 0;
 
-    protected updateAdaptiveBufferParams(metrics: IMetrics, totalItemsLength: number) {
+    protected updateAdaptiveBufferParams<I extends IItem>(metrics: IMetrics<I>, totalItemsLength: number) {
         this.disposeClearBufferSizeTimer();
 
         const scrollSize = metrics.scrollSize + this._delta, delta = Math.abs(this._previousScrollSize - scrollSize);
@@ -568,10 +525,10 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     /**
      * Calculates list metrics
      */
-    protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics {
-        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, bufferSize: minBufferSize,
-            scrollSize, snap, itemConfigMap, enabledBufferOptimization, previousTotalSize, crudDetected,
-            deletedItemsMap } = options as IRecalculateMetricsOptions<I, C> & {
+    protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics<I> {
+        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
+            scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, snapToItem, snapToItemAlign,
+            deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
 
@@ -579,34 +536,36 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             { width, height } = bounds, sizeProperty = isVertical ? HEIGHT_PROP_NAME : WIDTH_PROP_NAME,
             size = isVertical ? height : width, totalLength = collection.length, typicalItemSize = itemSize,
             w = isVertical ? width : typicalItemSize, h = isVertical ? typicalItemSize : height,
-            map = this._map, snapshot = this._snapshot,
-            snipedPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsWeights: Array<number> = [],
+            map = this._map, snapshot = this._snapshot, divides = this._divides,
+            stickyPos = Math.floor(scrollSize) + this._scrollStartOffset, leftItemsOrRowsWeights: Array<number> = [],
             isFromId = fromItemId !== undefined && (typeof fromItemId === 'number' && fromItemId > -1)
                 || (typeof fromItemId === 'string' && fromItemId > '-1');
 
         let leftItemsOffset = 0, rightItemsOffset = 0;
         if (enabledBufferOptimization) {
-            switch (this.scrollDirection) {
+            switch (this._scrollDirection) {
                 case 1: {
                     leftItemsOffset = 0;
-                    rightItemsOffset = bufferSize;
+                    rightItemsOffset = bufferSize * divides;
                     break;
                 }
                 case -1: {
-                    leftItemsOffset = bufferSize;
+                    leftItemsOffset = bufferSize * divides;
                     rightItemsOffset = 0;
                     break;
                 }
                 case 0:
                 default: {
-                    leftItemsOffset = rightItemsOffset = bufferSize;
+                    leftItemsOffset = rightItemsOffset = bufferSize * divides;
                 }
             }
         } else {
-            leftItemsOffset = rightItemsOffset = bufferSize;
+            leftItemsOffset = rightItemsOffset = bufferSize * divides;
         }
 
-        let itemsFromStartToScrollEnd: number = -1, itemsFromDisplayEndToOffsetEnd = 0, itemsFromStartToDisplayEnd = -1,
+        let itemsFromStartToScrollEnd: number = -1,
+            itemsFromDisplayEndToOffsetEnd = 0,
+            itemsFromStartToDisplayEnd = -1,
             leftItemLength = 0, rightItemLength = 0,
             leftItemsWeight = 0, rightItemsWeight = 0,
             leftHiddenItemsWeight = 0,
@@ -615,7 +574,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftSizeOfAddedItems = 0,
             leftSizeOfUpdatedItems = 0,
             leftSizeOfDeletedItems = 0,
-            itemById: I | undefined = undefined,
+            itemById: I | null = null,
             itemByIdPos: number = this._scrollStartOffset,
             isTargetInOverscroll: boolean = false,
             actualScrollSize = itemByIdPos,
@@ -623,13 +582,21 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             startIndex: number,
             isFromItemIdFound = false,
             deltaFromStartCreation = 0,
-            isUpdating = false;
+            isUpdating = false,
+            leftYOffset = 0,
+            leftLayoutOffset = 0,
+            leftLayoutIndexOffset = 0,
+            rightLayoutIndexOffset = 0;
 
         const isStart = ((roundedScrollSize === 0) || this.isSnappedToStart);
         let stickyItemId: Id | undefined, isNew = false;
 
+        let items: Array<I>;
+
         // If the list is dynamic or there are new elements in the collection, then it switches to the long algorithm.
         if (dynamicSize) {
+            items = [];
+            const serviceIdProp = getServiceIdProp(trackBy);
             if (isFromId) {
                 for (let stickyId: Id | undefined = undefined, i = 0, l = collection.length; i < l; i++) {
                     const item = collection[i], id = item?.[trackBy];
@@ -639,17 +606,74 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     if (!itemConfigMap[id]?.sticky) {
                         stickyItemId = stickyId;
                     }
-                    if (id === fromItemId) {
+                    if (id == fromItemId) {
                         break;
                     }
                 }
             }
 
-            let y = this._scrollStartOffset, stickyComponentSize = 0;
-            for (let i = 0, l = collection.length; i < l; i++) {
-                const ii = i + 1, collectionItem = collection[i], id = collectionItem[trackBy];
-
-                let componentSize = 0, componentSizeDelta = 0, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
+            let y = this._scrollStartOffset,
+                stickyComponentSize = 0,
+                row: {
+                    startItemIndex: number;
+                    endItemIndex: number;
+                    size: number;
+                    snapshotSize: number;
+                    deltaFromStartCreation: number;
+                    leftSizeOfAddedItems: number;
+                    leftSizeOfUpdatedItems: number;
+                    leftSizeOfDeletedItems: number;
+                    deltaOfNewItems: number;
+                    leftItemsOrRowsWeights: number | null;
+                    rightItemsWeight: number;
+                    leftHiddenItemsWeight: number;
+                    totalItemsToDisplayEndWeight: number;
+                } = {
+                    startItemIndex: 0,
+                    endItemIndex: 0,
+                    size: 0,
+                    snapshotSize: 0,
+                    deltaFromStartCreation: 0,
+                    leftSizeOfAddedItems: 0,
+                    leftSizeOfUpdatedItems: 0,
+                    leftSizeOfDeletedItems: 0,
+                    deltaOfNewItems: 0,
+                    leftItemsOrRowsWeights: null,
+                    rightItemsWeight: 0,
+                    leftHiddenItemsWeight: 0,
+                    totalItemsToDisplayEndWeight: 0,
+                };
+            const calculate = (i: number, l: number, li: number, isPrecollection: boolean = false, idPrefix: string | null = null) => {
+                const ii = i + 1;
+                if (ii > l) {
+                    return false;
+                }
+                const collectionItem = collection[i],
+                    id = collectionItem[trackBy],
+                    sticky = itemConfigMap?.[id]?.sticky ?? 0,
+                    isNewRow = i % divides === 0,
+                    isLastItemInRow = ii % divides === 0,
+                    isLastItem = i === li,
+                    isRowEnd = (isLastItemInRow || (!isLastItemInRow && isLastItem));
+                items.push(isPrecollection ? { ...collectionItem, [serviceIdProp]: `_${idPrefix}-${id}_` } : collectionItem);
+                if (isNewRow || row === null) {
+                    row = {
+                        startItemIndex: i + 1,
+                        endItemIndex: i + divides,
+                        size: 0,
+                        snapshotSize: 0,
+                        deltaFromStartCreation: 0,
+                        leftSizeOfAddedItems: 0,
+                        leftSizeOfUpdatedItems: 0,
+                        leftSizeOfDeletedItems: 0,
+                        deltaOfNewItems: 0,
+                        leftItemsOrRowsWeights: null,
+                        rightItemsWeight: 0,
+                        leftHiddenItemsWeight: 0,
+                        totalItemsToDisplayEndWeight: 0,
+                    };
+                }
+                let componentSize = 0, rowSizeDelta = 0, itemDisplayMethod: ItemDisplayMethods = ItemDisplayMethods.NOT_CHANGED;
                 if (map.has(id)) {
                     const cache = map.get(id);
                     componentSize = cache[sizeProperty] > 0 ? cache[sizeProperty] : typicalItemSize;
@@ -660,46 +684,54 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         isUpdating = true;
                     }
                     const snapshotBounds = snapshot.get(id),
-                        componentSnapshotSize = componentSize - (snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize);
-                    componentSizeDelta = componentSnapshotSize;
+                        snapshotSize = snapshotBounds ? snapshotBounds[sizeProperty] : typicalItemSize;
+
+                    row.size = Math.max(row.size, componentSize);
+                    row.snapshotSize = Math.max(row.snapshotSize, snapshotSize);
+
+                    rowSizeDelta = row.size - row.snapshotSize;
+
                     switch (itemDisplayMethod) {
                         case ItemDisplayMethods.UPDATE: {
                             map.set(id, { ...cache, method: isNew ? ItemDisplayMethods.UPDATE : ItemDisplayMethods.NOT_CHANGED, [IS_NEW]: isNew });
-                            if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
-                                deltaFromStartCreation += componentSizeDelta;
-                                componentSizeDelta = 0;
+                            if (isRowEnd && isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
+                                row.deltaFromStartCreation = rowSizeDelta;
+                                rowSizeDelta = 0;
                             }
                             break;
                         }
                         case ItemDisplayMethods.CREATE: {
-                            componentSizeDelta = typicalItemSize;
+                            rowSizeDelta = typicalItemSize;
                             map.set(id, { ...cache, method: ItemDisplayMethods.UPDATE, [IS_NEW]: isNew });
-                            if (isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
-                                deltaFromStartCreation += componentSizeDelta;
-                                componentSizeDelta = 0;
+                            if (isRowEnd && isNew && y <= (scrollSize + size + deltaFromStartCreation + componentSize)) {
+                                row.deltaFromStartCreation = rowSizeDelta;
+                                rowSizeDelta = 0;
                             }
                             break;
                         }
                     }
+                } else {
+                    componentSize = typicalItemSize;
+                    row.size = Math.max(row.size, componentSize);
+                    row.snapshotSize = row.size;
+                    rowSizeDelta = row.size - row.snapshotSize;
                 }
 
                 if (deletedItemsMap.hasOwnProperty(i)) {
                     const cache = deletedItemsMap[i], size = cache?.[sizeProperty] ?? typicalItemSize;
                     if (y < scrollSize + this._scrollStartOffset - size) {
-                        leftSizeOfDeletedItems += size;
+                        row.leftSizeOfDeletedItems = Math.max(row.leftSizeOfDeletedItems, size);
                     }
                 }
 
-                totalSize += componentSize;
-
                 if (isFromId) {
-                    if (itemById === undefined) {
-                        if (id !== fromItemId && id === stickyItemId && itemConfigMap?.[id]?.sticky === 1) {
+                    if (itemById === null) {
+                        if (id != fromItemId && id === stickyItemId && sticky === 1) {
                             stickyComponentSize = componentSize;
                             y -= stickyComponentSize;
                         }
 
-                        if (id === fromItemId) {
+                        if (id == fromItemId) {
                             isFromItemIdFound = true;
 
                             const { num, offset } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical),
@@ -711,64 +743,173 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 itemsFromStartToScrollEnd -= deltaNum;
                                 rightItemsWeight = rightItemLength = 0;
                                 leftHiddenItemsWeight -= deltaOffset;
-                                leftItemsWeights.splice(leftItemsWeights.length - deltaNum, deltaNum);
+                                leftItemsOrRowsWeights.splice(leftItemsOrRowsWeights.length - deltaNum, deltaNum);
                                 y -= deltaOffset;
                             }
 
                             itemById = collectionItem;
                             itemByIdPos = y;
                         } else {
-                            leftItemsWeights.push(componentSize);
+                            leftItemsOrRowsWeights.push(componentSize);
                             leftHiddenItemsWeight += componentSize;
-                            itemsFromStartToScrollEnd = ii;
+                            itemsFromStartToScrollEnd = row.startItemIndex;
                         }
                     }
                 } else if (y <= scrollSize - componentSize) {
-                    leftItemsWeights.push(componentSize);
-                    leftHiddenItemsWeight += componentSize;
-                    itemsFromStartToScrollEnd = ii;
+                    if (row.leftItemsOrRowsWeights === null) {
+                        row.leftItemsOrRowsWeights = 0;
+                    }
+                    row.leftItemsOrRowsWeights = Math.max(row.leftItemsOrRowsWeights, componentSize);
+                    row.leftHiddenItemsWeight = Math.max(row.leftHiddenItemsWeight, componentSize);
+                    if (!isPrecollection) {
+                        itemsFromStartToScrollEnd = row.startItemIndex;
+                    }
                 }
 
                 if (isFromId) {
-                    if (itemById === undefined || y < itemByIdPos + size + componentSize) {
-                        itemsFromStartToDisplayEnd = ii;
+                    if (itemById === null || y < itemByIdPos + size + componentSize) {
+                        itemsFromStartToDisplayEnd = row.endItemIndex;
                         totalItemsToDisplayEndWeight += componentSize;
                         itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
                     }
                 } else if (y <= scrollSize + size + componentSize) {
-                    itemsFromStartToDisplayEnd = ii;
-                    totalItemsToDisplayEndWeight += componentSize;
-                    itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
+                    if (!isPrecollection) {
+                        itemsFromStartToDisplayEnd = row.endItemIndex;
+                        itemsFromDisplayEndToOffsetEnd = itemsFromStartToDisplayEnd + rightItemsOffset;
+                    }
+                    row.totalItemsToDisplayEndWeight = Math.max(row.totalItemsToDisplayEndWeight, componentSize);
 
-                    if (y <= scrollSize + componentSize) {
+                    if (isRowEnd && y <= scrollSize + componentSize) {
                         switch (itemDisplayMethod) {
                             case ItemDisplayMethods.CREATE: {
-                                leftSizeOfAddedItems += componentSizeDelta;
+                                row.leftSizeOfAddedItems = rowSizeDelta;
                                 break;
                             }
                             case ItemDisplayMethods.UPDATE:
                             case ItemDisplayMethods.NOT_CHANGED: {
-                                leftSizeOfUpdatedItems += componentSizeDelta;
+                                row.leftSizeOfUpdatedItems = rowSizeDelta;
                                 break;
                             }
                             case ItemDisplayMethods.DELETE: {
-                                leftSizeOfDeletedItems += componentSizeDelta;
+                                row.leftSizeOfDeletedItems = rowSizeDelta;
                                 break;
                             }
                         }
                     }
 
-                    if (itemDisplayMethod === ItemDisplayMethods.CREATE) {
-                        deltaOfNewItems += componentSizeDelta;
+                    if (isRowEnd && itemDisplayMethod === ItemDisplayMethods.CREATE) {
+                        row.deltaOfNewItems = rowSizeDelta;
                     }
                 } else {
-                    if (i < itemsFromDisplayEndToOffsetEnd) {
-                        rightItemsWeight += componentSize;
+                    if (isRowEnd && i < itemsFromDisplayEndToOffsetEnd) {
+                        row.rightItemsWeight = Math.max(row.rightItemsWeight, componentSize);
                     }
                 }
 
-                y += componentSize;
+                if (isRowEnd) {
+                    if (!isPrecollection) {
+                        deltaFromStartCreation += row.deltaFromStartCreation;
+                        leftSizeOfAddedItems += row.leftSizeOfAddedItems;
+                        leftSizeOfUpdatedItems += row.leftSizeOfUpdatedItems;
+                        leftSizeOfDeletedItems += row.leftSizeOfDeletedItems;
+                        deltaOfNewItems += row.deltaOfNewItems;
+                        rightItemsWeight += row.rightItemsWeight;
+                        totalItemsToDisplayEndWeight += row.totalItemsToDisplayEndWeight;
+                        leftHiddenItemsWeight += row.leftHiddenItemsWeight;
+                        if (row.leftItemsOrRowsWeights !== null) {
+                            leftItemsOrRowsWeights.push(row.leftItemsOrRowsWeights);
+                        }
+                    }
+                    totalSize += row.size;
+                    y += row.size;
+                }
+                return true;
             }
+
+            if (this._isInfinity) {
+                const viewportSize = isVertical ? height : width;
+                let buffSize = -1;
+                if (scrollSize <= viewportSize) {
+                    let i = 0, l = collection.length, li = l > 0 ? (l - 1) : 0;
+                    if (l > 0) {
+                        const limit = viewportSize;
+                        while (y <= limit || buffSize > -1) {
+                            const ii = i + 1;
+                            if (buffSize === -1) {
+                                buffSize = leftItemsOffset;
+                            }
+                            if (y >= limit) {
+                                buffSize--;
+                            }
+                            if (!calculate(li - i, l, li, true, START_COLLECTION_PREFIX_ID)) {
+                                break;
+                            }
+                            if (ii === l) {
+                                i = 0;
+                            } else {
+                                i++;
+                            }
+                        }
+
+                        items.reverse();
+                        leftYOffset = y;
+                        leftLayoutOffset = viewportSize * .5;
+                        leftLayoutIndexOffset = i;
+                        y = this._scrollStartOffset;
+                        totalSize = this._scrollStartOffset + this._scrollEndOffset;
+                        itemsFromStartToDisplayEnd = itemsFromDisplayEndToOffsetEnd = 0;
+
+                        (row as any) = null;
+                    }
+                }
+            }
+
+            for (let i = 0, l = collection.length, li = l - 1; i < l; i++) {
+                if (!calculate(i, l, li)) {
+                    break;
+                }
+            }
+
+            if (this._isInfinity) {
+                (row as any) = null;
+
+                const yy = y, currentTotalSize = totalSize, viewportSize = isVertical ? height : width,
+                    normalizedTotalSize = totalSize + viewportSize;
+                row = {
+                    startItemIndex: 0,
+                    endItemIndex: 0,
+                    size: 0,
+                    snapshotSize: 0,
+                    deltaFromStartCreation: 0,
+                    leftSizeOfAddedItems: 0,
+                    leftSizeOfUpdatedItems: 0,
+                    leftSizeOfDeletedItems: 0,
+                    deltaOfNewItems: 0,
+                    leftItemsOrRowsWeights: null,
+                    rightItemsWeight: 0,
+                    leftHiddenItemsWeight: 0,
+                    totalItemsToDisplayEndWeight: 0,
+                };
+                const l = collection.length, li = l - 1;
+                let i = 0, count = 0;
+                while (y < normalizedTotalSize) {
+                    const ii = i + 1;
+                    if (!calculate(i, l, li, true, END_COLLECTION_PREFIX_ID)) {
+                        break;
+                    }
+                    if (ii === l) {
+                        i = 0;
+                    } else {
+                        i++;
+                    }
+                    count++;
+                }
+                y = yy;
+                totalSize = currentTotalSize;
+                rightLayoutIndexOffset = count;
+            }
+
+            actualScrollSize = (isFromId ? itemByIdPos : scrollSize);
 
             if (itemsFromStartToScrollEnd <= -1) {
                 itemsFromStartToScrollEnd = 0;
@@ -776,10 +917,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (itemsFromStartToDisplayEnd <= -1) {
                 itemsFromStartToDisplayEnd = 0;
             }
-            actualScrollSize = isFromId ? itemByIdPos : scrollSize;
 
-            leftItemsWeights.splice(0, leftItemsWeights.length - leftItemsOffset);
-            leftItemsWeights.forEach(v => {
+            leftItemsOrRowsWeights.splice(0, leftItemsOrRowsWeights.length - bufferSize);
+            leftItemsOrRowsWeights.forEach(v => {
                 leftItemsWeight += v;
             });
 
@@ -787,46 +927,137 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
                 ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
 
+            startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides);
         } else
         // Buffer optimization does not work on fast linear algorithm
         {
-            itemsFromStartToScrollEnd = Math.floor(typicalItemSize !== 0 ? scrollSize / typicalItemSize : 0);
-            itemsFromStartToDisplayEnd = Math.ceil(typicalItemSize !== 0 ? (scrollSize + size) / typicalItemSize : 0);
-            leftItemLength = Math.min(itemsFromStartToScrollEnd, bufferSize);
-            rightItemLength = itemsFromStartToDisplayEnd + bufferSize > totalLength
-                ? totalLength - itemsFromStartToDisplayEnd : bufferSize;
-            leftItemsWeight = leftItemLength * typicalItemSize;
-            rightItemsWeight = rightItemLength * typicalItemSize;
-            leftHiddenItemsWeight = itemsFromStartToScrollEnd * typicalItemSize;
-            totalItemsToDisplayEndWeight = itemsFromStartToDisplayEnd * typicalItemSize;
-            totalSize = (totalLength * typicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
-
+            const dividedTypicalItemSize = typicalItemSize / divides, bufferItemNumbers = bufferSize * divides;
+            itemsFromStartToScrollEnd = Math.floor(dividedTypicalItemSize !== 0 ? (scrollSize / dividedTypicalItemSize) : 0);
+            itemsFromStartToDisplayEnd = Math.ceil(dividedTypicalItemSize !== 0 ? ((scrollSize + size) / dividedTypicalItemSize) : 0);
+            leftItemLength = Math.min(itemsFromStartToScrollEnd, bufferSize * divides);
+            rightItemLength = (itemsFromStartToDisplayEnd + bufferItemNumbers) > totalLength
+                ? totalLength - itemsFromStartToDisplayEnd : bufferItemNumbers;
+            leftItemsWeight = Math.floor(leftItemLength * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
+            rightItemsWeight = Math.floor(rightItemLength * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
+            leftHiddenItemsWeight = Math.floor(itemsFromStartToScrollEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
+            totalItemsToDisplayEndWeight = Math.floor(itemsFromStartToDisplayEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
+            totalSize = (totalLength * dividedTypicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
             const k = totalSize !== 0 ? previousTotalSize / totalSize : 0;
-            actualScrollSize = scrollSize * k;
+
+            if (isFromId) {
+                const index = collection.findIndex(item => item[trackBy] == fromItemId);
+                if (index > -1) {
+                    itemByIdPos = this._scrollStartOffset + Math.floor(index * dividedTypicalItemSize / divides);
+                    isFromItemIdFound = true;
+                }
+            }
+
+            actualScrollSize = (isFromId ? itemByIdPos : scrollSize * k);
+
+            items = [];
+
+            if (this._isInfinity) {
+                const viewportSize = isVertical ? height : width;
+                let buffSize = -1, y = this._scrollStartOffset;
+                if (scrollSize <= viewportSize) {
+                    let i = 0, l = collection.length, li = l > 0 ? (l - 1) : 0;
+                    if (l > 0) {
+                        const limit = viewportSize;
+                        while (y <= limit || buffSize > -1) {
+                            const ii = i + 1;
+                            if (buffSize === -1) {
+                                buffSize = leftItemsOffset;
+                            }
+                            if (y >= limit) {
+                                buffSize--;
+                            }
+                            const itemIndex = li - i;
+                            if (collection.length > itemIndex) {
+                                items.push(collection[itemIndex] as I);
+                            } else {
+                                break;
+                            }
+                            const isLastItemInRow = ii % divides === 0,
+                                isLastItem = i === li;
+                            if (isLastItemInRow || (!isLastItemInRow && isLastItem)) {
+                                y += dividedTypicalItemSize;
+                            }
+                            if (ii === l) {
+                                i = 0;
+                            } else {
+                                i++;
+                            }
+                        }
+
+                        items.reverse();
+                        leftYOffset = y;
+                        leftLayoutOffset = viewportSize * .5;
+                        leftLayoutIndexOffset = i;
+                    }
+                }
+            }
+
+            items.push(...collection);
+
+            if (this._isInfinity) {
+                let y = Math.floor(totalSize / dividedTypicalItemSize) * dividedTypicalItemSize;
+                const viewportSize = isVertical ? height : width,
+                    normalizedTotalSize = totalSize + viewportSize;
+                const l = collection.length, li = l - 1;
+                let i = 0, count = 0;
+                while (y < normalizedTotalSize) {
+                    const ii = i + 1;
+                    if (collection.length <= i) {
+                        break;
+                    }
+                    items.push(collection[i]);
+                    const isLastItemInRow = ii % divides === 0,
+                        isLastItem = i === li;
+                    if (isLastItemInRow || (!isLastItemInRow && isLastItem)) {
+                        y += dividedTypicalItemSize;
+                    }
+                    if (ii === l) {
+                        i = 0;
+                    } else {
+                        i++;
+                    }
+                    count++;
+                }
+                rightLayoutIndexOffset = count;
+                leftItemLength = Math.min(itemsFromStartToScrollEnd, leftItemsOffset);
+                rightItemLength = itemsFromStartToDisplayEnd + rightItemsOffset > totalLength
+                    ? totalLength - itemsFromStartToDisplayEnd : rightItemsOffset;
+
+                startIndex = (Math.ceil(Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0) / divides) * divides);
+            } else {
+                startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
+            }
         }
-        startIndex = Math.min(itemsFromStartToScrollEnd - leftItemLength, totalLength > 0 ? totalLength - 1 : 0);
 
         const itemsOnDisplayWeight = totalItemsToDisplayEndWeight - leftItemsWeight,
             itemsOnDisplayLength = itemsFromStartToDisplayEnd - itemsFromStartToScrollEnd,
-            startPosition = this._scrollStartOffset + leftHiddenItemsWeight - leftItemsWeight,
-            renderItems = itemsOnDisplayLength + leftItemLength + rightItemLength,
+            startPosition = this._scrollStartOffset + leftHiddenItemsWeight - leftItemsWeight - leftYOffset,
+            renderItems = (Math.ceil((itemsOnDisplayLength + leftItemLength + rightItemLength) / divides) * divides) + rightLayoutIndexOffset,
             startCreationDelta = deltaFromStartCreation > 0 ? deltaFromStartCreation : 0,
             delta = leftSizeOfUpdatedItems + leftSizeOfAddedItems - leftSizeOfDeletedItems + startCreationDelta;
-
         this._deltaOfNewItems = deltaOfNewItems;
 
         if (isFromId && !isTargetInOverscroll) {
             actualScrollSize -= this._scrollStartOffset;
         }
 
-        const metrics: IMetrics = {
+        const metrics: IMetrics<I> = {
             delta,
             normalizedItemWidth: w,
             normalizedItemHeight: h,
             width,
             height,
             dynamicSize,
+            divides,
             itemSize,
+            minItemSize,
+            maxItemSize,
+            items,
             itemsFromStartToScrollEnd,
             itemsFromStartToDisplayEnd,
             itemsOnDisplayWeight,
@@ -835,14 +1066,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftHiddenItemsWeight,
             leftItemLength,
             leftItemsWeight,
+            leftLayoutOffset,
+            leftLayoutIndexOffset,
             renderItems,
             rightItemLength,
             rightItemsWeight,
             scrollSize: actualScrollSize,
             leftSizeOfAddedItems,
             sizeProperty,
-            snap,
-            snipedPos,
+            stickyEnabled,
+            stickyPos,
             startIndex,
             startPosition,
             totalItemsToDisplayEndWeight,
@@ -851,6 +1084,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             typicalItemSize,
             isFromItemIdFound,
             isUpdating,
+            snapToItem,
+            snapToItemAlign,
+            itemTransform,
         };
 
         return metrics;
@@ -860,12 +1096,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         this._prerenderedCache = cache;
     }
 
-    clearDelta(clearDirectionDetector = false): void {
+    clearDelta(): void {
         this._delta = this._deltaOfNewItems = 0;
-
-        if (clearDirectionDetector) {
-            this.clearScrollDirectionCache();
-        }
     }
 
     changes(immediately: boolean = false, force: boolean = false): void {
@@ -910,62 +1142,93 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return false;
     }
 
-    protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, itemConfigMap: IVirtualListItemConfigMap,
-        metrics: IMetrics): IRenderVirtualListCollection {
+    protected generateDisplayCollection<I extends IItem, C extends Array<I>>(items: C, actualItems: C, itemConfigMap: IVirtualListItemConfigMap,
+        metrics: IMetrics<I>): IRenderVirtualListCollection {
         const {
             width,
             height,
             normalizedItemWidth,
             normalizedItemHeight,
             dynamicSize,
+            divides,
             itemsOnDisplayLength,
             itemsFromStartToScrollEnd,
             isVertical,
+            leftLayoutOffset: layoutOffset,
+            leftLayoutIndexOffset: layoutIndexOffset,
             renderItems: renderItemsLength,
             scrollSize,
             sizeProperty,
-            snap,
-            snipedPos,
+            stickyEnabled,
+            stickyPos,
             startPosition,
             totalLength,
             startIndex,
             typicalItemSize,
+            minItemSize,
+            maxItemSize,
+            snapToItem,
+            snapToItemAlign,
+            itemTransform,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
 
         if (items.length) {
-            const trackBy = this._trackingPropertyName, actualSnippedPosition = snipedPos,
+            const trackBy = this._trackingPropertyName, actualSnippedPosition = stickyPos,
                 isSnappingMethodAdvanced = this._isSnappingMethodAdvanced,
                 deltaOffet = (isSnappingMethodAdvanced ? scrollSize : 0),
+                scrollDirection = this._scrollDirection,
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
             let pos = startPosition,
                 renderItems = renderItemsLength,
                 stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
-                endStickyItemIndex = -1, endStickyItemSize = 0, count = 1;
+                endStickyItemIndex = -1, endStickyItemSize = 0;
 
-            if (snap) {
-                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? itemsFromStartToScrollEnd : 0, totalLength - 1); i >= 0; i--) {
-                    const collectionItem = items[i];
-                    if (!collectionItem) {
+            const li = layoutIndexOffset + actualItems.length - 1;
+            if (stickyEnabled) {
+                for (let i = Math.min(itemsFromStartToScrollEnd > 0 ? (divides > 1 ? (itemsFromStartToScrollEnd - 1) : itemsFromStartToScrollEnd) : 0, totalLength - 1); i >= 0; i--) {
+                    const collectionItem = items[i],
+                        isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
+                    if (!collectionItem || isDummy) {
                         continue;
                     }
-                    const id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
+                    const rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides), id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
                         selectable = itemConfigMap[id]?.selectable ?? true,
                         collapsable = itemConfigMap[id]?.collapsable ?? false,
                         size = dynamicSize ? cache?.[sizeProperty] > 0 ? cache?.[sizeProperty] : typicalItemSize : typicalItemSize,
                         absoluteStartPosition = pos - (scrollSize - size) - size,
                         ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                         absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
-                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio);
+                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                        x = isVertical ? 0 : actualSnippedPosition,
+                        y = isVertical ? actualSnippedPosition : 0;
                     if (sticky === 1) {
-                        const isOdd = i % 2 != 0,
+                        const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
                             measures: IRenderVirtualListItemMeasures = {
-                                x: isVertical ? startPosition : actualSnippedPosition,
-                                y: isVertical ? actualSnippedPosition : startPosition,
+                                x,
+                                y,
+                                transformedX: x,
+                                transformedY: y,
+                                z: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                rotationZ: 0,
+                                scaleX: 1,
+                                scaleY: 1,
+                                scaleZ: 1,
                                 width: isVertical ? normalizedItemWidth : size,
                                 height: isVertical ? size : normalizedItemHeight,
+                                minWidth: minItemSize,
+                                minHeight: minItemSize,
+                                maxWidth: maxItemSize,
+                                maxHeight: maxItemSize,
                                 size,
+                                row: {
+                                    size,
+                                    odd: rowIndex % 2 != 0,
+                                    even: rowIndex % 2 == 0,
+                                },
                                 position: pos,
                                 boundsSize,
                                 scrollSize,
@@ -973,22 +1236,33 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
                                 absoluteEndPositionPercent,
+                                scrollDirection,
                                 delta: sticky === 1 ? this._scrollStartOffset : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
                             }, config: IRenderVirtualListItemConfig = {
-                                new: (cache satisfies Cache)?.[IS_NEW] === true,
+                                fullSize: true,
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
+                                new: (cache as Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
                                 collapsable,
                                 selectable,
                                 sticky,
-                                snap,
+                                snap: stickyEnabled,
                                 snapped: true,
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
-                                tabIndex: count,
-                                zIndex: '1',
+                                layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
+                                snapToItem,
+                                snapToItemAlign,
+                                tabIndex: i - layoutIndexOffset,
+                                divides,
+                                opacity: 1,
+                                zIndex: Z_INDEX_1,
                             };
 
                         const itemData: I = collectionItem;
@@ -1001,18 +1275,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         stickyItemSize = size;
 
                         displayItems.push(stickyItem);
-
-                        count++;
                         break;
                     }
                 }
             }
 
-            if (snap) {
+            if (stickyEnabled) {
                 const si = itemsFromStartToScrollEnd + itemsOnDisplayLength - 1, startIndex = si < 0 ? si : si;
-                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0), l = totalLength; i < l; i++) {
-                    const collectionItem = items[i];
-                    if (!collectionItem) {
+                for (let i = Math.min(startIndex, totalLength > 0 ? totalLength - 1 : 0),
+                    rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides),
+                    l = totalLength; i < l; i++) {
+                    const collectionItem = items[i],
+                        isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
+                    if (!collectionItem || isDummy) {
                         continue;
                     }
                     const id = collectionItem[trackBy], cache = this.get(id)!, sticky = itemConfigMap[id]?.sticky ?? 0,
@@ -1022,15 +1297,31 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             ? cache?.[sizeProperty] || typicalItemSize
                             : typicalItemSize;
                     if (sticky === 2) {
-                        const isOdd = i % 2 != 0,
+                        const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
                             w = isVertical ? normalizedItemWidth : size, h = isVertical ? size : normalizedItemHeight,
                             absoluteStartPosition = pos - (scrollSize - size) - size, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                             absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                            x = isVertical ? 0 : actualEndSnippedPosition - w,
+                            y = isVertical ? actualEndSnippedPosition - h : 0,
                             measures: IRenderVirtualListItemMeasures = {
-                                x: isVertical ? 0 : actualEndSnippedPosition - w,
-                                y: isVertical ? actualEndSnippedPosition - h : 0,
+                                x,
+                                y,
+                                transformedX: x,
+                                transformedY: y,
+                                z: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                rotationZ: 0,
+                                scaleX: 1,
+                                scaleY: 1,
+                                scaleZ: 1,
                                 size,
+                                row: {
+                                    size,
+                                    odd: rowIndex % 2 != 0,
+                                    even: rowIndex % 2 == 0,
+                                },
                                 position: pos,
                                 boundsSize,
                                 scrollSize,
@@ -1040,22 +1331,37 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 absoluteEndPositionPercent,
                                 width: w,
                                 height: h,
+                                minWidth: minItemSize,
+                                minHeight: minItemSize,
+                                maxWidth: maxItemSize,
+                                maxHeight: maxItemSize,
+                                scrollDirection,
                                 delta: actualEndSnippedPosition - deltaOffet - size,
                             }, config: IRenderVirtualListItemConfig = {
-                                new: (cache satisfies Cache)?.[IS_NEW] === true,
+                                fullSize: true,
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
+                                new: (cache as Cache)?.[IS_NEW] === true,
                                 odd: isOdd,
                                 even: !isOdd,
                                 isVertical,
                                 collapsable,
                                 selectable,
                                 sticky,
-                                snap,
+                                snap: stickyEnabled,
                                 snapped: true,
                                 snappedOut: false,
                                 dynamic: dynamicSize,
                                 isSnappingMethodAdvanced,
-                                tabIndex: items.length,
-                                zIndex: '1',
+                                layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
+                                snapToItem,
+                                snapToItemAlign,
+                                tabIndex: i - layoutIndexOffset,
+                                divides,
+                                opacity: 1,
+                                zIndex: Z_INDEX_1,
                             };
 
                         const itemData: I = collectionItem;
@@ -1073,97 +1379,153 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
             }
 
-            let i = startIndex, iterations = 0;
-
+            const collectionLength = items.length;
+            let i = startIndex,
+                ci = 0,
+                row: {
+                    size: number;
+                    odd: boolean;
+                    even: boolean;
+                } = {
+                    size: 0,
+                    odd: false,
+                    even: false,
+                };
             while (renderItems > 0) {
-                iterations++;
-                if (iterations > totalLength || i >= totalLength) {
+                if (i >= collectionLength) {
                     break;
                 }
                 const collectionItem = items[i];
                 if (!collectionItem) {
-                    continue;
+                    break;
                 }
 
-                const id = collectionItem[trackBy], cache = this.get(id)!,
-                    size = dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize;
+                const isDummy = collectionItem?.[SERVICE_PROP_DUMMY] && (collectionItem?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED),
+                    ii = i + 1,
+                    rowIndex = Math.floor(((items.length - layoutIndexOffset + i) + 1) / divides),
+                    id = collectionItem[trackBy],
+                    cache = this.get(id)!,
+                    size = isDummy ? typicalItemSize : (dynamicSize ? cache?.[sizeProperty] || typicalItemSize : typicalItemSize),
+                    divSize = (isVertical ? normalizedItemWidth : normalizedItemHeight) / divides;
 
-                if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
-                    const isOdd = i % 2 != 0,
-                        sticky = itemConfigMap[id]?.sticky ?? 0,
-                        selectable = itemConfigMap[id]?.selectable ?? true,
-                        collapsable = itemConfigMap[id]?.collapsable ?? false,
-                        snapped = snap && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
-                        absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
-                        absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
-                        absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
-                        measures: IRenderVirtualListItemMeasures = {
-                            x: isVertical ? 0 : pos,
-                            y: isVertical ? pos : 0,
-                            size,
-                            position: pos,
-                            boundsSize,
-                            scrollSize,
-                            absoluteStartPosition,
-                            absoluteStartPositionPercent,
-                            absoluteEndPosition,
-                            absoluteEndPositionPercent,
-                            width: isVertical ? normalizedItemWidth : size,
-                            height: isVertical ? size : normalizedItemHeight,
-                            delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
-                        }, config: IRenderVirtualListItemConfig = {
-                            new: (cache satisfies Cache)?.[IS_NEW] === true,
-                            odd: isOdd,
-                            even: !isOdd,
-                            isVertical,
-                            collapsable,
-                            selectable,
-                            sticky: sticky,
-                            snap,
-                            snapped: false,
-                            snappedOut: false,
-                            dynamic: dynamicSize,
-                            isSnappingMethodAdvanced,
-                            tabIndex: count,
-                            isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
-                            zIndex: '0',
-                        };
-
-                    count++;
-
-                    if (snapped) {
-                        config.zIndex = '2';
-                    }
-
-                    const itemData: I = collectionItem;
-
-                    const item: IRenderVirtualListItem = {
-                        index: i, id, measures, data: itemData, previouseData: i > 0 ? items[i - 1] : null,
-                        nextData: i < totalLength ? items[i + 1] : null, config,
+                if (i % divides === 0) {
+                    ci = 0;
+                    row = {
+                        size,
+                        odd: rowIndex % 2 !== 0,
+                        even: rowIndex % 2 === 0,
                     };
-                    if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + this._scrollStartOffset + size + stickyItemSize)) {
-                        item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
-                        item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
-                        nextSticky = item;
-                        nextSticky.config.snapped = snapped;
-                        nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
-                        nextSticky.config.zIndex = '3';
-                    }
-                    if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
-                        (pos >= actualEndSnippedPosition - size - endStickyItemSize)) {
-                        item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
-                        item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
-                        nextEndSticky = item;
-                        nextEndSticky.config.zIndex = '3';
-                        nextEndSticky.config.snapped = snapped;
-                        nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
-                    }
-
-                    displayItems.push(item);
+                } else {
+                    row.size = Math.max(row.size, size);
+                    ci++;
                 }
 
-                renderItems -= 1;
-                pos += size;
+                if (!isDummy) {
+                    if ((isSnappingMethodAdvanced || id !== stickyItem?.id) && id !== endStickyItem?.id) {
+                        const isOdd = (items.length - layoutIndexOffset + i) % 2 != 0,
+                            sticky = itemConfigMap[id]?.sticky ?? 0,
+                            fullSize = itemConfigMap[id]?.fullSize ?? false,
+                            selectable = itemConfigMap[id]?.selectable ?? true,
+                            collapsable = itemConfigMap[id]?.collapsable ?? false,
+                            snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
+                            absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
+                            absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
+                            absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
+                            x = isVertical ? divSize * ((sticky || fullSize) ? 0 : ci) : pos,
+                            y = isVertical ? pos : divSize * ((sticky || fullSize) ? 0 : ci),
+                            measures: IRenderVirtualListItemMeasures = {
+                                x,
+                                y,
+                                transformedX: x,
+                                transformedY: y,
+                                z: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                rotationZ: 0,
+                                scaleX: 1,
+                                scaleY: 1,
+                                scaleZ: 1,
+                                size,
+                                row,
+                                position: pos,
+                                boundsSize,
+                                scrollSize,
+                                absoluteStartPosition,
+                                absoluteStartPositionPercent,
+                                absoluteEndPosition,
+                                absoluteEndPositionPercent,
+                                width: isVertical ? ((sticky || fullSize) ? normalizedItemWidth : (normalizedItemWidth / divides)) : size,
+                                height: isVertical ? size : ((sticky || fullSize) ? normalizedItemHeight : (normalizedItemHeight / divides)),
+                                minWidth: minItemSize,
+                                minHeight: minItemSize,
+                                maxWidth: maxItemSize,
+                                maxHeight: maxItemSize,
+                                scrollDirection,
+                                delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
+                            }, config: IRenderVirtualListItemConfig = {
+                                isFirst: i === layoutIndexOffset,
+                                isLast: i === li,
+                                new: (cache as Cache)?.[IS_NEW] === true,
+                                odd: isOdd,
+                                even: !isOdd,
+                                isVertical,
+                                collapsable,
+                                selectable,
+                                sticky: sticky,
+                                snap: stickyEnabled,
+                                snapped: false,
+                                snappedOut: false,
+                                dynamic: dynamicSize,
+                                isSnappingMethodAdvanced,
+                                layoutOffset,
+                                layoutIndexOffset,
+                                totalItems: items.length,
+                                snapToItem,
+                                snapToItemAlign,
+                                tabIndex: i - layoutIndexOffset,
+                                isStub: (isSnappingMethodAdvanced && id === stickyItem?.id),
+                                divides,
+                                opacity: 1,
+                                zIndex: Z_INDEX_0,
+                                fullSize,
+                            };
+
+                        if (snapped) {
+                            config.zIndex = Z_INDEX_2;
+                        }
+
+                        const itemData: I = collectionItem;
+
+                        const item: IRenderVirtualListItem = {
+                            index: i, id, measures, data: itemData, previouseData: i > 0 ? items[i - 1] : null,
+                            nextData: i < totalLength ? items[i + 1] : null, config,
+                        };
+                        if (!nextSticky && stickyItemIndex < i && sticky === 1 && (pos <= scrollSize + this._scrollStartOffset + size + stickyItemSize)) {
+                            item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
+                            item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
+                            nextSticky = item;
+                            nextSticky.config.snapped = snapped;
+                            nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
+                            nextSticky.config.zIndex = Z_INDEX_3;
+                        }
+                        if (!nextEndSticky && endStickyItemIndex > i && sticky === 2 &&
+                            (pos >= actualEndSnippedPosition - size - endStickyItemSize)) {
+                            item.measures.x = isVertical ? 0 : snapped ? actualEndSnippedPosition - size : pos;
+                            item.measures.y = isVertical ? snapped ? actualEndSnippedPosition - size : pos : 0;
+                            nextEndSticky = item;
+                            nextEndSticky.config.zIndex = Z_INDEX_3;
+                            nextEndSticky.config.snapped = snapped;
+                            nextEndSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
+                        }
+
+                        displayItems.push(item);
+                    }
+                }
+
+                renderItems--;
+                if (ii % divides === 0 || renderItems <= 0) {
+                    pos += row.size;
+                }
                 i++;
             }
 
@@ -1198,16 +1560,34 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
                 }
             }
+
+            if (itemTransform !== null) {
+                for (let i = 0, l = displayItems.length; i < l; i++) {
+                    const item = displayItems[i];
+                    if (!!item) {
+                        const transformation = itemTransform(item.index, objectAsReadonly(item.measures), objectAsReadonly(item.config));
+                        item.measures.transformedX = transformation.x;
+                        item.measures.transformedY = transformation.y;
+                        item.measures.z = transformation.z;
+                        item.measures.rotationX = transformation.rotationX;
+                        item.measures.rotationY = transformation.rotationY;
+                        item.measures.rotationZ = transformation.rotationZ;
+                        item.measures.scaleX = transformation.scaleX;
+                        item.measures.scaleY = transformation.scaleY;
+                        item.measures.scaleZ = transformation.scaleZ;
+                        item.config.opacity = transformation.opacity;
+                        item.config.filter = transformation.filter;
+                        item.config.blendColor = transformation.blendColor;
+                        item.config.zIndex = String(transformation.zIndex);
+                    }
+                }
+            }
         }
         return displayItems;
     }
 
     resetPositions() {
         this._tracker.clearTrackMap();
-
-        this.clearScrollDirectionCache(false);
-
-        this.deltaDirection = 0;
 
         this.track();
     }
@@ -1220,7 +1600,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             return;
         }
 
-        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this.scrollDirection);
+        this._tracker.track(this._items, this._displayComponents, this._snappedDisplayComponents, this._scrollDirection, this._trackBy);
     }
 
     setDisplayObjectIndexMapById(v: { [id: number]: number }): void {
@@ -1238,6 +1618,39 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         return null;
     }
 
+    getComponentBoundsByIntersectionPosition(position: number, maxPosition: number | null = null): (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null {
+        const components = this._displayComponents;
+        let first: (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null = null,
+            last: (IRect & { id: Id | null; isFirst: boolean; isLast: boolean; }) | null = null;
+        if (!!components) {
+            for (const comp of components) {
+                const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
+                    x = comp.instance.item?.measures?.x ?? 0,
+                    y = comp.instance.item?.measures?.y ?? 0,
+                    isFirst = comp.instance.item?.config?.isFirst ?? false,
+                    isLast = comp.instance.item?.config?.isLast ?? false,
+                    { width, height } = comp.instance.getBounds(),
+                    pos = position;
+                if (isVertical && (pos >= y && pos < y + height)) {
+                    return { id, x, y, width, height, isFirst, isLast };
+                } else if (!isVertical && (pos >= x && pos < x + width)) {
+                    return { id, x, y, width, height, isFirst, isLast };
+                }
+                if (isFirst) {
+                    first = { id, x, y, width, height, isFirst, isLast };
+                } else if (isLast) {
+                    last = { id, x, y, width, height, isFirst, isLast };
+                }
+            }
+        }
+        if (position < 0) {
+            return first;
+        }
+        if (maxPosition !== null && position > maxPosition) {
+            return last;
+        }
+        return null;
+    }
     private _debouncedIsScrollStartOff = debounce(() => {
         this._isScrollStart = false;
     });

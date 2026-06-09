@@ -1,9 +1,9 @@
-import { Directive, ElementRef, inject, input } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, tap } from 'rxjs';
-import { TextDirection, TextDirections } from '../../enums';
+import { Directive, ElementRef, Input, OnDestroy } from '@angular/core';
+import { BehaviorSubject, combineLatest, Subject, takeUntil, tap } from 'rxjs';
+import { TextDirections } from '../../enums';
 import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
 import { isDirection } from '../../utils/is-direction';
+import { TextDirection } from '../../types';
 
 const RIGHT = 'right',
   DIR = 'dir';
@@ -20,22 +20,37 @@ const RIGHT = 'right',
   selector: '[localeSensitive]',
   standalone: false,
 })
-export class LocaleSensitiveDirective {
-  langTextDir = input<TextDirection>(TextDirections.LTR);
+export class LocaleSensitiveDirective implements OnDestroy {
+  protected _$unsubscribe = new Subject<void>();
 
-  listDir = input<ScrollerDirections>(ScrollerDirection.VERTICAL);
+  private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
+  readonly $langTextDir = this._$langTextDir.asObservable();
 
-  private _elementRef = inject(ElementRef<HTMLElement>);
+  @Input()
+  set langTextDir(v: TextDirection) {
+    this._$langTextDir.next(v);
+  }
+  get langTextDir() { return this._$langTextDir.getValue(); }
 
-  constructor() {
-    const $langTextDir = toObservable(this.langTextDir),
-      $listDir = toObservable(this.listDir);
+
+  private _$listDir = new BehaviorSubject<ScrollerDirections | null>(ScrollerDirection.VERTICAL);
+  readonly $listDir = this._$listDir.asObservable();
+
+  @Input()
+  set listDir(v: ScrollerDirections | null) {
+    this._$listDir.next(v);
+  }
+  get listDir() { return this._$listDir.getValue(); }
+
+  constructor(private _elementRef: ElementRef<HTMLElement>) {
+    const $langTextDir = this.$langTextDir,
+      $listDir = this.$listDir;
 
     combineLatest([$langTextDir, $listDir]).pipe(
-      takeUntilDestroyed(),
+      takeUntil(this._$unsubscribe),
       tap(([dir, listDir]) => {
         const element = this._elementRef.nativeElement as HTMLElement,
-          isVertical = isDirection(listDir, ScrollerDirection.VERTICAL);
+          isVertical = isDirection(listDir!, ScrollerDirection.VERTICAL);
         element.setAttribute(DIR, isVertical ? dir : TextDirections.LTR);
         if (dir === TextDirections.RTL && isVertical) {
           element.style.textAlign = RIGHT;
@@ -47,5 +62,12 @@ export class LocaleSensitiveDirective {
         }
       }),
     ).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    if (this._$unsubscribe) {
+      this._$unsubscribe.next();
+      this._$unsubscribe.complete();
+    }
   }
 }
