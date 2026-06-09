@@ -1,4 +1,5 @@
-import { Direction, Directions } from "../enums";
+import { Directions } from "../enums";
+import { Direction } from "../types";
 
 const HORIZONTAL_ALIASES = [Directions.HORIZONTAL, 'horizontal'],
     VERTICAL_ALIASES = [Directions.VERTICAL, 'vertical'];

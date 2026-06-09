@@ -12,12 +12,31 @@
     image-rendering: auto;
 }
 
-.ngvl-item__container {
+.ngvl-item {
+    position: relative;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #ffffff;
+    outline: none;
     width: inherit;
     height: inherit;
+    box-sizing: border-box;
+}
+
+.ngvl-item__blend-color {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--blend-color);
+    z-index: -1;
+}
+
+.ngvl-item__container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     box-sizing: border-box;
 }

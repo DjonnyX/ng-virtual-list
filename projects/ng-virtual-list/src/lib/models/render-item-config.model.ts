@@ -1,3 +1,6 @@
+import { SnapToItemAlign } from "../types";
+import { Color } from "../types";
+
 /**
  * Object with configuration parameters for IRenderVirtualListItem
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/15.x/projects/ng-virtual-list/src/lib/models/render-item-config.model.ts
@@ -55,6 +58,14 @@ export interface IRenderVirtualListItemConfig {
      */
     isSnappingMethodAdvanced: boolean;
     /**
+     * layout offset;
+     */
+    layoutOffset: number;
+    /**
+     * layout index offset;
+     */
+    layoutIndexOffset: number;
+    /**
      * Tab index.
      */
     tabIndex: number;
@@ -63,7 +74,47 @@ export interface IRenderVirtualListItemConfig {
      */
     zIndex: string;
     /**
+     * Opacity.
+     */
+    opacity: number;
+    /**
+     * Filter.
+     */
+    filter?: string;
+    /**
+     * Blend color.
+     */
+    blendColor?: Color | null;
+    /**
      * Determines whether an element is a stub.
      */
     isStub?: boolean;
+    /**
+     * Division number.
+     */
+    divides: number;
+    /**
+     * Snap to an item. The default value is `false`.
+     */
+    snapToItem: boolean;
+    /**
+     * Alignment for snapToItem. Available values ​​are `start`, `center`, and `end`. The default value is `center`.
+     */
+    snapToItemAlign: SnapToItemAlign;
+    /**
+     * Indicates whether the element is the first in the collection.
+     */
+    isFirst: boolean;
+    /**
+     * Indicates whether the element is the last one in the collection.
+     */
+    isLast: boolean;
+    /**
+     * Determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true.
+     */
+    fullSize: boolean;
+    /**
+     * Number of elements in the collection to be visualized.
+     */
+    totalItems: number;
 }
