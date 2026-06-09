@@ -1,7 +1,8 @@
 import { Directive, ElementRef, inject, input } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, tap } from 'rxjs';
-import { TextDirection, TextDirections } from '../../enums';
+import { TextDirections } from '../../enums';
+import { TextDirection } from '../../types';
 import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
 import { isDirection } from '../../utils/is-direction';
 
@@ -12,7 +13,7 @@ const RIGHT = 'right',
  * LocaleSensitiveDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

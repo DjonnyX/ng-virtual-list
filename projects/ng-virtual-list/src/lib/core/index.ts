@@ -1,6 +1,6 @@
 import {
     IMetrics,
-} from "./track-box";
+} from "./interfaces/metrics";
 
 export type {
     IMetrics,

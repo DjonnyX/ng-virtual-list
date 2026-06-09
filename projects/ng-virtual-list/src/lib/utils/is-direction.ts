@@ -1,11 +1,12 @@
-import { Direction, Directions } from "../enums";
+import { Directions } from "../enums";
+import { Direction } from "../types";
 
 const HORIZONTAL_ALIASES = [Directions.HORIZONTAL, 'horizontal'],
     VERTICAL_ALIASES = [Directions.VERTICAL, 'vertical'];
 
 /**
  * Determines the axis membership of a virtual list
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/utils/is-direction.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/utils/is-direction.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

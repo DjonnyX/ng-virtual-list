@@ -2,7 +2,7 @@ import { IRect } from "../interfaces";
 
 /**
  * Display object metrics.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

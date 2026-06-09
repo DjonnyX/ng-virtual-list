@@ -6,13 +6,15 @@ import { CMap } from "../../../utils/cmap";
 import { PrerenderCache } from "../types/cache";
 import { BaseVirtualListItemComponent } from "../../ng-list-item/base";
 import { IPrerenderTrackBoxRefreshParams } from "../interfaces";
-import { DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, TRACK_BY_PROPERTY_NAME } from "../../../const";
+import { DEFAULT_DIVIDES, DEFAULT_DYNAMIC_SIZE, DEFAULT_ITEM_SIZE, DEFAULT_SNAP_TO_ITEM_ALIGN, TRACK_BY_PROPERTY_NAME } from "../../../const";
 import { Component$1 } from "../../../models/component.model";
 import { EventEmitter } from "../../../utils/event-emitter/event-emitter";
 import { PrerenderTrackBoxEvents, PrerenderTrackBoxHandlers } from "../events";
 
 const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISize, boundsSize: number,
-    dynamic: boolean, itemSize: number, id: Id, index: number): IRenderVirtualListItem => {
+    dynamic: boolean, divides: number, itemSize: number, id: Id, index: number): IRenderVirtualListItem => {
+    const w = (isVertical ? (bounds.width / divides) : itemSize) as any,
+        h = (isVertical ? itemSize : (bounds.height / divides)) as any;
     return {
         index,
         id,
@@ -20,6 +22,11 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             position: 0,
             scrollSize: 0,
             size: itemSize,
+            row: {
+                size: itemSize,
+                odd: false,
+                even: false
+            },
             boundsSize,
             absoluteStartPosition: 0,
             absoluteStartPositionPercent: 0,
@@ -28,8 +35,22 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             delta: 0,
             x: 0,
             y: 0,
-            width: (isVertical ? bounds.width : itemSize) as any,
-            height: (isVertical ? itemSize : bounds.height) as any,
+            transformedX: 0,
+            transformedY: 0,
+            z: 0,
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0,
+            scaleX: 0,
+            scaleY: 0,
+            scaleZ: 0,
+            width: w,
+            height: h,
+            minWidth: 0,
+            minHeight: 0,
+            maxWidth: Number.MAX_SAFE_INTEGER,
+            maxHeight: Number.MAX_SAFE_INTEGER,
+            scrollDirection: 0,
         },
         data,
         previouseData: data,
@@ -47,8 +68,18 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             isVertical,
             dynamic,
             isSnappingMethodAdvanced: false,
+            divides: 1,
             tabIndex: 0,
+            opacity: 1,
             zIndex: "0",
+            snapToItem: false,
+            snapToItemAlign: DEFAULT_SNAP_TO_ITEM_ALIGN,
+            layoutOffset: 0,
+            isFirst: false,
+            isLast: false,
+            fullSize: false,
+            layoutIndexOffset: 0,
+            totalItems: 0,
         },
     }
 }
@@ -57,7 +88,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
  * PrerenderTrackBox
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/prerender-container/core/prerender-track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/prerender-container/core/prerender-track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -89,6 +120,7 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
     private refresh(componentClass: Component$1<BaseVirtualListItemComponent>, bounds: ISize, params: IPrerenderTrackBoxRefreshParams) {
         const isVertical = params.isVertical ?? true,
             dynamic = params.dynamic ?? DEFAULT_DYNAMIC_SIZE,
+            divides = params.divides ?? DEFAULT_DIVIDES,
             itemsSize = params.itemSize ?? DEFAULT_ITEM_SIZE,
             trackBy = params.trackBy ?? TRACK_BY_PROPERTY_NAME,
             itemRenderer = params.itemRenderer,
@@ -118,7 +150,7 @@ export class PrerenderTrackBox extends EventEmitter<PrerenderTrackBoxEvents, Pre
                 } else {
                     comp = components[j];
                 }
-                comp.instance.item = createItemData(item, isVertical, bounds, boundsSize, dynamic, itemsSize, id, index);
+                comp.instance.item = createItemData(item, isVertical, bounds, boundsSize, dynamic, divides, itemsSize, id, index);
                 comp.instance.show();
                 const { width, height } = comp.instance.getBounds(),
                     w = isVertical ? width : width < itemsSize ? itemsSize : width,

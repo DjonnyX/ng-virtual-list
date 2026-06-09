@@ -15,7 +15,7 @@ import { CLIP_NAME, CLIP_PATH, CX, CY, D, DEFAULT_FILL_COLORS, DEFAULT_RIPPLE_CO
  * Substrate
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/src/app/components/x-substrate/x-substrate.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/src/app/components/x-substrate/x-substrate.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

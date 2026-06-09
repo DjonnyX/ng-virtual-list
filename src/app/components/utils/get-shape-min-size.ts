@@ -2,7 +2,7 @@ import { RoundedCorner } from "../interfaces";
 
 /**
  * getShapeMinSize
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/utils/get-shape-min-size.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/utils/get-shape-min-size.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

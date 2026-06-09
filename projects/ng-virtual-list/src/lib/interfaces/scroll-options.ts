@@ -1,6 +1,6 @@
 /**
  * Interface IScrollOptions.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/interfaces/scroll-options.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -21,4 +21,8 @@ export interface IScrollOptions {
      * Determines whether the element will have focus after scrolling is complete. Default value is true.
      */
     focused?: boolean;
+    /**
+     * Delay.
+     */
+    delay?: number;
 }
