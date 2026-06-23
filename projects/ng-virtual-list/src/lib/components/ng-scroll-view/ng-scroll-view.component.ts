@@ -712,7 +712,7 @@ export class NgScrollView extends BaseScrollView {
     protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad,
         userAction: boolean = false, alignmentAtComplete: boolean = true, skipOverridedCoordinates: boolean = false) {
         const isVertical = this.isVertical();
-        let iteration = 0, position = startValue;
+        let position = startValue;
         this._isAlignmentAnimation = !alignmentAtComplete;
 
         this._animator.animate({
@@ -730,16 +730,15 @@ export class NgScrollView extends BaseScrollView {
                     this.animate(currentCoordinate, currentCoordinate + delta, duration - elapsed, easingFunction, userAction, alignmentAtComplete);
                     return;
                 }
-                const v0 = calculateVelocity(position, value, timestamp) ?? this.averageVelocity;
+                const v0 = calculateVelocity(position, value - this._delta, timestamp) ?? this.averageVelocity;
                 position = value;
                 if (alignmentAtComplete && !this._isAlignmentAnimation && !skipOverridedCoordinates) {
-                    if (iteration < MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS || !this.snapIfNecessary(v0)) {
+                    if (!this.snapIfNecessary(v0)) {
                         this.move(isVertical, value, false, userAction);
                     }
                 } else {
                     this.move(isVertical, value, false, userAction);
                 }
-                iteration++;
                 this._service.update(true);
             }, onComplete: ({ value, timestamp }) => {
                 this._isAlignmentAnimation = false;
@@ -809,10 +808,9 @@ export class NgScrollView extends BaseScrollView {
     }
 
     protected alignPosition(animated: boolean = true, force: boolean = false) {
-        if (!this.snapToItem() || this._isAlignmentAnimation) {
+        if (!this.snapToItem() || (this._isAlignmentAnimation && !force)) {
             return false;
         }
-        this.stopScrolling(true);
         const scrollDirection = this._scrollDirection.get() || (force ? 1 : 0);
         if (scrollDirection === 0) {
             return false;
