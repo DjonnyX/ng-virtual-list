@@ -726,6 +726,8 @@ import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
 </ng-template>
 ```
 
+<br/>
+
 ## 📦 Previous versions
 
 | Angular version | ng-virtual-list version | git | npm |
@@ -738,6 +740,8 @@ import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
 | 16.x | 16.12.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.12.1](https://www.npmjs.com/package/ng-virtual-list/v/16.12.1) |
 | 15.x | 15.12.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.12.1](https://www.npmjs.com/package/ng-virtual-list/v/15.12.1) |
 | 14.x | 14.12.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.12.1](https://www.npmjs.com/package/ng-virtual-list/v/14.12.1) |
+
+<br/>
 
 ## 📄 License
 
