@@ -2639,11 +2639,26 @@ export class NgVirtualListComponent implements OnDestroy {
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize1;
             leftLayoutOffset = leftLayoutOffset1;
+
+            if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
+              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1, leftLayoutOffset: leftLayoutOffset1 } =
+                this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+              displayItems = calculatedDisplayItems;
+              totalSize = calculatedTotalSize1;
+              leftLayoutOffset = leftLayoutOffset1;
+            }
           } else {
             const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, opts);
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize;
             leftLayoutOffset = leftLayoutOffset1;
+
+            if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
+              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+              displayItems = calculatedDisplayItems;
+              totalSize = calculatedTotalSize;
+              leftLayoutOffset = leftLayoutOffset1;
+            }
           }
 
           scroller.totalSize = totalSize;
@@ -2952,6 +2967,8 @@ export class NgVirtualListComponent implements OnDestroy {
     $scrollToExecutor.pipe(
       takeUntilDestroyed(),
       switchMap(event => {
+        this._$fireUpdate.next(true);
+
         const trackBy = this.trackBy(), scrollerComponent = this._scrollerComponent(),
           { id, iteration = 0, blending = false, isLastIteration = false, cb } = event;
         const nextIteration = iteration + 1, finished = nextIteration >= MAX_SCROLL_TO_ITERATIONS, fireUpdate = false;
@@ -2973,7 +2990,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
             if (dynamicSize) {
               const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-                itemConfigMap = this.itemConfigMap(), isVertical = this._isVertical,
+                itemConfigMap = this.itemConfigMap(), isVertical = this._isVertical, isInfinity = this._isInfinity(),
+                snapToItem = this.snapToItem(), snapToItemAlign = this.snapToItemAlign(),
                 currentScrollSize = isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
                   bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
@@ -3018,12 +3036,12 @@ export class NgVirtualListComponent implements OnDestroy {
 
               scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
-              if (this._isInfinity()) {
-                if (this.snapToItem()) {
+              if (isInfinity) {
+                if (snapToItem) {
                   const itemBounds = this._trackBox.getItemBounds(id);
                   if (!!itemBounds) {
                     const itemSize = isVertical ? itemBounds.height : itemBounds.width;
-                    switch (this.snapToItemAlign()) {
+                    switch (snapToItemAlign) {
                       case SnapToItemAligns.CENTER: {
                         scrollSize += itemSize * .5;
                         break;
@@ -3055,12 +3073,13 @@ export class NgVirtualListComponent implements OnDestroy {
             } else {
               const index = items.findIndex(item => item[trackBy] === id);
               if (index > -1) {
-                const isVertical = this._isVertical, itemSize = this._actualItemSize();
+                const isVertical = this._isVertical, itemSize = this._actualItemSize(), isInfinity = this._isInfinity(), snapToItem = this.snapToItem(),
+                  snapToItemAlign = this.snapToItemAlign();
                 let scrollSize = index * itemSize;
 
-                if (this._isInfinity()) {
-                  if (this.snapToItem()) {
-                    switch (this.snapToItemAlign()) {
+                if (isInfinity) {
+                  if (snapToItem) {
+                    switch (snapToItemAlign) {
                       case SnapToItemAligns.CENTER: {
                         scrollSize += itemSize * .5;
                         break;
@@ -3075,8 +3094,8 @@ export class NgVirtualListComponent implements OnDestroy {
                     bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                     bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(), itemTransform: this.itemTransform(),
                     scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
-                    snapToItem: this.snapToItem(), snapToItemAlign: this.snapToItemAlign(),
-                    stickyEnabled: this.stickyEnabled(), fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization(),
+                    snapToItem, snapToItemAlign, stickyEnabled: this.stickyEnabled(), fromItemId: id,
+                    enabledBufferOptimization: this.enabledBufferOptimization(),
                   };
 
                 this._trackBox.clearDelta();
