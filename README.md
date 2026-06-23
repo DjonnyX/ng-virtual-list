@@ -726,6 +726,8 @@ import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
 </ng-template>
 ```
 
+<br/>
+
 ## 📄 License
 
 MIT License
