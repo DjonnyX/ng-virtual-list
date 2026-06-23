@@ -3202,6 +3202,19 @@ export class NgVirtualListComponent implements OnDestroy {
       }),
     ).subscribe();
 
+    combineLatest([$itemConfigMap, $dynamicSize, $divides]).pipe(
+      takeUntilDestroyed(),
+      filter(([itemConfigMap, dynamicSize, divides]) => !!itemConfigMap && !dynamicSize && divides > 1),
+      tap(([itemConfigMap]) => {
+        for (const id in itemConfigMap) {
+          const metaData = itemConfigMap[id];
+          if (metaData?.fullSize || metaData?.sticky === 1 || metaData?.sticky === 2) {
+            throw Error('The accelerated rendering algorithm `[dynamicSize]="false"` cannot correctly handle non-uniform lists (the itemConfigMap specifies full-size elements). For correct rendering, specify `[dynamicSize]="true"`.');
+          }
+        }
+      }),
+    ).subscribe();
+
     combineLatest([$collapsingMode, $items, $itemConfigMap, $trackBy]).pipe(
       takeUntilDestroyed(),
       tap(([collapsingMode, items, itemConfigMap, trackBy]) => {

@@ -944,7 +944,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             rightItemsWeight = Math.floor(rightItemLength * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
             leftHiddenItemsWeight = Math.floor(itemsFromStartToScrollEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
             totalItemsToDisplayEndWeight = Math.floor(itemsFromStartToDisplayEnd * dividedTypicalItemSize / typicalItemSize) * typicalItemSize;
-            totalSize = (totalLength * dividedTypicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
+            totalSize = (Math.ceil(totalLength / divides) * divides * dividedTypicalItemSize) + this._scrollStartOffset + this._scrollEndOffset;
             const k = totalSize !== 0 ? previousTotalSize / totalSize : 0;
 
             if (isFromId) {
