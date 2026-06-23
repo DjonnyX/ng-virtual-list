@@ -1430,7 +1430,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             fullSize = itemConfigMap[id]?.fullSize ?? false,
                             selectable = itemConfigMap[id]?.selectable ?? true,
                             collapsable = itemConfigMap[id]?.collapsable ?? false,
-                            snapped = stickyEnabled && (sticky === 1 && (pos <= scrollSize + this._scrollStartOffset) || sticky === 2 && (pos >= scrollSize + boundsSize - size)),
+                            snapped = stickyEnabled && ((sticky === 1 && (pos <= scrollSize + this._scrollStartOffset)) || (sticky === 2 && (pos >= scrollSize + boundsSize - size))),
                             absoluteStartPosition = pos - scrollSize, ratio = size !== 0 ? boundsSize / size : 0, absoluteStartPositionPercent = -(boundsSize !== 0 ? absoluteStartPosition / boundsSize : 0) * ratio,
                             absoluteEndPosition = boundsSize - (absoluteStartPositionPercent + size),
                             absoluteEndPositionPercent = (absoluteStartPositionPercent + (boundsSize !== 0 ? (absoluteEndPosition + size) / boundsSize : 0) * ratio),
@@ -1464,7 +1464,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 maxWidth: maxItemSize,
                                 maxHeight: maxItemSize,
                                 scrollDirection,
-                                delta: sticky === 1 ? actualSnippedPosition : sticky === 2 ? actualEndSnippedPosition - deltaOffet - size : 0,
+                                delta: sticky === 1 ? actualSnippedPosition : (sticky === 2 ? (actualEndSnippedPosition - deltaOffet - size) : 0),
                             }, config: IRenderVirtualListItemConfig = {
                                 isFirst: i === layoutIndexOffset,
                                 isLast: i === li,
@@ -1474,7 +1474,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 isVertical,
                                 collapsable,
                                 selectable,
-                                sticky: sticky,
+                                sticky,
                                 snap: stickyEnabled,
                                 snapped: false,
                                 snappedOut: false,
@@ -1526,6 +1526,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 }
 
                 renderItems--;
+
                 if (ii % divides === 0 || renderItems <= 0) {
                     pos += row.size;
                 }
@@ -1534,9 +1535,9 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
 
             const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME;
 
-            if (!!nextSticky && !!stickyItem && nextSticky.measures[axis] <= actualSnippedPosition + stickyItemSize) {
-                if (nextSticky.measures[axis] > scrollSize - stickyItemSize) {
-                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItemSize;
+            if (!!nextSticky && !!stickyItem && nextSticky.measures[axis] <= actualSnippedPosition + stickyItem.measures[sizeProperty]) {
+                if (nextSticky.measures[axis] > actualSnippedPosition) {
+                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
                     stickyItem.config.snapped = nextSticky.config.snapped = false;
                     stickyItem.config.snappedOut = true;
                     stickyItem.config.sticky = 1;
@@ -1544,7 +1545,8 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 } else {
                     nextSticky.config.snapped = true;
                     nextSticky.measures.delta = (isVertical ? nextSticky.measures.y : nextSticky.measures.x) - scrollSize;
-                    stickyItem.measures[axis] = stickyItem.measures[axis] + stickyItem.measures[sizeProperty];
+                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
+                    stickyItem.measures.delta = (isVertical ? stickyItem.measures.y : stickyItem.measures.x) - scrollSize;
                 }
             }
 
@@ -1561,6 +1563,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     nextEndSticky.measures[axis] = actualEndSnippedPosition - nextEndSticky.measures[sizeProperty];
                     nextEndSticky.measures.delta = (isVertical ? nextEndSticky.measures.y : nextEndSticky.measures.x) - scrollSize;
                     endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
+                    endStickyItem.measures.delta = (isVertical ? endStickyItem.measures.y : endStickyItem.measures.x) - scrollSize;
                 }
             }
 
