@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.12.1] - 2026-06-23
+
+### Fixed
+- Fixed visualization defects when transforming dynamic list elements.
+- Fixed scroll to item bug for lists with dynamic items and list centering.
+- Fixed positioning of list items if the `scrollStartOffset` property is specified for the list.
+
 ## [20.12.0] - 2026-06-09
 
 ### Added
