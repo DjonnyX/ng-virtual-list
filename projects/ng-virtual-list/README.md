@@ -612,11 +612,7 @@ Inputs
 | itemSize | number \| 'viewport' = 24 | If direction = 'vertical', then the height of a typical element. If direction = 'horizontal', then the width of a typical element. If the dynamicSize property is true, the items in the list can have different sizes, and you must specify the itemSize property to adjust the sizes of the items in the unallocated area. If the value is 'viewport', the sizes of elements are automatically resized to fit the viewport size. |
 | itemTransform | [ItemTransform](https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/types/item-transform.ts) \| null = null | Custom transformation of element's position, rotation, scale, opacity and zIndex. The default value is `null`. |
 | itemRenderer | TemplateRef | Rendering element template. |
-| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position, `fullSize`, `collapsable` and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. 
-   If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`.
-   `selectable` determines whether an element can be selected or not. Default value is `true`.
-   `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property.
-   `fullSize` determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true. The default value is false. |
+| itemConfigMap | [IVirtualListItemConfigMap?](https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts) | Sets `sticky` position, `fullSize`, `collapsable` and `selectable` for the list item element. If `sticky` position is greater than `0`, then `sticky` position is applied. If the `sticky` value is greater than `0`, then the `sticky` position mode is enabled for the element. `1` - position start, `2` - position end. Default value is `0`. `selectable` determines whether an element can be selected or not. Default value is `true`. `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and collapse elements in front that do not have a `sticky` property. `fullSize` determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true. The default value is false. |
 | langTextDir | [TextDirection? = 'ltr'](https://github.com/DjonnyX/ng-virtual-list/blob/22.x/projects/ng-virtual-list/src/lib/enums/text-direction.ts) | A string indicating the direction of text for the locale. Can be either "ltr" (left-to-right) or "rtl" (right-to-left). |
 | loading | boolean? = false | If `true`, the scrollBar goes into loading state. The default value is `false`. |
 | maxBufferSize | number? = 10 | Maximum number of elements outside the scope of visibility. Default value is 10. If maxBufferSize is set to be greater than bufferSize, then adaptive buffer mode is enabled. The greater the scroll size, the more elements are allocated for rendering. |
@@ -734,23 +730,14 @@ import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
 
 | Angular version | ng-virtual-list version | git | npm |
 |--|--|--|--|
-| 21.x | 21.12.0 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [21.12.0](https://www.npmjs.com/package/ng-virtual-list/v/21.12.0) |
-| 20.x | 20.12.0 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.12.0](https://www.npmjs.com/package/ng-virtual-list/v/20.12.0) |
-| 19.x | 19.12.0 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.12.0](https://www.npmjs.com/package/ng-virtual-list/v/19.12.0) |
-| 18.x | 18.12.0 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.12.0](https://www.npmjs.com/package/ng-virtual-list/v/18.12.0) |
-| 17.x | 17.12.0 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.12.0](https://www.npmjs.com/package/ng-virtual-list/v/17.12.0) |
-| 16.x | 16.12.0 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.12.0](https://www.npmjs.com/package/ng-virtual-list/v/16.12.0) |
-| 15.x | 15.12.0 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.12.0](https://www.npmjs.com/package/ng-virtual-list/v/15.12.0) |
-| 14.x | 14.12.0 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.12.0](https://www.npmjs.com/package/ng-virtual-list/v/14.12.0) |
-<br/>
-
-## 🤝 Contributing
-
-PRs and feature requests are welcome!
-Open an issue or start a discussion to shape the future of [ng-virtual-list](https://github.com/DjonnyX/ng-virtual-list/).
-Try it out, star ⭐ the repo, and let us know what you’re building.
-
-<br/>
+| 21.x | 21.12.1 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/21.x) | [21.12.1](https://www.npmjs.com/package/ng-virtual-list/v/21.12.1) |
+| 20.x | 20.12.1 | [20.x](https://github.com/DjonnyX/ng-virtual-list/tree/20.x) | [20.12.1](https://www.npmjs.com/package/ng-virtual-list/v/20.12.1) |
+| 19.x | 19.12.1 | [19.x](https://github.com/DjonnyX/ng-virtual-list/tree/19.x) | [19.12.1](https://www.npmjs.com/package/ng-virtual-list/v/19.12.1) |
+| 18.x | 18.12.1 | [18.x](https://github.com/DjonnyX/ng-virtual-list/tree/18.x) | [18.12.1](https://www.npmjs.com/package/ng-virtual-list/v/18.12.1) |
+| 17.x | 17.12.1 | [17.x](https://github.com/DjonnyX/ng-virtual-list/tree/17.x) | [17.12.1](https://www.npmjs.com/package/ng-virtual-list/v/17.12.1) |
+| 16.x | 16.12.1 | [16.x](https://github.com/DjonnyX/ng-virtual-list/tree/16.x) | [16.12.1](https://www.npmjs.com/package/ng-virtual-list/v/16.12.1) |
+| 15.x | 15.12.1 | [15.x](https://github.com/DjonnyX/ng-virtual-list/tree/15.x) | [15.12.1](https://www.npmjs.com/package/ng-virtual-list/v/15.12.1) |
+| 14.x | 14.12.1 | [14.x](https://github.com/DjonnyX/ng-virtual-list/tree/14.x) | [14.12.1](https://www.npmjs.com/package/ng-virtual-list/v/14.12.1) |
 
 ## 📄 License
 
