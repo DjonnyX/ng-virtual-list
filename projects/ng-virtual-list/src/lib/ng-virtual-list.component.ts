@@ -2608,10 +2608,9 @@ export class NgVirtualListComponent implements OnDestroy {
       snapToItem: boolean, snapToItemAlign: SnapToItemAlign, collapsedIds: Array<Id>; itemTransform: ItemTransform | null;
     }) => {
       const {
-        alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, trackBy, isInfinity,
-        snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
-        maxItemSize, divides, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
-        snapToItemAlign, cacheVersion, userAction, collapsedIds, itemTransform,
+        alignment, snapScrollToStart, snapScrollToEnd, bounds, items, itemConfigMap, scrollSize, itemSize, minItemSize,
+        maxItemSize, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
+        snapToItemAlign, userAction, collapsedIds, itemTransform,
       } = params;
       const scroller = this._scrollerComponent();
       let totalSize = 0;
@@ -2629,7 +2628,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
           const { width, height } = bounds, viewportSize = (isVertical ? height : width),
             opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-              bounds: { width, height }, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize, maxBufferSize,
+              alignment, bounds: { width, height }, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize, maxBufferSize,
               scrollSize: actualScrollSize, stickyEnabled, enabledBufferOptimization, snapToItem, snapToItemAlign, itemTransform,
             };
 
@@ -2690,27 +2689,7 @@ export class NgVirtualListComponent implements OnDestroy {
             this.updateRegularRenderer();
           }
 
-          switch (alignment) {
-            case Alignments.NONE: {
-              this._actualScrollStartOffset.set(precalculatedScrollStartOffset);
-              this._actualScrollEndOffset.set(precalculatedScrollEndOffset);
-              break;
-            }
-            case Alignments.CENTER: {
-              const firstItemId: Id | null = items.length > 0 ? (items[0]?.[trackBy] ?? null) : null,
-                endItemId: Id | null = items.length > 0 ? (items?.[items.length - 1]?.[trackBy] ?? null) : null,
-                alignmentStartOffset = viewportSize * .5 - (firstItemId !== null ? (isVertical ? (this._service.getItemBounds(firstItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5),
-                alignmentEndOffset = viewportSize * .5 - (endItemId !== null ? (isVertical ? (this._service.getItemBounds(endItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5);
-
-              this._alignmentScrollStartOffset.set(alignmentStartOffset);
-              this._alignmentScrollEndOffset.set(alignmentEndOffset);
-              this._actualScrollStartOffset.set(precalculatedScrollStartOffset + alignmentStartOffset);
-              this._actualScrollEndOffset.set(precalculatedScrollEndOffset + alignmentEndOffset);
-              break;
-            }
-          }
+          this.updateOffsetsByAllignment();
 
           scroller.delta = delta;
 
@@ -2994,6 +2973,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 snapToItem = this.snapToItem(), snapToItemAlign = this.snapToItemAlign(),
                 currentScrollSize = isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
+                  alignment: this.actualAlignment(),
                   bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                   bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(), itemTransform: this.itemTransform(),
                   scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
@@ -3034,22 +3014,9 @@ export class NgVirtualListComponent implements OnDestroy {
 
               this.snappingHandler();
 
-              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
+              this.updateOffsetsByAllignment();
 
-              if (isInfinity) {
-                if (snapToItem) {
-                  const itemBounds = this._trackBox.getItemBounds(id);
-                  if (!!itemBounds) {
-                    const itemSize = isVertical ? itemBounds.height : itemBounds.width;
-                    switch (snapToItemAlign) {
-                      case SnapToItemAligns.CENTER: {
-                        scrollSize += itemSize * .5;
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
+              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
               if (scrollSize === -1) {
                 return of([finished, { id, blending, iteration: nextIteration, cb }]).pipe(delay(0));
@@ -3091,6 +3058,7 @@ export class NgVirtualListComponent implements OnDestroy {
                 const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
                   itemConfigMap = this.itemConfigMap(), items = this._actualItems(),
                   opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
+                    alignment: this._actualAlignment(),
                     bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                     bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(), itemTransform: this.itemTransform(),
                     scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
@@ -3122,6 +3090,8 @@ export class NgVirtualListComponent implements OnDestroy {
                 this.tracking();
 
                 this.snappingHandler();
+
+                this.updateOffsetsByAllignment();
 
                 this._$preventScrollSnapping.next(true);
 
@@ -3474,6 +3444,36 @@ export class NgVirtualListComponent implements OnDestroy {
         i++;
       }
       this._trackBox.setDisplayObjectIndexMapById(doMap);
+    }
+  }
+
+  private updateOffsetsByAllignment() {
+    const alignment = this._actualAlignment(), items = this._actualItems(), trackBy = this.trackBy(),
+      isInfinity = this._isInfinity(), isVertical = this._isVertical,
+      { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
+      viewportSize = isVertical ? height : width,
+      precalculatedScrollStartOffset = this._precalculatedScrollStartOffset(),
+      precalculatedScrollEndOffset = this._precalculatedScrollEndOffset();
+    switch (alignment) {
+      case Alignments.NONE: {
+        this._actualScrollStartOffset.set(precalculatedScrollStartOffset);
+        this._actualScrollEndOffset.set(precalculatedScrollEndOffset);
+        break;
+      }
+      case Alignments.CENTER: {
+        const firstItemId: Id | null = items.length > 0 ? (items[0]?.[trackBy] ?? null) : null,
+          endItemId: Id | null = items.length > 0 ? (items?.[items.length - 1]?.[trackBy] ?? null) : null,
+          alignmentStartOffset = viewportSize * .5 - (firstItemId !== null ? (isVertical ? (this._service.getItemBounds(firstItemId)?.height ?? 0) :
+            (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5),
+          alignmentEndOffset = viewportSize * .5 - (endItemId !== null ? (isVertical ? (this._service.getItemBounds(endItemId)?.height ?? 0) :
+            (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5);
+
+        this._alignmentScrollStartOffset.set(alignmentStartOffset);
+        this._alignmentScrollEndOffset.set(alignmentEndOffset);
+        this._actualScrollStartOffset.set(precalculatedScrollStartOffset + alignmentStartOffset);
+        this._actualScrollEndOffset.set(precalculatedScrollEndOffset + alignmentEndOffset);
+        break;
+      }
     }
   }
 

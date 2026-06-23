@@ -30,6 +30,7 @@ import {
 import { TrackBoxEvents } from "./events";
 import { Cache, CacheMapEvents, CacheMapListeners } from "./types";
 import { ItemDisplayMethods } from "./enums";
+import { Alignments } from "../enums";
 
 /**
  * An object that performs tracking, calculations and caching.
@@ -526,7 +527,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
      * Calculates list metrics
      */
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics<I> {
-        const { fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
+        const { alignment, fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
             scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, snapToItem, snapToItemAlign,
             deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
@@ -734,17 +735,19 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                         if (id == fromItemId) {
                             isFromItemIdFound = true;
 
-                            const { num, offset } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical),
-                                leftViewportSize = size - offset;
-                            if (leftViewportSize > 0) {
-                                const { num: num1, offset: offset1 } = this.getElementNumToEnd(i + num, collection, map, typicalItemSize, size, isVertical, 0, true),
-                                    deltaNum = (num1 - num), deltaOffset = (offset1 - offset);
-                                totalItemsToDisplayEndWeight += offset;
-                                itemsFromStartToScrollEnd -= deltaNum;
-                                rightItemsWeight = rightItemLength = 0;
-                                leftHiddenItemsWeight -= deltaOffset;
-                                leftItemsOrRowsWeights.splice(leftItemsOrRowsWeights.length - deltaNum, deltaNum);
-                                y -= deltaOffset;
+                            if (alignment !== Alignments.CENTER) {
+                                const { num, offset } = this.getElementNumToEnd(i, collection, map, typicalItemSize, size, isVertical),
+                                    leftViewportSize = size - offset;
+                                if (leftViewportSize > 0) {
+                                    const { num: num1, offset: offset1 } = this.getElementNumToEnd(i + num, collection, map, typicalItemSize, size, isVertical, 0, true),
+                                        deltaNum = (num1 - num), deltaOffset = (offset1 - offset);
+                                    totalItemsToDisplayEndWeight += offset;
+                                    itemsFromStartToScrollEnd -= deltaNum;
+                                    rightItemsWeight = rightItemLength = 0;
+                                    leftHiddenItemsWeight -= deltaOffset;
+                                    leftItemsOrRowsWeights.splice(leftItemsOrRowsWeights.length - deltaNum, deltaNum);
+                                    y -= deltaOffset;
+                                }
                             }
 
                             itemById = collectionItem;
