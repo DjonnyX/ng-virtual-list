@@ -2946,8 +2946,6 @@ export class NgVirtualListComponent implements OnDestroy {
     $scrollToExecutor.pipe(
       takeUntilDestroyed(),
       switchMap(event => {
-        this._$fireUpdate.next(true);
-
         const trackBy = this.trackBy(), scrollerComponent = this._scrollerComponent(),
           { id, iteration = 0, blending = false, isLastIteration = false, cb } = event;
         const nextIteration = iteration + 1, finished = nextIteration >= MAX_SCROLL_TO_ITERATIONS, fireUpdate = false;
@@ -2969,8 +2967,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
             if (dynamicSize) {
               const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
-                itemConfigMap = this.itemConfigMap(), isVertical = this._isVertical, isInfinity = this._isInfinity(),
-                snapToItem = this.snapToItem(), snapToItemAlign = this.snapToItemAlign(),
+                itemConfigMap = this.itemConfigMap(), isVertical = this._isVertical,
                 currentScrollSize = isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
                   alignment: this.actualAlignment(),
@@ -3125,7 +3122,7 @@ export class NgVirtualListComponent implements OnDestroy {
         const scrollParams = params as IScrollParams & { scrollCalled: boolean; };
         scrollParams?.cb?.();
       }),
-      delay(100),
+      delay(0),
       tap(([finished]) => {
         if (finished) {
           this._scrollerComponent()?.snapIfNeed();
