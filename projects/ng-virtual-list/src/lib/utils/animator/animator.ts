@@ -3,8 +3,8 @@ import { easeLinear } from './ease';
 import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
 /**
- * Animator
- * @link https://github.com/DjonnyX/data-channel-router/blob/main/library/src/utils/animator/animator.ts
+ * Animator22.x
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/library/src/utils/animator/animator.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
