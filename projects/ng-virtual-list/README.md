@@ -726,12 +726,6 @@ import { NgVirtualListModule, VirtualClickModule } from 'ng-virtual-list';
 </ng-template>
 ```
 
-## 🤝 Contributing
-
-PRs and feature requests are welcome!
-Open an issue or start a discussion to shape the future of [ng-virtual-list](https://github.com/DjonnyX/ng-virtual-list/).
-Try it out, star ⭐ the repo, and let us know what you’re building.
-
 <br/>
 
 ## 📄 License
