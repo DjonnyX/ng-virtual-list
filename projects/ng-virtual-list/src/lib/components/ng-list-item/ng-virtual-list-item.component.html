@@ -1,9 +1,9 @@
 <ng-container *ngIf="($data | async) as data">
-    <div #item class="ngvl-item" [ngClass]="$classes | async" [part]="$part | async" [attr.ngvl-index]="$index | async"
+    <div #item class="ngvl-item" [ngClass]="($classes | async)!" [part]="($part | async)!" [attr.ngvl-index]="($index | async)!"
         [attr.ngvl-visibility]="visibility" tabindex="-1">
         <div *ngIf="_blendColor" class="ngvl-item__blend-color" [style.--blend-color]="_blendColor"></div>
         <div #container virtualClick [part]="$fxPart | async" [maxClickDistance]="$maxClickDistance | async"
-            class="ngvl-item__container" [ngClass]="$classes | async" (onVirtualClick)="onClickHandler()">
+            class="ngvl-item__container" [ngClass]="($classes | async)!" (onVirtualClick)="onClickHandler()">
             <ng-container [ngTemplateOutlet]="itemRenderer ?? null"
                 [ngTemplateOutletContext]="$templateContext | async"></ng-container>
         </div>

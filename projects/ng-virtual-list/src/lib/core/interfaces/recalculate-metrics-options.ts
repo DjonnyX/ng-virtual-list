@@ -1,5 +1,5 @@
 import { ISize } from "../../interfaces";
-import { Id, ItemTransform, SnapToItemAlign } from "../../types";
+import { Alignment, Id, ItemTransform, SnapToItemAlign } from "../../types";
 import { IItem } from "./item";
 
 /**
@@ -9,6 +9,7 @@ import { IItem } from "./item";
  * @email djonnyx@gmail.com
  */
 export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>> {
+    alignment: Alignment;
     bounds: ISize;
     collection: C;
     isVertical: boolean;
