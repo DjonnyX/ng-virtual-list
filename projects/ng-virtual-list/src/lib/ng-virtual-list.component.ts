@@ -3308,10 +3308,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
       snapToItem: boolean, snapToItemAlign: SnapToItemAlign, collapsedIds: Array<Id>; itemTransform: ItemTransform | null;
     }) => {
       const {
-        alignment, precalculatedScrollStartOffset, precalculatedScrollEndOffset, trackBy, isInfinity,
-        snapScrollToStart, snapScrollToEnd, bounds, listBounds, scrollEndOffset, items, itemConfigMap, scrollSize, itemSize, minItemSize,
-        maxItemSize, divides, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
-        snapToItemAlign, cacheVersion, userAction, collapsedIds, itemTransform,
+        alignment, snapScrollToStart, snapScrollToEnd, bounds, items, itemConfigMap, scrollSize, itemSize, minItemSize,
+        maxItemSize, bufferSize, maxBufferSize, stickyEnabled, isVertical, dynamicSize, enabledBufferOptimization, snapToItem,
+        snapToItemAlign, userAction, collapsedIds, itemTransform,
       } = params;
       const scroller = this._scrollerComponent;
       let totalSize = 0;
@@ -3329,7 +3328,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
           const { width, height } = bounds, viewportSize = (isVertical ? height : width),
             opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
-              bounds: { width, height }, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize, maxBufferSize,
+              alignment, bounds: { width, height }, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize, maxBufferSize,
               scrollSize: actualScrollSize, stickyEnabled, enabledBufferOptimization, snapToItem, snapToItemAlign, itemTransform,
             };
 
@@ -3339,11 +3338,26 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize1;
             leftLayoutOffset = leftLayoutOffset1;
+
+            if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
+              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1, leftLayoutOffset: leftLayoutOffset1 } =
+                this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+              displayItems = calculatedDisplayItems;
+              totalSize = calculatedTotalSize1;
+              leftLayoutOffset = leftLayoutOffset1;
+            }
           } else {
             const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, opts);
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize;
             leftLayoutOffset = leftLayoutOffset1;
+
+            if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
+              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+              displayItems = calculatedDisplayItems;
+              totalSize = calculatedTotalSize;
+              leftLayoutOffset = leftLayoutOffset1;
+            }
           }
 
           scroller.totalSize = totalSize;
@@ -3375,27 +3389,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             this.updateRegularRenderer();
           }
 
-          switch (alignment) {
-            case Alignments.NONE: {
-              this._$actualScrollStartOffset.next(precalculatedScrollStartOffset);
-              this._$actualScrollEndOffset.next(precalculatedScrollEndOffset);
-              break;
-            }
-            case Alignments.CENTER: {
-              const firstItemId: Id | null = items.length > 0 ? (items[0]?.[trackBy] ?? null) : null,
-                endItemId: Id | null = items.length > 0 ? (items?.[items.length - 1]?.[trackBy] ?? null) : null,
-                alignmentStartOffset = viewportSize * .5 - (firstItemId !== null ? (isVertical ? (this._service.getItemBounds(firstItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5),
-                alignmentEndOffset = viewportSize * .5 - (endItemId !== null ? (isVertical ? (this._service.getItemBounds(endItemId)?.height ?? 0) :
-                  (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5);
-
-              this._$alignmentScrollStartOffset.next(alignmentStartOffset);
-              this._$alignmentScrollEndOffset.next(alignmentEndOffset);
-              this._$actualScrollStartOffset.next(precalculatedScrollStartOffset + alignmentStartOffset);
-              this._$actualScrollEndOffset.next(precalculatedScrollEndOffset + alignmentEndOffset);
-              break;
-            }
-          }
+          this.updateOffsetsByAllignment();
 
           scroller.delta = delta;
 
@@ -3676,6 +3670,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 itemConfigMap = this.itemConfigMap, isVertical = this._isVertical,
                 currentScrollSize = isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
+                  alignment: this._$actualAlignment.getValue(),
                   bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                   bufferSize: this.bufferSize, maxBufferSize: this.maxBufferSize, itemTransform: this.itemTransform,
                   scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
@@ -3716,22 +3711,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
               this.snappingHandler();
 
-              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
+              this.updateOffsetsByAllignment();
 
-              if (this.isInfinity) {
-                if (this.snapToItem) {
-                  const itemBounds = this._trackBox.getItemBounds(id);
-                  if (!!itemBounds) {
-                    const itemSize = isVertical ? itemBounds.height : itemBounds.width;
-                    switch (this.snapToItemAlign) {
-                      case SnapToItemAligns.CENTER: {
-                        scrollSize += itemSize * .5;
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
+              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
 
               if (scrollSize === -1) {
                 return of([finished, { id, blending, iteration: nextIteration, cb }]).pipe(delay(0));
@@ -3772,6 +3754,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 const { width, height } = this._$bounds.getValue() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
                   itemConfigMap = this.itemConfigMap, items = this._$actualItems.getValue(),
                   opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
+                    alignment: this._$actualAlignment.getValue(),
                     bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                     bufferSize: this.bufferSize, maxBufferSize: this.maxBufferSize, itemTransform: this.itemTransform,
                     scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
@@ -3803,6 +3786,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
                 this.tracking();
 
                 this.snappingHandler();
+
+                this.updateOffsetsByAllignment();
 
                 this._$preventScrollSnapping.next(true);
 
@@ -3836,7 +3821,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         const scrollParams = params as IScrollParams & { scrollCalled: boolean; };
         scrollParams?.cb?.();
       }),
-      delay(100),
+      delay(0),
       tap(([finished]) => {
         if (finished) {
           this._scrollerComponent?.snapIfNeed();
@@ -3914,6 +3899,19 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
             }
           }),
         );
+      }),
+    ).subscribe();
+
+    combineLatest([$itemConfigMap, $dynamicSize, $divides]).pipe(
+      takeUntil(this._$unsubscribe),
+      filter(([itemConfigMap, dynamicSize, divides]) => !!itemConfigMap && !dynamicSize && divides > 1),
+      tap(([itemConfigMap]) => {
+        for (const id in itemConfigMap) {
+          const metaData = itemConfigMap[id];
+          if (metaData?.fullSize || metaData?.sticky === 1 || metaData?.sticky === 2) {
+            throw Error('The accelerated rendering algorithm `[dynamicSize]="false"` cannot correctly handle non-uniform lists (the itemConfigMap specifies full-size elements). For correct rendering, specify `[dynamicSize]="true"`.');
+          }
+        }
       }),
     ).subscribe();
 
@@ -4154,6 +4152,36 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         i++;
       }
       this._trackBox.setDisplayObjectIndexMapById(doMap);
+    }
+  }
+
+  private updateOffsetsByAllignment() {
+    const alignment = this._$actualAlignment.getValue(), items = this._$actualItems.getValue(), trackBy = this.trackBy,
+      isInfinity = this.isInfinity, isVertical = this._isVertical,
+      { width, height } = this._$bounds.getValue() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
+      viewportSize = isVertical ? height : width,
+      precalculatedScrollStartOffset = this._$precalculatedScrollStartOffset.getValue(),
+      precalculatedScrollEndOffset = this._$precalculatedScrollEndOffset.getValue();
+    switch (alignment) {
+      case Alignments.NONE: {
+        this._$actualScrollStartOffset.next(precalculatedScrollStartOffset);
+        this._$actualScrollEndOffset.next(precalculatedScrollEndOffset);
+        break;
+      }
+      case Alignments.CENTER: {
+        const firstItemId: Id | null = items.length > 0 ? (items[0]?.[trackBy] ?? null) : null,
+          endItemId: Id | null = items.length > 0 ? (items?.[items.length - 1]?.[trackBy] ?? null) : null,
+          alignmentStartOffset = viewportSize * .5 - (firstItemId !== null ? (isVertical ? (this._service.getItemBounds(firstItemId)?.height ?? 0) :
+            (this._service.getItemBounds(firstItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5),
+          alignmentEndOffset = viewportSize * .5 - (endItemId !== null ? (isVertical ? (this._service.getItemBounds(endItemId)?.height ?? 0) :
+            (this._service.getItemBounds(endItemId)?.width ?? 0)) : 0) * (isInfinity ? 0 : .5);
+
+        this._$alignmentScrollStartOffset.next(alignmentStartOffset);
+        this._$alignmentScrollEndOffset.next(alignmentEndOffset);
+        this._$actualScrollStartOffset.next(precalculatedScrollStartOffset + alignmentStartOffset);
+        this._$actualScrollEndOffset.next(precalculatedScrollEndOffset + alignmentEndOffset);
+        break;
+      }
     }
   }
 
