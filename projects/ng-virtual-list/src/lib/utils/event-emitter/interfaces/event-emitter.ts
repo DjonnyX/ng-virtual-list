@@ -2,7 +2,7 @@ export type TEventHandler = (...args: Array<any>) => void;
 
 /**
  * Event emitter interface
- * @link https://github.com/DjonnyX/data-channel-router/blob/main/library/src/utils/event-emitter/interfaces/IEventEmitter.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/library/src/utils/event-emitter/interfaces/IEventEmitter.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
