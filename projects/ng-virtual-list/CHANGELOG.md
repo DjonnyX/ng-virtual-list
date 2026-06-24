@@ -1,7 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [16.12.0] - 2026-06-09
+## [14.12.1] - 2026-06-23
+
+### Fixed
+- Fixed visualization defects when transforming dynamic list elements.
+- Fixed scroll to item bug for lists with dynamic items and list centering.
+- Fixed positioning of list items if the `scrollStartOffset` property is specified for the list.
+- Fixed calculations of the height of a list with division by columns or rows when using the fast rendering algorithm.
+
+## [14.12.0] - 2026-06-09
 
 ### Added
 - Renamed the `snap` property to `stickyEnabled`.
@@ -43,17 +51,17 @@ All notable changes to this project will be documented in this file.
 - Multiple bugs fixed.
 - Improved overall performance of lists.
 
-## [16.11.4] - 2026-04-19
+## [14.11.5] - 2026-04-19
 
 ### Fixed
 - Fixed a freeze when deleting a list.
 
-## [16.11.3] - 2026-04-13
+## [14.11.4] - 2026-04-13
 
 ### Fixed
 - Fixed an issue where the list would remain stuck to the edges when scrolling started.
 
-## [16.11.2] - 2026-04-13
+## [14.11.3] - 2026-04-13
 
 ### Fixed
 - Fixed freezing when scrolling.
@@ -62,15 +70,12 @@ All notable changes to this project will be documented in this file.
 - Added optimization parameter to scrollingSettings.
 - Added the scrollingSettings property, which defines scrolling parameters such as velocity, mass, etc.
 
-## [16.11.1] - 2026-04-08
+## [14.11.2] - 2026-04-08
 
 ### Added
 - Added a new example with a news feed
 
-### Fixed
-- Fixed jerking when scrolling
-
-## [16.11.0] - 2026-04-06
+## [14.11.0] - 2026-04-05
 
 ### Added
 - Implemented an API inside the list item to manage the list.
@@ -84,7 +89,7 @@ All notable changes to this project will be documented in this file.
 - Display defects have been fixed.
 - Overall component stability has been improved.
 
-## [16.10.8] - 2026-04-01
+## [14.10.8] - 2026-04-01
 
 ### Added
 - Implement the snapScrollToStart property.
@@ -104,17 +109,15 @@ All notable changes to this project will be documented in this file.
 - Fixed display defects when loading new list items.
 - Fixed issues with scrollbar re-updating after excessive scrollbar updates.
 
-## [16.10.7] - 2026-03-19
+## [14.10.7] - 2026-03-19
 
 ### Fixed
 - List initialization has been fixed.
 
-## [16.10.6] - 2026-03-19
-
 ### Improved
 - Code review.
 
-## [16.10.5] - 2026-03-19
+## [14.10.6] - 2026-03-19
 
 ### Fixed
 - Smooth scrolling has been implemented.
@@ -122,24 +125,24 @@ All notable changes to this project will be documented in this file.
 - Fixed an issue where scroll animation would stop when adding items to a collection in a static list.
 - Fixed handling of the snapScrollToBottom property for static lists.
 
-## [16.10.3] - 2026-03-16
+## [14.10.4] - 2026-03-16
 
 ### Fixed
 - Smooth scrolling has been implemented.
 - Fix a bug in list initialization.
 
-## [16.10.2] - 2026-03-13
+## [14.10.3] - 2026-03-13
 
 ### Fixed
 - Emit a scroll event after calling scrollTo and scrollToEnd.
-- Create modules for 19.x 20.x 21.x.
+- Create modules for 16.x 20.x 21.x.
 - Fix a bug in list initialization.
 - API optimization. Hiding unnecessary properties and methods.
 - If the scroll bar is pinned to the end of the list, moving the scroll bar does not reset this pinning.
 - Fixed a bug with scrollSize recalculation after changing the viewport size.
 - Fixed a bug with list reinitialization if the collection contained 0 elements.
 
-## [16.10.1] - 2026-03-12
+## [14.10.2] - 2026-03-12
 
 ### Fixed
 - Fixed an issue with scrollbar updating when navigating with the keyboard after updating a collection.
@@ -149,7 +152,12 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Optimized the API for the dynamicSize property. Improved the description of the itemSize property.
 
-## [16.10.0] - 2026-03-11
+## [14.10.1] - 2026-03-11
+
+### Fixed
+- Fixed errors in the console
+
+## [14.10.0] - 2026-03-11
 
 ### Fixed
 - Correcting the position of the scroll bar in a dynamic list
@@ -173,12 +181,12 @@ All notable changes to this project will be documented in this file.
 - Added the scrollBehavior property. Default 'instant'.
 - Implemented animation of element focusing.
 
-## [16.9.6] - 2026-03-05
+## [14.9.6] - 2026-03-05
 
 ### Improved
 - Improvements to list updating
 
-## [16.9.5] - 2026-03-05
+## [14.9.5] - 2026-03-05
 
 ### Fixed
 - Improved rendering synchronization
@@ -187,27 +195,27 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Implemented stop scrolling after calling scrollTo
 
-## [16.9.4] - 2026-03-04
+## [14.9.4] - 2026-03-04
 
 ### Fixed
 - Artifacts during list initialization has been fixed
 
-## [16.9.3] - 2026-03-03
+## [14.9.3] - 2026-03-03
 
 ### Fixed
 - Scrolling optimization has been implemented
 
-## [16.9.2] - 2026-03-03
+## [14.9.2] - 2026-03-03
 
 ### Fixed
 - Artifacts when scrolling has been fixed
 
-## [16.9.1] - 2026-03-02
+## [14.9.1] - 2026-03-02
 
 ### Fixed
 - Fixed list freezing during animations
 
-## [16.9.0] - 2026-03-01
+## [14.9.0] - 2026-03-01
 
 Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. Max click distance. Scroll offsets. Scrollbar min size.
 
@@ -226,7 +234,7 @@ Virtual scrolling. Text direction is supported. Loading state. Scrollbar theme. 
 ### Fixed
 - Fixed CBE-2025-9864 security vulnerability
 
-## [16.8.0] - 2025-10-01
+## [14.8.0] - 2025-09-30
 
 Tests and stabilization
 
@@ -238,7 +246,7 @@ Tests and stabilization
 ### Added
 - Tests have been implemented
 
-## [16.7.17] - 2025-09-28
+## [14.7.18] - 2025-09-28
 
 Scrolling methods
 
@@ -248,7 +256,8 @@ Scrolling methods
 ### Added
 - Added `scrollEnd` callback
 - Added `scrollToEnd` callback
-## [16.7.16] - 2025-09-27
+
+## [14.7.17] - 2025-09-27
 
 Jerking when scrolling
 
@@ -256,7 +265,7 @@ Jerking when scrolling
 
 - Fixed jerking when scrolling
 
-## [16.7.15] - 2025-09-26
+## [14.7.16] - 2025-09-26
 
 Examples
 
@@ -264,7 +273,7 @@ Examples
 
 - Added link to examples in README.md
 
-## [16.7.14] - 2025-09-26
+## [14.7.15] - 2025-09-26
 
 Screen reader
 
@@ -272,7 +281,7 @@ Screen reader
 
 - Screen reader support has been implemented
 
-## [16.7.13] - 2025-09-25
+## [14.7.14] - 2025-09-25
 
 Focusing an element
 
@@ -280,7 +289,7 @@ Focusing an element
 
 - Implemented an API for focusing on an element by a given ID
 
-## [16.7.12] - 2025-09-24
+## [14.7.13] - 2025-09-24
 
 Collection Mode
 
@@ -297,7 +306,15 @@ Collection Mode
 
 - Optimized the settings of the buffer for examples of use
 
-## [16.7.11] - 2025-09-23
+## [14.7.12] - 2025-09-23
+
+Scroll events
+
+### Fixed
+
+- `onScrollReachStart` and `onScrollReachEnd` events have been corrected
+
+## [14.7.11] - 2025-09-23
 
 Scroll events
 
@@ -305,7 +322,7 @@ Scroll events
 
 - `onScrollReachStart` and `onScrollReachEnd` events have been added
 
-## [16.7.10] - 2025-09-22
+## [14.7.10] - 2025-09-22
 
 Vulnerabilities
 
@@ -314,7 +331,7 @@ Vulnerabilities
 - Added validation of incoming parameters
 - Some vulnerabilities have been fixed
 
-## [16.7.9] - 2025-09-21
+## [14.7.9] - 2025-09-21
 
 Navigating elements
 
@@ -322,7 +339,7 @@ Navigating elements
 
 - Fixed navigating elements using the keyboard
 
-## [16.7.8] - 2025-09-19
+## [14.7.8] - 2025-09-19
 
 Collapsing groups
 
@@ -330,15 +347,15 @@ Collapsing groups
 
 - Implemented collapsing groups using the keyboard
 
-## [16.7.7] - 2025-09-18
+## [14.7.7] - 2025-09-18
 
 Group collapsibility
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-### Added
+#### Added
 
 - Added the ability to collapse groups
 
@@ -346,19 +363,19 @@ Group collapsibility
 
 - The deprecated stickyMap property has been removed.
 
-## [16.7.6] - 2025-09-17
+## [14.7.6] - 2025-09-17
 
 iterations of the scrollTo methods
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-### Added
+#### Added
 
 - Added Iteration argument to scrollTo methods
 
-## [16.7.5] - 2025-09-16
+## [14.7.5] - 2025-09-16
 
 Internal marks
   
@@ -366,57 +383,57 @@ Internal marks
 
 - Internal marks has been removed
 
-## [16.7.4] - 2025-09-16
+## [14.7.4] - 2025-09-16
 
 Project description
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-## [16.7.3] - 2025-09-15
+## [14.7.3] - 2025-09-15
 
 Focus management during navigation
   
-### Added 
+#### Added 
 
 - Implemented focus management during navigation and scrolling using the keyboard
   
-### Improved 
+#### Improved 
 
 - README.md updated
 
-## [16.7.2] - 2025-09-14
+## [14.7.2] - 2025-09-14
 
 Item selection improvements
   
-### Improved 
+#### Improved 
 
 - README.md updated
   
-### Added 
+#### Added 
 
 - Added API for selecting an element
 - Measures passed to element template
   
-### Fixed
+#### Fixed
 
 - Fixed the initial state of selectedIds
 
-## [16.7.1] - 2025-09-10
+## [14.7.1] - 2025-09-10
 
 Item configuration
 
-### Improved 
+#### Improved 
 
 - README.md updated
 - Added item config and selectable parameter
 
-## [16.7.0] - 2025-09-09
+## [14.7.0] - 2025-09-09
 
 list item selection modes
 
-### Improved 
+#### Improved 
 
 - README.md updated
 - Implemented select, multiselect and unselectable list modes
