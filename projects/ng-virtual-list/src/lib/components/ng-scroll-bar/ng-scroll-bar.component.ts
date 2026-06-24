@@ -263,9 +263,13 @@ export class NgScrollBarComponent extends NgScrollView {
       scrollViewport = this.scrollViewport()?.nativeElement as HTMLDivElement;
     if (!!scrollViewport && !!scrollContent) {
       const contentSize = isVertical ? scrollContent.offsetHeight : scrollContent.offsetWidth,
-        viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth;
+        viewportSize = isVertical ? scrollViewport.offsetHeight : scrollViewport.offsetWidth,
+        offsetSize = (scrollSize !== 0 ? (startOffset / scrollSize) : 0),
+        positionSize = (scrollSize !== 0 ? (scrollPosition / scrollSize) : 0),
+        maxSize = 1 - offsetSize,
+        pos = (positionSize - offsetSize);
       const event: IScrollBarDragEvent = {
-        position: (scrollSize !== 0 ? ((scrollPosition - startOffset) / scrollSize) : 0),
+        position: pos / maxSize,
         min: scrollSize !== 0 ? (startOffset / scrollSize) : 0,
         max: scrollSize !== 0 ? ((viewportSize - endOffset - contentSize) / scrollSize) : 0,
         animation: !this._isMoving,
