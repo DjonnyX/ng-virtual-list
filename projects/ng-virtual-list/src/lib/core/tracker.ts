@@ -92,7 +92,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             isDown = direction === 0 || direction === 1, snapped = !!snappedComponents ? [...snappedComponents] : [];
         let isRegularSnapped = false;
 
-        const serviceIdProp = getServiceIdProp(trackBy);
+        const serviceIdProp = getServiceIdProp(trackBy), snappedItems = new Array<ComponentRef<C>>();
         for (let i = isDown ? 0 : items.length - 1, l = isDown ? items.length : 0; isDown ? i < l : i >= l; isDown ? i++ : i--) {
             const item = items[i],
                 isDummy = item?.data?.[SERVICE_PROP_DUMMY] && (item?.data?.[SERVICE_PROP_DUMMY] === SERVICE_PROP_DUMMY_ENABLED);
@@ -119,6 +119,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                                         isRegularSnapped = true;
                                         snappedComponent.instance.item = item;
                                         snappedComponent.instance.show();
+                                        snappedItems.push(snappedComponent);
                                     }
                                 }
                             }
@@ -189,6 +190,7 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
                             if (!!snappedComponent) {
                                 snappedComponent.instance.item = item;
                                 snappedComponent.instance.show();
+                                snappedItems.push(snappedComponent);
                             }
                         }
                     }
@@ -220,13 +222,14 @@ export class Tracker<C extends BaseVirtualListItemComponent = any> {
             }
         }
 
-        if (!isRegularSnapped) {
-            for (let i = 0, l = snapped.length; i < l; i++) {
-                const snappedComponent = snapped[i];
-                if (!!snappedComponent) {
-                    snappedComponent.instance.item = null;
-                    snappedComponent.instance.hide();
-                }
+        for (let i = 0, l = snapped.length; i < l; i++) {
+            const snappedComponent = snapped[i];
+            if (snappedItems.indexOf(snappedComponent) > -1) {
+                continue;
+            }
+            if (!!snappedComponent) {
+                snappedComponent.instance.item = null;
+                snappedComponent.instance.hide();
             }
         }
     }
