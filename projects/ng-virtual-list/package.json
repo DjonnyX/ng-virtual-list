@@ -1,6 +1,6 @@
 {
   "name": "ng-virtual-list",
-  "version": "22.12.0",
+  "version": "22.12.1",
   "author": {
     "name": "Evgenii Alexandrovich Grebennikov",
     "email": "djonnyx@gmail.com"
@@ -26,6 +26,7 @@
     "expandable"
   ],
   "peerDependencies": {
+    "@angular/cdk": "^22.2.0",
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0"
   },
