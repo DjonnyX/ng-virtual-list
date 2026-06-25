@@ -11,7 +11,7 @@ import {
 } from '../../const';
 import { IScrollToParams } from './interfaces';
 import {
-    ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
+    ACCELERATION_SCALE, ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
     MAX_VELOCITY_TIMESTAMP, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection, matrix3d } from './utils';
@@ -721,8 +721,8 @@ export class NgScrollView extends BaseScrollView {
                 continue;
             }
             if (v00) {
-                const a0 = timestamp < MAX_VELOCITY_TIMESTAMP ? (v00[1] !== 0 ? (lastVSign * Math.abs(Math.abs(v01[0]) - Math.abs(v00[0]))) / Math.abs(v00[1]) : 0) : 0.1;
-                aSum = (aSum * mass) + a0;
+                const a0 = timestamp < MAX_VELOCITY_TIMESTAMP ? (v00[1] !== 0 ? (lastVSign * Math.abs(Math.abs(v01[0]) - Math.abs(v00[0]))) / Math.abs(v00[1]) : 0) : .1;
+                aSum = Math.abs((aSum * mass)) + Math.abs(a0);
                 prevV0 = v01;
             }
             prevV0 = v01;
@@ -751,10 +751,9 @@ export class NgScrollView extends BaseScrollView {
                 mass = this.scrollingSettings?.mass ?? MASS,
                 duration = DURATION, maxDuration = this.scrollingSettings?.maxDuration ?? MAX_DURATION,
                 maxDist = this.scrollingSettings?.maxDistance ?? MAX_DIST,
-                maxDistance = dvSign * maxDist, s = (dvSign * Math.abs((a0 * Math.pow(duration, 2)) * .5) / 1000) / mass,
+                maxDistance = dvSign * maxDist, s = (dvSign * Math.abs((a0 * Math.pow(duration, 2)) * .5) / 10000) / mass,
                 distance = Math.abs(s) < maxDist ? s : maxDistance, positionWithVelocity = position + (this._inversion ? -1 : 1) * distance,
-                vmax = Math.max(Math.abs(v0), Math.abs(v)),
-                ad = Math.abs(vmax !== 0 ? Math.sqrt(vmax) : 0) * 10 / mass,
+                ad = Math.abs(a0 !== 0 ? Math.sqrt(a0) : 0) * ACCELERATION_SCALE / mass,
                 aDuration = ad < maxDuration ? ad : maxDuration,
                 startPosition = isVertical ? this.y : this.x;
             this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
