@@ -696,7 +696,7 @@ Properties
 |--|--|--|
 | api | [NgVirtualListPublicService](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/ng-virtual-list-public.service.ts) | List API Provider. |
 | data | {\[id: [Id](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/types/id.ts) \], [otherProps: string]: any;} | Collection item data. |
-| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, and `focus` methods are also provided. |
+| config | [IDisplayObjectConfig](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-config.model.ts) | Display object configuration. A set of `select`, `collapse`, `focus` and `grabbing` properties are also provided. |
 | measures | [IDisplayObjectMeasures](https://github.com/DjonnyX/ng-virtual-list/blob/20.x/projects/ng-virtual-list/src/lib/models/display-object-measures.model.ts) \| null | Display object metrics. |
 
 <br/>

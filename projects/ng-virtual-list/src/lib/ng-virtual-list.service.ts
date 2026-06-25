@@ -159,6 +159,21 @@ export class NgVirtualListService {
     this._$langTextDir.next(v);
   }
 
+  private _$grabbing = new BehaviorSubject<boolean>(false);
+  readonly $grabbing = this._$grabbing.asObservable();
+  get grabbing() { return this._$grabbing.getValue(); }
+
+  private _grabbing: boolean = false;
+  set grabbing(v: boolean) {
+    if (this._grabbing === v) {
+      return;
+    }
+
+    this._grabbing = v;
+
+    this._$grabbing.next(v);
+  }
+
   get scrollBarSize() { return this._$scrollBarSize.getValue(); }
 
   private _scrollBarSize: number = 0;

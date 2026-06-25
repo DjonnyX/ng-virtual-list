@@ -33,7 +33,7 @@
 
   <ng-template #horizontalItemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -41,7 +41,7 @@
 
   <ng-template #horizontalGalleryItemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -62,12 +62,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__h-group-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__h-group-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
@@ -141,7 +141,7 @@
 
   <ng-template #itemRendererGallery let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -204,7 +204,7 @@
 
   <ng-template #itemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -267,12 +267,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__group-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__group-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }

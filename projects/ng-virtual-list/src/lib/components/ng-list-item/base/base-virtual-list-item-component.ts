@@ -92,7 +92,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
 
     this.updatePartStr(v, this._isSelected, this._isCollapsed);
 
-    this.updateConfig(v);
+    this.updateConfig(v, this._service.grabbing);
 
     this.updateMeasures(v);
 
@@ -164,6 +164,13 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
 
+    this._service.$grabbing.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.updateConfig(this._data, v);
+      }),
+    ).subscribe();
+
     effect(() => {
       const part = this.part();
       this._elementRef.nativeElement.setAttribute('part', part);
@@ -216,9 +223,9 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this.measures.set(v?.measures ? { ...v.measures } : null)
   }
 
-  protected updateConfig(v: IRenderVirtualListItem<any> | null) {
+  protected updateConfig(v: IRenderVirtualListItem<any> | null, grabbing: boolean) {
     this.config.set({
-      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(),
+      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(), grabbing,
     });
   }
 

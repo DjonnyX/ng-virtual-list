@@ -261,6 +261,11 @@ export class NgScrollerComponent extends NgScrollView {
       }),
     ).subscribe();
 
+    effect(() => {
+      const grabbing = this.grabbing();
+      this._service.grabbing = grabbing;
+    });
+
     this.actualClasses = computed(() => {
       const classes = this.classes(), direction = this.direction(), filtered = this.motionBlurEnabled();
       return { ...classes, [direction]: true, grabbing: this.grabbing(), filtered };
