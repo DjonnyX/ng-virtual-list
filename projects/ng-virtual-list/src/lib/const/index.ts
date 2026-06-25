@@ -6,6 +6,8 @@ import { IAnimationParams, IScrollingSettings } from '../interfaces';
 import { SpreadingMode } from "../types";
 import { Alignment, SnappingDistance, SnapToItemAlign } from "../types";
 
+const INVISIBLE_POSITION = -10000;
+
 export const SERVICE_PROP_DUMMY_ID = '__service-dummy-id__';
 
 export const SERVICE_PROP_DUMMY = '__service-dummy__';
@@ -164,7 +166,7 @@ export const POSITION_ABSOLUTE = 'absolute';
 
 export const TRANSLATE_3D = 'translate3d';
 
-export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
+export const INVISIBLE_TRANSLATE_3D = `${TRANSLATE_3D}(${INVISIBLE_POSITION},${INVISIBLE_POSITION},0)`;
 
 export const HIDDEN_ZINDEX = '-1';
 

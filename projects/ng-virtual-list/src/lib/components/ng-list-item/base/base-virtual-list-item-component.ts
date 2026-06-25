@@ -9,7 +9,7 @@ import {
   PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
   PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
   PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, PART_ITEM_ROW_ODD, PART_ITEM_ROW_EVEN,
-  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN,
+  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN, INVISIBLE_TRANSLATE_3D,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
@@ -352,6 +352,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     const el = this._elementRef.nativeElement,
       styles = el.style;
     styles.zIndex = HIDDEN_ZINDEX;
+    styles.transform = INVISIBLE_TRANSLATE_3D;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {
         return;
