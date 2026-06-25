@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [20.12.2] - 2026-06-25
+
+### Fixed
+- Fixed scrolling Physics Calibration.
+- Fixed scrollbar positioning defect.
+
 ## [20.12.1] - 2026-06-23
 
 ### Fixed
