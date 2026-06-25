@@ -1,29 +1,6 @@
 import { GradientColorPositions } from "../../../types/gradient-color-positions";
-import { ScrollerDirection, ScrollerDirections } from "../enums";
-
-interface ICalculateScrollParams {
-    direction: ScrollerDirections;
-    viewportWidth: number;
-    viewportHeight: number;
-    contentWidth: number;
-    contentHeight: number;
-    startOffset: number;
-    endOffset: number;
-    positionX: number;
-    positionY: number;
-    minSize: number;
-}
-
-interface ICalculateScrollPositionParams {
-    scrollSize: number;
-    position: number;
-}
-
-interface ICalculateScrollMetrics {
-    gradientPos: [number, number];
-    size: number;
-    pos: number;
-}
+import { ScrollerDirection } from "../enums";
+import { ICalculateScrollParams, ICalculateScrollPositionParams, ICalculateScrollMetrics } from "./interfaces";
 
 /**
  * ScrollBox
