@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { combineLatest, Subject, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, Subject, tap } from 'rxjs';
 import { TrackBox } from './core/track-box';
 import { TrackBoxEvents } from './core/events';
 import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
@@ -251,7 +251,14 @@ export class NgVirtualListService {
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   constructor() {
-    combineLatest([this.$grabbing, this.$clickPressed]).pipe(
+    const $grabbing = this.$grabbing.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+    ), $clickPressed = this.$clickPressed.pipe(
+      takeUntilDestroyed(),
+      distinctUntilChanged(),
+    );
+    combineLatest([$grabbing, $clickPressed]).pipe(
       takeUntilDestroyed(),
       tap(([grabbing, clickPressed]) => {
         this._$isGrabbing.next(grabbing && !clickPressed);
