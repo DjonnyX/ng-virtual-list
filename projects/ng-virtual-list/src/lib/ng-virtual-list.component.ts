@@ -3694,7 +3694,7 @@ export class NgVirtualListComponent implements OnDestroy {
     this._isScrollStart.set(false);
     this._isScrollEnd.set(false);
     this._trackBox.preventScrollSnapping(true);
-    if (scroller) {
+    if (!!scroller) {
       scroller.stopScrolling();
     }
   }
@@ -3727,7 +3727,7 @@ export class NgVirtualListComponent implements OnDestroy {
       }
     }
 
-    if (this._displayComponents) {
+    if (!!this._displayComponents) {
       while (this._displayComponents.length > 0) {
         const comp = this._displayComponents.shift();
         comp?.destroy();
