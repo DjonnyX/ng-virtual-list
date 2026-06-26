@@ -27,6 +27,10 @@ export class VirtualClickDirective {
 
     onVirtualClick = output<PointerEvent | TouchEvent>();
 
+    onVirtualClickPress = output<PointerEvent | TouchEvent>();
+
+    onVirtualClickCancel = output<void>();
+
     private _elementRef = inject(ElementRef);
     private _destroyRef = inject(DestroyRef);
 
@@ -47,11 +51,17 @@ export class VirtualClickDirective {
             switchMap(e => {
                 const x = Math.abs(e.clientX),
                     y = Math.abs(e.clientY);
+                this.onVirtualClickPress.emit(e);
                 return $pointerRelease.pipe(
                     takeUntilDestroyed(this._destroyRef),
                     takeUntil(
                         race([
-                            $pointerCancel,
+                            $pointerCancel.pipe(
+                                takeUntilDestroyed(this._destroyRef),
+                                tap(() => {
+                                    this.onVirtualClickCancel.emit();
+                                }),
+                            ),
                             fromEvent<PointerEvent>(window, 'pointermove').pipe(
                                 takeUntilDestroyed(this._destroyRef),
                                 switchMap(e => {
@@ -60,12 +70,12 @@ export class VirtualClickDirective {
                                         dist = Math.sqrt(Math.pow(xx, 2) + Math.pow(yy, 2));
 
                                     if (dist > this._maxDistance) {
+                                        this.onVirtualClickCancel.emit();
                                         return of(true);
                                     }
 
                                     return of(false);
                                 }),
-                                takeUntilDestroyed(this._destroyRef),
                                 filter(v => !!v),
                             ),
                         ]),

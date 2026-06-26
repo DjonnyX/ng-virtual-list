@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Subject, tap } from 'rxjs';
+import { combineLatest, Subject, tap } from 'rxjs';
 import { TrackBox } from './core/track-box';
 import { TrackBoxEvents } from './core/events';
 import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
@@ -174,6 +174,25 @@ export class NgVirtualListService {
     this._$grabbing.next(v);
   }
 
+  private _$clickPressed = new BehaviorSubject<boolean>(false);
+  readonly $clickPressed = this._$clickPressed.asObservable();
+  get clickPressed() { return this._$clickPressed.getValue(); }
+
+  private _clickPressed: boolean = false;
+  set clickPressed(v: boolean) {
+    if (this._clickPressed === v) {
+      return;
+    }
+
+    this._clickPressed = v;
+
+    this._$clickPressed.next(v);
+  }
+
+  private _$isGrabbing = new BehaviorSubject<boolean>(false);
+  readonly $isGrabbing = this._$isGrabbing.asObservable();
+  get isGrabbing() { return this._$isGrabbing.getValue(); }
+
   get scrollBarSize() { return this._$scrollBarSize.getValue(); }
 
   private _scrollBarSize: number = 0;
@@ -232,6 +251,13 @@ export class NgVirtualListService {
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   constructor() {
+    combineLatest([this.$grabbing, this.$clickPressed]).pipe(
+      takeUntilDestroyed(),
+      tap(([grabbing, clickPressed]) => {
+        this._$isGrabbing.next(grabbing && !clickPressed);
+      }),
+    ).subscribe();
+
     this._$selectingMode.pipe(
       takeUntilDestroyed(),
       tap(v => {

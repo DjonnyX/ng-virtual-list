@@ -74,7 +74,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         this._service.focusedId = this.itemId ?? null;
         this.focused.set(true);
 
-        this.updateConfig(this._data, this._service.grabbing);
+        this.updateConfig(this._data, this._service.isGrabbing);
 
         this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
       }),
@@ -85,7 +85,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         tap(e => {
           this.focused.set(false);
 
-          this.updateConfig(this._data, this._service.grabbing);
+          this.updateConfig(this._data, this._service.isGrabbing);
 
           this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
         }),
@@ -132,7 +132,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
         this.updatePartStr(this._data, this._isSelected, isCollapsed);
 
-        this.updateConfig(this._data, this._service.grabbing);
+        this.updateConfig(this._data, this._service.isGrabbing);
 
         this.updateMeasures(this._data);
       }),
@@ -266,5 +266,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   onClickHandler() {
     this._service.virtualClick(this._data);
+  }
+
+  onClickPressHandler() {
+    this._service.clickPressed = true;
+  }
+
+  onClickCancelHandler() {
+    this._service.clickPressed = false;
   }
 }

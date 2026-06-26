@@ -92,7 +92,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
 
     this.updatePartStr(v, this._isSelected, this._isCollapsed);
 
-    this.updateConfig(v, this._service.grabbing);
+    this.updateConfig(v, this._service.isGrabbing);
 
     this.updateMeasures(v);
 
@@ -164,7 +164,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
 
-    this._service.$grabbing.pipe(
+    this._service.$isGrabbing.pipe(
       takeUntilDestroyed(),
       tap(v => {
         this.updateConfig(this._data, v);
