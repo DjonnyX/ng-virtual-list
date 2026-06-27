@@ -171,6 +171,8 @@ export class NgScrollView extends BaseScrollView {
 
     protected _isAlignmentAnimation = false;
 
+    get animated() { return this._animator?.isAnimated ?? false; }
+
     constructor() {
         super();
 
@@ -495,6 +497,8 @@ export class NgScrollView extends BaseScrollView {
         ).subscribe();
     }
 
+    hasAnimation(id: number = -1) { return this._animator?.hasAnimation(id) ?? false; }
+
     protected updateDirection(position: number, prePosition: number) {
         const delta = (position - this._delta) - prePosition;
         this._scrollDirection.add(delta > 0 ? 1 : delta < 0 ? -1 : 0);
@@ -691,7 +695,7 @@ export class NgScrollView extends BaseScrollView {
                 ad = Math.abs(a0 !== 0 ? Math.sqrt(a0) : 0) * ACCELERATION_SCALE / mass,
                 aDuration = ad < maxDuration ? ad : maxDuration,
                 startPosition = isVertical ? this.y : this.x;
-            this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, true);
+            this.animate(startPosition, Math.round(positionWithVelocity), aDuration, easeOutQuad, false, true);
         } else {
             this.alignPosition(true, true);
         }
@@ -708,13 +712,20 @@ export class NgScrollView extends BaseScrollView {
         return result;
     }
 
-    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad,
-        userAction: boolean = false, alignmentAtComplete: boolean = true, skipOverridedCoordinates: boolean = false) {
+    protected animate(startValue: number, endValue: number, duration = ANIMATION_DURATION, easingFunction: Easing = easeOutQuad, blending: boolean = false,
+        userAction: boolean = false, alignmentAtComplete: boolean = true, skipOverridedCoordinates: boolean = false): number {
         const isVertical = this.isVertical();
         let position = startValue;
         this._isAlignmentAnimation = !alignmentAtComplete;
 
-        this._animator.animate({
+        if (this.hasAnimation() && blending) {
+            const updatable = this._animator.updateTo(endValue);
+            if (updatable) {
+                return this._animator.id;
+            }
+        }
+
+        return this._animator.animate({
             withDelta: this._service.dynamic && !this.isInfinity(),
             startValue,
             endValue,
@@ -726,7 +737,7 @@ export class NgScrollView extends BaseScrollView {
                 if (this._isCoordinatesOverrided && !skipOverridedCoordinates) {
                     this._isCoordinatesOverrided = false;
                     const currentCoordinate = isVertical ? this._y : this._x, delta = endValue - value;
-                    this.animate(currentCoordinate, currentCoordinate + delta, duration - elapsed, easingFunction, userAction, alignmentAtComplete);
+                    this.animate(currentCoordinate, currentCoordinate + delta, duration - elapsed, easingFunction, blending, userAction, alignmentAtComplete);
                     return;
                 }
                 const v0 = calculateVelocity(position, value - this._delta, timestamp) ?? this.averageVelocity;
@@ -891,7 +902,7 @@ export class NgScrollView extends BaseScrollView {
 
         if (position !== null && position !== cPos) {
             this.stopScrolling(true);
-            this.animate(cPos, position, animated ? this.animationParams().snapToItem : 1, easeOutQuad, false, false, true);
+            this.animate(cPos, position, animated ? this.animationParams().snapToItem : 1, easeOutQuad, false, false, false, true);
             return true;
         }
         return false;
@@ -1001,19 +1012,16 @@ export class NgScrollView extends BaseScrollView {
         if (behavior === AUTO || behavior === SMOOTH) {
             if (isVertical) {
                 if (prevY !== y) {
-                    this.animate(prevY, y, duration, ease, userAction);
+                    return this.animate(prevY, y, duration, ease, blending, userAction);
                 }
             } else {
                 if (prevX !== x) {
-                    this.animate(prevX, x, duration, ease, userAction);
+                    return this.animate(prevX, x, duration, ease, blending, userAction);
                 }
             }
         } else {
             if (isVertical) {
                 if (this._y !== y || force) {
-                    if (!blending) {
-                        this.stopScrolling(force);
-                    }
                     this.setY(y, snap, normalize);
                     this.emitScrollableEvent();
                     if (fireUpdate) {
@@ -1022,9 +1030,6 @@ export class NgScrollView extends BaseScrollView {
                 }
             } else {
                 if (this._x !== x || force) {
-                    if (!blending) {
-                        this.stopScrolling(force);
-                    }
                     this.setX(x, snap, normalize);
                     this.emitScrollableEvent();
                     if (fireUpdate) {
@@ -1033,6 +1038,7 @@ export class NgScrollView extends BaseScrollView {
                 }
             }
         }
+        return -1;
     }
 
     protected emitScrollableEvent() {
@@ -1056,6 +1062,10 @@ export class NgScrollView extends BaseScrollView {
     reset(offset: number = 0) {
         this.stopScrolling();
         this.move(this.isVertical(), offset);
+    }
+
+    stopAnimation(id: number) {
+        this._animator.stop(id);
     }
 
     ngOnDestroy(): void {

@@ -65,7 +65,7 @@ export const DEFAULT_MOTION_BLUR_ENABLED = false;
 export const DEFAULT_MAX_MOTION_BLUR = 0.5;
 
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
-    scrollToItem: 50,
+    scrollToItem: 150,
     snapToItem: 150,
     navigateToItem: 150,
     navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
