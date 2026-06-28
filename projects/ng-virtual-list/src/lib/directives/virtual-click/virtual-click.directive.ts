@@ -1,9 +1,9 @@
 import { DestroyRef, Directive, ElementRef, inject, Input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, of, race } from 'rxjs';
+import { BehaviorSubject, combineLatest, fromEvent, of, race } from 'rxjs';
 import { filter, switchMap, takeUntil, tap } from 'rxjs/operators';
-
-const DEFAULT_MAX_DISTANCE = 40;
+import { NgVirtualListService } from '../../ng-virtual-list.service';
+import { DEFAULT_CLICK_DISTANCE } from '../../const';
 
 /**
  * VirtualClickDirective
@@ -18,19 +18,39 @@ const DEFAULT_MAX_DISTANCE = 40;
     standalone: false,
 })
 export class VirtualClickDirective {
-    private _maxDistance = DEFAULT_MAX_DISTANCE;
+    private _$maxDistance = new BehaviorSubject<number | null>(null);
+    protected $maxDistance = this._$maxDistance.asObservable();
+
+    private _maxDistance: number | null = null;
 
     @Input('maxClickDistance')
     set maxDistance(v: number | string) {
-        this._maxDistance = (v !== null || v !== undefined) ? Number(v) : DEFAULT_MAX_DISTANCE;
+        const value = (v !== null || v !== undefined) ? Number(v) : null;
+        this._maxDistance = value;
+        this._$maxDistance.next(value);
     }
 
     onVirtualClick = output<PointerEvent | TouchEvent>();
 
+    onVirtualClickPress = output<PointerEvent | TouchEvent>();
+
+    onVirtualClickCancel = output<void>();
+
+    private _service = inject(NgVirtualListService);
+
     private _elementRef = inject(ElementRef);
+
     private _destroyRef = inject(DestroyRef);
 
     constructor() {
+        let maxDistance = this._maxDistance ?? DEFAULT_CLICK_DISTANCE;
+        combineLatest([this._service.$clickDistance, this.$maxDistance]).pipe(
+            takeUntilDestroyed(),
+            tap(([clickDistance, distance]) => {
+                maxDistance = distance === null ? clickDistance : distance;
+            }),
+        ).subscribe();
+
         const $pointerPressed = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown'),
             $pointerCancel = race([
                 fromEvent(window, 'pointerup').pipe(
@@ -47,11 +67,17 @@ export class VirtualClickDirective {
             switchMap(e => {
                 const x = Math.abs(e.clientX),
                     y = Math.abs(e.clientY);
+                this.onVirtualClickPress.emit(e);
                 return $pointerRelease.pipe(
                     takeUntilDestroyed(this._destroyRef),
                     takeUntil(
                         race([
-                            $pointerCancel,
+                            $pointerCancel.pipe(
+                                takeUntilDestroyed(this._destroyRef),
+                                tap(() => {
+                                    this.onVirtualClickCancel.emit();
+                                }),
+                            ),
                             fromEvent<PointerEvent>(window, 'pointermove').pipe(
                                 takeUntilDestroyed(this._destroyRef),
                                 switchMap(e => {
@@ -59,13 +85,13 @@ export class VirtualClickDirective {
                                         yy = y - Math.abs(e.clientY),
                                         dist = Math.sqrt(Math.pow(xx, 2) + Math.pow(yy, 2));
 
-                                    if (dist > this._maxDistance) {
+                                    if (dist > maxDistance) {
+                                        this.onVirtualClickCancel.emit();
                                         return of(true);
                                     }
 
                                     return of(false);
                                 }),
-                                takeUntilDestroyed(this._destroyRef),
                                 filter(v => !!v),
                             ),
                         ]),

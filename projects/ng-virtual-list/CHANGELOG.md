@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [22.12.3] - 2026-06-29
+
+### Fixed
+- Fixed display defects in unused list items.
+- Fixed cursor state when scrolling. Add grabbing property to template config.
+- Fixed handling of sticky element cascades.
+- Handled the animationParams.scrollToItem property and implement the animation of snapping to the edges of the list.
+- Improved virtualClick handling.
+
 ## [22.12.2] - 2026-06-25
 
 ### Fixed
