@@ -8,7 +8,7 @@ import {
   PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
   PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
   PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, PART_ITEM_ROW_ODD, PART_ITEM_ROW_EVEN,
-  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN,
+  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN, INVISIBLE_TRANSLATE_3D,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
@@ -104,7 +104,7 @@ export class BaseVirtualListItemComponent extends DisposableComponent implements
 
     this.updatePartStr(v, this._isSelected, this._isCollapsed);
 
-    this.updateConfig(v);
+    this.updateConfig(v, this._service.isGrabbing);
 
     this.updateMeasures(v);
 
@@ -180,6 +180,13 @@ export class BaseVirtualListItemComponent extends DisposableComponent implements
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
 
+    this._service.$isGrabbing.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(v => {
+        this.updateConfig(this._data, v);
+      }),
+    ).subscribe();
+
     const $part = this.$part;
     $part.pipe(
       takeUntil(this._$unsubscribe),
@@ -248,9 +255,10 @@ export class BaseVirtualListItemComponent extends DisposableComponent implements
     this._cdr.markForCheck();
   }
 
-  protected updateConfig(v: IRenderVirtualListItem<any> | null) {
+
+  protected updateConfig(v: IRenderVirtualListItem<any> | null, grabbing: boolean) {
     this._$config.next({
-      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
+      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(), grabbing,
     });
 
     this._cdr.markForCheck();
@@ -390,6 +398,7 @@ export class BaseVirtualListItemComponent extends DisposableComponent implements
     const el = this._elementRef.nativeElement,
       styles = el.style;
     styles.zIndex = HIDDEN_ZINDEX;
+    styles.transform = INVISIBLE_TRANSLATE_3D;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {
         return;
