@@ -9,7 +9,7 @@ import {
   PART_ITEM_FOCUSED, PART_ITEM_NEW, PART_ITEM_ODD, PART_ITEM_SELECTED, PART_ITEM_SNAPPED, PART_DEFAULT_ITEM_FX, PART_ITEM_FX_COLLAPSED,
   PART_ITEM_FX_EVEN, PART_ITEM_FX_FOCUSED, PART_ITEM_FX_NEW, PART_ITEM_FX_ODD, PART_ITEM_FX_SELECTED, PART_ITEM_FX_SNAPPED,
   PX, SIZE_100_PERSENT, SIZE_AUTO, TRANSLATE_3D, VISIBILITY_HIDDEN, VISIBILITY_VISIBLE, PART_ITEM_ROW_ODD, PART_ITEM_ROW_EVEN,
-  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN,
+  PART_ITEM_ROW_FX_ODD, PART_ITEM_ROW_FX_EVEN, INVISIBLE_TRANSLATE_3D,
 } from '../../../const';
 import { ITemplateContext } from '../interfaces';
 import {
@@ -92,7 +92,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
 
     this.updatePartStr(v, this._isSelected, this._isCollapsed);
 
-    this.updateConfig(v);
+    this.updateConfig(v, this._service.isGrabbing);
 
     this.updateMeasures(v);
 
@@ -164,6 +164,13 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this._listId = this._service.id;
     this._displayId = createDisplayId(this._listId, this._id);
 
+    this._service.$isGrabbing.pipe(
+      takeUntilDestroyed(),
+      tap(v => {
+        this.updateConfig(this._data, v);
+      }),
+    ).subscribe();
+
     effect(() => {
       const part = this.part();
       this._elementRef.nativeElement.setAttribute('part', part);
@@ -216,9 +223,9 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     this.measures.set(v?.measures ? { ...v.measures } : null)
   }
 
-  protected updateConfig(v: IRenderVirtualListItem<any> | null) {
+  protected updateConfig(v: IRenderVirtualListItem<any> | null, grabbing: boolean) {
     this.config.set({
-      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(),
+      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this.focused(), grabbing,
     });
   }
 
@@ -352,6 +359,7 @@ export class BaseVirtualListItemComponent implements IBaseVirtualListItemCompone
     const el = this._elementRef.nativeElement,
       styles = el.style;
     styles.zIndex = HIDDEN_ZINDEX;
+    styles.transform = INVISIBLE_TRANSLATE_3D;
     if (this.regular) {
       if (styles.display === DISPLAY_NONE) {
         return;

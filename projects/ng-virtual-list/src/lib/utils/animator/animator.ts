@@ -13,11 +13,29 @@ export class Animator {
 
   private _animationId: number = 0;
 
+  get animated() { return this._animationId > -1; }
+
+  get isAnimated() { return this.hasAnimation(this._currentId); }
+
   private _currentId: number = Animator._nextId;
+
+  get id() { return this._currentId; }
 
   private generateId() {
     return Animator._nextId = Animator._nextId === Number.MAX_SAFE_INTEGER
       ? 0 : Animator._nextId + 1;
+  }
+
+  private _diff: number = 0;
+
+  private _startValue: number = 0;
+
+  private _endValue: number = 0;
+
+  updateTo(value: number): boolean {
+    this._endValue = value;
+    this._diff = this._endValue - this._startValue;
+    return this.hasAnimation();
   }
 
   animate(params: IAnimatorParams) {
@@ -31,9 +49,12 @@ export class Animator {
       getPropValue, easingFunction = easeLinear, onUpdate, onComplete,
     } = params;
 
+    this._startValue = startValue;
+    this._endValue = endValue;
+
     const startTime = performance.now();
-    let isCanceled = false, prevPos = startValue, start = startValue, startPosDelta = 0, delta = 0, prevTime = startTime,
-      diff = endValue - start, isFinished = false;
+    let isCanceled = false, prevPos = startValue, startPosDelta = 0, delta = 0, prevTime = startTime, isFinished = false;
+    this._diff = this._endValue - this._startValue;
 
     const step = (currentTime: number) => {
       if (id !== this._currentId) {
@@ -52,9 +73,9 @@ export class Animator {
       }
 
       const elapsed = currentTime - startTime,
-        progress = start === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
+        progress = this._startValue === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
-        val = (withDelta ? startPosDelta : 0) + start + diff * easedProgress,
+        val = (withDelta ? startPosDelta : 0) + this._startValue + this._diff * easedProgress,
         currentValue = val,
         t = performance.now();
 
@@ -62,7 +83,8 @@ export class Animator {
 
       delta = currentValue - startDelta - prevPos;
 
-      const ts = t - prevTime, timestamp = ts < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : ts;
+      const frameTimestamp = t - prevTime,
+        actualFrameTimestamp = frameTimestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : frameTimestamp;
 
       prevTime = t;
       prevPos = currentValue;
@@ -73,19 +95,20 @@ export class Animator {
           delta,
           elapsed,
           value: !withDelta && isFinished ? endValue : currentValue,
-          timestamp,
+          timestamp: actualFrameTimestamp,
         };
         onUpdate(data);
       }
 
       if (isFinished) {
+        this._animationId = -1;
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
             id,
             delta,
             elapsed,
             value: withDelta ? currentValue : endValue,
-            timestamp,
+            timestamp: actualFrameTimestamp,
           };
           onComplete(data);
         }
@@ -95,10 +118,20 @@ export class Animator {
     }
 
     this._animationId = requestAnimationFrame(step);
+
+    return this._currentId;
   }
 
-  stop() {
-    cancelAnimationFrame(this._animationId);
+  hasAnimation(id: number = -1) {
+    if ((this._currentId === id || id === -1) && this.animated) {
+      return true;
+    }
+    return false;
+  }
+
+  stop(id: number = -1) {
+    cancelAnimationFrame(id === -1 ? this._animationId : id);
+    this._animationId = -1;
   }
 
   dispose() {
