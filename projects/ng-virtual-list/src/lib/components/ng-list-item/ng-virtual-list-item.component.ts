@@ -75,7 +75,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         this._service.focusedId = this.itemId ?? null;
         this._$focused.next(true);
 
-        this.updateConfig(this._data);
+        this.updateConfig(this._data, this._service.isGrabbing);
 
         this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
       }),
@@ -86,7 +86,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
         tap(e => {
           this._$focused.next(false);
 
-          this.updateConfig(this._data);
+          this.updateConfig(this._data, this._service.isGrabbing);
 
           this.updatePartStr(this._data, this._isSelected, this._isCollapsed);
         }),
@@ -133,7 +133,7 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
         this.updatePartStr(this._data, this._isSelected, isCollapsed);
 
-        this.updateConfig(this._data);
+        this.updateConfig(this._data, this._service.isGrabbing);
 
         this.updateMeasures(this._data);
       }),
@@ -259,9 +259,10 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
     return Number.MIN_SAFE_INTEGER;
   }
 
-  protected override updateConfig(v: IRenderVirtualListItem<any> | null) {
+
+  protected override updateConfig(v: IRenderVirtualListItem<any> | null, grabbing: boolean) {
     this._$config.next({
-      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(),
+      ...v?.config || {} as IDisplayObjectConfig, selected: this._isSelected, collapsed: this._isCollapsed, focused: this._$focused.getValue(), grabbing,
     });
 
     this._cdr.markForCheck();
@@ -269,5 +270,13 @@ export class NgVirtualListItemComponent extends BaseVirtualListItemComponent imp
 
   onClickHandler() {
     this._service.virtualClick(this._data);
+  }
+
+  onClickPressHandler() {
+    this._service.clickPressed = true;
+  }
+
+  onClickCancelHandler() {
+    this._service.clickPressed = false;
   }
 }

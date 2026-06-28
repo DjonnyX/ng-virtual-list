@@ -19,4 +19,8 @@ export interface IDisplayObjectConfig extends IRenderVirtualListItemConfig {
    * Determines whether the element is collapsed or not.
    */
   collapsed: boolean;
+  /**
+   * True if scroll capture occurs.
+   */
+  grabbing: boolean;
 }
