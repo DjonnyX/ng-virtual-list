@@ -1184,7 +1184,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 boundsSize = isVertical ? height : width, actualEndSnippedPosition = scrollSize + boundsSize - this._scrollEndOffset;
             let pos = startPosition,
                 renderItems = renderItemsLength,
-                stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1,
+                stickyItem: IRenderVirtualListItem | undefined, nextSticky: IRenderVirtualListItem | undefined, stickyItemIndex = -1, nexstStickyItemIndex = -1,
                 stickyItemSize = 0, endStickyItem: IRenderVirtualListItem | undefined, nextEndSticky: IRenderVirtualListItem | undefined,
                 endStickyItemIndex = -1, endStickyItemSize = 0;
 
@@ -1507,6 +1507,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                             item.measures.x = isVertical ? 0 : snapped ? actualSnippedPosition : pos;
                             item.measures.y = isVertical ? snapped ? actualSnippedPosition : pos : 0;
                             nextSticky = item;
+                            nexstStickyItemIndex = displayItems.length;
                             nextSticky.config.snapped = snapped;
                             nextSticky.measures.delta = (isVertical ? item.measures.y : item.measures.x) - scrollSize;
                             nextSticky.config.zIndex = Z_INDEX_3;
@@ -1547,6 +1548,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                     nextSticky.measures.delta = (isVertical ? nextSticky.measures.y : nextSticky.measures.x) - scrollSize;
                     stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
                     stickyItem.measures.delta = (isVertical ? stickyItem.measures.y : stickyItem.measures.x) - scrollSize;
+                    if (displayItems?.[nexstStickyItemIndex + 1]?.config?.sticky === 1) {
+                        nextSticky.config.snapped = nextSticky.config.snappedOut = false;
+                        stickyItem.config.snappedOut = true;
+                        nextSticky.measures.delta = this._scrollStartOffset;
+                    }
                 }
             }
 
