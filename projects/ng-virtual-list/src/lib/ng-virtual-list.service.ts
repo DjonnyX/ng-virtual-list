@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
-import { Subject, takeUntil, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, Subject, takeUntil, tap } from 'rxjs';
 import { TrackBox } from './core/track-box';
 import { TrackBoxEvents } from './core/events';
 import { IRenderVirtualListItem, IVirtualListCollection, IVirtualListItem, IVirtualListItemConfigMap } from './models';
@@ -160,6 +160,40 @@ export class NgVirtualListService {
     this._$langTextDir.next(v);
   }
 
+  private _$grabbing = new BehaviorSubject<boolean>(false);
+  readonly $grabbing = this._$grabbing.asObservable();
+  get grabbing() { return this._$grabbing.getValue(); }
+
+  private _grabbing: boolean = false;
+  set grabbing(v: boolean) {
+    if (this._grabbing === v) {
+      return;
+    }
+
+    this._grabbing = v;
+
+    this._$grabbing.next(v);
+  }
+
+  private _$clickPressed = new BehaviorSubject<boolean>(false);
+  readonly $clickPressed = this._$clickPressed.asObservable();
+  get clickPressed() { return this._$clickPressed.getValue(); }
+
+  private _clickPressed: boolean = false;
+  set clickPressed(v: boolean) {
+    if (this._clickPressed === v) {
+      return;
+    }
+
+    this._clickPressed = v;
+
+    this._$clickPressed.next(v);
+  }
+
+  private _$isGrabbing = new BehaviorSubject<boolean>(false);
+  readonly $isGrabbing = this._$isGrabbing.asObservable();
+  get isGrabbing() { return this._$isGrabbing.getValue(); }
+
   get scrollBarSize() { return this._$scrollBarSize.getValue(); }
 
   private _scrollBarSize: number = 0;
@@ -218,6 +252,20 @@ export class NgVirtualListService {
   get collapsedIds() { return this._$collapsedIds.getValue(); }
 
   constructor() {
+    const $grabbing = this.$grabbing.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+    ), $clickPressed = this.$clickPressed.pipe(
+      takeUntil(this._$unsubscribe),
+      distinctUntilChanged(),
+    );
+    combineLatest([$grabbing, $clickPressed]).pipe(
+      takeUntil(this._$unsubscribe),
+      tap(([grabbing, clickPressed]) => {
+        this._$isGrabbing.next(grabbing && !clickPressed);
+      }),
+    ).subscribe();
+
     this._$selectingMode.pipe(
       takeUntil(this._$unsubscribe),
       tap(v => {
