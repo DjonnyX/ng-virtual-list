@@ -4,7 +4,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 21.12.2</span></div>
+    <div class="version"><span>v 21.12.3</span></div>
   </div>
 
   <div class="vl-section">
@@ -33,7 +33,7 @@
 
   <ng-template #horizontalItemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -41,7 +41,7 @@
 
   <ng-template #horizontalGalleryItemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -62,12 +62,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__h-group-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__h-group-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__h-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
@@ -141,7 +141,7 @@
 
   <ng-template #itemRendererGallery let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list-gallery__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -183,7 +183,7 @@
       <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicItems" selectingMode="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="2" [maxBufferSize]="2"
         [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="true"></ng-virtual-list>
+        [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="false"></ng-virtual-list>
     </div>
   </div>
 
@@ -198,13 +198,13 @@
       <ng-virtual-list #dynamicItemsList class="list" [items]="dynamicShortItems" selectingMode="multi-select" [itemRenderer]="itemRenderer" [bufferSize]="2" [maxBufferSize]="2"
         [dynamicSize]="false" [itemSize]="40" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="[3,2]"
         [scrollbarThumbRenderer]="customScrollBarThumb" [scrollbarThumbParams]="customScrollBarThumbParams" [scrollbarThickness]="6"
-        [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="true"></ng-virtual-list>
+        [motionBlurEnabled]="motionBlurEnabled" (onScrollReachStart)="onScrollReachStartHandler()" (onScrollReachEnd)="onScrollReachEndHandler()" [snapScrollToStart]="false"></ng-virtual-list>
     </div>
   </div>
 
   <ng-template #itemRenderer let-data="data" let-config="config">
     @if (data) {
-      <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
+      <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
         <span>{{data.name}}</span>
       </div>
     }
@@ -267,12 +267,12 @@
     @if (data) {
       @switch (data.type) {
         @case ("group-header") {
-          <div [ngClass]="{'list__group-container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__group-container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
         @default {
-          <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected}">
+          <div [ngClass]="{'list__container': true, 'even': config.even, 'selected': config.selected, 'grabbing': config.grabbing}">
             <span>{{data.name}}</span>
           </div>
         }
