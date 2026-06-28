@@ -421,6 +421,14 @@ export class NgScrollerComponent extends NgScrollView {
       }),
     ).subscribe();
 
+    const $grabbing = this.$grabbing;
+    $grabbing.pipe(
+      takeUntil(this._$unsubscribe),
+      tap(v => {
+        this._service.grabbing = v;
+      }),
+    ).subscribe();
+
     combineLatest([this.$classes, this.$direction, this.$grabbing, this.$motionBlurEnabled]).pipe(
       takeUntil(this._$unsubscribe),
       distinctUntilChanged(),
@@ -615,13 +623,13 @@ export class NgScrollerComponent extends NgScrollView {
     this.fireScrollEvent(true);
   }
 
-  scrollTo(params: IScrollToParams) {
+  scrollTo(params: IScrollToParams): number {
     const userAction = params?.userAction ?? true;
     if (userAction) {
       this._isScrollbarUserAction = false;
       this.scrollBar?.stopScrolling();
     }
-    this.scroll({ ...params, userAction: userAction });
+    return this.scroll({ ...params, userAction: userAction });
   }
 
   stopScrollbar() {
