@@ -284,6 +284,10 @@ input {
         display: flex;
         align-items: center;
 
+        &.grabbing {
+            cursor: grabbing;
+        }
+
         &.even {
             background-color: #494058;
         }
@@ -314,6 +318,10 @@ input {
         align-items: center;
         justify-content: center;
 
+        &.grabbing {
+            cursor: grabbing;
+        }
+
         &>* {
             height: auto;
         }
@@ -335,6 +343,10 @@ input {
         display: flex;
         align-items: center;
 
+        &.grabbing {
+            cursor: grabbing;
+        }
+
         &>* {
             height: auto;
         }
@@ -354,6 +366,10 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &.grabbing {
+            cursor: grabbing;
+        }
 
         &.even {
             background-color: #494058;
@@ -387,6 +403,10 @@ input {
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &.grabbing {
+            cursor: grabbing;
+        }
 
         &>* {
             height: auto;
