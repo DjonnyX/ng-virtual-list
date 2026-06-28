@@ -6,6 +6,8 @@ import { IAnimationParams, IScrollingSettings } from '../interfaces';
 import { SpreadingMode } from "../types";
 import { Alignment, SnappingDistance, SnapToItemAlign } from "../types";
 
+const INVISIBLE_POSITION = -10000;
+
 export const SERVICE_PROP_DUMMY_ID = '__service-dummy-id__';
 
 export const SERVICE_PROP_DUMMY = '__service-dummy__';
@@ -63,7 +65,7 @@ export const DEFAULT_MOTION_BLUR_ENABLED = false;
 export const DEFAULT_MAX_MOTION_BLUR = 0.5;
 
 export const DEFAULT_ANIMATION_PARAMS: IAnimationParams = {
-    scrollToItem: 50,
+    scrollToItem: 150,
     snapToItem: 150,
     navigateToItem: 150,
     navigateByKeyboard: NAVIGATION_BY_KEYBOARD_TIMER,
@@ -164,7 +166,7 @@ export const POSITION_ABSOLUTE = 'absolute';
 
 export const TRANSLATE_3D = 'translate3d';
 
-export const ZEROS_TRANSLATE_3D = `${TRANSLATE_3D}(0,0,0)`;
+export const INVISIBLE_TRANSLATE_3D = `${TRANSLATE_3D}(${INVISIBLE_POSITION},${INVISIBLE_POSITION},0)`;
 
 export const HIDDEN_ZINDEX = '-1';
 
@@ -177,6 +179,10 @@ export const LEFT_PROP_NAME = 'left';
 export const X_PROP_NAME = 'x';
 
 export const Y_PROP_NAME = 'y';
+
+export const TRANSFORMED_X_PROP_NAME = 'transformedX';
+
+export const TRANSFORMED_Y_PROP_NAME = 'transformedY';
 
 export const WIDTH_PROP_NAME = 'width';
 
