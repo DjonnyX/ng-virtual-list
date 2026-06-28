@@ -1,11 +1,11 @@
-import { Directive, ElementRef, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
-import { fromEvent, of, race, Subject } from 'rxjs';
+import { Directive, ElementRef, inject, Input, Output, OnDestroy, EventEmitter } from '@angular/core';
+import { Subject, BehaviorSubject, combineLatest, fromEvent, of, race } from 'rxjs';
 import { filter, switchMap, takeUntil, tap } from 'rxjs/operators';
-
-const DEFAULT_MAX_DISTANCE = 40;
+import { NgVirtualListService } from '../../ng-virtual-list.service';
+import { DEFAULT_CLICK_DISTANCE } from '../../const';
 
 /**
- * ItemClickDirective
+ * VirtualClickDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
  * @link https://github.com/DjonnyX/ng-virtual-list/blob/16.x/projects/ng-virtual-list/src/lib/directives/item-click/item-click.directive.ts
@@ -19,17 +19,40 @@ const DEFAULT_MAX_DISTANCE = 40;
 export class VirtualClickDirective implements OnDestroy {
     protected _$unsubscribe = new Subject<void>();
 
-    private _maxDistance = DEFAULT_MAX_DISTANCE;
+    private _$maxDistance = new BehaviorSubject<number | null>(null);
+    protected $maxDistance = this._$maxDistance.asObservable();
+
+    private _maxDistance: number | null = null;
 
     @Input('maxClickDistance')
-    set maxDistance(v: number | null) {
-        this._maxDistance = (v !== null || v !== undefined) ? Number(v) : DEFAULT_MAX_DISTANCE;
+    set maxDistance(v: number | string) {
+        const value = (v !== null || v !== undefined) ? Number(v) : null;
+        this._maxDistance = value;
+        this._$maxDistance.next(value);
     }
 
     @Output()
     onVirtualClick = new EventEmitter<PointerEvent | TouchEvent>();
 
-    constructor(private _elementRef: ElementRef) {
+    @Output()
+    onVirtualClickPress = new EventEmitter<PointerEvent | TouchEvent>();
+
+    @Output()
+    onVirtualClickCancel = new EventEmitter<void>();
+
+    private _service = inject(NgVirtualListService);
+
+    private _elementRef = inject(ElementRef);
+
+    constructor() {
+        let maxDistance = this._maxDistance ?? DEFAULT_CLICK_DISTANCE;
+        combineLatest([this._service.$clickDistance, this.$maxDistance]).pipe(
+            takeUntil(this._$unsubscribe),
+            tap(([clickDistance, distance]) => {
+                maxDistance = distance === null ? clickDistance : distance;
+            }),
+        ).subscribe();
+
         const $pointerPressed = fromEvent<PointerEvent>(this._elementRef.nativeElement, 'pointerdown'),
             $pointerCancel = race([
                 fromEvent(window, 'pointerup').pipe(
@@ -46,11 +69,17 @@ export class VirtualClickDirective implements OnDestroy {
             switchMap(e => {
                 const x = Math.abs(e.clientX),
                     y = Math.abs(e.clientY);
+                this.onVirtualClickPress.emit(e);
                 return $pointerRelease.pipe(
                     takeUntil(this._$unsubscribe),
                     takeUntil(
                         race([
-                            $pointerCancel,
+                            $pointerCancel.pipe(
+                                takeUntil(this._$unsubscribe),
+                                tap(() => {
+                                    this.onVirtualClickCancel.emit();
+                                }),
+                            ),
                             fromEvent<PointerEvent>(window, 'pointermove').pipe(
                                 takeUntil(this._$unsubscribe),
                                 switchMap(e => {
@@ -58,13 +87,13 @@ export class VirtualClickDirective implements OnDestroy {
                                         yy = y - Math.abs(e.clientY),
                                         dist = Math.sqrt(Math.pow(xx, 2) + Math.pow(yy, 2));
 
-                                    if (dist > this._maxDistance) {
+                                    if (dist > maxDistance) {
+                                        this.onVirtualClickCancel.emit();
                                         return of(true);
                                     }
 
                                     return of(false);
                                 }),
-                                takeUntil(this._$unsubscribe),
                                 filter(v => !!v),
                             ),
                         ]),
