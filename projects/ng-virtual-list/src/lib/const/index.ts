@@ -180,6 +180,10 @@ export const X_PROP_NAME = 'x';
 
 export const Y_PROP_NAME = 'y';
 
+export const TRANSFORMED_X_PROP_NAME = 'transformedX';
+
+export const TRANSFORMED_Y_PROP_NAME = 'transformedY';
+
 export const WIDTH_PROP_NAME = 'width';
 
 export const HEIGHT_PROP_NAME = 'height';

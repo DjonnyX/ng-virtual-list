@@ -6,7 +6,7 @@ import { CACHE_BOX_CHANGE_EVENT_NAME, CacheMap } from "./cache-map";
 import { Tracker } from "./tracker";
 import { IRect, ISize } from "../interfaces";
 import {
-    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, TRACK_BY_PROPERTY_NAME, WIDTH_PROP_NAME,
+    DEFAULT_DIVIDES, HEIGHT_PROP_NAME, SERVICE_PROP_DUMMY, SERVICE_PROP_DUMMY_ENABLED, TRACK_BY_PROPERTY_NAME, TRANSFORMED_X_PROP_NAME, TRANSFORMED_Y_PROP_NAME, WIDTH_PROP_NAME,
     X_PROP_NAME, Y_PROP_NAME,
 } from "../const";
 import { IRenderVirtualListItemConfig, IRenderVirtualListItemMeasures, IVirtualListItemConfigMap } from "../models";
@@ -1534,11 +1534,11 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 i++;
             }
 
-            const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME;
+            const axis = isVertical ? Y_PROP_NAME : X_PROP_NAME, transformedAxis = isVertical ? TRANSFORMED_Y_PROP_NAME : TRANSFORMED_X_PROP_NAME;
 
             if (!!nextSticky && !!stickyItem && nextSticky.measures[axis] <= actualSnippedPosition + stickyItem.measures[sizeProperty]) {
                 if (nextSticky.measures[axis] > actualSnippedPosition) {
-                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
+                    stickyItem.measures[axis] = stickyItem.measures[transformedAxis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
                     stickyItem.config.snapped = nextSticky.config.snapped = false;
                     stickyItem.config.snappedOut = true;
                     stickyItem.config.sticky = 1;
@@ -1546,12 +1546,27 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                 } else {
                     nextSticky.config.snapped = true;
                     nextSticky.measures.delta = (isVertical ? nextSticky.measures.y : nextSticky.measures.x) - scrollSize;
-                    stickyItem.measures[axis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
+                    stickyItem.measures[axis] = stickyItem.measures[transformedAxis] = nextSticky.measures[axis] - stickyItem.measures[sizeProperty];
                     stickyItem.measures.delta = (isVertical ? stickyItem.measures.y : stickyItem.measures.x) - scrollSize;
-                    if (displayItems?.[nexstStickyItemIndex + 1]?.config?.sticky === 1) {
+                    const lastStickyItem = displayItems?.[nexstStickyItemIndex + 1];
+                    if (lastStickyItem?.config?.sticky === 1 && displayItems?.[nexstStickyItemIndex + 2]?.config?.sticky !== 1) {
                         nextSticky.config.snapped = nextSticky.config.snappedOut = false;
                         stickyItem.config.snappedOut = true;
                         nextSticky.measures.delta = this._scrollStartOffset;
+
+                        if (lastStickyItem.measures[axis] <= actualSnippedPosition) {
+                            lastStickyItem.config.snapped = lastStickyItem.config.snappedOut = true;
+                            lastStickyItem.measures[axis] = lastStickyItem.measures[transformedAxis] = lastStickyItem.measures.position = actualSnippedPosition;
+                            lastStickyItem.measures.delta = this._scrollStartOffset;
+                        }
+                    } else if (lastStickyItem?.config?.sticky !== 1 && displayItems?.[nexstStickyItemIndex + 2]?.config?.sticky !== 1) {
+                        if (nextSticky.measures[axis] <= actualSnippedPosition) {
+                            nextSticky.config.snapped = nextSticky.config.snappedOut = true;
+                            nextSticky.measures[axis] = nextSticky.measures[transformedAxis] = nextSticky.measures.position = actualSnippedPosition;
+                            nextSticky.measures.delta = this._scrollStartOffset;
+                        }
+                    } else {
+                        nextSticky.config.snapped = nextSticky.config.snappedOut = false;
                     }
                 }
             }
@@ -1559,16 +1574,16 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             if (!!nextEndSticky && !!endStickyItem &&
                 (nextEndSticky.measures[axis] >= actualEndSnippedPosition - endStickyItemSize - nextEndSticky.measures[sizeProperty])) {
                 if (nextEndSticky.measures[axis] < actualEndSnippedPosition - nextEndSticky.measures[sizeProperty]) {
-                    endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
+                    endStickyItem.measures[axis] = endStickyItem.measures[transformedAxis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
                     endStickyItem.config.snapped = nextEndSticky.config.snapped = false;
                     endStickyItem.config.snappedOut = true;
                     endStickyItem.config.sticky = 2;
                     endStickyItem.measures.delta = (isVertical ? endStickyItem.measures.y : endStickyItem.measures.x) - scrollSize;
                 } else {
                     nextEndSticky.config.snapped = true;
-                    nextEndSticky.measures[axis] = actualEndSnippedPosition - nextEndSticky.measures[sizeProperty];
+                    nextEndSticky.measures[axis] = nextEndSticky.measures[transformedAxis] = actualEndSnippedPosition - nextEndSticky.measures[sizeProperty];
                     nextEndSticky.measures.delta = (isVertical ? nextEndSticky.measures.y : nextEndSticky.measures.x) - scrollSize;
-                    endStickyItem.measures[axis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
+                    endStickyItem.measures[axis] = endStickyItem.measures[transformedAxis] = nextEndSticky.measures[axis] + nextEndSticky.measures[sizeProperty];
                     endStickyItem.measures.delta = (isVertical ? endStickyItem.measures.y : endStickyItem.measures.x) - scrollSize;
                 }
             }
