@@ -34,8 +34,7 @@ export class Animator {
 
   private _prevPos: number = 0;
 
-  updateTo(start: number, end: number): boolean {
-    this._prevPos = this._startValue = start;
+  updateTo(end: number): boolean {
     this._endValue = end;
     this._diff = this._endValue - this._startValue;
     return this.hasAnimation();
