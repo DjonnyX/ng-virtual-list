@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [22.12.4] - 2026-06-30
+
+### Fixed
+- Fixed redefining initial coordinates when blending animations.
+
 ## [22.12.3] - 2026-06-29
 
 ### Fixed
