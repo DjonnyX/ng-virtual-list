@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [16.12.4] - 2026-06-30
 
 ### Fixed
-- Fixed
+- Fixed redefining initial coordinates when blending animations.
+
 ## [16.12.3] - 2026-06-29
 
 ### Fixed
