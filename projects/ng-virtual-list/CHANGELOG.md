@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [14.12.4] - 2026-06-30
+
+### Fixed
+- Fixwd redefining initial coordinates when blending animations.
+
 ## [14.12.3] - 2026-06-29
 
 ### Fixed
