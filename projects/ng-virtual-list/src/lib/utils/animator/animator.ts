@@ -32,8 +32,11 @@ export class Animator {
 
   private _endValue: number = 0;
 
-  updateTo(value: number): boolean {
-    this._endValue = value;
+  private _prevPos: number = 0;
+
+  updateTo(start: number, end: number): boolean {
+    this._prevPos = this._startValue = start;
+    this._endValue = end;
     this._diff = this._endValue - this._startValue;
     return this.hasAnimation();
   }
@@ -53,7 +56,8 @@ export class Animator {
     this._endValue = endValue;
 
     const startTime = performance.now();
-    let isCanceled = false, prevPos = startValue, startPosDelta = 0, delta = 0, prevTime = startTime, isFinished = false;
+    let isCanceled = false, startPosDelta = 0, delta = 0, prevTime = startTime, isFinished = false;
+    this._prevPos = startValue;
     this._diff = this._endValue - this._startValue;
 
     const step = (currentTime: number) => {
@@ -67,13 +71,13 @@ export class Animator {
 
       const cPos = getPropValue?.() || 0;
       let startDelta = 0;
-      if (cPos !== prevPos) {
-        startDelta = cPos - prevPos;
+      if (cPos !== this._prevPos) {
+        startDelta = cPos - this._prevPos;
         startPosDelta += startDelta;
       }
 
       const elapsed = currentTime - startTime,
-        progress = this._startValue === endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
+        progress = this._startValue === this._endValue ? 1 : Math.min(duration > 0 ? elapsed / duration : 0, 1),
         easedProgress = easingFunction(progress),
         val = (withDelta ? startPosDelta : 0) + this._startValue + this._diff * easedProgress,
         currentValue = val,
@@ -81,20 +85,20 @@ export class Animator {
 
       isFinished = progress === 1;
 
-      delta = currentValue - startDelta - prevPos;
+      delta = currentValue - startDelta - this._prevPos;
 
       const frameTimestamp = t - prevTime,
         actualFrameTimestamp = frameTimestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : frameTimestamp;
 
       prevTime = t;
-      prevPos = currentValue;
+      this._prevPos = currentValue;
 
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
           id,
           delta,
           elapsed,
-          value: !withDelta && isFinished ? endValue : currentValue,
+          value: currentValue,
           timestamp: actualFrameTimestamp,
         };
         onUpdate(data);
@@ -107,7 +111,7 @@ export class Animator {
             id,
             delta,
             elapsed,
-            value: withDelta ? currentValue : endValue,
+            value: currentValue,
             timestamp: actualFrameTimestamp,
           };
           onComplete(data);

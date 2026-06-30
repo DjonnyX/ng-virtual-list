@@ -719,7 +719,7 @@ export class NgScrollView extends BaseScrollView {
         this._isAlignmentAnimation = !alignmentAtComplete;
 
         if (this.hasAnimation() && blending) {
-            const updatable = this._animator.updateTo(endValue);
+            const updatable = this._animator.updateTo(startValue, endValue);
             if (updatable) {
                 return this._animator.id;
             }
