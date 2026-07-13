@@ -295,18 +295,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
   get scrollbarThumbParams() { return this._$scrollbarThumbParams.getValue(); }
 
-  private _loading = {
-    transform: (v: boolean) => {
-      const valid = validateBoolean(v);
-
-      if (!valid) {
-        console.error('The "loading" parameter must be of type `boolean`.');
-        return false;
-      }
-      return v;
-    },
-  } as any;
-
   private _$loading = new BehaviorSubject<boolean>(false);
   protected readonly $loading = this._$loading.asObservable();
 
@@ -1240,9 +1228,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
     if (!valid) {
       console.error('The "motionBlur" parameter must be of type `number`.');
-      return DEFAULT_DIVIDES;
+      return DEFAULT_MOTION_BLUR;
     }
-    return v <= 0 ? DEFAULT_DIVIDES : v;
+    return v <= 0 ? DEFAULT_MOTION_BLUR : v;
   };
 
   /**
@@ -1315,8 +1303,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     this._$motionBlurEnabled.next(transformedValue);
   };
   get motionBlurEnabled() { return this._$motionBlurEnabled.getValue(); }
-
-
 
   private _$animationParams = new BehaviorSubject<IAnimationParams>(DEFAULT_ANIMATION_PARAMS);
   protected readonly $animationParams = this._$animationParams.asObservable();
