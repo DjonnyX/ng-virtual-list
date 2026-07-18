@@ -4,7 +4,7 @@ import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
 /**
  * Animator
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/21x/library/src/utils/animator/animator.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21.x/projects/ng-virtual-list/src/lib/utils/animator/animator.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
