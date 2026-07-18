@@ -266,9 +266,13 @@ export class NgScrollView extends BaseScrollView {
         const $wheel = this.$wheel;
         $wheel.pipe(
             takeUntil(this._$unsubscribe),
+            tap(() => {
+                this._$grabbing.next(true);
+            }),
             switchMap(v => of(this.averageVelocity)),
             debounceTime(100),
             tap(v => {
+                this._$grabbing.next(false);
                 this.snapWithInitialForceIfNecessary(v);
                 this._scrollDirection.clear();
             }),
