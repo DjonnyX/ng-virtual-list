@@ -295,18 +295,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
   };
   get scrollbarThumbParams() { return this._$scrollbarThumbParams.getValue(); }
 
-  private _loading = {
-    transform: (v: boolean) => {
-      const valid = validateBoolean(v);
-
-      if (!valid) {
-        console.error('The "loading" parameter must be of type `boolean`.');
-        return false;
-      }
-      return v;
-    },
-  } as any;
-
   private _$loading = new BehaviorSubject<boolean>(false);
   protected readonly $loading = this._$loading.asObservable();
 
@@ -1240,9 +1228,9 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
     if (!valid) {
       console.error('The "motionBlur" parameter must be of type `number`.');
-      return DEFAULT_DIVIDES;
+      return DEFAULT_MOTION_BLUR;
     }
-    return v <= 0 ? DEFAULT_DIVIDES : v;
+    return v <= 0 ? DEFAULT_MOTION_BLUR : v;
   };
 
   /**
@@ -1315,8 +1303,6 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
     this._$motionBlurEnabled.next(transformedValue);
   };
   get motionBlurEnabled() { return this._$motionBlurEnabled.getValue(); }
-
-
 
   private _$animationParams = new BehaviorSubject<IAnimationParams>(DEFAULT_ANIMATION_PARAMS);
   protected readonly $animationParams = this._$animationParams.asObservable();
@@ -3421,19 +3407,52 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
 
           prevScrollable = scroller.scrollable;
 
-          if ((snapScrollToStart && this._trackBox.isSnappedToStart && scroller.scrollable) ||
-            (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-            if (currentScrollSize !== roundedScrollPositionAfterUpdate) {
+          if (!scroller.grabbing) {
+            if ((snapScrollToStart && this._trackBox.isSnappedToStart && scroller.scrollable) ||
+              (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
+              if (currentScrollSize !== roundedScrollPositionAfterUpdate) {
+                this._trackBox.clearDelta();
+
+                if (this._readyForShow) {
+                  this.emitScrollEvent(true, false, userAction);
+                }
+                this._trackBox.isScrollEnd;
+                const params: IScrollToParams = {
+                  [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
+                  fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams.scrollToItem > 0 && this.scrollBehavior !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT),
+                  blending: useAnimations && scroller.hasAnimation(this._animationId), duration: this.animationParams.scrollToItem,
+                };
+                const animationId = scroller?.scrollTo?.(params);
+                if (animationId > -1) {
+                  this._animationId = animationId;
+                } else {
+                  scroller.stopAnimation(this._animationId);
+                }
+                scroller?.scrollTo?.(params);
+                if (emitUpdate) {
+                  this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
+                }
+              }
+              return;
+            }
+
+            if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) || (snapScrollToEnd && !scroller.scrollable) ||
+              (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate) ||
+              (roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
               this._trackBox.clearDelta();
 
-              if (this._readyForShow) {
-                this.emitScrollEvent(true, false, userAction);
+              if (!this._trackBox.isSnappedToEnd) {
+                this._trackBox.isScrollEnd = true;
+                this._trackBox.isScrollStart = false;
               }
-              this._trackBox.isScrollEnd;
+
+              if (this._readyForShow) {
+                this.emitScrollEvent(true, false, false);
+              }
               const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams.scrollToItem > 0 && this.scrollBehavior !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT),
-                blending: useAnimations && scroller.hasAnimation(this._animationId), duration: this.animationParams.scrollToItem,
+                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
+                fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams.scrollToItem > 0 && this.scrollBehavior !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT), userAction: false,
+                blending: useAnimations && scroller.hasAnimation(this._animationId) || cacheChanged, duration: this.animationParams.scrollToItem,
               };
               const animationId = scroller?.scrollTo?.(params);
               if (animationId > -1) {
@@ -3445,39 +3464,8 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
               if (emitUpdate) {
                 this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
               }
+              return;
             }
-            return;
-          }
-
-          if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) || (snapScrollToEnd && !scroller.scrollable) ||
-            (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate) ||
-            (roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-            this._trackBox.clearDelta();
-
-            if (!this._trackBox.isSnappedToEnd) {
-              this._trackBox.isScrollEnd = true;
-              this._trackBox.isScrollStart = false;
-            }
-
-            if (this._readyForShow) {
-              this.emitScrollEvent(true, false, false);
-            }
-            const params: IScrollToParams = {
-              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams.scrollToItem > 0 && this.scrollBehavior !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT), userAction: false,
-              blending: useAnimations && scroller.hasAnimation(this._animationId) || cacheChanged, duration: this.animationParams.scrollToItem,
-            };
-            const animationId = scroller?.scrollTo?.(params);
-            if (animationId > -1) {
-              this._animationId = animationId;
-            } else {
-              scroller.stopAnimation(this._animationId);
-            }
-            scroller?.scrollTo?.(params);
-            if (emitUpdate) {
-              this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
-            }
-            return;
           }
 
           if (scrollSize !== scrollPositionAfterUpdate &&

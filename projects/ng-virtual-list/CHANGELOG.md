@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [18.12.8] - 2026-07-19
+
+### Fixed
+- Fixed a bug that blocked scrolling when the scroll bar stuck to the end of the list.
+- Fixed a repositioning defect during animation to the end of the list
+
 ## [18.12.4] - 2026-06-30
 
 ### Fixed
