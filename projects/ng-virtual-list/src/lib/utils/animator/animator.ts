@@ -4,7 +4,7 @@ import { IAnimatorParams, IAnimatorUpdateData } from './interfaces';
 
 /**
  * Animator
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/main/library/src/utils/animator/animator.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/21x/library/src/utils/animator/animator.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -35,9 +35,13 @@ export class Animator {
   private _prevPos: number = 0;
 
   updateTo(end: number): boolean {
-    this._endValue = end;
-    this._diff = this._endValue - this._startValue;
-    return this.hasAnimation();
+    if (this.hasAnimation()) {
+      this._startValue = this._prevPos;
+      this._endValue = end;
+      this._diff = this._endValue - this._startValue;
+      return true;
+    }
+    return false;
   }
 
   animate(params: IAnimatorParams) {
@@ -92,6 +96,10 @@ export class Animator {
       prevTime = t;
       this._prevPos = currentValue;
 
+      if (isFinished) {
+        this._animationId = -1;
+      }
+
       if (onUpdate !== undefined) {
         const data: IAnimatorUpdateData = {
           id,
@@ -104,7 +112,6 @@ export class Animator {
       }
 
       if (isFinished) {
-        this._animationId = -1;
         if (onComplete !== undefined) {
           const data: IAnimatorUpdateData = {
             id,
