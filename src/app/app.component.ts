@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { delay, interval, tap } from 'rxjs';
@@ -205,9 +205,9 @@ export class AppComponent {
 
   items2 = generateDynamicItems(1000, 0);
 
-  dynamicItems = generateDynamicItems(20, 0);
+  dynamicItems = signal(generateDynamicItems(20, 0));
 
-  dynamicShortItems = generateDynamicShortItems(20, 0);
+  dynamicShortItems = signal(generateDynamicShortItems(20, 0));
 
   itemsRtl = ITEMS_RTL;
 
@@ -281,12 +281,11 @@ export class AppComponent {
       // }),
       delay(650),
       tap(() => {
-        const collection = [...this.dynamicItems];
-        collection.push(...generateDynamicItems(1, this.dynamicItems.length));
-        this.dynamicItems = collection;
+        const collection = [...this.dynamicItems()];
+        collection.push(...generateDynamicItems(1, this.dynamicItems().length));
+        this.dynamicItems.set(collection);
       }),
     ).subscribe();
-
 
     interval(1000).pipe(
       takeUntilDestroyed(),
@@ -311,9 +310,9 @@ export class AppComponent {
       // }),
       delay(650),
       tap(() => {
-        const collection = [...this.dynamicShortItems];
-        collection.push(...generateDynamicShortItems(1, this.dynamicShortItems.length));
-        this.dynamicShortItems = collection;
+        const collection = [...this.dynamicShortItems()];
+        collection.push(...generateDynamicShortItems(1, this.dynamicShortItems().length));
+        this.dynamicShortItems.set(collection);
       }),
     ).subscribe();
 
@@ -377,12 +376,12 @@ export class AppComponent {
 
   onButtonChangeDynamicItemsLengthHandler() {
     const len = this.dynamicItemsLength;
-    this.dynamicItems = generateDynamicItems(len);
+    this.dynamicItems.set(generateDynamicItems(len));
   }
 
   onButtonChangeDynamicShortItemsLengthHandler() {
     const len = this.dynamicShortItemsLength;
-    this.dynamicShortItems = generateDynamicShortItems(len);
+    this.dynamicShortItems.set(generateDynamicShortItems(len));
   }
 
   onSelectHandler(data: Array<Id> | Id | null) {
