@@ -2715,19 +2715,51 @@ export class NgVirtualListComponent implements OnDestroy {
 
           prevScrollable = scroller.scrollable;
 
-          if ((snapScrollToStart && this._trackBox.isSnappedToStart && scroller.scrollable) ||
-            (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-            if (currentScrollSize !== roundedScrollPositionAfterUpdate) {
+          if (!scroller.grabbing()) {
+            if ((snapScrollToStart && this._trackBox.isSnappedToStart && scroller.scrollable) ||
+              (snapScrollToStart && currentScrollSize <= MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
+              if (currentScrollSize !== roundedScrollPositionAfterUpdate) {
+                this._trackBox.clearDelta();
+
+                if (this._readyForShow) {
+                  this.emitScrollEvent(true, false, userAction);
+                }
+                this._trackBox.isScrollEnd;
+                const params: IScrollToParams = {
+                  [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
+                  fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams().scrollToItem > 0 && this.scrollBehavior() !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT),
+                  blending: useAnimations && scroller.hasAnimation(this._animationId), duration: this.animationParams().scrollToItem,
+                };
+                const animationId = scroller?.scrollTo?.(params);
+                if (animationId > -1) {
+                  this._animationId = animationId;
+                } else {
+                  scroller.stopAnimation(this._animationId);
+                }
+                if (emitUpdate) {
+                  this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
+                }
+              }
+              return;
+            }
+
+            if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) || (snapScrollToEnd && !scroller.scrollable) ||
+              (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate) ||
+              (roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
               this._trackBox.clearDelta();
 
-              if (this._readyForShow) {
-                this.emitScrollEvent(true, false, userAction);
+              if (!this._trackBox.isSnappedToEnd) {
+                this._trackBox.isScrollEnd = true;
+                this._trackBox.isScrollStart = false;
               }
-              this._trackBox.isScrollEnd;
+
+              if (this._readyForShow) {
+                this.emitScrollEvent(true, false, false);
+              }
               const params: IScrollToParams = {
-                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: 0, userAction,
-                fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams().scrollToItem > 0 && this.scrollBehavior() !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT),
-                blending: useAnimations && scroller.hasAnimation(this._animationId), duration: this.animationParams().scrollToItem,
+                [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
+                fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams().scrollToItem > 0 && this.scrollBehavior() !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT), userAction: false,
+                blending: useAnimations && scroller.hasAnimation(this._animationId) || cacheChanged, duration: this.animationParams().scrollToItem,
               };
               const animationId = scroller?.scrollTo?.(params);
               if (animationId > -1) {
@@ -2738,38 +2770,8 @@ export class NgVirtualListComponent implements OnDestroy {
               if (emitUpdate) {
                 this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
               }
+              return;
             }
-            return;
-          }
-
-          if ((snapScrollToEnd && this._trackBox.isSnappedToEnd) || (snapScrollToEnd && !scroller.scrollable) ||
-            (scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING >= roundedMaxPositionAfterUpdate) ||
-            (roundedScrollPositionAfterUpdate >= scrollPositionAfterUpdate + MIN_PIXELS_FOR_PREVENT_SNAPPING)) {
-            this._trackBox.clearDelta();
-
-            if (!this._trackBox.isSnappedToEnd) {
-              this._trackBox.isScrollEnd = true;
-              this._trackBox.isScrollStart = false;
-            }
-
-            if (this._readyForShow) {
-              this.emitScrollEvent(true, false, false);
-            }
-            const params: IScrollToParams = {
-              [isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: roundedMaxPositionAfterUpdate,
-              fireUpdate: fireUpdateAtEdges, behavior: !useAnimations ? BEHAVIOR_INSTANT : ((this.animationParams().scrollToItem > 0 && this.scrollBehavior() !== BEHAVIOR_INSTANT) ? BEHAVIOR_AUTO : BEHAVIOR_INSTANT), userAction: false,
-              blending: useAnimations && scroller.hasAnimation(this._animationId) || cacheChanged, duration: this.animationParams().scrollToItem,
-            };
-            const animationId = scroller?.scrollTo?.(params);
-            if (animationId > -1) {
-              this._animationId = animationId;
-            } else {
-              scroller.stopAnimation(this._animationId);
-            }
-            if (emitUpdate) {
-              this._$update.next(getScrollStateVersion(totalSize, this._isVertical ? scroller.scrollTop : scroller.scrollLeft));
-            }
-            return;
           }
 
           if (scrollSize !== scrollPositionAfterUpdate &&
