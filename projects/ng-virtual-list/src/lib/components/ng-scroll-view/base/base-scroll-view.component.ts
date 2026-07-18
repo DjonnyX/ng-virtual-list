@@ -91,6 +91,9 @@ export class BaseScrollView extends DisposableComponent {
 
     protected _$grabbing = new BehaviorSubject<boolean>(false);
     readonly $grabbing = this._$grabbing.asObservable();
+    get grabbing() {
+        return this._$grabbing.getValue();
+    }
 
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
 
