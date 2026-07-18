@@ -104,7 +104,7 @@ export class NgScrollBarComponent extends NgScrollView {
       this._$scrollbarMinSize.next(v);
     }
   }
-  get scrollbarMinSize() { return this._$endOffset.getValue(); }
+  get scrollbarMinSize() { return this._$scrollbarMinSize.getValue(); }
 
   private _$prepared = new BehaviorSubject<boolean>(false);
   readonly $prepared = this._$prepared.asObservable();
