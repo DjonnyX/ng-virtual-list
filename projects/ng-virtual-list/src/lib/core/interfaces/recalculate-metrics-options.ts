@@ -28,5 +28,6 @@ export interface IRecalculateMetricsOptions<I extends IItem, C extends Array<I>>
     deletedItemsMap: { [index: number]: ISize; };
     snapToItem: boolean;
     snapToItemAlign: SnapToItemAlign;
+    inverted: boolean;
     itemTransform: ItemTransform | null;
 }
