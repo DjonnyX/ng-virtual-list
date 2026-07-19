@@ -231,9 +231,6 @@ export class NgScrollerComponent extends NgScrollView {
   private _$preparedSignal = new BehaviorSubject<boolean>(false);
   readonly $preparedSignal = this._$preparedSignal.asObservable();
 
-  private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
-  readonly $langTextDir = this._$langTextDir.asObservable();
-
   private _$listStyles = new BehaviorSubject<{ perspectiveOrigin: string }>({ perspectiveOrigin: 'center' });
   readonly $listStyles = this._$listStyles.asObservable();
 
@@ -371,14 +368,6 @@ export class NgScrollerComponent extends NgScrollView {
       }),
     ).subscribe();
 
-    this._service.$langTextDir.pipe(
-      takeUntil(this._$unsubscribe),
-      debounceTime(0),
-      tap(v => {
-        this._$langTextDir.next(v);
-      })
-    ).subscribe();
-
     const $prepare = this.$preparedSignal;
     $prepare.pipe(
       takeUntil(this._$unsubscribe),
@@ -479,10 +468,13 @@ export class NgScrollerComponent extends NgScrollView {
   }
 
   private recalculatePerspective() {
-    const isVertical = this._$isVertical.getValue(), scrollSize = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
+    const isVertical = this._$isVertical.getValue(),
+      inverted = this.horizontalAxisInvertion,
+      scrollSize = (isVertical ? this.scrollTop : this.scrollLeft) - this._startLayoutOffset,
+      maxScrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
       { width, height } = this._$viewportBounds.getValue();
     this._$listStyles.next({
-      perspectiveOrigin: `${isVertical ? width * .5 : (scrollSize + width * .5)}${PX} ${isVertical ? (scrollSize + height * .5) : height * .5}${PX}`
+      perspectiveOrigin: `${isVertical ? width * .5 : (inverted ? ((maxScrollSize - scrollSize) + width * .5 - this.startOffset) : (scrollSize + width * .5))}${PX} ${isVertical ? (inverted ? ((maxScrollSize - scrollSize) + height * .5) : (scrollSize + height * .5)) : height * .5}${PX}`
     });
   }
 
@@ -496,6 +488,7 @@ export class NgScrollerComponent extends NgScrollView {
       this._$viewportBounds.next(bounds);
       this.updateScrollBar();
       this._$resizeViewport.next(bounds);
+      this.recalculatePerspective();
     }
   }
 
@@ -512,6 +505,7 @@ export class NgScrollerComponent extends NgScrollView {
       this._$contentBounds.next(bounds);
       this.updateScrollBar();
       this._$resizeContent.next(bounds);
+      this.recalculatePerspective();
     }
   }
 
