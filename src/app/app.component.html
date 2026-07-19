@@ -4,7 +4,7 @@
     <p class="l m" style="margin-bottom: 0;">&#64;author: Evgenii Grebennikov</p>
     <p class="l m">djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 15.12.4</span></div>
+    <div class="version"><span>v 15.12.8</span></div>
   </div>
 
   <div class="vl-section">
@@ -17,6 +17,17 @@
         (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)" [selectedIds]="2"
         [selectByClick]="true" [scrollbarEnabled]="false" [scrollbarThickness]="6"
         (onScrollReachStart)="onScrollReachStartHandler()"
+        (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
+    </div>
+  </div>
+
+  <div class="vl-section">
+    <div class="vl-section__container">
+      <h2>Horizontal list (right-to-left)</h2>
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalItems" [bufferSize]="1" [maxBufferSize]="5"
+        selectingMode="select" [itemRenderer]="horizontalItemRenderer" [dynamicSize]="false" [itemSize]="54" langTextDir="rtl"
+        [motionBlurEnabled]="motionBlurEnabled" (onItemClick)="onItemClick($event)" (onSelect)="onSelectHandler($event)"
+        [selectedIds]="2" [selectByClick]="true" (onScrollReachStart)="onScrollReachStartHandler()" 
         (onScrollReachEnd)="onScrollReachEndHandler()"></ng-virtual-list>
     </div>
   </div>
@@ -50,7 +61,7 @@
   <div class="vl-section">
     <div class="vl-section__container">
       <h2>Horizontal group list (Multi select)</h2>
-      <ng-virtual-list class="list" langTextDir="rtl" direction="horizontal" [items]="horizontalGroupItems"
+      <ng-virtual-list class="list" direction="horizontal" [items]="horizontalGroupItems"
         [bufferSize]="1" [maxBufferSize]="5" selectingMode="multi-select" [itemRenderer]="horizontalGroupItemRenderer"
         [motionBlurEnabled]="motionBlurEnabled" [itemConfigMap]="horizontalGroupItemsStickyMap" [dynamicSize]="false"
         [itemSize]="54" [stickyEnabled]="true" [snapScrollToEnd]="false" (onItemClick)="onItemClick($event)"
