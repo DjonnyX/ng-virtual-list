@@ -5,7 +5,10 @@ import { BehaviorSubject, distinctUntilChanged, Subject, takeUntil, tap } from '
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
 import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
+import { TextDirection } from '../../../types';
+import { TextDirections } from '../../../enums';
 import { DisposableComponent } from '../../../utils/disposable-component';
+import { DEFAULT_LANG_TEXT_DIR } from '../../../const';
 
 /**
  * BaseScrollView
@@ -91,6 +94,20 @@ export class BaseScrollView extends DisposableComponent {
 
     protected _$grabbing = new BehaviorSubject<boolean>(false);
     readonly $grabbing = this._$grabbing.asObservable();
+    get grabbing() {
+        return this._$grabbing.getValue();
+    }
+
+    private _$langTextDir = new BehaviorSubject<TextDirection>(DEFAULT_LANG_TEXT_DIR);
+    readonly $langTextDir = this._$langTextDir.asObservable();
+
+    @Input()
+    set langTextDir(v: TextDirection) {
+        if (this._$langTextDir.getValue() !== v) {
+            this._$langTextDir.next(v);
+        }
+    }
+    get langTextDir() { return this._$langTextDir.getValue(); }
 
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
 
