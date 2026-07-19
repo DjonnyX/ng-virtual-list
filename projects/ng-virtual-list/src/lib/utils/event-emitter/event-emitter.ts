@@ -2,7 +2,7 @@ export type TEventHandler = (...args: Array<any>) => void;
 
 /**
  * Event emitter
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/library/src/utils/event-emitter/event-emitter.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/library/src/utils/event-emitter/event-emitter.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */

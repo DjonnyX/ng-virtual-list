@@ -21,6 +21,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
         measures: {
             position: 0,
             scrollSize: 0,
+            maxScrollSize: 0,
             size: itemSize,
             row: {
                 size: itemSize,
@@ -80,6 +81,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
             fullSize: false,
             layoutIndexOffset: 0,
             totalItems: 0,
+            inverted: false,
         },
     }
 }
@@ -88,7 +90,7 @@ const createItemData = (data: IVirtualListItem, isVertical: boolean, bounds: ISi
  * PrerenderTrackBox
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/prerender-container/core/prerender-track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/prerender-container/core/prerender-track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
