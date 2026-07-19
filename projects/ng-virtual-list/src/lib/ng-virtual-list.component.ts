@@ -1421,19 +1421,23 @@ export class NgVirtualListComponent implements OnDestroy {
       const { width, height } = this._bounds()!, { width: elementWidth, height: elementHeight } = element.getBoundingClientRect(),
         isVertical = this._isVertical,
         viewportSize = isVertical ? height : width,
+        maxPosition = isVertical ? scroller.scrollHeight : scroller.scrollWidth,
         elementSize = isVertical ? elementHeight : elementWidth;
       let pos: number = Number.NaN;
       switch (align) {
         case FocusAlignments.START: {
-          pos = position + scroller.startLayoutOffset;
+          const p = position + scroller.startLayoutOffset;
+          pos = scroller.inverted ? (maxPosition - p) : p;
           break;
         }
         case FocusAlignments.CENTER: {
-          pos = position - (viewportSize - elementSize) * .5 + scroller.startLayoutOffset;
+          const p = position - (viewportSize - elementSize) * .5 + scroller.startLayoutOffset;
+          pos = scroller.inverted ? (maxPosition - p) : p;
           break;
         }
         case FocusAlignments.END: {
-          pos = position - (viewportSize - elementSize) + scroller.startLayoutOffset;
+          const p = position - (viewportSize - elementSize) + scroller.startLayoutOffset;
+          pos = scroller.inverted ? (maxPosition - p) : p;
           break;
         }
         case FocusAlignments.NONE:
@@ -2318,10 +2322,21 @@ export class NgVirtualListComponent implements OnDestroy {
         distinctUntilChanged(),
         map(v => Array.isArray(v) ? v : []),
       ),
+      $langTextDir = toObservable(this.langTextDir),
       $itemTransform = toObservable(this.itemTransform),
       $screenReaderMessage = toObservable(this.screenReaderMessage),
       $displayItems = this._service.$displayItems,
       $cacheVersion = this._service.$cacheVersion;
+
+      combineLatest([$isVertical, $langTextDir, $itemTransform]).pipe(
+        takeUntilDestroyed(),
+        debounceTime(0),
+        tap(([isVertical, langTextDir, itemTransform]) => {
+          if (langTextDir === TextDirections.RTL && !isVertical && itemTransform) {
+            throw Error('Currently, converting right-to-left items in horizontal lists is not possible.');
+          }
+        }),
+      ).subscribe();
 
     $snapToItem.pipe(
       takeUntilDestroyed(),
@@ -2437,6 +2452,10 @@ export class NgVirtualListComponent implements OnDestroy {
         }
 
         const normalizedCollection = normalizeCollection(actualItems, itemConfigMap, trackBy, divides);
+
+        if (this._scrollerComponent()?.inverted) {
+          normalizedCollection.reverse();
+        }
 
         this._actualItems.set(normalizedCollection);
       }),
@@ -2640,28 +2659,30 @@ export class NgVirtualListComponent implements OnDestroy {
           fireUpdateAtEdges = fireUpdate || !isInfinity,
           useAnimations = !isInfinity && readyForAnimations && prevScrollable;
         if (this._readyForShow || (cachable && cached)) {
-          const currentScrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft);
-          let actualScrollSize = !this._readyForShow && snapScrollToEnd ? (isVertical ? scroller.scrollHeight : scroller.scrollWidth) :
+          const inverted = scroller.inverted,
+            currentScrollSize = (isVertical ? scroller.scrollTop : scroller.scrollLeft), maxScrollSize = (isVertical ? scroller.scrollHeight : scroller.scrollWidth);
+          let actualScrollSize = !this._readyForShow && snapScrollToEnd ? maxScrollSize :
             (isVertical ? scroller.scrollTop : scroller.scrollLeft),
             leftLayoutOffset = 0,
             displayItems: IRenderVirtualListCollection;
 
-          const { width, height } = bounds, viewportSize = (isVertical ? height : width),
+          const { width, height } = bounds,
             opts: IUpdateCollectionOptions<IVirtualListItem, IVirtualListCollection> = {
               alignment, bounds: { width, height }, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize, maxBufferSize,
-              scrollSize: actualScrollSize, stickyEnabled, enabledBufferOptimization, snapToItem, snapToItemAlign, itemTransform,
+              scrollSize: inverted ? maxScrollSize - actualScrollSize : actualScrollSize, stickyEnabled, enabledBufferOptimization,
+              snapToItem, snapToItemAlign, inverted, itemTransform,
             };
 
           if (snapScrollToEnd && !this._readyForShow) {
             const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1, leftLayoutOffset: leftLayoutOffset1 } =
-              this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize });
+              this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: inverted ? maxScrollSize - actualScrollSize : actualScrollSize });
             displayItems = calculatedDisplayItems;
             totalSize = calculatedTotalSize1;
             leftLayoutOffset = leftLayoutOffset1;
 
             if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
               const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize1, leftLayoutOffset: leftLayoutOffset1 } =
-                this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+                this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: inverted ? (maxScrollSize - actualScrollSize + this._trackBox.delta) : (actualScrollSize + this._trackBox.delta) });
               displayItems = calculatedDisplayItems;
               totalSize = calculatedTotalSize1;
               leftLayoutOffset = leftLayoutOffset1;
@@ -2673,7 +2694,8 @@ export class NgVirtualListComponent implements OnDestroy {
             leftLayoutOffset = leftLayoutOffset1;
 
             if (!!itemTransform && dynamicSize && this._trackBox.delta !== 0) {
-              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap, { ...opts, scrollSize: actualScrollSize + this._trackBox.delta });
+              const { displayItems: calculatedDisplayItems, totalSize: calculatedTotalSize, leftLayoutOffset: leftLayoutOffset1 } = this._trackBox.updateCollection(items, itemConfigMap,
+                { ...opts, scrollSize: inverted ? (maxScrollSize - actualScrollSize + this._trackBox.delta) : (actualScrollSize + this._trackBox.delta) });
               displayItems = calculatedDisplayItems;
               totalSize = calculatedTotalSize;
               leftLayoutOffset = leftLayoutOffset1;
@@ -3006,18 +3028,20 @@ export class NgVirtualListComponent implements OnDestroy {
             if (dynamicSize) {
               const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
                 itemConfigMap = this.itemConfigMap(), isVertical = this._isVertical,
+                inverted = scrollerComponent.inverted,
+                maxScrollSize = isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth,
                 currentScrollSize = isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft,
                 opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
-                  alignment: this.actualAlignment(),
+                  alignment: this.actualAlignment(), inverted,
                   bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                   bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(), itemTransform: this.itemTransform(),
-                  scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+                  scrollSize: (inverted ? (maxScrollSize - currentScrollSize) : currentScrollSize),
                   snapToItem: this.snapToItem(), snapToItemAlign: this.snapToItemAlign(),
                   stickyEnabled: this.stickyEnabled(), fromItemId: id, enabledBufferOptimization: this.enabledBufferOptimization(),
                 };
 
               let scrollSize = snapScrollToEnd && this._trackBox.isSnappedToEnd ?
-                (isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth) :
+                maxScrollSize :
                 this._trackBox.getItemPosition(id, itemConfigMap, opts);
 
               if (scrollSize === -1) {
@@ -3028,7 +3052,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
               const viewportSize = (isVertical ? height : width),
                 { displayItems, totalSize, leftLayoutOffset } = this._trackBox.updateCollection(items, itemConfigMap, {
-                  ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
+                  ...opts, scrollSize: (inverted ? (maxScrollSize - scrollSize) : scrollSize), fromItemId: isLastIteration ? undefined : id,
                 }), delta1 = this._trackBox.delta;
 
               const normalizedTotalSize = totalSize < viewportSize ? viewportSize : totalSize;
@@ -3051,7 +3075,7 @@ export class NgVirtualListComponent implements OnDestroy {
 
               this.updateOffsetsByAllignment();
 
-              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: actualScrollSize, fromItemId: id });
+              scrollSize = this._trackBox.getItemPosition(id, itemConfigMap, { ...opts, scrollSize: (inverted ? (maxScrollSize - actualScrollSize) : actualScrollSize), fromItemId: id });
 
               if (scrollSize === -1) {
                 return of([finished, { id, blending, iteration: nextIteration, cb }]).pipe(delay(0));
@@ -3092,11 +3116,14 @@ export class NgVirtualListComponent implements OnDestroy {
 
                 const { width, height } = this._bounds() || { width: DEFAULT_LIST_SIZE, height: DEFAULT_LIST_SIZE },
                   itemConfigMap = this.itemConfigMap(), items = this._actualItems(),
+                  inverted = scrollerComponent.inverted,
+                  maxScrollSize = (isVertical ? scrollerComponent.scrollHeight : scrollerComponent.scrollWidth),
+                  actualScrollSize = (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
                   opts: IGetItemPositionOptions<IVirtualListItem, IVirtualListCollection> = {
-                    alignment: this._actualAlignment(),
+                    alignment: this._actualAlignment(), inverted,
                     bounds: { width, height }, collection: items, dynamicSize, isVertical: this._isVertical, itemSize, minItemSize, maxItemSize,
                     bufferSize: this.bufferSize(), maxBufferSize: this.maxBufferSize(), itemTransform: this.itemTransform(),
-                    scrollSize: (isVertical ? scrollerComponent.scrollTop : scrollerComponent.scrollLeft),
+                    scrollSize: (inverted ? (maxScrollSize - actualScrollSize) : actualScrollSize),
                     snapToItem, snapToItemAlign, stickyEnabled: this.stickyEnabled(), fromItemId: id,
                     enabledBufferOptimization: this.enabledBufferOptimization(),
                   };
@@ -3105,7 +3132,8 @@ export class NgVirtualListComponent implements OnDestroy {
 
                 const viewportSize = (isVertical ? height : width),
                   { displayItems, totalSize, leftLayoutOffset } = this._trackBox.updateCollection(items, itemConfigMap, {
-                    ...opts, scrollSize, fromItemId: isLastIteration ? undefined : id,
+                    ...opts, scrollSize: (inverted ? (maxScrollSize - scrollSize) : scrollSize),
+                    fromItemId: isLastIteration ? undefined : id,
                   });
 
                 const actualTotalSize = this._isInfinity() ? (totalSize + viewportSize) : totalSize;
