@@ -33,9 +33,6 @@ export class NgPrerenderScrollerComponent extends BaseScrollView {
     @ViewChild('scrollBar', { read: NgScrollBarComponent })
     scrollBar: NgScrollBarComponent | undefined;
 
-    protected _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
-    readonly $langTextDir = this._$langTextDir.asObservable();
-
     protected _$scrollbarEnabled = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_ENABLED);
     readonly $scrollbarEnabled = this._$scrollbarEnabled.asObservable();
     @Input()

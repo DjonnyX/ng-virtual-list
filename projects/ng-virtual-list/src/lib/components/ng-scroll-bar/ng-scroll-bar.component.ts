@@ -4,7 +4,7 @@ import { GradientColorPositions } from '../../types/gradient-color-positions';
 import { NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent, IScrollBarTemplateContext } from './interfaces';
 import {
-  DEFAULT_LANG_TEXT_DIR, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_INTERACTIVE, LEFT, POSITION, POSITION_ABSOLUTE,
+  DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_INTERACTIVE, LEFT, POSITION, POSITION_ABSOLUTE,
   POSITION_RELATIVE, RIGHT, SIZE_100_PERSENT, SIZE_AUTO, UNSET,
 } from '../../const';
 import {
@@ -15,7 +15,6 @@ import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED }
 import { NgScrollBarService } from './ng-scroll-bar.service';
 import { NgScrollBarPublicService } from './ng-scroll-bar-public.service';
 import { ScrollbarStates } from './enums';
-import { TextDirection } from '../../types';
 import { TextDirections } from '../../enums';
 
 /**
@@ -116,17 +115,6 @@ export class NgScrollBarComponent extends NgScrollView {
     }
   }
   get prepared() { return this._$prepared.getValue(); }
-
-  private _$langTextDir = new BehaviorSubject<TextDirection>(DEFAULT_LANG_TEXT_DIR);
-  readonly $langTextDir = this._$langTextDir.asObservable();
-
-  @Input()
-  set langTextDir(v: TextDirection) {
-    if (this._$langTextDir.getValue() !== v) {
-      this._$langTextDir.next(v);
-    }
-  }
-  get langTextDir() { return this._$langTextDir.getValue(); }
 
   private _$interactive = new BehaviorSubject<boolean>(DEFAULT_SCROLLBAR_INTERACTIVE);
   readonly $interactive = this._$interactive.asObservable();
@@ -424,7 +412,7 @@ export class NgScrollBarComponent extends NgScrollView {
 
   private createDragEvent(userAction: boolean) {
     const isVertical = this._$isVertical.getValue(), scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-      scrollPosition = isVertical ? this.scrollTop : this.scrollLeft,
+      scrollPosition = isVertical ? this.y : this.x,
       startOffset = this.startOffset, endOffset = this.endOffset,
       scrollContent = this.scrollContent?.nativeElement as HTMLElement,
       scrollViewport = this.scrollViewport?.nativeElement as HTMLDivElement;
