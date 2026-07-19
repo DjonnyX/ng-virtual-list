@@ -2,6 +2,7 @@
 @let scrollEndOffset = _actualScrollEndOffset();
 @let alignmentScrollStartOffset = _alignmentScrollStartOffset();
 @let alignmentScrollEndOffset = _alignmentScrollEndOffset();
+@let textDir = langTextDir();
 
 <div aria-live="polite" aria-atomic="true" class="ngvl__screen-reader">
   {{ screenReaderFormattedMessage() }}
@@ -13,7 +14,7 @@
   [scrollbarEnabled]="scroller.scrollbarShow()" [enabled]="dynamicSize() && snapScrollToEnd()" />
 
 @if (stickyEnabled()) {
-  <div localeSensitive [langTextDir]="langTextDir()" #snappedContainer class="ngvl__snapped-container"
+  <div localeSensitive [langTextDir]="textDir" #snappedContainer class="ngvl__snapped-container"
     [ngClass]="classes()">
     <div #snapped part="snapped-item" class="ngvl__list-snapper">
       <ng-container #snapRendererContainer></ng-container>
@@ -21,7 +22,7 @@
   </div>
 }
 
-<ng-scroller #scroller class="ngvl__list-scroller" [classes]="classes()" [startOffset]="scrollStartOffset"
+<ng-scroller #scroller class="ngvl__list-scroller" [langTextDir]="textDir" [classes]="classes()" [startOffset]="scrollStartOffset"
   [endOffset]="scrollEndOffset" [alignmentStartOffset]="alignmentScrollStartOffset" [alignmentEndOffset]="alignmentScrollEndOffset"
   [direction]="direction()" [scrollbarThumbRenderer]="scrollbarThumbRenderer()" [isInfinity]="_isInfinity()"
   [scrollbarThickness]="scrollbarThickness()" [scrollbarThumbParams]="scrollbarThumbParams()"
