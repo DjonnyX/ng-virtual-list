@@ -19,7 +19,7 @@
     </svg>
     @if (scrollbarEnabled()) {
         @let prepared = preparedSignal();
-        <ng-scroll-bar #scrollBar [direction]="direction()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
+        <ng-scroll-bar #scrollBar [direction]="direction()" [langTextDir]="langTextDir()" [size]="thumbSize()" [renderer]="scrollbarThumbRenderer()"
             [thickness]="scrollbarThickness()" [params]="scrollbarThumbParams()" [loading]="loading()" [overlapping]="overlappingScrollbar()"
             [thumbGradientPositions]="thumbGradientPositions()" [prepared]="prepared" [interactive]="scrollbarInteractive()"
             [show]="scrollbarShow() && scrollbarEnabled() && prepared" [startOffset]="startOffset()" [langTextDir]="langTextDir()"
