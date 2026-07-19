@@ -5,14 +5,15 @@ import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scrol
 import { isDirection } from '../../utils/is-direction';
 import { TextDirection } from '../../types';
 
-const RIGHT = 'right',
+const LEFT = 'left',
+  RIGHT = 'right',
   DIR = 'dir';
 
 /**
  * LocaleSensitiveDirective
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/directives/locale-sensitive/locale-sensitive.directive.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -20,7 +21,7 @@ const RIGHT = 'right',
   selector: '[localeSensitive]',
   standalone: false,
 })
-export class LocaleSensitiveDirective implements OnDestroy {
+export class LocaleSensitiveDirective {
   protected _$unsubscribe = new Subject<void>();
 
   private _$langTextDir = new BehaviorSubject<TextDirection>(TextDirections.LTR);
@@ -49,14 +50,14 @@ export class LocaleSensitiveDirective implements OnDestroy {
     combineLatest([$langTextDir, $listDir]).pipe(
       takeUntil(this._$unsubscribe),
       tap(([dir, listDir]) => {
-        const element = this._elementRef.nativeElement as HTMLElement,
-          isVertical = isDirection(listDir!, ScrollerDirection.VERTICAL);
-        element.setAttribute(DIR, isVertical ? dir : TextDirections.LTR);
-        if (dir === TextDirections.RTL && isVertical) {
+        const element = this._elementRef.nativeElement as HTMLElement;
+        element.setAttribute(DIR, dir);
+        if (dir === TextDirections.RTL) {
           element.style.textAlign = RIGHT;
           element.classList.add(TextDirections.RTL);
           element.classList.remove(TextDirections.LTR);
         } else {
+          element.style.textAlign = LEFT;
           element.classList.add(TextDirections.LTR);
           element.classList.remove(TextDirections.RTL);
         }

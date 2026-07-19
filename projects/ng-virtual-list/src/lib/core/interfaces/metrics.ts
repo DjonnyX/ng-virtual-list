@@ -4,12 +4,13 @@ import { IItem } from "./item";
 
 /**
  * IMetrics
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/core/interfaces/metrics.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/core/interfaces/metrics.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
 export interface IMetrics<I extends IItem> {
     delta: number;
+    inverted: boolean;
     normalizedItemWidth: number;
     normalizedItemHeight: number;
     width: number;
@@ -34,6 +35,7 @@ export interface IMetrics<I extends IItem> {
     rightItemLength: number;
     rightItemsWeight: number;
     scrollSize: number;
+    maxScrollSize: number;
     leftSizeOfAddedItems: number;
     sizeProperty: typeof HEIGHT_PROP_NAME | typeof WIDTH_PROP_NAME;
     stickyEnabled: boolean;

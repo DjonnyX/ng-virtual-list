@@ -34,7 +34,7 @@ import { Alignments } from "../enums";
 
 /**
  * An object that performs tracking, calculations and caching.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/core/track-box.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/core/track-box.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -529,7 +529,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
     protected recalculateMetrics<I extends IItem, C extends Array<I>>(options: IRecalculateMetricsOptions<I, C>): IMetrics<I> {
         const { alignment, fromItemId, bounds, collection, dynamicSize, isVertical, itemSize, minItemSize, maxItemSize, bufferSize: minBufferSize,
             scrollSize, stickyEnabled, itemConfigMap, enabledBufferOptimization, previousTotalSize, snapToItem, snapToItemAlign,
-            deletedItemsMap, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
+            deletedItemsMap, inverted, itemTransform } = options as IRecalculateMetricsOptions<I, C> & {
                 itemConfigMap: IVirtualListItemConfigMap,
             }, roundedScrollSize = Math.round(scrollSize);
 
@@ -1075,6 +1075,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             rightItemLength,
             rightItemsWeight,
             scrollSize: actualScrollSize,
+            maxScrollSize: totalSize,
             leftSizeOfAddedItems,
             sizeProperty,
             stickyEnabled,
@@ -1089,6 +1090,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             isUpdating,
             snapToItem,
             snapToItemAlign,
+            inverted,
             itemTransform,
         };
 
@@ -1161,6 +1163,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             leftLayoutIndexOffset: layoutIndexOffset,
             renderItems: renderItemsLength,
             scrollSize,
+            maxScrollSize,
             sizeProperty,
             stickyEnabled,
             stickyPos,
@@ -1172,6 +1175,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
             maxItemSize,
             snapToItem,
             snapToItemAlign,
+            inverted,
             itemTransform,
         } = metrics,
             displayItems: IRenderVirtualListCollection = [];
@@ -1235,6 +1239,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 position: pos,
                                 boundsSize,
                                 scrollSize,
+                                maxScrollSize,
                                 absoluteStartPosition,
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
@@ -1265,6 +1270,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 tabIndex: i - layoutIndexOffset,
                                 divides,
                                 opacity: 1,
+                                inverted,
                                 zIndex: Z_INDEX_1,
                             };
 
@@ -1328,6 +1334,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 position: pos,
                                 boundsSize,
                                 scrollSize,
+                                maxScrollSize,
                                 absoluteStartPosition,
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
@@ -1364,6 +1371,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 tabIndex: i - layoutIndexOffset,
                                 divides,
                                 opacity: 1,
+                                inverted,
                                 zIndex: Z_INDEX_1,
                             };
 
@@ -1453,6 +1461,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 position: pos,
                                 boundsSize,
                                 scrollSize,
+                                maxScrollSize,
                                 absoluteStartPosition,
                                 absoluteStartPositionPercent,
                                 absoluteEndPosition,
@@ -1491,6 +1500,7 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
                                 opacity: 1,
                                 zIndex: Z_INDEX_0,
                                 fullSize,
+                                inverted,
                             };
 
                         if (snapped) {
@@ -1652,21 +1662,24 @@ export class TrackBox<C extends BaseVirtualListItemComponent = any>
         if (!!components) {
             for (const comp of components) {
                 const id = comp.instance.itemId ?? null, isVertical = comp.instance.item?.config?.isVertical,
+                    inverted = comp.instance.item?.config.inverted ?? false,
+                    maxScrollSize = comp.instance.item?.measures.maxScrollSize ?? 0,
+                    { width, height } = comp.instance.getBounds(),
                     x = comp.instance.item?.measures?.x ?? 0,
+                    xx = inverted ? (maxScrollSize - x) - width : x,
                     y = comp.instance.item?.measures?.y ?? 0,
                     isFirst = comp.instance.item?.config?.isFirst ?? false,
                     isLast = comp.instance.item?.config?.isLast ?? false,
-                    { width, height } = comp.instance.getBounds(),
                     pos = position;
                 if (isVertical && (pos >= y && pos < y + height)) {
                     return { id, x, y, width, height, isFirst, isLast };
-                } else if (!isVertical && (pos >= x && pos < x + width)) {
-                    return { id, x, y, width, height, isFirst, isLast };
+                } else if (!isVertical && (pos >= xx && pos < xx + width)) {
+                    return { id, x: xx, y, width, height, isFirst, isLast };
                 }
                 if (isFirst) {
-                    first = { id, x, y, width, height, isFirst, isLast };
+                    first = { id, x: xx, y, width, height, isFirst, isLast };
                 } else if (isLast) {
-                    last = { id, x, y, width, height, isFirst, isLast };
+                    last = { id, x: xx, y, width, height, isFirst, isLast };
                 }
             }
         }
