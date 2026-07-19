@@ -5,6 +5,8 @@ import { Subject } from 'rxjs';
 import { ScrollerDirection, ScrollerDirections } from '../enums';
 import { ISize } from '../../../interfaces';
 import { SCROLL_VIEW_INVERSION, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../const';
+import { TextDirection } from '../../../types';
+import { TextDirections } from '../../../enums';
 
 /**
  * BaseScrollView
@@ -38,6 +40,8 @@ export class BaseScrollView {
     readonly isVertical: Signal<boolean>;
 
     readonly grabbing = signal<boolean>(false);
+
+    readonly langTextDir = input<TextDirection>(TextDirections.LTR);
 
     protected _inversion = inject(SCROLL_VIEW_INVERSION);
 

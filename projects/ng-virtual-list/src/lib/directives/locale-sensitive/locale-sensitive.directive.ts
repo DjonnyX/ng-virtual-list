@@ -4,9 +4,9 @@ import { combineLatest, tap } from 'rxjs';
 import { TextDirections } from '../../enums';
 import { TextDirection } from '../../types';
 import { ScrollerDirection, ScrollerDirections } from '../../components/ng-scroller/enums';
-import { isDirection } from '../../utils/is-direction';
 
-const RIGHT = 'right',
+const LEFT = 'left',
+  RIGHT = 'right',
   DIR = 'dir';
 
 /**
@@ -35,14 +35,14 @@ export class LocaleSensitiveDirective {
     combineLatest([$langTextDir, $listDir]).pipe(
       takeUntilDestroyed(),
       tap(([dir, listDir]) => {
-        const element = this._elementRef.nativeElement as HTMLElement,
-          isVertical = isDirection(listDir, ScrollerDirection.VERTICAL);
-        element.setAttribute(DIR, isVertical ? dir : TextDirections.LTR);
-        if (dir === TextDirections.RTL && isVertical) {
+        const element = this._elementRef.nativeElement as HTMLElement;
+        element.setAttribute(DIR, dir);
+        if (dir === TextDirections.RTL) {
           element.style.textAlign = RIGHT;
           element.classList.add(TextDirections.RTL);
           element.classList.remove(TextDirections.LTR);
         } else {
+          element.style.textAlign = LEFT;
           element.classList.add(TextDirections.LTR);
           element.classList.remove(TextDirections.RTL);
         }

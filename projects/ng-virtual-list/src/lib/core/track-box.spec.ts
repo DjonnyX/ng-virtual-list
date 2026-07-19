@@ -53,6 +53,7 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             delta: 0,
             position: 0,
             scrollSize: 0,
+            maxScrollSize: 0,
             size: 0,
             boundsSize: 0,
             absoluteStartPosition: 0,
@@ -105,6 +106,7 @@ const generateItem = (id: Id): IRenderVirtualListItem => {
             fullSize: false,
             layoutIndexOffset: 0,
             totalItems: 0,
+            inverted: false,
         },
         previouseData: undefined,
         nextData: undefined,
@@ -156,6 +158,8 @@ describe('TrackBox', () => {
             itemTransform: null,
             snapToItem: false,
             snapToItemAlign: SnapToItemAligns.START,
+            alignment: 'none',
+            inverted: false,
         });
         expect(trackBox.isReseted).toBeTruthy();
     });
@@ -258,6 +262,7 @@ describe('TrackBox', () => {
                 rightItemLength: 0,
                 rightItemsWeight: 0,
                 scrollSize,
+                maxScrollSize: 0,
                 leftSizeOfAddedItems: 0,
                 leftLayoutOffset: 0,
                 leftLayoutIndexOffset: 0,
@@ -279,6 +284,7 @@ describe('TrackBox', () => {
                 snapToItem: false,
                 snapToItemAlign: SnapToItemAligns.START,
                 items: [],
+                inverted: false,
             };
             return metric;
         }

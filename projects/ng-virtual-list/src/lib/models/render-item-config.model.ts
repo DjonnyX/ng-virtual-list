@@ -117,4 +117,8 @@ export interface IRenderVirtualListItemConfig {
      * Number of elements in the collection to be visualized.
      */
     totalItems: number;
+    /**
+     * Indicates layout inversion.
+     */
+    inverted: boolean;
 }
