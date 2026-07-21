@@ -343,11 +343,13 @@ export class NgScrollView extends BaseScrollView {
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
-                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
-                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
-                                    startClientPos -= offset;
+                                if (this.isInfinity()) {
+                                    const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                        scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                        viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                    if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
+                                        startClientPos -= offset;
+                                    }
                                 }
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
@@ -471,11 +473,13 @@ export class NgScrollView extends BaseScrollView {
                                     this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
                                 prevClientPosition = currentPos;
                                 this.move(isVertical, position, true, true, true);
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
-                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
-                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
-                                    startClientPos -= offset;
+                                if (this.isInfinity()) {
+                                    const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                        scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                        viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                    if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
+                                        startClientPos -= offset;
+                                    }
                                 }
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
