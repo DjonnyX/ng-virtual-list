@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, of, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, TextDirection } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
@@ -25,7 +25,7 @@ export const SCROLL_EVENT = new Event(SCROLLER_SCROLL);
  * The scroller for the NgVirtualList item component
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/components/ng-scroller/ng-scroller.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/components/ng-scroller/ng-scroller.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -337,6 +337,22 @@ export class NgScrollerComponent extends NgScrollView {
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
+    this.$resizeViewport.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      tap(() => {
+        this.snapIfNeed();
+      }),
+      switchMap(() => {
+        return this.$scroll.pipe(
+          takeUntil(this._$unsubscribe),
+          take(1),
+          tap(() => {
+            this.snapIfNeed();
+          }),
+        );
+      }),
+    ).subscribe();
 
     const $filter = of(this.filter),
       $motionBlur = this.$motionBlur,

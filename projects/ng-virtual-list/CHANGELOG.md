@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [17.12.9] - 2026-07-22
+
+### Fixed
+- Fix rendering errors when focusing an element after pressing the tab key.
+- Fix keyboard navigation issues with right-to-left list.
+- Fix snapping of elements when resizing the list.
+- Fix cancellation of scroll handler when scrollbar reaches its initial position. Similar to ng-virtual-scroll-view.
+- Fix scrolling of parent control in list view when scrolling in opposite direction. Similar to ng-virtual-scroll-view
+- Fix bugs with unintentional scrolling shifts when handling touches.
+
 ## [17.12.8] - 2026-07-19
 
 ### Fixed
