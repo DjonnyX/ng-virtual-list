@@ -77,7 +77,7 @@ import { DisposableComponent } from './utils/disposable-component';
  * Virtual list component.
  * Maximum performance for extremely large lists.
  * It is based on algorithms for virtualization of screen objects.
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/ng-virtual-list.component.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
@@ -1472,7 +1472,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
    * `collapsable` determines whether an element with a `sticky` property greater than zero can collapse and
    *  collapse elements in front that do not have a `sticky` property.
    * `fullSize` determines the size of an element when rendering lists with cell divisions. If sticky is 1 or 2, fullSize automatically becomes true. The default value is false.
-   * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
+   * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/models/item-config-map.model.ts
    * @author Evgenii Alexandrovich Grebennikov
    * @email djonnyx@gmail.com
    */
@@ -2089,7 +2089,7 @@ export class NgVirtualListComponent extends DisposableComponent implements OnDes
         this._trackBox.preventScrollSnapping(true);
         const params: IScrollToParams = {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior, snap: false, normalize: true,
-          fireUpdate: false, blending: false, userAction: false,
+          fireUpdate: true, blending: false, userAction: false,
           duration: this.snapToItem ? Math.max(this.animationParams.scrollToItem, this.animationParams.navigateToItem) : this.animationParams.navigateToItem,
         };
         scroller.scrollTo(params);

@@ -3,7 +3,7 @@ import { ScrollDirection } from "../types";
 
 /**
  * Measures for IRenderVirtualListItem
- * @link https://github.com/DjonnyX/ng-virtual-list/blob/14.x/projects/ng-virtual-list/src/lib/models/render-item-measures.model.ts
+ * @link https://github.com/DjonnyX/ng-virtual-list/blob/17.x/projects/ng-virtual-list/src/lib/models/render-item-measures.model.ts
  * @author Evgenii Alexandrovich Grebennikov
  * @email djonnyx@gmail.com
  */
