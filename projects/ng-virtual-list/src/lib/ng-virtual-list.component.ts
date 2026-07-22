@@ -1449,7 +1449,7 @@ export class NgVirtualListComponent implements OnDestroy {
         this._trackBox.preventScrollSnapping(true);
         const params: IScrollToParams = {
           [this._isVertical ? TOP_PROP_NAME : LEFT_PROP_NAME]: pos, behavior, snap: false, normalize: true,
-          fireUpdate: false, blending: false, userAction: false,
+          fireUpdate: true, blending: false, userAction: false,
           duration: this.snapToItem() ? Math.max(this.animationParams().scrollToItem, this.animationParams().navigateToItem) : this.animationParams().navigateToItem,
         };
         scroller.scrollTo(params);
