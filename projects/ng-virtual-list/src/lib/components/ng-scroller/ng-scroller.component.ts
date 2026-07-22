@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, Output, TemplateRef, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, of, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, filter, from, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import { ScrollBox } from './utils';
 import { Id, TextDirection } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
@@ -337,6 +337,22 @@ export class NgScrollerComponent extends NgScrollView {
 
   override ngAfterViewInit(): void {
     super.ngAfterViewInit();
+    this.$resizeViewport.pipe(
+      takeUntil(this._$unsubscribe),
+      debounceTime(0),
+      tap(() => {
+        this.snapIfNeed();
+      }),
+      switchMap(() => {
+        return this.$scroll.pipe(
+          takeUntil(this._$unsubscribe),
+          take(1),
+          tap(() => {
+            this.snapIfNeed();
+          }),
+        );
+      }),
+    ).subscribe();
 
     const $filter = of(this.filter),
       $motionBlur = this.$motionBlur,
