@@ -13,7 +13,8 @@ import {
 import { IScrollToParams } from './interfaces';
 import {
     ACCELERATION_SCALE, ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
-    MAX_VELOCITY_TIMESTAMP, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+    MAX_VELOCITY_TIMESTAMP, MAX_VELOCITIES_LENGTH, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+    MIN_ACCELERATION, MIN_DELTA,
 } from './const';
 import { calculateDirection, matrix3d } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -94,7 +95,28 @@ export class NgScrollView extends BaseScrollView {
 
     private _measureVelocityLastPosition: number = this.isVertical() ? this._y : this._x;
 
-    private _startPosition = 0;
+    private _startPositionX = 0;
+
+    private _startPositionY = 0;
+
+    set startPosition(v: number) {
+        const isVertical = this.isVertical(),
+            c = isVertical ? this._startPositionY : this._startPositionX;
+        if (v !== c) {
+            if (isVertical) {
+                this._startPositionY = v;
+            } else {
+                this._startPositionX = v;
+            }
+        }
+    }
+
+    get startPosition() {
+        if (this.isVertical()) {
+            return this._startPositionY;
+        }
+        return this._startPositionX;
+    }
 
     protected _animator = new Animator();
 
@@ -105,6 +127,10 @@ export class NgScrollView extends BaseScrollView {
     get inverted() { return this._horizontalAxisInvertion(); }
 
     private _overscrollIteration: number = 0;
+
+    private _overscrollStartIteration = 0;
+
+    private _overscrollApplied = false;
 
     override set x(v: number) {
         this.setX(v);
@@ -159,7 +185,7 @@ export class NgScrollView extends BaseScrollView {
     protected _delta: number = 0;
     set delta(v: number) {
         this._delta = v;
-        this._startPosition += v;
+        this.startPosition += v;
     }
 
     override set startLayoutOffset(v: number) {
@@ -170,6 +196,10 @@ export class NgScrollView extends BaseScrollView {
         }
     }
     override get startLayoutOffset() { return this._startLayoutOffset; }
+
+    private _scrollDirectionValueX: number = 0;
+
+    private _scrollDirectionValueY: number = 0;
 
     protected _intersectionComponentId: Id | null = null;
 
@@ -214,7 +244,10 @@ export class NgScrollView extends BaseScrollView {
             debounceTime(100),
             tap(v => {
                 this.snapWithInitialForceIfNecessary(v);
+                this._overscrollIteration = this._overscrollStartIteration = 0;
+                this._overscrollApplied = false;
                 this._scrollDirection.clear();
+                this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
             }),
         ).subscribe();
 
@@ -237,7 +270,7 @@ export class NgScrollView extends BaseScrollView {
                     tap(e => {
                         const isVertical = this.isVertical();
                         this.emitScrollableEvent();
-                        this.checkOverscroll(e);
+                        this.checkOverscroll(e, true);
                         this.stopScrolling(true);
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this._y : this._x,
@@ -314,7 +347,10 @@ export class NgScrollView extends BaseScrollView {
                     filter(v => this._interactive),
                     switchMap(e => {
                         mouseCanceled = false;
+                        this._overscrollStartIteration = 0;
+                        this._overscrollApplied = false;
                         this._scrollDirection.clear();
+                        this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling(true);
@@ -326,11 +362,16 @@ export class NgScrollView extends BaseScrollView {
                         const inversion = this._inversion, isVertical = this.isVertical();
                         this._isMoving = true;
                         this.grabbing.set(true);
-                        this._startPosition = (isVertical ? this.y : this.x);
-                        let prevClientPosition = (isVertical ? e.clientY : e.clientX) * (this._horizontalAxisInvertion() ? -1 : 1),
-                            startClientPos = prevClientPosition,
-                            offsets = new Array<[number, number]>(),
-                            velocities = new Array<[number, number]>(),
+                        this._startPositionX = this.x;
+                        this._startPositionY = this.y;
+                        let prevClientPositionX: number | null = (e.clientX) * (this._horizontalAxisInvertion() ? -1 : 1),
+                            prevClientPositionY: number | null = e.clientY,
+                            startClientPosX = prevClientPositionX,
+                            startClientPosY = prevClientPositionY,
+                            offsetsX = new Array<[number, number]>(),
+                            offsetsY = new Array<[number, number]>(),
+                            velocitiesX = new Array<[number, number]>(),
+                            velocitiesY = new Array<[number, number]>(),
                             startTime = Date.now();
                         return fromEvent<MouseEvent>(window, MOUSE_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
@@ -339,15 +380,27 @@ export class NgScrollView extends BaseScrollView {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
-                                const { position, currentPos, endTime, scrollDelta } =
-                                    this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                prevClientPosition = currentPos;
+                                const { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
+                                    this.calculatePosition(false, true, this._horizontalAxisInvertion(), e, inversion, startClientPosX, startTime, prevClientPositionX, offsetsX, velocitiesX),
+                                    { position: positionY, currentPos: currentPosY, scrollDelta: scrollDeltaY } =
+                                        this.calculatePosition(true, true, false, e, inversion, startClientPosY, startTime, prevClientPositionY, offsetsY, velocitiesY),
+                                    position = isVertical ? positionY : positionX;
+                                prevClientPositionX = currentPosX;
+                                prevClientPositionY = currentPosY;
+                                this._scrollDirectionValueX += Math.abs(scrollDeltaX);
+                                this._scrollDirectionValueY += Math.abs(scrollDeltaY);
                                 this.move(isVertical, position, true, true, true);
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
-                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
-                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
-                                    startClientPos -= offset;
+                                if (this.isInfinity()) {
+                                    const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                        scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                        viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                    if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
+                                        if (isVertical) {
+                                            startClientPosY -= offset;
+                                        } else {
+                                            startClientPosX -= offset;
+                                        }
+                                    }
                                 }
                                 startTime = endTime;
                                 return race([fromEvent<MouseEvent>(window, MOUSE_UP, { passive: false }), fromEvent<MouseEvent>(content, MOUSE_UP, { passive: false })]).pipe(
@@ -358,8 +411,8 @@ export class NgScrollView extends BaseScrollView {
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
-                                            { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
-                                            { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
+                                            { v0 } = this.calculateVelocity(isVertical ? offsetsY : offsetsX, isVertical ? scrollDeltaY : scrollDeltaX, timestamp),
+                                            { a0 } = this.calculateAcceleration(isVertical ? velocitiesY : velocitiesX, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
@@ -443,7 +496,10 @@ export class NgScrollView extends BaseScrollView {
                     filter(() => this._interactive),
                     switchMap(e => {
                         touchCanceled = false;
+                        this._overscrollStartIteration = 0;
+                        this._overscrollApplied = false;
                         this._scrollDirection.clear();
+                        this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
                         this.cancelOverscroll();
                         this.onDragStart();
                         this.stopScrolling(true);
@@ -455,10 +511,16 @@ export class NgScrollView extends BaseScrollView {
                         const inversion = this._inversion, isVertical = this.isVertical();
                         this._isMoving = true;
                         this.grabbing.set(true);
-                        this._startPosition = (isVertical ? this.y : this.x);
-                        let prevClientPosition = (isVertical ? e.touches[e.touches.length - 1].clientY : e.touches[e.touches.length - 1].clientX) * (this._horizontalAxisInvertion() ? -1 : 1),
-                            startClientPos = prevClientPosition,
-                            offsets = new Array<[number, number]>(), velocities = new Array<[number, number]>(),
+                        this._startPositionX = this.x;
+                        this._startPositionY = this.y;
+                        let prevClientPositionX: number | null = (e.touches[e.touches.length - 1].clientX) * (this._horizontalAxisInvertion() ? -1 : 1),
+                            prevClientPositionY: number | null = e.touches[e.touches.length - 1].clientY,
+                            startClientPosX = prevClientPositionX,
+                            startClientPosY = prevClientPositionY,
+                            offsetsX = new Array<[number, number]>(),
+                            offsetsY = new Array<[number, number]>(),
+                            velocitiesX = new Array<[number, number]>(),
+                            velocitiesY = new Array<[number, number]>(),
                             startTime = Date.now();
                         return fromEvent<TouchEvent>(window, TOUCH_MOVE, { passive: false }).pipe(
                             takeUntilDestroyed(this._destroyRef),
@@ -467,15 +529,27 @@ export class NgScrollView extends BaseScrollView {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
-                                const { position, currentPos, endTime, scrollDelta } =
-                                    this.calculatePosition(isVertical, e, inversion, startClientPos, startTime, prevClientPosition, offsets, velocities);
-                                prevClientPosition = currentPos;
+                                const { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
+                                    this.calculatePosition(false, true, this._horizontalAxisInvertion(), e, inversion, startClientPosX, startTime, prevClientPositionX, offsetsX, velocitiesX),
+                                    { position: positionY, currentPos: currentPosY, scrollDelta: scrollDeltaY } =
+                                        this.calculatePosition(true, true, false, e, inversion, startClientPosY, startTime, prevClientPositionY, offsetsY, velocitiesY),
+                                    position = isVertical ? positionY : positionX;
+                                prevClientPositionX = currentPosX;
+                                prevClientPositionY = currentPosY;
+                                this._scrollDirectionValueX += Math.abs(scrollDeltaX);
+                                this._scrollDirectionValueY += Math.abs(scrollDeltaY);
                                 this.move(isVertical, position, true, true, true);
-                                const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
-                                    scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
-                                    viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
-                                if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
-                                    startClientPos -= offset;
+                                if (this.isInfinity()) {
+                                    const offset = Math.abs(position) - Math.abs(isVertical ? this._y : this._x),
+                                        scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
+                                        viewportSize = isVertical ? this.viewportBounds().height : this.viewportBounds().width;
+                                    if (position >= (scrollSize - viewportSize * .5) || position <= 0) {
+                                        if (isVertical) {
+                                            startClientPosY -= offset;
+                                        } else {
+                                            startClientPosX -= offset;
+                                        }
+                                    }
                                 }
                                 startTime = endTime;
                                 return race([fromEvent<TouchEvent>(window, TOUCH_END, { passive: false }), fromEvent<TouchEvent>(content, TOUCH_END, { passive: false })]).pipe(
@@ -486,8 +560,8 @@ export class NgScrollView extends BaseScrollView {
                                         this.cancelOverscroll();
                                         const endTime = Date.now(),
                                             timestamp = endTime - startTime,
-                                            { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp),
-                                            { a0 } = this.calculateAcceleration(velocities, v0, timestamp);
+                                            { v0 } = this.calculateVelocity(isVertical ? offsetsY : offsetsX, isVertical ? scrollDeltaY : scrollDeltaX, timestamp),
+                                            { a0 } = this.calculateAcceleration(isVertical ? velocitiesY : velocitiesX, v0, timestamp);
                                         this._isMoving = false;
                                         this.grabbing.set(false);
                                         if (!this.snapIfNecessary(v0, false) && this.scrollBehavior() !== BEHAVIOR_INSTANT) {
@@ -583,15 +657,19 @@ export class NgScrollView extends BaseScrollView {
         return false;
     }
 
-    private calculatePosition(isVertical: boolean, e: MouseEvent | TouchEvent | any, inversion: boolean, startClientPos: number, startTime: number,
-        prevClientPosition: number, offsets: Array<[number, number]>, velocities: Array<[number, number]>
+    private calculatePosition(isVertical: boolean, enabled: boolean, axisInversion: boolean, e: MouseEvent | TouchEvent | any, inversion: boolean, startClientPos: number, startTime: number,
+        prevClientPosition: number | null, offsets: Array<[number, number]>, velocities: Array<[number, number]>
     ) {
-        const currentPos = (isVertical ? e.touches?.[e.touches?.length - 1]?.clientY || e.clientY : e.touches?.[e.touches?.length - 1]?.clientX || e.clientX) * (this._horizontalAxisInvertion() ? -1 : 1),
+        if (!enabled) {
+            return { position: isVertical ? this._y : this._x, currentPos: null, endTime: Date.now(), scrollDelta: 0 };
+        }
+        const currentPos = (isVertical ? e.touches?.[e.touches?.length - 1]?.clientY || e.clientY : e.touches?.[e.touches?.length - 1]?.clientX || e.clientX) * (axisInversion ? -1 : 1),
             scrollSize = isVertical ? this.scrollHeight : this.scrollWidth, delta = (inversion ? -1 : 1) * (startClientPos - currentPos),
-            dp = this._startPosition + delta, position = this.isInfinity() ? dp : dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp,
-            endTime = Date.now(), timestamp = endTime - startTime, scrollDelta = prevClientPosition === 0 ? 0 : prevClientPosition - currentPos,
+            dp = (isVertical ? this._startPositionY : this._startPositionX) + delta, position = this.isInfinity() ? dp : dp < 0 ? 0 : dp > scrollSize ? scrollSize : dp,
+            endTime = Date.now(), timestamp = endTime - startTime, scrollDelta = (prevClientPosition === 0 || prevClientPosition === null) ? 0 : prevClientPosition - currentPos,
             { v0 } = this.calculateVelocity(offsets, scrollDelta, timestamp);
         this.calculateAcceleration(velocities, v0, timestamp);
+
         return { position, currentPos, endTime, scrollDelta };
     }
 
@@ -621,7 +699,7 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
-    private checkOverscroll(e: Event) {
+    private checkOverscroll(e: Event, wheel: boolean = false) {
         if (!this._overscrollEnabled || !this.overscrollEnabled()) {
             if (e.cancelable) {
                 e.stopImmediatePropagation();
@@ -631,16 +709,34 @@ export class NgScrollView extends BaseScrollView {
         }
         if (this._overscrollEnabled) {
             if (this.isVertical()) {
-                this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
+                if (this._overscrollStartIteration < OVERSCROLL_START_ITERATION) {
+                    this._overscrollStartIteration++;
+                    this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
+                } else {
+                    if (wheel || this._overscrollApplied || this._scrollDirectionValueY > this._scrollDirectionValueX) {
+                        this._overscrollApplied = true;
+                        this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
+                    }
+                }
             } else {
-                this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+                if (this._overscrollStartIteration < OVERSCROLL_START_ITERATION) {
+                    this._overscrollStartIteration++;
+                    this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+                } else {
+                    if (wheel || this._overscrollApplied || this._scrollDirectionValueX > this._scrollDirectionValueY) {
+                        this._overscrollApplied = true;
+                        this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
+                    }
+                }
             }
         }
     }
 
     private calculateVelocity(offsets: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
+        if (offsets.length > MAX_VELOCITIES_LENGTH) {
+            offsets.shift();
+        }
         offsets.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
-
         const len = offsets.length, startIndex = len > indexOffset ? len - indexOffset : 0, lastVSign = calculateDirection(offsets),
             speedScale = this.scrollingSettings()?.speedScale ?? SPEED_SCALE;
         let vSum = 0;
@@ -659,7 +755,10 @@ export class NgScrollView extends BaseScrollView {
     }
 
     private calculateAcceleration(velocities: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
-        velocities.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
+        if (velocities.length > MAX_VELOCITIES_LENGTH) {
+            velocities.shift();
+        }
+        velocities.push([Math.abs(delta) < MIN_DELTA ? 0 : delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
         const len = velocities.length, startIndex = len > indexOffset ? len - indexOffset : 0;
         let aSum = 0, prevV0: [number, number] | undefined, iteration = 0, lastVSign = calculateDirection(velocities);
         const mass = this.scrollingSettings()?.mass ?? MASS;
@@ -678,7 +777,7 @@ export class NgScrollView extends BaseScrollView {
         }
 
         const a0 = aSum * (this.scrollingSettings()?.frictionalForce ?? FRICTION_FORCE);
-        return { a0 };
+        return { a0: Math.abs(a0) < MIN_ACCELERATION ? 0 : a0 };
     }
 
     stopScrolling(force: boolean = false) {
