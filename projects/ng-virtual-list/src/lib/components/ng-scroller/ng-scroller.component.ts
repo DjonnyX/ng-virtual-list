@@ -1,15 +1,14 @@
 import { Component, computed, effect, ElementRef, input, output, Signal, signal, TemplateRef, viewChild, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, debounceTime, filter, from, Subject, tap } from 'rxjs';
+import { combineLatest, debounceTime, filter, from, Subject, switchMap, take, tap } from 'rxjs';
 import { ScrollBox } from './utils';
-import { Id, TextDirection } from '../../types';
+import { Id } from '../../types';
 import { NgScrollBarComponent } from "../ng-scroll-bar/ng-scroll-bar.component";
 import { GradientColorPositions } from '../../types/gradient-color-positions';
 import {
   BEHAVIOR_INSTANT, DEFAULT_MAX_MOTION_BLUR, DEFAULT_MOTION_BLUR, DEFAULT_MOTION_BLUR_ENABLED, DEFAULT_OVERLAPPING_SCROLLBAR, DEFAULT_SCROLLBAR_ENABLED,
   DEFAULT_SCROLLBAR_INTERACTIVE, DEFAULT_SCROLLBAR_MIN_SIZE, DEFAULT_SCROLLBAR_THICKNESS, LEFT_PROP_NAME, PX, SCROLLER_SCROLL, TOP_PROP_NAME,
 } from '../../const';
-import { TextDirections } from '../../enums';
 import { IScrollToParams, NgScrollView, SCROLL_VIEW_INVERSION } from '../ng-scroll-view';
 import { IScrollBarDragEvent } from '../ng-scroll-bar/interfaces';
 import { SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SCROLL_VIEW_OVERSCROLL_ENABLED } from '../ng-scroll-view/const';
@@ -189,6 +188,23 @@ export class NgScrollerComponent extends NgScrollView {
 
     this._filterId = `${this._service.id}-${MOTION_BLUR}`;
     this._filter = `url(#${this._filterId})`;
+
+    this.$resizeViewport.pipe(
+      takeUntilDestroyed(),
+      debounceTime(0),
+      tap(() => {
+        this.snapIfNeed();
+      }),
+      switchMap(() => {
+        return this.$scroll.pipe(
+          takeUntilDestroyed(this._destroyRef),
+          take(1),
+          tap(() => {
+            this.snapIfNeed();
+          }),
+        );
+      }),
+    ).subscribe();
 
     const $filter = toObservable(this.filter),
       $motionBlur = toObservable(this.motionBlur),
