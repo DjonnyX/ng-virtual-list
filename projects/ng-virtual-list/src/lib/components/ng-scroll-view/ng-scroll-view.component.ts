@@ -1,5 +1,5 @@
 import {
-    Component, computed, inject, input, signal, Signal, ViewChild,
+    Component, computed, inject, input, Signal, ViewChild,
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
