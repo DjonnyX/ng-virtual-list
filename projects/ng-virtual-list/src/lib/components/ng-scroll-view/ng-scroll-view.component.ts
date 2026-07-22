@@ -13,7 +13,7 @@ import {
 import { IScrollToParams } from './interfaces';
 import {
     ACCELERATION_SCALE, ANIMATION_DURATION, AUTO, DURATION, FRICTION_FORCE, INSTANT, LEFT, MASS, MAX_DIST, MAX_DURATION, MAX_ITERATIONS_FOR_AVERAGE_CALCULATIONS,
-    MAX_VELOCITY_TIMESTAMP, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
+    MAX_VELOCITY_TIMESTAMP, MAX_VELOCITIES_LENGTH, OVERSCROLL_START_ITERATION, SCROLL_EVENT, SCROLL_VIEW_NORMALIZE_VALUE_FROM_ZERO, SMOOTH, SPEED_SCALE, TOP,
 } from './const';
 import { calculateDirection, matrix3d } from './utils';
 import { BaseScrollView } from './base/base-scroll-view.component';
@@ -129,6 +129,8 @@ export class NgScrollView extends BaseScrollView {
 
     private _overscrollStartIteration = 0;
 
+    private _overscrollApplied = false;
+
     override set x(v: number) {
         this.setX(v);
     }
@@ -241,7 +243,8 @@ export class NgScrollView extends BaseScrollView {
             debounceTime(100),
             tap(v => {
                 this.snapWithInitialForceIfNecessary(v);
-                this._overscrollStartIteration = 0;
+                this._overscrollIteration = this._overscrollStartIteration = 0;
+                this._overscrollApplied = false;
                 this._scrollDirection.clear();
                 this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
             }),
@@ -266,7 +269,7 @@ export class NgScrollView extends BaseScrollView {
                     tap(e => {
                         const isVertical = this.isVertical();
                         this.emitScrollableEvent();
-                        this.checkOverscroll(e);
+                        this.checkOverscroll(e, true);
                         this.stopScrolling(true);
                         const scrollSize = isVertical ? this.scrollHeight : this.scrollWidth,
                             startPos = isVertical ? this._y : this._x,
@@ -344,6 +347,7 @@ export class NgScrollView extends BaseScrollView {
                     switchMap(e => {
                         mouseCanceled = false;
                         this._overscrollStartIteration = 0;
+                        this._overscrollApplied = false;
                         this._scrollDirection.clear();
                         this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
                         this.cancelOverscroll();
@@ -375,8 +379,7 @@ export class NgScrollView extends BaseScrollView {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
-                                const isVertical = this.isVertical(),
-                                    { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
+                                const { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
                                         this.calculatePosition(false, true, this._horizontalAxisInvertion(), e, inversion, startClientPosX, startTime, prevClientPositionX, offsetsX, velocitiesX),
                                     { position: positionY, currentPos: currentPosY, scrollDelta: scrollDeltaY } =
                                         this.calculatePosition(true, true, false, e, inversion, startClientPosY, startTime, prevClientPositionY, offsetsY, velocitiesY),
@@ -493,6 +496,7 @@ export class NgScrollView extends BaseScrollView {
                     switchMap(e => {
                         touchCanceled = false;
                         this._overscrollStartIteration = 0;
+                        this._overscrollApplied = false;
                         this._scrollDirection.clear();
                         this._scrollDirectionValueX = this._scrollDirectionValueY = 0;
                         this.cancelOverscroll();
@@ -524,8 +528,7 @@ export class NgScrollView extends BaseScrollView {
                                 this.checkOverscroll(e);
                             }),
                             switchMap(e => {
-                                const isVertical = this.isVertical(),
-                                    { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
+                                const { position: positionX, currentPos: currentPosX, endTime, scrollDelta: scrollDeltaX } =
                                         this.calculatePosition(false, true, this._horizontalAxisInvertion(), e, inversion, startClientPosX, startTime, prevClientPositionX, offsetsX, velocitiesX),
                                     { position: positionY, currentPos: currentPosY, scrollDelta: scrollDeltaY } =
                                         this.calculatePosition(true, true, false, e, inversion, startClientPosY, startTime, prevClientPositionY, offsetsY, velocitiesY),
@@ -695,7 +698,7 @@ export class NgScrollView extends BaseScrollView {
         }
     }
 
-    private checkOverscroll(e: Event) {
+    private checkOverscroll(e: Event, wheel: boolean = false) {
         if (!this._overscrollEnabled || !this.overscrollEnabled()) {
             if (e.cancelable) {
                 e.stopImmediatePropagation();
@@ -709,7 +712,8 @@ export class NgScrollView extends BaseScrollView {
                     this._overscrollStartIteration++;
                     this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
                 } else {
-                    if (this._scrollDirectionValueY > this._scrollDirectionValueX) {
+                    if (wheel || this._overscrollApplied || this._scrollDirectionValueY > this._scrollDirectionValueX) {
+                        this._overscrollApplied = true;
                         this.checkOverscrollByAxis(e, this._y, this.scrollHeight);
                     }
                 }
@@ -718,7 +722,8 @@ export class NgScrollView extends BaseScrollView {
                     this._overscrollStartIteration++;
                     this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
                 } else {
-                    if (this._scrollDirectionValueX > this._scrollDirectionValueY) {
+                    if (wheel || this._overscrollApplied || this._scrollDirectionValueX > this._scrollDirectionValueY) {
+                        this._overscrollApplied = true;
                         this.checkOverscrollByAxis(e, this._x, this.scrollWidth);
                     }
                 }
@@ -727,8 +732,10 @@ export class NgScrollView extends BaseScrollView {
     }
 
     private calculateVelocity(offsets: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
+        if (offsets.length > MAX_VELOCITIES_LENGTH) {
+            offsets.shift();
+        }
         offsets.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
-
         const len = offsets.length, startIndex = len > indexOffset ? len - indexOffset : 0, lastVSign = calculateDirection(offsets),
             speedScale = this.scrollingSettings()?.speedScale ?? SPEED_SCALE;
         let vSum = 0;
@@ -747,6 +754,9 @@ export class NgScrollView extends BaseScrollView {
     }
 
     private calculateAcceleration(velocities: Array<[number, number]>, delta: number, timestamp: number, indexOffset: number = 10) {
+        if (velocities.length > MAX_VELOCITIES_LENGTH) {
+            velocities.shift();
+        }
         velocities.push([delta, timestamp < ANIMATOR_MIN_TIMESTAMP ? ANIMATOR_MIN_TIMESTAMP : timestamp]);
         const len = velocities.length, startIndex = len > indexOffset ? len - indexOffset : 0;
         let aSum = 0, prevV0: [number, number] | undefined, iteration = 0, lastVSign = calculateDirection(velocities);
